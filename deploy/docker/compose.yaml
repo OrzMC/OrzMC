@@ -1,0 +1,75 @@
+services:
+  reverse-proxy:
+    image: caddy@sha256:834468128c7696cec0ceea6172f7d692daf645ae51983ca76e39da54a97c570d
+    container_name: orzmc-caddy
+    restart: unless-stopped
+    ports:
+      - "${PROXY_HTTP_PORT}:80"
+      - "${PROXY_HTTPS_PORT}:443"
+    environment:
+      TZ: "${TZ}"
+      CADDY_EMAIL: "${CADDY_EMAIL}"
+      DOMAIN_QQBOT: "${DOMAIN_QQBOT}"
+      DOMAIN_QQBOT_API: "${DOMAIN_QQBOT_API}"
+      DOMAIN_QQBOT_WS: "${DOMAIN_QQBOT_WS}"
+      DOMAIN_MCS_WEB: "${DOMAIN_MCS_WEB}"
+      DOMAIN_MCS_NODE: "${DOMAIN_MCS_NODE}"
+      NAPCAT_WEBUI_PORT: "${NAPCAT_WEBUI_PORT}"
+      NAPCAT_HTTP_PORT: "${NAPCAT_HTTP_PORT}"
+      NAPCAT_WS_PORT: "${NAPCAT_WS_PORT}"
+      MCS_WEB_PORT: "${MCS_WEB_PORT}"
+      MCS_DAEMON_PORT: "${MCS_DAEMON_PORT}"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - "${DATA_ROOT}/caddy/data:/data"
+      - "${DATA_ROOT}/caddy/config:/config"
+    depends_on:
+      - mcsmanager-web
+      - mcsmanager-daemon
+      - napcat
+
+  mcsmanager-web:
+    image: githubyumao/mcsmanager-web@sha256:7067772d85e75edeb2c7fa38368dbf0d5a959476999810e90da130566e98e15d
+    container_name: orzmc-mcsmanager-web
+    restart: unless-stopped
+    environment:
+      TZ: "${TZ}"
+    expose:
+      - "${MCS_WEB_PORT}"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - "${DATA_ROOT}/mcsmanager/web/data:/opt/mcsmanager/web/data"
+      - "${DATA_ROOT}/mcsmanager/web/logs:/opt/mcsmanager/web/logs"
+
+  mcsmanager-daemon:
+    image: githubyumao/mcsmanager-daemon@sha256:1692572d0c9ed0e21372129825f54a18f51b342bf91f8eeb4f7c47f31f8464f6
+    container_name: orzmc-mcsmanager-daemon
+    restart: unless-stopped
+    environment:
+      TZ: "${TZ}"
+      MCSM_DOCKER_WORKSPACE_PATH: "/opt/mcsmanager/daemon/data/InstanceData"
+    expose:
+      - "${MCS_DAEMON_PORT}"
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - "${DATA_ROOT}/mcsmanager/daemon/data:/opt/mcsmanager/daemon/data"
+      - "${DATA_ROOT}/mcsmanager/daemon/logs:/opt/mcsmanager/daemon/logs"
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  napcat:
+    image: mlikiowa/napcat-docker@sha256:29ef959c1e59318d280891b08523f8e2258bbab7717992969811e45f30f81ceb
+    container_name: orzmc-napcat
+    restart: unless-stopped
+    environment:
+      TZ: "${TZ}"
+      NAPCAT_UID: "${NAPCAT_UID}"
+      NAPCAT_GID: "${NAPCAT_GID}"
+    expose:
+      - "${NAPCAT_HTTP_PORT}"
+      - "${NAPCAT_WS_PORT}"
+      - "${NAPCAT_WEBUI_PORT}"
+    volumes:
+      - "${DATA_ROOT}/napcat/qq:/app/.config/QQ"
+      - "${DATA_ROOT}/napcat/config:/app/napcat/config"
+      - "${DATA_ROOT}/napcat/plugins:/app/napcat/plugins"

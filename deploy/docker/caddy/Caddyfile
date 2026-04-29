@@ -1,0 +1,23 @@
+{
+    email {$CADDY_EMAIL}
+}
+
+{$DOMAIN_QQBOT} {
+    reverse_proxy napcat:{$NAPCAT_WEBUI_PORT}
+}
+
+{$DOMAIN_QQBOT_API} {
+    reverse_proxy napcat:{$NAPCAT_HTTP_PORT}
+}
+
+{$DOMAIN_QQBOT_WS} {
+    reverse_proxy napcat:{$NAPCAT_WS_PORT}
+}
+
+{$DOMAIN_MCS_WEB} {
+    reverse_proxy mcsmanager-web:{$MCS_WEB_PORT}
+}
+
+{$DOMAIN_MCS_NODE} {
+    reverse_proxy mcsmanager-daemon:{$MCS_DAEMON_PORT}
+}
