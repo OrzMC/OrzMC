@@ -38,3 +38,6 @@
 [submodule "profile"]
 	path = profile
 	url = https://github.com/OrzMC/.github.git
+[submodule "tools/DeathChest"]
+	path = tools/DeathChest
+	url = https://github.com/wangzhizhou/death-chest
