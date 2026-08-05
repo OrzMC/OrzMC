@@ -25,19 +25,19 @@
 	url = https://github.com/OrzMC/OrzMCBackup.git
 [submodule "tools/rust-thanos"]
 	path = tools/rust-thanos
-	url = https://github.com/wangzhizhou/rust-thanos.git
+	url = https://github.com/OrzMC/rust-thanos.git
 [submodule "tools/thanos"]
 	path = tools/thanos
 	url = https://github.com/aternosorg/thanos.git
 [submodule "tools/LoginSecurity"]
 	path = tools/LoginSecurity
-	url = https://github.com/wangzhizhou/LoginSecurity
+	url = https://github.com/OrzMC/LoginSecurity
 [submodule "tools/GetMeHome"]
 	path = tools/GetMeHome
-	url = https://github.com/wangzhizhou/GetMeHome.git
+	url = https://github.com/OrzMC/GetMeHome.git
 [submodule "profile"]
 	path = profile
 	url = https://github.com/OrzMC/.github.git
 [submodule "tools/DeathChest"]
 	path = tools/DeathChest
-	url = https://github.com/wangzhizhou/death-chest
+	url = https://github.com/OrzMC/death-chest
