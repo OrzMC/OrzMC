@@ -41,3 +41,7 @@
 [submodule "tools/DeathChest"]
 	path = tools/DeathChest
 	url = https://github.com/OrzMC/death-chest
+[submodule "tools/EzShops"]
+	path = tools/EzShops
+	url = https://github.com/OrzMC/EzShops.git
+	branch = main
