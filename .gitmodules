@@ -45,3 +45,7 @@
 	path = tools/EzShops
 	url = https://github.com/OrzMC/EzShops.git
 	branch = main
+[submodule "deploy"]
+	path = deploy
+	url = https://github.com/OrzMC/OrzMCDeploy.git
+	branch = main
