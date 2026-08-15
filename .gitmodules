@@ -49,3 +49,7 @@
 	path = deploy
 	url = https://github.com/OrzMC/OrzMCDeploy.git
 	branch = main
+[submodule "proxy"]
+	path = proxy
+	url = https://github.com/OrzMC/OrzMCProxy.git
+	branch = main
