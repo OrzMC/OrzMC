@@ -9,7 +9,6 @@
 ├── app                         # Git子模块：Swift语言开发相关库以及一个macOS/iOS应用程序
 ├── images                      # README.md 引用的图片资源
 ├── LICENSE                     # 开源代码许可证
-├── paper_plugins_config        # Git子模块：主要是papermc开服插件的配置文件
 ├── plugin                      # Git子模块：自研PaperMC插件OrzMC
 ├── python                      # Git子模块：OrzMC CLI Python源码
 ├── README.md                   # README.md

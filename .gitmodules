@@ -6,10 +6,6 @@
 	path = webmc
 	url = https://github.com/OrzMC/OrzWebMC.git
 	branch = main
-[submodule "paper_plugins_config"]
-	path = paper_plugins_config
-	url = https://github.com/OrzMC/paper_plugins_config.git
-	branch = main
 [submodule "python"]
 	path = python
 	url = https://github.com/OrzMC/OrzPythonMC.git
