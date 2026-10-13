@@ -308,3 +308,4 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-13 | Swift 引擎③起步（`OrzMCKit`）：`GameType` 四值 + 能力矩阵 + `serverJarName`；新增规范对齐的 `GamePlan.layout` 纯计划契约（D-a，strangler-fig） | pi |
 | 2026-10-13 | Swift 引擎③续：`GamePlan.planClientLaunch`（B6 纯计划，含 `VersionPlan`/rules/令牌/classpath） | pi |
 | 2026-10-13 | Swift 适配器④：`OrzMCKit` `ConformanceAdapter` 26/26 绿；OrzMCKit CI 新增 `conformance` job（Q6） | pi |
+| 2026-10-13 | Phase 3：`GameDir` 改为**委托 `GamePlan` 的兼容层**（路径切规范布局，CLI/app 无需改动）；Swift 引擎布局对齐 | pi |

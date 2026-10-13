@@ -121,7 +121,8 @@
 3. **引擎契约**（`OrzMCKit`）：☑ `GameType` 四值 + 能力矩阵 + `serverJarName`；☑ `GamePlan.layout`（规范布局）；
    ☑ `GamePlan.planClientLaunch`（B6 纯计划）；☐ `GamePlan` 下载计划 / 进度；☐ CLI/app 迁移后退役 `GameDir`。
 4. **适配器**：☑ `ConformanceAdapter`（`OrzMCKit`）接入父仓库运行器；☑ OrzMCKit CI `conformance` job（Q6）。
-5. **产品面**：`OrzMC` CLI 与 `app` 迁到 `GamePlan`（HEAD 制，同批）；退役 `GameDir`。
+5. **产品面**：◑ `GameDir` 已改为**委托 `GamePlan` 的兼容层**（API 不变、路径切规范布局，CLI/app 无需改动即可切换）；
+   ☐ 逐步把调用点迁到 `GamePlan` 并退役 `GameDir`（与 `app` 同批）。
 6. **CI（Q6）**：父仓库/子仓库接线。
 
 > 验证前提：本地需能编译 `swift-tools-version:6.0` 的包（见下）——否则只能靠 CI/真机。

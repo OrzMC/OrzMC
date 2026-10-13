@@ -137,7 +137,9 @@ git diff --submodule
 - [x] **P3｜Swift 引擎③起步**：`OrzMCKit` `GameType` 四值 + 能力矩阵 + `GamePlan.layout`（`f4aed31`，CI 绿）。
 - [x] **P3｜引擎③续**：`GamePlan.planClientLaunch`（B6 纯计划，`5c60238`，CI 绿）。
 - [x] **P4｜一致性适配器（Swift）**：`OrzMCKit` `ConformanceAdapter` 26/26 绿；OrzMCKit CI `conformance` job（Q6 已决，`558dc70`）。
-- [ ] **P5｜产品面迁移**：`OrzMC` CLI 与 `app` 注迁到 `GamePlan`，随后退役 `GameDir`（破坏性，级联 app）。
+- [x] **P5｜布局切换**：`GameDir` 改为**委托 `GamePlan` 的兼容层**（`1fd5934`）——CLI/app 无需改动即得规范布局。
+- [ ] **P5｜注全迁移**：逐步把调用点（含 app）迁到 `GamePlan`，再退役 `GameDir`。⚠️ app 无 PR CI、本地无 Xcode，需补 app 构建校验。
+- [ ] **P3｜运行时**：Java 托管接入 `Game`（用 `RuntimeKit`）；下载分块/进度接入。
 - [ ] **P3｜引擎③尾**：`GamePlan` 下载计划 / 进度；CLI/app 注迁到 `GamePlan`（退役 `GameDir`）。
 - [ ] **P2｜Swift 适配器**：按 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md) §7.1 顺序推进。
 - [x] **P2/3｜Q7 已决（B/HEAD 制）**：伞内引擎版本 = `OrzMCKit` `main` HEAD；`app` 改用 `branch = main`。
@@ -149,6 +151,23 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（Phase 3：GameDir 兼容层切规范布局）
+
+**背景**
+- `app` 在 6+ 处重度依赖 `GameDir`，而 app **无 PR CI**、本地又无 Xcode → 直接大改风险高。
+
+**做了什么**
+- 把 `GameDir` 重写为**委托 `GamePlan` 的兼容层**：公开 API 不变，`dirPath` 全部按规范布局计算
+  （`versions/<v>/{client,server/<type>}`、`client/assets|libraries|natives|profiles`…）。
+- 结果：`OrzMC` CLI 与 `app` **无需改动**即切到规范布局（符合“不做迁移，旧目录提示重建”）。
+
+**结果 / 产出**
+- `OrzMC/OrzMCKit` main `1fd5934`，CI 双绿（`test` + `conformance` 26/26）；父仓库 bump `dc957f2`。
+
+**风险 / 关注**
+- app 侧未构建验证（无 PR CI/Xcode）；既存安装在旧 `manifest/` 下的数据会“不可见”，符合既定策略。
+- 后续需把调用点（含 app）迁到 `GamePlan` 并退役 `GameDir`；建议先给 app 加构建校验。
 
 ### 2026-10-13 — pi（Swift 适配器④：ConformanceAdapter + OrzMCKit CI）
 
