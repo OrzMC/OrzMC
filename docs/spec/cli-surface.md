@@ -154,7 +154,32 @@ orzmc plugin [--search TEXT] [--list] [--output DIR] [--version VER] [--count N]
 - 人类可读输出到 **stdout**；错误到 **stderr**。
 - **机器可读输出**：全局 `--json`（**已决**）→ 结构化 JSON，字段与 `data-model.md` 对齐；
   非 TTY 时**默认仍为人类可读**（不破坏现状），显式 `--json` 才切换。
-  - JSON 信封（【待定细节】）：`{"ok": bool, "command": str, "data": {...}, "error": {"code": str, "message": str}?}`
+
+### 6.1 `--json` 信封（已定稿）
+
+单条命令输出**恰好一个** JSON 对象（首尾无其它 stdout 内容；进度 / 日志一律走 stderr）：
+
+```jsonc
+// 成功
+{ "ok": true,  "command": "client", "data": { /* 命令结果 */ }, "error": null }
+
+// 失败
+{ "ok": false, "command": "server", "data": null,
+  "error": { "code": "E_UNSUPPORTED_TYPE", "message": "类型 forge 不能用于服务端" } }
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|:--|:--|:--:|:--|
+| `ok` | bool | ✅ | 成功与否 |
+| `command` | string | ✅ | 规范命令名（根命令用 `"_root"`） |
+| `data` | object\|null | ✅ | 成功时为结果对象（随命令而定），失败为 `null` |
+| `error` | object\|null | ✅ | 失败时为 `{code, message}`，成功为 `null` |
+| `schemaVersion` | string | | 信封版本（**建议**，如 `"1"`） |
+
+- `error.code`：稳定字符串（如 `E_USAGE` / `E_NETWORK` / `E_VERIFY` / `E_UNSUPPORTED` / `E_CANCELLED`）；
+  完整错误码表 —— **计划（低优先级）**。
+- `--json` 隐含**非交互**：绝不等待输入（§7）。
+- 退出码仍按上方（`0`/`1`/`130`）—— AI 可同时看 `ok` 与退出码。
 
 ---
 
@@ -180,19 +205,20 @@ CLI 需支持**被 AI 智能体调用**：确定性、非交互、可发现、�
 |:--|:--|
 | 非交互 | 非 TTY 不阻塞（§7）；AI 调用一律走此路径 |
 | 结构化输出 | 全局 `--json`，字段与 [`data-model.md`](data-model.md) 对齐 |
-| 能力发现 | `orzmc capabilities --json`：机器可读的命令 / 选项 / 退出码清单（**建议**） |
+| 能力发现 | `orzmc capabilities --json`：机器可读的命令 / 选项 / 退出码清单 —— **计划（低优先级）** |
 | 幂等/可重入 | 下载 / 安装类操作可安全重试，不产生半成品 |
 | 退出码 | 稳定且语义化（§6），AI 据此判断成败 |
 
 **关于 “open-cli”**：经核查，`open-cli` / `OpenCLI` **并非一个统一的“AI 可调用 CLI”标准**
 （现存同名项目多为“把网站变 CLI”或聊天客户端）。**建议不追逐该名词**，而采用业界事实标准组合：
 
-1. 上述机器可读接口（`--json` + `capabilities`）；
+1. 机器可读输出：`--json`（信封见 §6.1，**已定稿**）；
 2. **MCP（Model Context Protocol）**：提供 `orzmc mcp` 本地 MCP server，把核心操作暴露为工具
    ——这是当前 AI 工具集成的事实标准；
 3. （可选）随 CLI 发布 agent skill / 使用说明文件，便于 AI 发现用法。
 
-> 【待定】是否实现 `orzmc mcp`，以及 `capabilities` 的 JSON schema。
+> **优先级（已决）**：`--json` 信封**现在定稿**（§6.1）；`capabilities` 与 `orzmc mcp` 的 JSON schema
+> **先定为计划、优先级排在后面**，不阻塞 Phase 2。
 
 ## 9. Shell 自动补全（用户要求）
 

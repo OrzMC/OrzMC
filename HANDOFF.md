@@ -122,9 +122,10 @@ git diff --submodule
 **结果 / 产出文件**
 - 修改：`docs/spec/{cli-surface,install-update,data-model}.md`、`docs/product-architecture.md`、
   `docs/product-unification-plan.md`（新增 D9）、`HANDOFF.md`
+- 定稿 `--json` 信封（`cli-surface.md` §6.1：`{ok,command,data,error}`）；`capabilities`/`orzmc mcp` 列为**计划、低优先级**。
 
 **遗留 / 下一步**
-- 本批未提交；下一步 Phase 2 fixtures + 双 harness；剩余【待定】：`--json` 信封、`capabilities`/MCP schema。
+- 本批未提交；下一步 Phase 2 fixtures + 双 harness。无阻塞性【待定】（仅余计划项）。
 
 ### 2026-10-13 — pi（Phase 1：规范草案完成）
 

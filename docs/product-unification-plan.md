@@ -287,3 +287,4 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-13 | 决策 Q2（规范落 `docs/spec/`）/ Q3（OrzMCKit=Swift 可复用基础组件）/ Q5（Markdown+JSON 起步）；Phase 1 启动，产出 `docs/spec/` | pi |
 | 2026-10-13 | Phase 1 规范草案完成（`data-model`/`behavior`/`cli-surface`/`install-update`/`conformance`） | pi |
 | 2026-10-13 | 清 待定：`--root-dir/--verbose` 全局、`--json`、`--auth` 纳入、`server` 默认 vanilla、CLI 支持 AI 调用（D9）；Windows 落点 `%LOCALAPPDATA%\Programs\orzmc`、引入 `beta` 渠道、GUI 计划中；布局一次性对齐不迁移、arch 支持 x86 | pi |
+| 2026-10-13 | 定稿 `--json` 信封（`cli-surface.md` §6.1：`{ok,command,data,error}`）；`capabilities` / `orzmc mcp` 列为**计划、低优先级** | pi |
