@@ -282,3 +282,6 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 日期 | 变更 | 作者 |
 |---|---|---|
 | 2026-10 | 初始草案：核验现状、确立 D1–D6、列出 Phase 0–5 与开放问题 | — |
+| 2026-10-13 | Phase 0：产出 [`product-architecture.md`](product-architecture.md)（分层/依赖/治理） | pi |
+| 2026-10-13 | 决策 Q1（OrzMCKit 可访问）+ 新增 D7（一个 `orzmc`、CLI+GUI 两面、共核、互相安装/打开）/ D8（OrzMCKit 定位） | pi |
+| 2026-10-13 | 决策 Q2（规范落 `docs/spec/`）/ Q3（OrzMCKit=Swift 可复用基础组件）/ Q5（Markdown+JSON 起步）；Phase 1 启动，产出 `docs/spec/` | pi |
