@@ -92,6 +92,7 @@ natives OS-arch 规则、Java 版本推导、Fabric/Forge/Paper provider、启�
 | D8 | `OrzMCKit` 定位为 **Swift 语言下可复用的基础组件**（非 App 私有引擎）：既服务 Swift CLI，也服务 GUI | 使其可被其它 Swift 项目复用，改善治理 |
 | D9 | CLI 需**可被 AI 调用**：全局 `--json` + 能力发现（`capabilities`）+ 非交互确定性；**评估 MCP**，不追 “open-cli” 空名 | AI 协作者需要可解析、可发现的接口 |
 | D10 | Swift/SwiftPM 依赖一律用 `OrzMC/*` **规范路径**（禁重定向）；`OrzMCKit` 本地覆盖**仅供开发态、不提交** | 消除重定向误读，同时不破坏 app 独立构建 |
+| D11 | **外部 Swift 依赖版本策略：HEAD 制**——`OrzMCKit` 的 `MojangAPI`/`PaperMC`/`OrzSwiftKit` 改用 `branch: main` | 与 Q7 一致，支撑快速迭代 |
 
 > 决策若被推翻，必须在本章追加「~~D#~~ 已推翻，原因…」并说明替代方案，不得直接删除。
 
@@ -299,3 +300,5 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-13 | **Q4 已决**：登记 `OrzMCKit`（`OrzMC/OrzMCKit`，`main`，钉 `e302d4e`）为父仓库子模块；核实 `MojangAPI`/`PaperMC` 已入组织 | pi |
 | 2026-10-13 | 依赖 URL 统一迁到组织规范路径（`OrzMC/MojangAPI`、`OrzMC/PaperMC`、`OrzMC/ExarotonAPI`、`OrzMC/OrzMCKit`、`OrzMC/OrzMCApp`，含 `SUFeedURL`）；明确本地覆盖仅供开发态（D10） | pi |
 | 2026-10-13 | **Q7 已决（B/HEAD 制）**：伞内引擎版本 = `OrzMCKit` `main` HEAD；`app` 的 SwiftPM 依赖改用 `branch = main` | pi |
+| 2026-10-13 | **D11**：外部 Swift 依赖也改 HEAD 制（`OrzMCKit` → `MojangAPI`/`PaperMC`/`OrzSwiftKit` 用 `branch: main`） | pi |
+| 2026-10-13 | Swift 基础①：`OrzSwiftKit` 新增 `CacheKit`（统一元数据缓存，D-c；PR #2 已合，CI 绿）；放宽 OrzGeeker 保护（关 `enforce_admins`） | pi |

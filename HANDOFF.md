@@ -129,8 +129,9 @@ git diff --submodule
 - [ ] **P2｜提交本批父仓库改动 + bump `python` 指针**。
 - [x] **P2｜Q4 已决**：登记 `OrzMCKit` 为父仓库子模块（`08e6b76`，钉 `e302d4e`）；核实 MojangAPI/PaperMC 已入组织。
 - [ ] **P2｜Phase 0/1 评审**：确认决策 D1–D9 与规范。
-- [ ] **阻塞｜合并 OrzSwiftKit PR #2**（CacheKit）：OrzGeeker main 需 review，请批准/合并或放宽保护。
-- [ ] **P3｜Swift 基础②**：定外部依赖版本策略后，让 `MojangAPI` 消费 `CacheKit`。
+- [x] **Swift 基础①**：`CacheKit`（PR #2 已合）；OrzGeeker 保护已放宽（`enforce_admins=false`）；D11 HEAD 制落地。
+- [ ] **P3｜Swift 基础②**：`RuntimeKit`（D-b）、`Downloader` 并发/Range（B2）。
+- [ ] **P3｜Swift 基础③**：`MojangAPI` 消费 `CacheKit` + 离线快照接缝 + 渠道归一。
 - [ ] **P2｜Swift 适配器**：按 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md) §7.1 顺序推进。
 - [x] **P2/3｜Q7 已决（B/HEAD 制）**：伞内引擎版本 = `OrzMCKit` `main` HEAD；`app` 改用 `branch = main`。
 - [ ] **P2｜补样例**：`server-plan/`（`planServerDeploy`）与 `server-lifecycle/`（B7）。
@@ -153,14 +154,14 @@ git diff --submodule
 - 本地：`swift build --target CacheKit` 通过（本机 macOS 13 SDK 无法整包测试/链接）。
 
 **结果 / 产出**
-- `OrzGeeker/OrzSwiftKit` **PR #2**（分支 `feat/cachekit`）：CI **绿**（build + CacheKit 7 例）。
-
-**阻塞（需你操作）**
-- OrzGeeker 组织仓库 main **要求至少 1 个批准 review**，`gh pr merge --admin` 也无法绕过
-  （与 OrzMC 组织不同，后者可直推）。请：**批准/合并 PR #2**，或**放宽 OrzGeeker/OrzSwiftKit 的 main 保护**。
+- `OrzGeeker/OrzSwiftKit` **PR #2 已合并**（squash，main `92bb455`）；CI 绿（build + CacheKit 7 例）。
+- 按决策 B **关闭该仓库的 `enforce_admins`**（保留 review 给非管理员，管理员可绕过；OrzGeeker 与 OrzMC 保护策略不同）。
+- **D11：外部 Swift 依赖改 HEAD 制** —— `OrzMCKit` 的 `MojangAPI`/`PaperMC`/`OrzSwiftKit` 由 tag 改为 `branch: main`
+  （`d9babc9`，`Package.resolved` 已重解析）。
 
 **下一步**
-- 合并后：定“外部 Swift 依赖版本策略”（tag vs `main`，参见下方待决策），再让 `MojangAPI` 消费 `CacheKit`。
+- ② `OrzSwiftKit`：`RuntimeKit`（Java 获取原语，D-b）、`Downloader` 并发/Range（B2）。
+- ③ `MojangAPI`：消费 `CacheKit` + 离线快照接缝 + 渠道归一。
 
 ### 2026-10-13 — pi（Swift 工具链/CI 基座）
 

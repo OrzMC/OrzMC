@@ -107,10 +107,12 @@
 - **D-c｜统一缓存归属**：**基础设施**放 `OrzSwiftKit`（磁盘 + TTL 24h + `refresh` + 离线回退），
   `MojangAPI` / `PaperMC` 消费。理由：B1 的缓存对象跨多个 provider（Mojang/fabric-meta/Paper/Forge），
   与 Python `orzmc/infra/cache.py` 同层；放单一 provider 会耦合、难复用。
+- **D11｜外部 Swift 依赖版本策略：HEAD 制**。`OrzMCKit` 的依赖（`OrzMC/MojangAPI`、`OrzMC/PaperMC`、
+  `OrzGeeker/OrzSwiftKit`）由 tag（`from:`）改为 `branch: main`，与 Q7 一致、支持快速迭代。
 
 ### 7.1 执行顺序（按长期正确性排布）
 
-1. **基础设施**（`OrzSwiftKit`）：`MetadataCache`（D-c）、`RuntimeKit` JRE 获取原语（D-b）、`Downloader` 并发/Range（B2）。
+1. **基础设施**（`OrzSwiftKit`）：☑ `CacheKit`（D-c，PR #2 已合）；☐ `RuntimeKit` JRE 获取原语（D-b）；☐ `Downloader` 并发/Range（B2）。
 2. **元数据**（`MojangAPI`）：消费共享缓存；提供**从给定 JSON 构造**的离线接缝；`oldAlpha/oldBeta → snapshot` 渠道归一。
 3. **引擎契约**（`OrzMCKit`）：`GameType` 四值 + 能力矩阵；`GamePlan`（规范布局/下载计划/启动计划/Java 需求/进度）。
 4. **适配器**：`ConformanceAdapter` 薄层薄参 `GamePlan`；接入父仓库运行器。
