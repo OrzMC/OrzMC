@@ -17,7 +17,7 @@
 
 **聚合型 monorepo / 产品伞**，本身几乎不含业务代码：
 
-- 通过 **Git 子模块（submodule）** 汇集 15 个独立仓库（插件 / CLI / App / 部署 / 中转 / 官网 / 工具集 / 组织主页）。
+- 通过 **Git 子模块（submodule）** 汇集 16 个独立仓库（插件 / CLI / App / Swift 引擎 / 部署 / 中转 / 官网 / 工具集 / 组织主页）。
 - 父仓库的职责只有三件事：
   1. **锁定版本**：记录各子模块的 commit 指针，对同一套产品定义一个可复现的组合。
   2. **承载伞级内容**：`README.md`、`docs/`、`scripts/`、`images/`、`skins/`、`LICENSE`。
@@ -111,6 +111,7 @@ git commit -m "docs: ..."
 | `plugin` | `OrzMC/OrzMCPlugin` | `main`（开发用 `develop`） | 自研 | PaperMC 核心插件（白名单/机器人/权限/维护） | ✅ |
 | `python` | `OrzMC/OrzPythonMC` | `main` | 自研 | `orzmc` CLI：客户端启动 / 服务端部署 | ✅ |
 | `app` | `OrzMC/OrzMCApp` | `main` | 自研 | macOS/iOS 启动器（SwiftUI，引擎在外部 `OrzMCKit`） | — |
+| `OrzMCKit` | `OrzMC/OrzMCKit` | `main` | 自研 | Swift 引擎（`Game`/`Fabric`）+ `orzmc` CLI | — |
 | `deploy` | `OrzMC/OrzMCDeploy` | `main` | 自研 | Docker Compose 部署（MCSManager/EasyBot/MariaDB/Gatus） | ✅ |
 | `proxy` | `OrzMC/OrzMCProxy` | `main` | 自研 | FRP 跨运营商中转方案 | — |
 | `site` | `OrzMC/OrzMCSite` | `main` | 自研 | Hugo 官方网站（GitHub Pages） | ✅ |

@@ -50,9 +50,9 @@ OrzMC 是一个围绕 **PaperMC 生态**的 Minecraft 社区服务器开源组�
 | `OrzMC/OrzMCKit` | L1 引擎 + L2 前端 | Swift 引擎（`Game`/`Fabric`）+ CLI（`orzmc` 可执行） | Swift | SwiftPM 库 + 可执行 |
 | `OrzMC/OrzMCApp` | L2 前端 | macOS/iOS 图形启动器 | SwiftUI | Developer ID / App |
 | `OrzMC/OrzWebMC` | L2 前端 | 浏览器连服实验 | 前端 | — |
-| `wangzhizhou/MojangAPI` | L1 引擎依赖 | Mojang 元数据（清单/version JSON/assets） | Swift | SwiftPM 包 |
-| `wangzhizhou/PaperMC` | L1 引擎依赖 | Paper 下载/Hangar API | Swift | SwiftPM 包 |
-| `OrzGeeker/OrzSwiftKit` | L1 引擎依赖 | `JokerKits` / `Utils` 基础设施 | Swift | SwiftPM 包 |
+| `OrzMC/MojangAPI` | L1 引擎依赖 | Mojang 元数据（清单/version JSON/assets） | Swift | SwiftPM 包（组织） |
+| `OrzMC/PaperMC` | L1 引擎依赖 | Paper 下载/Hangar API | Swift | SwiftPM 包（组织） |
+| `OrzGeeker/OrzSwiftKit` | L1 引擎依赖 | `JokerKits` / `Utils` 基础设施 | Swift | SwiftPM 包（外部） |
 | `OrzMC/OrzMCPlugin` | 运行面 | PaperMC 核心插件 | Java 25 / Gradle | Hangar / Modrinth |
 | `OrzMC/OrzMCDeploy` | 运行面 | Docker Compose 部署平台 | Shell / Compose | Release tarball |
 | `OrzMC/OrzMCProxy` | 运行面 | FRP 跨运营商中转 | Shell / frp | 脚本 |
@@ -199,14 +199,15 @@ L3 产品伞 ──▶ 只做锁定与文档，不改任何实现代码
 | L0 规范 `docs/spec/`（现行）/ 未来 `orzmc-spec` | 父仓库 `OrzMC/OrzMC` | 组织 |
 | Python 核心 + CLI | `OrzMC/OrzPythonMC` | 组织 |
 | Swift 可复用基础组件（`Game`/`Fabric`）+ `orzmc` CLI | `OrzMC/OrzMCKit` | 组织 |
-| Swift 引擎依赖 | `wangzhizhou/MojangAPI`、`wangzhizhou/PaperMC`、`OrzGeeker/OrzSwiftKit` | **个人仓库** ⚠️ |
+| Swift 引擎依赖 | `OrzMC/MojangAPI`、`OrzMC/PaperMC`（组织）、`OrzGeeker/OrzSwiftKit`（外部） | 组织 / 外部 |
 | GUI | `OrzMC/OrzMCApp` | 组织 |
 | 运行面 | 各 `OrzMC/*` 子模块 | 各自仓库 |
 | 产品伞 | 父仓库 `OrzMC/OrzMC` | 组织 |
 
 **近期治理动作（见计划 D5 / Q3 / Q4）**：
-1. 把 `OrzMCKit` 登记为父仓库子模块（消除"编外引擎"）。
-2. 评估 Swift 引擎个人依赖是否迁入 `OrzMC` 组织（至少登记、明确版本）。
+1. ☑ 已把 `OrzMCKit` 登记为父仓库子模块（`08e6b76`，消除"编外引擎"）。
+2. 部分完成：`MojangAPI` / `PaperMC` 已迁入 `OrzMC` 组织；`OrzGeeker/OrzSwiftKit` 仍是外部仓库
+   （经 SwiftPM 依赖，**父仓库不锁**其版本）。
 3. 明确各前端 CLI 的分工（Python `orzmc` vs Swift `orzmc`），避免用户认知混乱。
 
 ---
@@ -287,3 +288,4 @@ L3 产品伞 ──▶ 只做锁定与文档，不改任何实现代码
 |---|---|
 | 2026-10-13 | 初版：仓库角色地图、L0–L3 分层、引擎六阶段映射、允许依赖方向、禁止事项、治理 |
 | 2026-10-13 | 新增 §1.2 **产品形态**（一个 `orzmc`、CLI+GUI 两面、共核、互相安装/打开）；L2 改称「产品面」；治理表重定位 `OrzMCKit` 为 Swift 可复用基础组件 |
+| 2026-10-13 | **Q4 已决**：`OrzMCKit` 登记为父仓库子模块（`08e6b76`）；Swift 引擎依赖 `MojangAPI`/`PaperMC` 已入组织，`OrzSwiftKit` 维持外部 |

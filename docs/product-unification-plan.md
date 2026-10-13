@@ -236,7 +236,7 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | Q1 | `OrzMCKit` 仓库是否可读/可改？（决定 Phase 1 能否核对 Swift 类型） | 解阻塞 Phase 1 | ✅ 已确认：可访问（`main`），已浅克隆核验；注意其引擎依赖 `MojangAPI`/`PaperMC`/`OrzSwiftKit` 在个人仓库 | ✅ |
 | Q2 | `orzmc-spec` 落点？ | 决定 Phase 1 落点 | ✅ 已决：**父仓库 `docs/spec/`**，成熟后再下沉独立仓库 | ✅ |
 | Q3 | `OrzMCKit` 如何定位？ | 治理与复用 | ✅ 已决：**Swift 可复用基础组件**（非 App 私有引擎），服务 Swift CLI 与 GUI | ✅ |
-| Q4 | app 仓库 `.gitmodules` 已空、且曾移除 OrzMCKit 子模块——是否要恢复登记以避免"引擎游离"？ | D5 具体做法 | 与 Q3 合并决策 | ☐ |
+| Q4 | app 仓库 `.gitmodules` 已空、且曾移除 OrzMCKit 子模块——是否要恢复登记以避免"引擎游离"？ | D5 具体做法 | ✅ 已决：**登记为父仓库子模块**（`OrzMCKit`，路径 `OrzMCKit/`，`main`，钉 `e302d4e`） | ✅ |
 | Q5 | spec 数据模型用 JSON Schema 还是「Markdown + JSON 样例」起步？ | Phase 1 工作量 | ✅ 已决：先 **Markdown + JSON 样例**（已落 `docs/spec/data-model.md`），稳定后再补 Schema | ✅ |
 | Q6 | conformance 是否要求 Swift 侧也进父仓库 CI（跨仓库触发）？ | Phase 2 复杂度 | 各自仓库 CI 内跑，父仓库只做状态汇总 | ☐ |
 
@@ -294,3 +294,4 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-13 | 定稿 `--json` 信封（`cli-surface.md` §6.1：`{ok,command,data,error}`）；`capabilities` / `orzmc mcp` 列为**计划、低优先级** | pi |
 | 2026-10-13 | Phase 2 启动：产出 `docs/spec/fixtures/`（26 样例 + 快照 + schema）与 `scripts/conformance/{run.py,reference.py}`（语言无关运行器 + 参考适配器，自检 26/26 绿） | pi |
 | 2026-10-13 | Python 适配器接入：`OrzPythonMC#32` 新增 `orzmc/tests/conformance/adapter.py`（26/26 绿，6 平台 CI 过） | pi |
+| 2026-10-13 | **Q4 已决**：登记 `OrzMCKit`（`OrzMC/OrzMCKit`，`main`，钉 `e302d4e`）为父仓库子模块；核实 `MojangAPI`/`PaperMC` 已入组织 | pi |

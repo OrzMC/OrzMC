@@ -40,7 +40,7 @@ git submodule status                   # 子模块指针是否符合预期
 | 项 | 内容 |
 |---|---|
 | **主题** | 产品统一化 — Phase 2（一致性套件：Python 适配器已接入） |
-| **状态** | 🟡 Phase 0/1 完成；Phase 2：fixtures **26 例** + 运行器/参考适配器 + **Python 适配器**（先 26/26 绿，PR #32 已合） |
+| **状态** | 🟡 Phase 0/1 完成；Phase 2：fixtures **26 例** + 运行器/参考适配器 + **Python 适配器**（26/26 绿，PR #32 已合）；**Q4 已决**：引入 `OrzMCKit` 子模块 |
 | **关联方案** | `docs/spec/`（规范）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` |
 | **涉及仓库** | `parent`（本轮改动全部在父仓库，未动任何子模块） |
 | **下一步** | 见第 4 章 |
@@ -64,6 +64,7 @@ git submodule status                   # 子模块指针是否符合预期
 | 子模块 | 当前指针 | 分支 | 父仓库记录 | 说明 |
 |---|---|---|---|---|
 | `plugin` | `bd908b8` | `develop` | `5eadd6e`（main） | **有意为之，不要 bump**：plugin 工作流先在 `develop` 迭代、里程碑合并 `main`；父仓库**始终钉 `main` 发布线**，故本地检出 `develop` 时 `git status` 显示 `M plugin` 属预期 |
+| `OrzMCKit` | `e302d4e` | `main` | `e302d4e` | **新增**（`08e6b76`）：Swift 引擎子模块，已对齐 |
 | 其余 14 个 | 见 `git submodule status` | `main`/`master` | 一致 | 无偏离 |
 
 > `git submodule status` 中行首 `+` = 当前检出与父仓库记录不一致；`-` = 未初始化。
@@ -117,8 +118,9 @@ git diff --submodule
 - [x] **P2｜Phase 2 起步**：`docs/spec/fixtures/`（26 样例 + 快照 + schema）+ `scripts/conformance/{run.py,reference.py}`（自检 26/26 绿）。
 - [x] **P2｜Python 适配器**：`OrzPythonMC#32` → `orzmc/tests/conformance/adapter.py`（26/26，已合并 `645aace`）。
 - [ ] **P2｜提交本批父仓库改动 + bump `python` 指针**。
+- [x] **P2｜Q4 已决**：登记 `OrzMCKit` 为父仓库子模块（`08e6b76`，钉 `e302d4e`）；核实 MojangAPI/PaperMC 已入组织。
 - [ ] **P2｜Phase 0/1 评审**：确认决策 D1–D9 与规范。
-- [ ] **P2｜Swift 适配器**：`OrzMCKit` 接入同一批 fixtures（阻断：OrzMCKit 非父仓库子模块，见 Q4）。
+- [ ] **P2｜Swift 适配器**：`OrzMCKit` 接入同一批 fixtures（**已解锁**：子模块已就位）。
 - [ ] **P2｜补样例**：`server-plan/`（`planServerDeploy`）与 `server-lifecycle/`（B7）。
 - [ ] **P2｜可选**：加轻量 CI 校验 `AGENTS.md` 子模块登记表与 `.gitmodules` 一致；父仓库跑参考适配器自检。
 - [ ] **P2｜Windows 真机验证**：需要时经 `scripts/win/run.sh` 在 `win` 上实测（产物限于 `E:\orzmc-verify\`）。
@@ -127,6 +129,24 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（Q4：登记 OrzMCKit 子模块）
+
+**做了什么**
+- 核实事实：`OrzMCKit` 是 **组织自有**（`OrzMC/OrzMCKit`，PUBLIC，`main`），
+  而非个人仓库；`OrzGeeker/OrzMCKit` 只是旧 URL（已重定向到 `OrzMC/`）。
+  同时发现 `wangzhizhou/MojangAPI`、`wangzhizhou/PaperMC` 也已转入 `OrzMC/`；仅 `OrzGeeker/OrzSwiftKit` 仍在外部。
+- **决策 Q4：登记为父仓库子模块**（符合“锁定产品组合”职责，并解锁 Q6）。
+- `git submodule add -b main https://github.com/OrzMC/OrzMCKit.git OrzMCKit` → 钉 `e302d4e`。
+- 更新 AGENTS 登记表（15→16）、架构角色地图/治理表、计划 Q4、docs 索引。
+
+**结果 / 产出文件**
+- 父仓库：`.gitmodules`、`OrzMCKit`（gitlink）、`AGENTS.md`、`docs/{product-architecture,product-unification-plan,README}.md`、本文件。
+
+**遗留 / 关注点**
+- `app` 以 SwiftPM 远程依赖消费引擎（`Package.resolved` 旧 URL @0.0.6），与父仓库子模块指针**双源**待 Phase 3 对齐。
+- `OrzMCKit` 的 SwiftPM 依赖（MojangAPI/PaperMC/OrzSwiftKit）父仓库**不锁**版本。
+- `app` 内部另有**同名本地包** “OrzMCKit”（OrzMCFoundation/Launcher/…）——命名冲突，建议改名（app 仓库工作）。
 
 ### 2026-10-13 — pi（Phase 2：Python 适配器接入）
 
