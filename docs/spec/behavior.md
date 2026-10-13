@@ -1,0 +1,153 @@
+# 行为契约（Behavior Contracts）
+
+> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-13
+> 定义实现必须一致的**行为**（而非数据形状）。每条契约都应有对应一致性样例（见 [`conformance.md`](conformance.md)）。
+> 标注：`P`=Python 现状、`S`=Swift 现状；✅ 已符合 / ⚠️ 需对齐 / ❌ 缺失。
+
+---
+
+## B1 元数据缓存与刷新
+
+| 项 | 契约 |
+|:--|:--|
+| 缓存对象 | 版本清单、version JSON、fabric-meta、Paper、Forge promotions |
+| TTL | 默认 `86400s`（24h）；`ttl<=0` 表示永不复用 |
+| 刷新 | `--refresh` 绕过**所有缓存读** |
+| 失败回退 | 拉取失败 → 回退磁盘上（可能过期的）旧副本并 warn；完全无缓存才报错 |
+| 时钟容忍 | `-_FUTURE_SKEW(300s) <= now - mtime < ttl`（容忍小幅未来时间戳） |
+
+- 现状：`P` ✅（`infra/cache.py`）；`S` ❌（无统一缓存层）→ 需补。
+- 样例：过期/未过期/刷新/离线回退/未来时间戳 5 组。
+
+## B2 下载并发
+
+| 项 | 契约 |
+|:--|:--|
+| 默认并发 | `16`（`--download-threads/-j`，范围 `1–64`） |
+| 连接池 | `max(pool_default, concurrency)`；池 < 并发会导致连接反复重建 |
+| 小文件 | 资源阶段几千个小文件，耗时 ≈ 每请求延迟 × 并发数 |
+| 大文件分块 | ≥ `8MB` 分 `4` 路 `Range` 并行取再拼接 |
+| 回退 | 服务器忽略 `Range`（返回 200）→ 直接单流写完 |
+| 清理 | 拼接后校验总字节数，`.part*`/`.tmp` 在 `finally` 清理 |
+
+- 现状：`P` ✅（`infra/transfer.py`）；`S` ⚠️（`DownloadAPI`，需对齐分块/回退）。
+- 样例：单流、4 路、Range 不支持回退、字节数不符拒绝。
+
+## B3 完整性校验
+
+| 项 | 契约 |
+|:--|:--|
+| 默认算法 | SHA-1（携带 `hashType`） |
+| 时机 | **写入前/后校验，不匹配即拒绝**，不留半成品 |
+| 覆盖 | 客户端 jar、库、asset、服务端核心、Java 运行时 |
+
+- 现状：`P` ✅（`infra/hashing.py`）；`S` ✅（`DownloadItemInfo(hash:hashType:.sha1)`）。
+- 样例：正确/错误哈希各一。
+
+## B4 路径与目录
+
+| 项 | 契约 |
+|:--|:--|
+| 路径函数 | **纯函数、无副作用**（只拼字符串，不建目录） |
+| 建目录 | 统一在 service 层 `ensure_dir` |
+| 布局 | 由 [`data-model.md`](data-model.md) §1 `RootLayout` 唯一规定 |
+
+- 现状：`P` ✅（`domain/paths.py`）；`S` ⚠️（`GameDir` 布局不同，需迁移）。
+- 样例：给定版本/类型 → 期望路径集合（见 conformance 布局样例）。
+
+## B5 Java 运行时
+
+| 项 | 契约 |
+|:--|:--|
+| 需求推导 | 读 version JSON `javaVersion.majorVersion`，**缺失默认 8**；不按 MC 版本硬编码 |
+| 获取 | 托管到 `java/<major>/`（应用目录内），**不依赖系统 Java** |
+| 启动 | 用 `java/<major>/bin/java` |
+| 运行时 | JRE 即可满足所有类型 |
+
+- 现状：`P` ✅（`domain/java.py` + `services/java.py`）；`S` ⚠️（只判断系统 Java，不托管）→ 需补。
+
+## B6 客户端启动
+
+| 项 | 契约 |
+|:--|:--|
+| 参数来源 | version JSON `arguments.jvm` / `arguments.game`，按 `rules`（OS/arch/features）过滤 |
+| 旧格式 | 无 `arguments` 时用 legacy 模板 |
+| 令牌替换 | `${natives_directory}` `${classpath}` 等按 `data-model.md` §8 |
+| 平台差异 | macOS 需 `-XstartOnFirstThread`（由 rules 决定） |
+| 类路径 | 库 + 客户端 jar + loader 附加库；分隔符按平台（`;` / `:`） |
+
+- 现状：`P` ✅（`domain/launch.py`）；`S` ⚠️（`Client+Boot` 内联，行为大体一致但需规范化）。
+- 样例：同 version JSON → 期望 `LaunchPlan`。
+
+## B7 服务端生命周期
+
+| 项 | 契约 |
+|:--|:--|
+| 关闭 | 终端 `stop` 或 Ctrl-C 优雅保存退出 |
+| 超时 | 60s 未退 → SIGTERM → SIGKILL |
+| 孤儿 | **不遗留孤儿进程** |
+| 退出码 | Ctrl-C 取消 → `130` |
+
+- 现状：`P` ✅（`ProcessRunner.run_stream`）；`S` ⚠️（`Shell.stopAll` + pid 文件）。
+- 样例：启动→stop→退出码；启动→SIGINT→130。
+
+## B8 进度事件
+
+| 项 | 契约 |
+|:--|:--|
+| 两类任务 | `count`（文件数）与 `bytes`（字节）**必须区分** |
+| 不定长 | `total=null` 时渲染不定长进度（`status`） |
+| 归属 | 进度由**调用线程**独占喂给 sink（多线程只做原子累加） |
+
+- 现状：`P` ✅（`ProgressSink.start / start_bytes`）；`S` ⚠️（`progressHandler(Double)`，需结构化）。
+
+## B9 非 TTY 行为
+
+| 项 | 契约 |
+|:--|:--|
+| 禁止阻塞 | 任何非 TTY 场景**不得等待输入** |
+| 版本缺省 | 用 Mojang 最新 release |
+| 用户名缺省 | `guest` |
+| 确认项 | 用默认值（`--yes` 明确跳过） |
+
+- 现状：`P` ✅；`S` ⚠️（交互为主，需补非 TTY 分支）。
+
+## B10 版本解析与渠道
+
+| 项 | 契约 |
+|:--|:--|
+| 渠道 | `release` / `snapshot`（非 release 一律 snapshot） |
+| 最新版 | `latest.release` |
+| 版本选择器 | TTY：键盘导航 + 搜索 + 切渠道；非 TTY：最新 release |
+
+- 现状：`P` ✅；`S` ⚠️（有选择器但行为需对齐）。
+
+## B11 错误语义
+
+| 项 | 契约 |
+|:--|:--|
+| 归一化 | 网络/文件错误在 service 层统一转为**用户可读**信息（不裸抛底层异常） |
+| 去向 | 错误写 stderr；退出码 `1` |
+| 不静默 | 任何降级（如缓存回退、类型不支持）都要有明确提示 |
+
+- 现状：`P` ✅；`S` ⚠️。
+
+---
+
+## 契约 × 实现 × 样例 对照
+
+| 契约 | Python | Swift | 一致性样例（见 conformance） |
+|:--|:--:|:--:|:--|
+| B1 缓存 | ✅ | ❌ | `cache/*` |
+| B2 并发/分块 | ✅ | ⚠️ | `download/*` |
+| B3 校验 | ✅ | ✅ | `verify/*` |
+| B4 路径 | ✅ | ⚠️ | `layout/*` |
+| B5 Java | ✅ | ⚠️ | `java/*` |
+| B6 客户端启动 | ✅ | ⚠️ | `client-plan/*` |
+| B7 服务端生命周期 | ✅ | ⚠️ | `server-lifecycle/*` |
+| B8 进度 | ✅ | ⚠️ | `progress/*` |
+| B9 非 TTY | ✅ | ⚠️ | `non-tty/*` |
+| B10 版本解析 | ✅ | ⚠️ | `version-resolve/*` |
+| B11 错误语义 | ✅ | ⚠️ | `error/*` |
+
+> 说明：`⚠️` 不等于错误，而是"行为需按契约固化并被样例覆盖"。

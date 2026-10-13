@@ -33,10 +33,10 @@ OrzMC 的工具产品（见 [`../product-architecture.md`](../product-architectu
 |:--|:--|:--|
 | [`README.md`](README.md) | 本文件：定位、原则、目录、贡献方式 | 草案 |
 | [`data-model.md`](data-model.md) | 核心数据模型 + 字段对照（Python ↔ Swift） | 草案 |
-| `behavior.md` | 行为契约（下载/校验/缓存/并行/启动） | 待建 |
-| `cli-surface.md` | CLI 命令面契约（命令/参数/输出） | 待建 |
-| `install-update.md` | 安装/自升级/跨面安装契约 | 待建 |
-| `conformance.md` | 一致性套件与黄金样例 | 待建 |
+| [`behavior.md`](behavior.md) | 行为契约 B1–B11（缓存/并发/校验/路径/Java/启动/进度/非 TTY/错误） | 草案 |
+| [`cli-surface.md`](cli-surface.md) | CLI 命令面契约（统一 Swift/Python 命令与参数） | 草案 |
+| [`install-update.md`](install-update.md) | 安装 / 自升级 / 跨面安装（GUI↔CLI、双渠道兜底、补全） | 草案 |
+| [`conformance.md`](conformance.md) | 一致性套件与黄金样例 | 草案 |
 
 ## 4. 实现映射（谁实现这份规范）
 

@@ -27,6 +27,10 @@
 | [product-unification-plan.md](product-unification-plan.md) | 草案 | 客户端/服务端工具（`python` × `app`）统一化推进计划：已核验事实、决策 D1–D8、Phase 0–5、开放问题、上下文包 | docs/ |
 | [spec/README.md](spec/README.md) | 草案 | **语言无关规范**（`orzmc-spec` 雏形）：定位、原则、实现映射、已知差异 | docs/spec/ |
 | [spec/data-model.md](spec/data-model.md) | 草案 | 核心数据模型（路径/版本/下载/Java/启动计划…）+ Python ↔ Swift 字段对照 | docs/spec/ |
+| [spec/behavior.md](spec/behavior.md) | 草案 | 行为契约 B1–B11（缓存/并发/校验/路径/Java/启动/进度/非 TTY/错误） | docs/spec/ |
+| [spec/cli-surface.md](spec/cli-surface.md) | 草案 | CLI 命令面契约：统一 Swift/Python 命令与参数、退出码、补全、迁移清单 | docs/spec/ |
+| [spec/install-update.md](spec/install-update.md) | 草案 | 安装/自升级/跨面安装：无 sudo、Shell 自动识别、补全、GUI↔CLI 双渠道兜底 | docs/spec/ |
+| [spec/conformance.md](spec/conformance.md) | 草案 | 一致性套件与黄金样例：fixture 格式、断言规则、覆盖矩阵、CI 接线 | docs/spec/ |
 
 ---
 

@@ -39,8 +39,8 @@ git submodule status                   # 子模块指针是否符合预期
 
 | 项 | 内容 |
 |---|---|
-| **主题** | 产品统一化 — Phase 1（`docs/spec/` 规范启动） |
-| **状态** | 🟡 Phase 0 完成；Phase 1 已启动（`docs/spec/README.md` + `data-model.md` 草案） |
+| **主题** | 产品统一化 — Phase 1（`docs/spec/` 规范草案完成） |
+| **状态** | 🟡 Phase 0 完成；Phase 1 规范草案完成（`data-model` / `behavior` / `cli-surface` / `install-update` / `conformance`） |
 | **关联方案** | `docs/spec/`（规范）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` |
 | **涉及仓库** | `parent`（本轮改动全部在父仓库，未动任何子模块） |
 | **下一步** | 见第 4 章 |
@@ -54,8 +54,8 @@ git submodule status                   # 子模块指针是否符合预期
 | 项 | 值 |
 |---|---|
 | 分支 | `main` |
-| 已提交并推送 | AI 协作结构（`684d2ea`/`1142091`）+ Phase 0 架构（`93fb39b`） |
-| 本轮未提交 | 新增 `docs/spec/README.md`、`docs/spec/data-model.md`；修改 `docs/product-architecture.md`（产品形态 §1.2 + OrzMCKit 重定位）、`docs/product-unification-plan.md`（D7/D8 + Q2/Q3/Q5）、`docs/README.md`、`HANDOFF.md` |
+| 已提交并推送 | AI 协作结构（`684d2ea`/`1142091`）+ Phase 0 架构（`93fb39b`）+ Phase 1 启动（`7b9165f`）+ 变更记录（`1b11a50`） |
+| 本轮未提交 | 新增 `docs/spec/{behavior,cli-surface,install-update,conformance}.md`；修改 `docs/spec/README.md`、`docs/README.md`、`docs/product-unification-plan.md`、`HANDOFF.md` |
 | 已删除（历史） | `GEMINI.md`、`.cursor/rules/`（为不需要的 agent 预留，已移除） |
 | 已知未提交 | 仅 `plugin` 子模块指针（**预期**，见 2.2） |
 
@@ -99,16 +99,35 @@ git diff --submodule
 - [x] **P1｜Phase 0**：产出 `docs/product-architecture.md`（分层、所有权、允许依赖方向、禁止事项）。
 - [x] **P1｜提交并 push Phase 0**（`93fb39b`）。
 - [x] **P1｜Q2/Q3 已决**：规范落 `docs/spec/`；`OrzMCKit` 定位 Swift 可复用基础组件。
-- [x] **P1｜Phase 1 启动**：产出 `docs/spec/README.md` + `docs/spec/data-model.md`（含字段对照）。
-- [ ] **P1｜提交本批 Phase 1 改动**（未提交，否则跨设备丢失）。
+- [x] **P1｜Phase 1 规范草案**：产出 `docs/spec/{data-model,behavior,cli-surface,install-update,conformance}.md`。
+- [ ] **P1｜提交本批 Phase 1 规范改动**（未提交，否则跨设备丢失）。
 - [ ] **P1｜Phase 0 评审**：确认决策 D1–D8 与架构文档。
-- [ ] **P1｜Phase 1 续**：补 `docs/spec/behavior.md`、`cli-surface.md`、`install-update.md`、`conformance.md`。
+- [ ] **P2｜Phase 2**：建 `docs/spec/fixtures/` 黄金样例 + Python/Swift 两个 harness。
 - [ ] **P2｜可选**：加轻量 CI 校验 `AGENTS.md` 子模块登记表与 `.gitmodules` 一致。
 - [ ] **P2｜治理**：是否把 `OrzMCKit` 登记为子模块（plan Q4）。
 
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（Phase 1：规范草案完成）
+
+**做了什么**
+- 核验两个 CLI 的真实命令面（Python `orzmc-app` 全量；Swift `OrzMCKit` 的 `client/server/plugin/fabric`），
+  以及 Python 安装器落点（`~/.local/bin`）、`install.conf` 字段、PATH/补全现状。
+- 产出四份规范：
+  - `docs/spec/cli-surface.md`：统一命令集（新增 `plugin`/`app`/`completion`）、选项命名冲突解决表、退出码、非 TTY、补全、迁移清单。
+  - `docs/spec/install-update.md`：无 sudo 用户级安装、Shell 自动识别 + 补全、`install.conf` 扩展、自升级、GUI↔CLI 跨面安装与双渠道兑底。
+  - `docs/spec/behavior.md`：行为契约 B1–B11（缓存/并发/校验/路径/Java/启动/生命周期/进度/非 TTY/版本/错误）。
+  - `docs/spec/conformance.md`：黄金样例格式、断言规则、规范操作 API、覆盖矩阵、负向用例、CI 接线。
+- 回填 `docs/spec/README.md` 目录、`docs/README.md` 索引、计划 Phase 1 状态与里程碑。
+
+**结果 / 产出文件**
+- 新增：`docs/spec/{behavior,cli-surface,install-update,conformance}.md`
+- 修改：`docs/spec/README.md`、`docs/README.md`、`docs/product-unification-plan.md`、`HANDOFF.md`
+
+**遗留 / 下一步**
+- 本批未提交（见 2.1）；下一步 Phase 2：建 `fixtures/` 与双语言 harness；治理项 plan Q4。
 
 ### 2026-10-13 — pi（Phase 1 启动：`docs/spec/` 规范雏形）
 

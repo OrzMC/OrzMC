@@ -143,20 +143,17 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 
 - **目标**：抽出跨语言共用的纯数据契约，并定义统一的 CLI/产品面契约。
 - **落点（Q2 已决）**：父仓库 `docs/spec/`，成熟稳定后再考虑下沉独立仓库 `OrzMC/orzmc-spec`。
-- **交付物**
-  - 数据模型（建议同时给 JSON Schema 与 Markdown 说明）：
-    - `VersionManifest` / `VersionEntry`（id、type、channel、releaseTime、sha1）
-    - `VersionJson` 子集（libraries + rules、assetIndex、downloads、javaVersion、mainClass）
-    - `LibraryRule`（OS / arch / features 过滤）
-    - `JavaRequirement`（majorVersion）
-    - `DownloadItem { url, dest, size, sha1, executable }`
-    - `LaunchPlan { exec, cwd, args[], env{} }`
-    - `ServerPlan { core{type,url,sha1}, eula, properties, workdir }`
-    - `RootLayout`（`versions/<v>/{client,server/<type>}`、`java/<major>`、`cache/`、`backup/`）
-  - 3~5 个端到端样例（见 Phase 2 的 fixtures，可先在 spec 内定义形状）
-- **验收**：python 的 `orzmc/domain/*` 与 Swift `Game`/`MojangAPI` 的公共字段都能**无损映射**到该模型（逐字段对照表）。
-- **依赖**：Phase 0；需先读到 `OrzMCKit` 的类型定义（见第 7 章 Q1）。
-- **产出物状态**：☐ 仓库创建 ☐ 数据模型 ☐ 字段对照表 ☐ 字段映射验证
+- **交付物**（均落在 `docs/spec/`）
+  - [`spec/data-model.md`](spec/data-model.md)：核心数据模型（`RootLayout` / `VersionManifest` / `VersionEntry` /
+    `GameType` / `JavaRequirement` / `DownloadItem` / `LibraryRule` / `ProgressEvent` / `ClientLaunchPlan` /
+    `ServerDeployPlan` / `ServerLaunchPlan` / `CachePolicy` / `InstallRecord`）+ **Python↔Swift 字段对照**。
+  - [`spec/behavior.md`](spec/behavior.md)：行为契约 B1–B11。
+  - [`spec/cli-surface.md`](spec/cli-surface.md)：CLI 命令面统一契约 + 冲突解决表 + 迁移清单。
+  - [`spec/install-update.md`](spec/install-update.md)：安装/自升级/跨面安装（无 sudo / Shell 自动识别 / 补全 / 双渠道兜底）。
+  - [`spec/conformance.md`](spec/conformance.md)：黄金样例格式与一致性套件契约。
+- **验收**：python `orzmc/domain/*` 与 Swift `Game`/`MojangAPI` 的公共字段都能**无损映射**到该模型（`data-model.md` 字段对照总表）。
+- **依赖**：Phase 0；`OrzMCKit` 类型已核验（Q1 已决）。
+- **产出物状态**：☑ `docs/spec/` 建立 ☑ 数据模型 ☑ 字段对照表 ☐ 字段映射验证（待 Phase 2 样例跑通）
 
 ### Phase 2 — 黄金样例 + 跨语言 conformance 套件
 
@@ -216,8 +213,10 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | Phase 0 | 计划文档落库 | ☑ 已完成（本文件） |
 | Phase 0 | `product-architecture.md` | ☑ 已完成 |
 | Phase 0 | 第 3 章决策评审通过 | ☐ 待评审 |
-| Phase 1 | `docs/spec/` 规范建立 | ☐ 未开始（Q1/Q2 已决，可开工） |
-| Phase 1 | 数据模型 + 字段对照表 | ☐ 未开始 |
+| Phase 1 | `docs/spec/` 规范建立 | ☑ 已完成 |
+| Phase 1 | 数据模型 + 字段对照表 | ☑ 已完成（`data-model.md`） |
+| Phase 1 | CLI/安装/行为/一致性契约 | ☑ 已完成（`cli-surface.md`/`install-update.md`/`behavior.md`/`conformance.md`） |
+| Phase 1 | 字段映射验证（样例跑通） | ☐ 待 Phase 2 |
 | Phase 2 | fixtures + 双 harness | ☐ 未开始 |
 | Phase 3 | 差异清零 + 行为契约 | ☐ 未开始 |
 | Phase 4 | 双语言最小示例 | ☐ 未开始 |
