@@ -224,7 +224,7 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | Phase 1 | 字段映射验证（样例跑通） | ☐ 待 Phase 2 |
 | Phase 2 | fixtures + 运行器/参考适配器 | ☑ 已完成（26/26 自检绿） |
 | Phase 2 | Python 适配器接入 | ☑ 已完成（26/26，PR #32） |
-| Phase 2 | Swift 适配器接入 | ☐ 待开始 |
+| Phase 2 | Swift 适配器接入 | ☑ 已完成（26/26，OrzMCKit CI） |
 | Phase 2 | CI 接线 | ☐ 未开始 |
 | Phase 3 | 差异清零 + 行为契约 | ☐ 未开始 |
 | Phase 4 | 双语言最小示例 | ☐ 未开始 |
@@ -241,7 +241,7 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | Q3 | `OrzMCKit` 如何定位？ | 治理与复用 | ✅ 已决：**Swift 可复用基础组件**（非 App 私有引擎），服务 Swift CLI 与 GUI | ✅ |
 | Q4 | app 仓库 `.gitmodules` 已空、且曾移除 OrzMCKit 子模块——是否要恢复登记以避免"引擎游离"？ | D5 具体做法 | ✅ 已决：**登记为父仓库子模块**（`OrzMCKit`，路径 `OrzMCKit/`，`main`，钉 `e302d4e`） | ✅ |
 | Q5 | spec 数据模型用 JSON Schema 还是「Markdown + JSON 样例」起步？ | Phase 1 工作量 | ✅ 已决：先 **Markdown + JSON 样例**（已落 `docs/spec/data-model.md`），稳定后再补 Schema | ✅ |
-| Q6 | conformance 是否要求 Swift 侧也进父仓库 CI（跨仓库触发）？ | Phase 2 复杂度 | 各自仓库 CI 内跑，父仓库只做状态汇总 | ☐ |
+| Q6 | conformance 是否要求 Swift 侧也进父仓库 CI（跨仓库触发）？ | Phase 2 复杂度 | ✅ 已决：**各实现仓库 CI 内跑**——OrzMCKit CI 检出父仓库 fixtures 后跑 `run.py --strict`；父仓库只做状态汇总 | ✅ |
 | Q7 | “伞内引擎版本”定为 tag（`0.0.6`）还是分支 HEAD？子模块钉 HEAD，app 的 `Package.resolved` 钉 tag，当前不一致 | Phase 2/3 对齐 | ✅ 已决：**HEAD 制（B）**——子模块与 app 都跟随 `OrzMCKit` 的 `main` HEAD（app 改用 `branch = main`），因需快速迭代 | ✅ |
 
 ---
@@ -307,3 +307,4 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-13 | Swift 基础②（`MojangAPI`）：渠道归一 + 真实清单离线解码 + `JavaRequirement`；消费 `CacheKit` 落盘缓存（D-c/D12，CI 绿） | pi |
 | 2026-10-13 | Swift 引擎③起步（`OrzMCKit`）：`GameType` 四值 + 能力矩阵 + `serverJarName`；新增规范对齐的 `GamePlan.layout` 纯计划契约（D-a，strangler-fig） | pi |
 | 2026-10-13 | Swift 引擎③续：`GamePlan.planClientLaunch`（B6 纯计划，含 `VersionPlan`/rules/令牌/classpath） | pi |
+| 2026-10-13 | Swift 适配器④：`OrzMCKit` `ConformanceAdapter` 26/26 绿；OrzMCKit CI 新增 `conformance` job（Q6） | pi |

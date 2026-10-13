@@ -136,7 +136,8 @@ git diff --submodule
 - [ ] **P3｜注意**：`MojangAPI` 平台下限现为 macOS 13 / iOS 16（D12）；OrzMCKit 需 `swift package update` 才会跟进新 revision。
 - [x] **P3｜Swift 引擎③起步**：`OrzMCKit` `GameType` 四值 + 能力矩阵 + `GamePlan.layout`（`f4aed31`，CI 绿）。
 - [x] **P3｜引擎③续**：`GamePlan.planClientLaunch`（B6 纯计划，`5c60238`，CI 绿）。
-- [ ] **P4｜一致性适配器（Swift）**：在 `OrzMCKit` 加适配器目标，用 `GamePlan` + `MojangAPI` + `CacheKit`/`TransferPolicy` 驱动父仓库 fixtures。
+- [x] **P4｜一致性适配器（Swift）**：`OrzMCKit` `ConformanceAdapter` 26/26 绿；OrzMCKit CI `conformance` job（Q6 已决，`558dc70`）。
+- [ ] **P5｜产品面迁移**：`OrzMC` CLI 与 `app` 注迁到 `GamePlan`，随后退役 `GameDir`（破坏性，级联 app）。
 - [ ] **P3｜引擎③尾**：`GamePlan` 下载计划 / 进度；CLI/app 注迁到 `GamePlan`（退役 `GameDir`）。
 - [ ] **P2｜Swift 适配器**：按 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md) §7.1 顺序推进。
 - [x] **P2/3｜Q7 已决（B/HEAD 制）**：伞内引擎版本 = `OrzMCKit` `main` HEAD；`app` 改用 `branch = main`。
@@ -148,6 +149,25 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（Swift 适配器④：ConformanceAdapter + OrzMCKit CI）
+
+**做了什么**
+- `OrzMCKit` 新增可执行目标 `ConformanceAdapter`（stdin JSON → 纯计划接缝 → stdout JSON），覆盖 10 个 operation，
+  复用 `GamePlan` / `MojangAPI` / `CacheKit` / `TransferPolicy`。
+- OrzMCKit CI 新增 `conformance` job：checkout 父仓库 fixtures + 构建适配器 + 跑 `run.py --strict`（Q6）。
+
+**结果 / 产出**
+- `OrzMC/OrzMCKit` main `558dc70`，CI 双 job 绿：`test` + `conformance`（**PASS=26 FAIL=0**）。
+- 父仓库 bump `2e6f77d`；`conformance.md`/`fixtures/README`/`design`/`plan`（Phase 2 Swift ✅、Q6 ✅）同步。
+
+**踩坑**
+- HEAD 制下 **`Package.resolved` 不会自动跟进**分支最新 revision → 需 `swift package update`
+  （本次更新到 MojangAPI `bb8dbe8` / OrzSwiftKit `cd93070`）。已记入本文件 2.5。
+- 套件又抓到一处：Swift `cacheDecision` 未使用 fixture 的 `ttl`（用了标准 TTL）——修正后全绿。
+
+**下一步**
+- ⑤ 产品面迁移（CLI/app → `GamePlan`，退役 `GameDir`）；⑥ 下载分块/进度接入。
 
 ### 2026-10-13 — pi（Swift 引擎③续：GamePlan.planClientLaunch）
 

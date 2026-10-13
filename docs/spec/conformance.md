@@ -123,13 +123,19 @@ python3 scripts/conformance/run.py --adapter "python3 scripts/conformance/refere
 | 语言 | 位置 | 状态 |
 |:--|:--|:--:|
 | Python | `python/orzmc/tests/conformance/adapter.py` | ☑ 已接入（26/26） |
-| Swift | `OrzMCKit/Sources/ConformanceAdapter`（或 Tests） | ☐ 待接入 |
+| Swift | `OrzMCKit/Sources/ConformanceAdapter` | ☑ 已接入（26/26，OrzMCKit CI 内运行） |
 
 ```bash
 # Python 适配器（在父仓库根执行）
 python3 scripts/conformance/run.py \
   --adapter "uv run --directory python python orzmc/tests/conformance/adapter.py" --strict
+
+# Swift 适配器（需能编译 OrzMCKit）
+BIN="$(swift build -c debug --package-path OrzMCKit --show-bin-path)/ConformanceAdapter"
+python3 scripts/conformance/run.py --adapter "$BIN" --strict
 ```
+
+> OrzMCKit 的 CI 已内置 `conformance` job：检出父仓库 fixtures → 构建适配器 → 跑 `run.py --strict`（Q6）。
 
 > 运行器会向适配器子进程注入 `ORZMC_CONFORMANCE_FIXTURES=<父仓库 fixtures 绝对路径>`，
 > 供子模块适配器定位快照。

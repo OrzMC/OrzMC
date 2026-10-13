@@ -120,7 +120,7 @@
    ☑ `BuildKind.channel`（非 release → snapshot）；☑ `JavaRequirement` 解析。
 3. **引擎契约**（`OrzMCKit`）：☑ `GameType` 四值 + 能力矩阵 + `serverJarName`；☑ `GamePlan.layout`（规范布局）；
    ☑ `GamePlan.planClientLaunch`（B6 纯计划）；☐ `GamePlan` 下载计划 / 进度；☐ CLI/app 迁移后退役 `GameDir`。
-4. **适配器**：`ConformanceAdapter` 薄层薄参 `GamePlan`；接入父仓库运行器。
+4. **适配器**：☑ `ConformanceAdapter`（`OrzMCKit`）接入父仓库运行器；☑ OrzMCKit CI `conformance` job（Q6）。
 5. **产品面**：`OrzMC` CLI 与 `app` 迁到 `GamePlan`（HEAD 制，同批）；退役 `GameDir`。
 6. **CI（Q6）**：父仓库/子仓库接线。
 
