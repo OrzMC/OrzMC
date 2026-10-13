@@ -21,8 +21,15 @@
     "mainClass": "net.minecraft.client.main.Main",
     "executable": "/tmp/orzmc/java/8/bin/java.exe",
     "jvmArgsContains": [
+      "-Djava.library.path=/tmp/orzmc/versions/1.16.5/client/natives"
+    ],
+    "jvmArgsNotContains": [
       "-cp"
     ],
+    "memory": {
+      "min": "512M",
+      "max": "2G"
+    },
     "gameArgsContains": [
       "--username",
       "guest",

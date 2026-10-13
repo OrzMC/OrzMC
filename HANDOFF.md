@@ -39,8 +39,8 @@ git submodule status                   # 子模块指针是否符合预期
 
 | 项 | 内容 |
 |---|---|
-| **主题** | 产品统一化 — Phase 2（一致性套件落地） |
-| **状态** | 🟡 Phase 0/1 完成；Phase 2 已启动（fixtures **26 例** + 语言无关运行器/参考适配器，自检全绿） |
+| **主题** | 产品统一化 — Phase 2（一致性套件：Python 适配器已接入） |
+| **状态** | 🟡 Phase 0/1 完成；Phase 2：fixtures **26 例** + 运行器/参考适配器 + **Python 适配器**（先 26/26 绿，PR #32 已合） |
 | **关联方案** | `docs/spec/`（规范）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` |
 | **涉及仓库** | `parent`（本轮改动全部在父仓库，未动任何子模块） |
 | **下一步** | 见第 4 章 |
@@ -54,8 +54,8 @@ git submodule status                   # 子模块指针是否符合预期
 | 项 | 值 |
 |---|---|
 | 分支 | `main` |
-| 已提交并推送 | AI 协作结构（`684d2ea`/`1142091`）+ Phase 0（`93fb39b`）+ Phase 1 启动（`7b9165f`）+ 变更记录（`1b11a50`）+ Phase 1 草案（`6640ea3`）+ 清待定（`2804af8`）+ 定稿 `--json`（`4b674e5`） |
-| 本轮未提交 | Phase 2：新增 `docs/spec/fixtures/**`（26 样例 + 4 快照 + schema + README）、`scripts/conformance/{run.py,reference.py,README.md}`；修改 `docs/spec/{conformance,README}.md`、`docs/README.md`、`docs/product-unification-plan.md`、`HANDOFF.md` |
+| 已提交并推送 | AI 协作结构（`684d2ea`/`1142091`）+ Phase 0（`93fb39b`）+ Phase 1（`7b9165f`/`6640ea3`）+ 变更记录（`1b11a50`）+ 清待定（`2804af8`）+ 定稿 `--json`（`4b674e5`）+ Phase 2 fixtures/运行器（`ee0967b`）+ win 验证环境（`d5198e9`） |
+| 本轮未提交 | Python 适配器接入：修改 `docs/spec/{conformance.md,fixtures/README.md}`、`docs/product-unification-plan.md`、`HANDOFF.md`；bump `python` 指针 |
 | 已删除（历史） | `GEMINI.md`、`.cursor/rules/`（为不需要的 agent 预留，已移除） |
 | 已知未提交 | 仅 `plugin` 子模块指针（**预期**，见 2.2） |
 
@@ -115,9 +115,10 @@ git diff --submodule
 - [x] **P1｜Phase 1 规范草案**：产出 `docs/spec/{data-model,behavior,cli-surface,install-update,conformance}.md`。
 - [x] **P1｜清「待定」+ 定稿 `--json`**（`2804af8` + `4b674e5`）。
 - [x] **P2｜Phase 2 起步**：`docs/spec/fixtures/`（26 样例 + 快照 + schema）+ `scripts/conformance/{run.py,reference.py}`（自检 26/26 绿）。
-- [ ] **P2｜提交本批 Phase 2 改动**（未提交，否则跨设备丢失）。
+- [x] **P2｜Python 适配器**：`OrzPythonMC#32` → `orzmc/tests/conformance/adapter.py`（26/26，已合并 `645aace`）。
+- [ ] **P2｜提交本批父仓库改动 + bump `python` 指针**。
 - [ ] **P2｜Phase 0/1 评审**：确认决策 D1–D9 与规范。
-- [ ] **P2｜接入真实适配器**：Python（`orzmc/tests/conformance/adapter.py`）与 Swift（`OrzMCKit`），跑通同一批 fixtures。
+- [ ] **P2｜Swift 适配器**：`OrzMCKit` 接入同一批 fixtures（阻断：OrzMCKit 非父仓库子模块，见 Q4）。
 - [ ] **P2｜补样例**：`server-plan/`（`planServerDeploy`）与 `server-lifecycle/`（B7）。
 - [ ] **P2｜可选**：加轻量 CI 校验 `AGENTS.md` 子模块登记表与 `.gitmodules` 一致；父仓库跑参考适配器自检。
 - [ ] **P2｜Windows 真机验证**：需要时经 `scripts/win/run.sh` 在 `win` 上实测（产物限于 `E:\orzmc-verify\`）。
@@ -126,6 +127,28 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（Phase 2：Python 适配器接入）
+
+**做了什么**
+- 勘察 `orzmc` 库内部 API，确定纯计划接缝，并在过程中**发现参考/规范与 Python 现行语义的三处偏差**：
+  `jvmArgs` 不含 `-cp`（classpath 单独装配）、`memory` 默认 `min=512M`、`userType=legacy`、
+  `serverJarPath` 是路径而 `serverJarName` 才是文件名——已把参考与 fixtures 对齐 Python 现行。
+- 新增 `python/orzmc/tests/conformance/adapter.py`（覆盖 10 个 operation，仅走内部 API、离线、无副作用）。
+- 运行器新增注入 `ORZMC_CONFORMANCE_FIXTURES`，供子模块适配器定位快照。
+
+**结果 / 产出文件**
+- 子模块：`OrzPythonMC#32`（squash 合并 `645aace`）—— 6 平台 CI + `quality` 全绿。
+- 父仓库：`scripts/conformance/{run.py,reference.py}`、`docs/spec/fixtures/**`、`docs/spec/conformance.md`、
+  `docs/spec/fixtures/README.md`、`docs/product-unification-plan.md`、本文件。
+- 一致性：参考适配器与 Python 适配器**各 26/26 绿**。
+
+**踩坑 / 经验**
+- PR 标题里 `(docs/spec fixtures)` 的**括号含空格**让 `pr-title` 报红（AGENTS 已知坑）；且 `pull_request` 默认不监听 `edited`，
+  改完标题需 close/reopen 才重跑。子模块改动请遵守其 AGENTS（trunk-based + PR + `pr-title`）。
+
+**遗留 / 下一步**
+- Swift 适配器（OrzMCKit 非父仓库子模块，Q4 未决）；`server-plan`/`server-lifecycle` 样例。
 
 ### 2026-10-13 — pi（远程 Windows 验证环境）
 

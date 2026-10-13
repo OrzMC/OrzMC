@@ -168,7 +168,7 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
   - 剩余：`server-plan/` / `server-lifecycle/` 样例；把两个真实适配器接入。
 - **验收**：参考适配器自检全绿（26/26）；两个真实适配器在 CI 跑 fixtures 全绿；**故意改坏一处能被红灯抓到**（负向用例）。
 - **依赖**：Phase 1。
-- **产出物状态**：☑ fixtures ☑ 期望输出 ☑ 运行器/参考适配器 ☐ Python 适配器 ☐ Swift 适配器 ☐ CI 接线
+- **产出物状态**：☑ fixtures ☑ 期望输出 ☑ 运行器/参考适配器 ☑ Python 适配器 ☐ Swift 适配器 ☐ CI 接线
 
 ### Phase 3 — 引擎对齐与收敛
 
@@ -220,7 +220,8 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | Phase 1 | CLI/安装/行为/一致性契约 | ☑ 已完成（`cli-surface.md`/`install-update.md`/`behavior.md`/`conformance.md`） |
 | Phase 1 | 字段映射验证（样例跑通） | ☐ 待 Phase 2 |
 | Phase 2 | fixtures + 运行器/参考适配器 | ☑ 已完成（26/26 自检绿） |
-| Phase 2 | Python / Swift 适配器接入 | ☐ 进行中 |
+| Phase 2 | Python 适配器接入 | ☑ 已完成（26/26，PR #32） |
+| Phase 2 | Swift 适配器接入 | ☐ 待开始 |
 | Phase 2 | CI 接线 | ☐ 未开始 |
 | Phase 3 | 差异清零 + 行为契约 | ☐ 未开始 |
 | Phase 4 | 双语言最小示例 | ☐ 未开始 |
@@ -292,3 +293,4 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-13 | 清 待定：`--root-dir/--verbose` 全局、`--json`、`--auth` 纳入、`server` 默认 vanilla、CLI 支持 AI 调用（D9）；Windows 落点 `%LOCALAPPDATA%\Programs\orzmc`、引入 `beta` 渠道、GUI 计划中；布局一次性对齐不迁移、arch 支持 x86 | pi |
 | 2026-10-13 | 定稿 `--json` 信封（`cli-surface.md` §6.1：`{ok,command,data,error}`）；`capabilities` / `orzmc mcp` 列为**计划、低优先级** | pi |
 | 2026-10-13 | Phase 2 启动：产出 `docs/spec/fixtures/`（26 样例 + 快照 + schema）与 `scripts/conformance/{run.py,reference.py}`（语言无关运行器 + 参考适配器，自检 26/26 绿） | pi |
+| 2026-10-13 | Python 适配器接入：`OrzPythonMC#32` 新增 `orzmc/tests/conformance/adapter.py`（26/26 绿，6 平台 CI 过） | pi |

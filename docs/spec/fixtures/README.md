@@ -55,8 +55,16 @@ python3 scripts/conformance/run.py --adapter "<cmd>" --filter cache
 3. 写 `given`（`operation` + 参数 + 快照）与 `expect`（子集断言）。
 4. 先跑参考适配器（应绿），再跑各语言适配器（见 Phase 2 计划）。
 
+## 接入状态
+
+| 适配器 | 状态 |
+|:--|:--:|
+| 规范参考 `scripts/conformance/reference.py` | ☑ 26/26 |
+| Python `python/orzmc/tests/conformance/adapter.py` | ☑ 26/26 |
+| Swift `OrzMCKit` | ☐ 待接入 |
+
 ## 待补（Phase 2 后续）
 
 - `server-plan/`（`planServerDeploy`）与 `server-lifecycle/`（B7）样例：待实现适配器具备纯计划入口后补。
 - 服务端 Forge/Fabric 装载、natives 解压、asset 对象批量下载的样例。
-- 把两个真实适配器接入本套件（Python / Swift）。
+- Swift 适配器接入本套件。

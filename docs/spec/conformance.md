@@ -120,10 +120,19 @@ python3 scripts/conformance/run.py --adapter "python3 scripts/conformance/refere
 
 **各语言适配器（在各自仓库，通过 `--adapter` 接入）**
 
-| 语言 | 位置 | 形态 |
-|:--|:--|:--|
-| Python | `orzmc/tests/conformance/adapter.py` | 复用 `domain/*`、`infra/cache.py` 等内部 API |
-| Swift | `OrzMCKit/Sources/ConformanceAdapter`（或 Tests） | 复用 `Game`/`MojangAPI` 的纯计划入口 |
+| 语言 | 位置 | 状态 |
+|:--|:--|:--:|
+| Python | `python/orzmc/tests/conformance/adapter.py` | ☑ 已接入（26/26） |
+| Swift | `OrzMCKit/Sources/ConformanceAdapter`（或 Tests） | ☐ 待接入 |
+
+```bash
+# Python 适配器（在父仓库根执行）
+python3 scripts/conformance/run.py \
+  --adapter "uv run --directory python python orzmc/tests/conformance/adapter.py" --strict
+```
+
+> 运行器会向适配器子进程注入 `ORZMC_CONFORMANCE_FIXTURES=<父仓库 fixtures 绝对路径>`，
+> 供子模块适配器定位快照。
 
 **共同要求**
 - **离线**：只用 `fixtures/snapshots/`，不打网络、不碰系统 Java。

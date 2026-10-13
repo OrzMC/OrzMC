@@ -33,7 +33,8 @@
     "downloadTmpDir": "/tmp/orzmc/cache/download_tmp",
     "backupDir": "/tmp/orzmc/backup",
     "serverDir": "/tmp/orzmc/versions/1.20.4/server/paper",
-    "serverJarPath": "paper-1.20.4.jar",
+    "serverJarName": "paper-1.20.4.jar",
+    "serverJarPath": "/tmp/orzmc/versions/1.20.4/server/paper/paper-1.20.4.jar",
     "serverEulaPath": "/tmp/orzmc/versions/1.20.4/server/paper/eula.txt",
     "javaMajorDir": "/tmp/orzmc/java/17",
     "javaExecutable": "/tmp/orzmc/java/17/bin/java.exe"
