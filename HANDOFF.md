@@ -140,7 +140,9 @@ git diff --submodule
 - [x] **P5｜布局切换**：`GameDir` 改为**委托 `GamePlan` 的兼容层**（`1fd5934`）——CLI/app 无需改动即得规范布局。
 - [x] **P5｜app 构建校验 CI**：`OrzMCApp` 新增 `ci.yml`（xcodebuild build，无签名 + 跳过插件/宏校验），**绿**（`e23853d`）。
 - [ ] **P5｜注全迁移**：逐步把调用点（含 app）迁到 `GamePlan`，再退役 `GameDir`。
-- [ ] **P3｜运行时**：Java 托管接入 `Game`（用 `RuntimeKit`）；下载分块/进度接入。
+- [x] **P3｜Java 托管（B5）**：`JavaRuntime` 接入服务端/客户端/CLI/GUI；移除 `which java`（`db70ad8`）。
+- [ ] **P3｜B2 剩余**：`Downloader` 实际分块（Range）接入；进度结构（B8）。
+- [ ] **P3｜B7/B9**：`server-lifecycle`（优雅退出/退出码）与非 TTY 默认值对齐（补 `server-plan`/`server-lifecycle` 样例）。
 - [ ] **P3｜引擎③尾**：`GamePlan` 下载计划 / 进度；CLI/app 注迁到 `GamePlan`（退役 `GameDir`）。
 - [ ] **P2｜Swift 适配器**：按 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md) §7.1 顺序推进。
 - [x] **P2/3｜Q7 已决（B/HEAD 制）**：伞内引擎版本 = `OrzMCKit` `main` HEAD；`app` 改用 `branch = main`。
@@ -152,6 +154,27 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（运行时：Java 托管 JRE 接入，B5）
+
+**做了什么**
+- `OrzMCKit` 新增 `JavaRuntime`：托管路径 `java/<major>/bin/java` + `ensure(...)`
+  （经 `RuntimeKit` 下载安装，并**拍平**运行时根到 `java/<major>`）。
+- 服务端（Vanilla/Paper）、客户端（`Launcher`）、CLI、GUI 启动均改用托管 JRE；移除 `GameUtils.javaPath()`（`which java`）。
+- app 同步适配（`GUIClient`/`GUIServer`：`GameType` 四值 switch、`launchServer` 传 `javaExecutable`）。
+
+**结果 / 产出**
+- `OrzMCKit` `db70ad8`（CI：`test` + `conformance` 26/26 绿）；`app` `2de27e7`（构建 CI 绿，19m）；父仓库 bump `87887dd`。
+
+**踩坑（HEAD 制暴露的真实问题）**
+- `Package.resolved` 需 `swift package update` 跟进分支；app 侧需删锁文件重解析（CI 已处理）。
+- OpenAPI 生成的 `javaVersion.majorVersion` 是 **`Double`**（非 Int64）。
+- app 重解析暴露外部缺陷：`OrzGeeker/OrzAppUpdater` 声明 macOS 11 却依赖需 12 的 Sparkle
+  → 已改为 **macOS 13** 并发 tag **0.0.3**（app 的 `upToNextMajor 0.0.2` 可解析到）。
+- `GameType` 扩展在 app 内也有穷尽 `switch`（`GUIServer`），已补 `.fabric/.forge` 分支。
+
+**下一步**
+- B2：`Downloader` 接入 `TransferPolicy`（4 路 Range）；B8 进度结构；B7/B9 样例与对齐。
 
 ### 2026-10-13 — pi（Phase 3：GameDir 兼容层切规范布局）
 
