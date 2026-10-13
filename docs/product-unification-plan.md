@@ -305,3 +305,4 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-13 | Swift 基础①：`OrzSwiftKit` 新增 `CacheKit`（统一元数据缓存，D-c；PR #2 已合，CI 绿）；放宽 OrzGeeker 保护（关 `enforce_admins`） | pi |
 | 2026-10-13 | Swift 基础①(续)：`OrzSwiftKit` 新增 `RuntimeKit`（Java 获取原语，D-b）与 `TransferPolicy`（B2 纯策略）（PR #3 已合，CI 绿） | pi |
 | 2026-10-13 | Swift 基础②（`MojangAPI`）：渠道归一 + 真实清单离线解码 + `JavaRequirement`；消费 `CacheKit` 落盘缓存（D-c/D12，CI 绿） | pi |
+| 2026-10-13 | Swift 引擎③起步（`OrzMCKit`）：`GameType` 四值 + 能力矩阵 + `serverJarName`；新增规范对齐的 `GamePlan.layout` 纯计划契约（D-a，strangler-fig） | pi |

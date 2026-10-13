@@ -134,7 +134,8 @@ git diff --submodule
 - [ ] **P3｜B2 剩余**：把 `TransferPolicy` 接入 `Downloader`（实际 4 路 Range + 池）。
 - [x] **P3｜Swift 基础②**：`MojangAPI` — 渠道归一 + 真实清单离线解码 + `JavaRequirement` + 消费 `CacheKit`（`bb8dbe8`，CI 绿）。
 - [ ] **P3｜注意**：`MojangAPI` 平台下限现为 macOS 13 / iOS 16（D12）；OrzMCKit 需 `swift package update` 才会跟进新 revision。
-- [ ] **P3｜Swift 基础③**：`OrzMCKit` `GameType` 四值 + `GamePlan`。
+- [x] **P3｜Swift 引擎③起步**：`OrzMCKit` `GameType` 四值 + 能力矩阵 + `GamePlan.layout`（`f4aed31`，CI 绿）。
+- [ ] **P3｜引擎③续**：`GamePlan` 的下载计划 / 启动计划 / 进度；再把 CLI/app 注迁到 `GamePlan`（退役 `GameDir`）。
 - [ ] **P2｜Swift 适配器**：按 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md) §7.1 顺序推进。
 - [x] **P2/3｜Q7 已决（B/HEAD 制）**：伞内引擎版本 = `OrzMCKit` `main` HEAD；`app` 改用 `branch = main`。
 - [ ] **P2｜补样例**：`server-plan/`（`planServerDeploy`）与 `server-lifecycle/`（B7）。
@@ -145,6 +146,24 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（Swift 引擎③起步：GameType + GamePlan.layout）
+
+**做了什么**
+- `GameType` 扩到 `vanilla/fabric/forge/paper`，新增 `isClientCapable` / `isServerCapable` / `serverJarName`（对齐 spec §3）。
+- 新增 [`GamePlan.layout`](OrzMCKit/Sources/Game/Plan/GamePlan.swift)：**规范对齐的纯计划契约**（D-a strangler-fig），
+  对齐 `docs/spec/data-model.md` §1（`versions/<v>/{client,server/<type>}`、`java/<major>`、`cache/`、`backup/`，逻辑路径 `/`）。
+- 单测：能力矩阵 / `serverJarName` / 规范布局。
+
+**结果 / 产出**
+- `OrzMC/OrzMCKit` main `f4aed31`，CI 绿；父仓库 bump `44b92bd`。
+
+**踩坑**
+- `ServerCommand.swift` 有对 `GameType` 的**穷尽 switch**（之前 grep 未显露）；
+  CI 报 `switch must be exhaustive` 后，给 `.fabric/.forge` 加显式“暂未支持”提示（不静默，对齐 B4/类型能力）。
+
+**下一步**
+- `GamePlan`：`planClientLaunch`（把 `Client+Boot` 纯化）/ 下载计划 / 进度；随后 ④ 适配器。
 
 ### 2026-10-13 — pi（Swift 基础②：MojangAPI 渠道/离线/缓存）
 
