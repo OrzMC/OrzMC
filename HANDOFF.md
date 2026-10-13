@@ -39,9 +39,9 @@ git submodule status                   # 子模块指针是否符合预期
 
 | 项 | 内容 |
 |---|---|
-| **主题** | 父仓库 AI 协作结构改造（已完成）+ 产品统一化计划启动 |
-| **状态** | 🟡 协作结构已完成、待提交；产品统一化处于 Phase 0 |
-| **关联方案** | `docs/product-unification-plan.md`（Phase 0 文档落地，Phase 1 阻塞于 Q1/Q2/Q3） |
+| **主题** | 产品统一化 — Phase 0（架构与边界冻结） |
+| **状态** | 🟢 Phase 0 完成（`docs/product-architecture.md` 已产出，待评审）；Phase 1 待清 Q2/Q3 |
+| **关联方案** | `docs/product-architecture.md`（分层/依赖/治理）+ `docs/product-unification-plan.md` |
 | **涉及仓库** | `parent`（本轮改动全部在父仓库，未动任何子模块） |
 | **下一步** | 见第 4 章 |
 
@@ -55,8 +55,8 @@ git submodule status                   # 子模块指针是否符合预期
 |---|---|
 | 分支 | `main` |
 | AI 协作结构 | ✅ 已提交（起始提交 `684d2ea`）并 push `origin/main` |
-| 新增文件 | `AGENTS.md`、`CLAUDE.md`、`CONTRIBUTING.md`、`HANDOFF.md`、`.github/PULL_REQUEST_TEMPLATE.md`、`docs/README.md`、`docs/product-unification-plan.md` |
-| 修改 | `README.md`（目录树 + 协作入口章节） |
+| 已提交文件 | `AGENTS.md`、`CLAUDE.md`、`CONTRIBUTING.md`、`HANDOFF.md`、`.github/PULL_REQUEST_TEMPLATE.md`、`docs/README.md`、`docs/product-unification-plan.md`、`README.md` |
+| 本轮未提交 | 新增 `docs/product-architecture.md`（Phase 0）；修改 `docs/README.md`、`docs/product-unification-plan.md`（回填核验事实 / Q1 / Phase 0 状态）、`HANDOFF.md` |
 | 已删除 | `GEMINI.md`、`.cursor/rules/`（为不需要的 agent 预留，已移除） |
 | 已知未提交 | 仅 `plugin` 子模块指针（**预期**，见 2.2） |
 
@@ -86,7 +86,7 @@ git diff --submodule
 
 | # | 问题 | 状态 | 建议默认 |
 |---|---|---|---|
-| Q1 | `OrzMCKit`（Swift 引擎）仓库能否拉取核对类型？ | ☐ 未决 | 需拉取（阻塞 plan Phase 1） |
+| Q1 | `OrzMCKit`（Swift 引擎）仓库能否拉取核对类型？ | ✅ 已决 | 可访问（`main`），已浅克隆核验：`Game`/`Fabric` + `orzmc` CLI；引擎依赖 `MojangAPI`/`PaperMC`/`OrzSwiftKit` 在个人仓库 |
 | Q2 | `orzmc-spec` 落点：独立仓库 + `spec/` 子模块，还是父仓库 `docs/spec/`？ | ☐ 未决 | 独立仓库 |
 | Q3 | 是否把 `OrzMCKit` 登记为父仓库子模块？ | ☐ 未决 | 登记 |
 | Q4 | `plugin` 子模块指针漂移如何处理？ | ✅ 已决 | **不 bump**：`develop` 是迭代线、`main` 是发布线，父仓库钉 `main`；`M plugin` 属预期 |
@@ -95,16 +95,36 @@ git diff --submodule
 
 ## 4. 下一步（Next Actions，按优先级）
 
-- [ ] **P0｜提交本批父仓库改动**（AGENTS/CLAUDE/CONTRIBUTING/HANDOFF/docs/README），否则跨设备丢失。
+- [x] **P0｜提交并 push 父仓库 AI 协作结构**（`684d2ea` + `1142091`）。
 - [x] **P0｜决定 `plugin` 指针漂移处理**：结论=**不 bump**（父仓库钉 `main` 发布线，本地检出 `develop` 属迭代常态）。
-- [ ] **P1｜Phase 0**：写 `docs/product-architecture.md`（分层、所有权、允许依赖方向、禁止事项）。
-- [ ] **P1｜清 Q1–Q3**，解阻塞 Phase 1 的 `orzmc-spec`。
+- [x] **P1｜Phase 0**：产出 `docs/product-architecture.md`（分层、所有权、允许依赖方向、禁止事项）。
+- [ ] **P1｜提交本批 Phase 0 改动**（未提交，否则跨设备丢失）。
+- [ ] **P1｜清 Q2、Q3**，解阻塞 Phase 1 的 `orzmc-spec`。
+- [ ] **P1｜Phase 0 评审**：确认第 3 章决策 D1–D6 与架构文档。
 - [ ] **P2｜可选**：加轻量 CI 校验 `AGENTS.md` 子模块登记表与 `.gitmodules` 一致。
 - [ ] **P2｜Phase 1**：`orzmc-spec` 数据模型 + 字段对照表。
 
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（Phase 0：产品架构与边界冻结）
+
+**做了什么**
+- 探得 Q1：`OrzMC/OrzMCKit` 可访问，已浅克隆核验，发现三项关键事实：
+  1. `OrzMCKit` 自带同名 `orzmc` CLI（swift-argument-parser），与 Python CLI 功能重叠；
+  2. Swift 引擎是依赖链：`OrzMCKit` → `MojangAPI` / `PaperMC` / `OrzSwiftKit`，**后三者是个人仓库**；
+  3. 根目录布局两边不一致（Swift `manifest/<v>/...` vs Python `versions/<v>/...`），类型支持也不同。
+- 产出 Phase 0 交付物 `docs/product-architecture.md`：
+  仓库角色地图、L0–L3 分层、引擎六阶段映射、**允许依赖方向矩阵**、禁止事项、治理与已知差异。
+- 回填 `docs/product-unification-plan.md`（第 2 章核验事实 / Q1 / Phase 0 状态）与 `docs/README.md` 索引。
+
+**结果 / 产出文件**
+- 新增：`docs/product-architecture.md`
+- 修改：`docs/README.md`、`docs/product-unification-plan.md`、`HANDOFF.md`
+
+**遗留 / 下一步**
+- 本批未提交（见 2.1）；下一步清 Q2/Q3 → 开 Phase 1 `orzmc-spec`。
 
 ### 2026-10-13 — pi（提交、push 与 plugin 漂移决策）
 

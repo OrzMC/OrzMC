@@ -23,9 +23,8 @@
 
 | 文档 | 状态 | 内容 | 位置 |
 |:--|:--|:--|:--|
+| [product-architecture.md](product-architecture.md) | 现行 | **产品架构**：仓库角色地图、分层模型（L0 规范 / L1 引擎 / L2 前端 / L3 产品伞）、引擎六阶段、**允许依赖方向与禁止事项**、治理与已知差异 | docs/ |
 | [product-unification-plan.md](product-unification-plan.md) | 草案 | 客户端/服务端工具（`python` × `app`）统一化推进计划：已核验事实、决策 D1–D6、Phase 0–5、开放问题、上下文包 | docs/ |
-
-> Phase 0 交付物 `docs/product-architecture.md`（分层与所有权）尚未创建，落地后加入本表。
 
 ---
 

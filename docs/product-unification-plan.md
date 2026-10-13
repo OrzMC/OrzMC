@@ -27,9 +27,9 @@
 
 ### 1.2 核验后的结论（详见第 2 章）
 
-- 两者**不在同一层**：app 是 GUI 前端且**引擎在外部包 `OrzMC/OrzMCKit`**；
-  python 是「引擎 + CLI + 安装器 + 自升级」全栈。
-- 真正的重复在**引擎层**（Python `orzmc.core` ↔ Swift `OrzMCKit`），不在「python vs app」。
+- 两者**不在同一层**：app 是 GUI 前端，引擎在**外部 Swift 依赖链**（`OrzMCKit` →
+  `MojangAPI` / `PaperMC` / `OrzSwiftKit`）；python 是「引擎 + CLI + 安装器 + 自升级」全栈。
+- 真正的重复在**引擎层**（Python `orzmc.core` ↔ Swift `OrzMCKit` 链），不在「python vs app」。
 - 因此**不合并仓库**；改为「一份规范 + 多套实现 + 多个前端 + 一个产品伞」。
 
 ### 1.3 目标（可验收）
@@ -55,7 +55,7 @@
 | 维度 | `python/` (OrzPythonMC) | `app/` (OrzMCApp) |
 |---|---|---|
 | 角色 | 引擎 + CLI + 安装器 + 自升级，全栈自持 | GUI 外壳；引擎**不在本仓库** |
-| 引擎位置 | 仓内 `orzmc/orzmc/core/`（`mojang.py` / `fabric.py` / `forge.py` / `client/*` / `server/*`） | 外部 SwiftPM 包 `https://github.com/OrzMC/OrzMCKit.git`，提供 `Game` / `MojangAPI` / `DownloadAPI`；仓内仅 `GUIClient: Game.Client`、`GUIServer: Game.Server` 适配器 |
+| 引擎位置 | 仓内 `orzmc/orzmc/core/`（`mojang.py` / `fabric.py` / `forge.py` / `client/*` / `server/*`） | 外部 **Swift 依赖链**：`OrzMC/OrzMCKit`（`Game` / `Fabric`，**并自带 `orzmc` 可执行 CLI**）→ `wangzhizhou/MojangAPI`、`wangzhizhou/PaperMC`（`DownloadAPI`/`HangarAPI`）、`OrzGeeker/OrzSwiftKit`（`JokerKits`/`Utils`）；app 仓内仅 `GUIClient: Game.Client`、`GUIServer: Game.Server` 适配器 |
 | 关键引擎符号归属 | `orzmc/services/{client,server,versions,downloader,java}.py` | `Game.ClientInfo` / `Game.ServerInfo` / `GameDir` / `generateDownloadItemInfos()` / `parseBootArgs()` 来自 `Game` 包（仓内 grep 无定义） |
 | 本仓组件 | 库 `orzmc`（PyPI）+ 应用 `orzmc-app`（typer CLI） | 本地 SwiftPM 模块：`OrzMCFoundation` / `OrzMCLauncher` / `OrzMCProtocol` / `OrzMCRemoteHosting` / `OrzMCDesignSystem`（`Package.swift`），另有 iOS SLP/RCON/Query、Exaroton 云集成、`OrzAppUpdater` |
 | 代码量 | ~5.6k LOC Python（`orzmc` + `orzmc_app`） | ~5.7k LOC Swift，且大半是 SwiftUI |
@@ -63,6 +63,11 @@
 | 发布 | PyPI 双包（OIDC + PEP740 provenance）+ 6 平台 PyInstaller 二进制 + `install.sh/ps1`；release-please | Developer ID 签名 + notarize + appcast；CI 固定 `macos-26` + Xcode 26.3 |
 | 架构成熟度 | 分层严格（domain/infra/core/services），AGENTS.md 为单一事实来源，测试/验收/CI 完整 | 引擎已抽出，前端已做本地 SwiftPM 模块化，但引擎仍在编外仓库 |
 | 父仓库关系 | git 子模块，branch=main | git 子模块，无 branch 声明 |
+
+**引擎链与治理发现（2026-10-13 浅克隆 `OrzMCKit` 核验）**：
+- `OrzMCKit` 产出 `Game` / `Fabric` 两个库 **外加一个 `orzmc` CLI 可执行**（swift-argument-parser，命令 `client`/`server`/`fabric`/`plugin`）——与 Python `orzmc` CLI **功能重叠**，是第三个前端面。
+- 引擎并非单仓：`Game` 依赖 `MojangAPI`（元数据）、`PaperMC`（`DownloadAPI`/`HangarAPI`）、`OrzSwiftKit`（`JokerKits`/`Utils`），**后三者位于个人仓库**（`wangzhizhou/*`、`OrzGeeker/*`），不在 `OrzMC` 组织下。
+- **根目录布局两边不一致**：Swift `~/minecraft/manifest/<v>/client/<type>/...` vs Python `~/minecraft/versions/<v>/client/...`；类型支持也不同（Swift 服务器仅 vanilla/paper）。详见 [`product-architecture.md`](product-architecture.md) 第 8 章。
 
 **引擎重复点（G1/G2 的靶心）**：Mojang 版本清单、version JSON、libraries/assets 下载计划、
 natives OS-arch 规则、Java 版本推导、Fabric/Forge/Paper provider、启动参数拼装——两边各写了一套。
@@ -129,7 +134,7 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
   - 在父仓库 README 增补一行指向上述文档（可选，待确认）
 - **验收**：评审通过第 3 章决策；`product-architecture.md` 中列出每层的"允许依赖方向"与"禁止事项"。
 - **依赖**：无。
-- **产出物状态**：☐ 计划文档 ☐ 架构文档 ☐ README 链接
+- **产出物状态**：☑ 计划文档 ☑ 架构文档（`docs/product-architecture.md`）☑ README 链接
 
 ### Phase 1 — `orzmc-spec` v0.1：数据模型与中间表示
 
@@ -206,7 +211,7 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 阶段 | 关键里程碑 | 状态 |
 |---|---|---|
 | Phase 0 | 计划文档落库 | ☑ 已完成（本文件） |
-| Phase 0 | `product-architecture.md` | ☐ 未开始 |
+| Phase 0 | `product-architecture.md` | ☑ 已完成 |
 | Phase 0 | 第 3 章决策评审通过 | ☐ 待评审 |
 | Phase 1 | `orzmc-spec` 仓库建立 | ☐ 未开始（阻塞于 Q1/Q2） |
 | Phase 1 | 数据模型 + 字段对照表 | ☐ 未开始 |
@@ -221,7 +226,7 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 
 | # | 问题 | 影响 | 建议默认 | 状态 |
 |---|---|---|---|---|
-| Q1 | `OrzMCKit` 仓库是否可读/可改？（决定 Phase 1 能否核对 Swift 类型） | 阻塞 Phase 1 | 需拉取到本地核对 | ☐ |
+| Q1 | `OrzMCKit` 仓库是否可读/可改？（决定 Phase 1 能否核对 Swift 类型） | 解阻塞 Phase 1 | ✅ 已确认：可访问（`main`），已浅克隆核验；注意其引擎依赖 `MojangAPI`/`PaperMC`/`OrzSwiftKit` 在个人仓库 | ✅ |
 | Q2 | `orzmc-spec` 落点：独立仓库 + 父仓库 `spec/` 子模块，还是父仓库内 `docs/spec/`？ | 决定 Phase 1 落点 | 独立仓库，长期更干净 | ☐ |
 | Q3 | 是否把 `OrzMCKit` 纳入父仓库子模块（D5）？ | 治理与上下文 | 纳入 | ☐ |
 | Q4 | app 仓库 `.gitmodules` 已空、且曾移除 OrzMCKit 子模块——是否要恢复登记以避免"引擎游离"？ | D5 具体做法 | 与 Q3 合并决策 | ☐ |
