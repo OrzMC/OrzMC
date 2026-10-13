@@ -121,6 +121,7 @@ git diff --submodule
 - [x] **P2｜Q4 已决**：登记 `OrzMCKit` 为父仓库子模块（`08e6b76`，钉 `e302d4e`）；核实 MojangAPI/PaperMC 已入组织。
 - [ ] **P2｜Phase 0/1 评审**：确认决策 D1–D9 与规范。
 - [ ] **P2｜Swift 适配器**：`OrzMCKit` 接入同一批 fixtures（**已解锁**：子模块已就位）。
+- [ ] **P2/3｜Q7 引擎版本对齐**：定“伞内引擎版本”= tag 还是 HEAD，并让 `app` 的 `Package.resolved` 与子模块一致。
 - [ ] **P2｜补样例**：`server-plan/`（`planServerDeploy`）与 `server-lifecycle/`（B7）。
 - [ ] **P2｜可选**：加轻量 CI 校验 `AGENTS.md` 子模块登记表与 `.gitmodules` 一致；父仓库跑参考适配器自检。
 - [ ] **P2｜Windows 真机验证**：需要时经 `scripts/win/run.sh` 在 `win` 上实测（产物限于 `E:\orzmc-verify\`）。
@@ -129,6 +130,28 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（依赖 URL 规范化 + 本地覆盖策略）
+
+**做了什么**
+- 重定向核查：`wangzhizhou/MojangAPI|PaperMC|ExarotonAPI` 与 `OrzGeeker/OrzMCKit|OrzMCApp` 均已转 `OrzMC/`；
+  仅 `OrzGeeker/OrzSwiftKit`、`OrzGeeker/OrzAppUpdater` 仍外部。
+- 把 `OrzMCKit`/`app` 内所有依赖与引用 URL（含 `Info.plist` 的 `SUFeedURL`、README 徽章、`release-macos.sh`）
+  迁到规范 `OrzMC/*` 路径；保留 `Package.resolved` 的 Xcode 原生格式（避免反复 diff）。
+- 明确**本地覆盖远端**：父仓库已检出 `OrzMCKit` 子模块，开发态可用本地包覆盖；但 `app` CI 独立检出，
+  **不提交**本地路径依赖（D10 / 架构 §7.1）。
+
+**结果 / 产出**
+- 子模块：OrzMCKit `1244125`、app `49e4176`；父仓库 bump `4ee8a1e` / `518b52a`。
+- docs：product-architecture §7.1、plan D10 / Q7 / 变更记录、本文件。
+
+**踩坑**
+- `app` main **受保护**，force-push 被拒；且 `gh api .../protection` 返回空（规则集不同）—— 只能追加提交。
+- Python json 重排会改写 `Package.resolved` 的 `"k" : v` 风格，造成 231 行噪声；改用**纯文本替换**。
+
+**遗留**
+- Q7：伞内引擎版本（tag vs HEAD）未定；app 仍钉 `0.0.6` tag，子模块在 HEAD。
+- 本地覆盖仅开发态使用，未提交。
 
 ### 2026-10-13 — pi（Q4：登记 OrzMCKit 子模块）
 

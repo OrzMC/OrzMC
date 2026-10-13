@@ -210,6 +210,28 @@ L3 产品伞 ──▶ 只做锁定与文档，不改任何实现代码
    （经 SwiftPM 依赖，**父仓库不锁**其版本）。
 3. 明确各前端 CLI 的分工（Python `orzmc` vs Swift `orzmc`），避免用户认知混乱。
 
+### 7.1 依赖引用规范（Swift / SwiftPM）
+
+- **规范路径**：OrzMC 自有仓库一律用**当前路径**引用，禁用会重定向的旧路径（重定向会反复引发误读，
+  且 `raw.githubusercontent.com` 不保证跟随仓库改名）：
+
+  | 规范路径 | 旧路径（已重定向） |
+  |:--|:--|
+  | `OrzMC/MojangAPI` | `wangzhizhou/MojangAPI` |
+  | `OrzMC/PaperMC` | `wangzhizhou/PaperMC` |
+  | `OrzMC/ExarotonAPI` | `wangzhizhou/ExarotonAPI` |
+  | `OrzMC/OrzMCKit` | `OrzGeeker/OrzMCKit` |
+  | `OrzMC/OrzMCApp` | `OrzGeeker/OrzMCApp`（含 `SUFeedURL`） |
+
+  外部仓库（`OrzGeeker/OrzSwiftKit`、`OrzGeeker/OrzAppUpdater`）保持原路径；若日后转组织，同步更新。
+- **本地覆盖远端（开发态）**：父仓库已把 `OrzMCKit` 以子模块检出到 `./OrzMCKit`。SwiftPM/Xcode 可用
+  **本地包**覆盖同名远端依赖：Xcode 以 *Add Local Package* 指向 `OrzMCKit/`（或 `.package(path: "../OrzMCKit")`），
+  从而用伞内本地引擎源开发。
+- ⚠️ **本地覆盖不提交**：`app` 的发布/文档 CI（`release-app.yml` / `publish-docs.yml`）只检出 app 仓库本身，
+  提交 `../OrzMCKit` 本地路径依赖会**打断独立构建**。开发时覆盖、验证后还原；正式版仍以规范路径的 SwiftPM 版本为准。
+- **版本对齐（待办）**：`app` 的 `Package.resolved` 钉引擎 tag `0.0.6`，而父仓库子模块钉 `main` HEAD（`0.0.6-4`），
+  两者不一致 —— 需明确定义“伞内引擎版本”是 tag 还是分支 HEAD（见计划）。
+
 ---
 
 ## 8. 已知差异（spec 必须统一或显式声明的点）
