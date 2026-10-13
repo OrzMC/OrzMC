@@ -49,3 +49,7 @@
 	path = proxy
 	url = https://github.com/OrzMC/OrzMCProxy.git
 	branch = main
+[submodule "OrzMCKit"]
+	path = OrzMCKit
+	url = https://github.com/OrzMC/OrzMCKit.git
+	branch = main
