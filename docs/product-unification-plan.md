@@ -90,6 +90,7 @@ natives OS-arch 规则、Java 版本推导、Fabric/Forge/Paper provider、启�
 | D6 | 父仓库（OrzMC）承担**产品伞**：品牌 / 文档索引 / 版本列车 | 父仓库本就是统一入口，无需代码合并 |
 | D7 | 产品形态：**一个 `orzmc`**，CLI + GUI 两面，**共用核心逻辑**、可**互相安装/打开**；允许差异化功能、核心统一 | 用户期望的是一个可自洽的产品，而非两个同名工具 |
 | D8 | `OrzMCKit` 定位为 **Swift 语言下可复用的基础组件**（非 App 私有引擎）：既服务 Swift CLI，也服务 GUI | 使其可被其它 Swift 项目复用，改善治理 |
+| D9 | CLI 需**可被 AI 调用**：全局 `--json` + 能力发现（`capabilities`）+ 非交互确定性；**评估 MCP**，不追 “open-cli” 空名 | AI 协作者需要可解析、可发现的接口 |
 
 > 决策若被推翻，必须在本章追加「~~D#~~ 已推翻，原因…」并说明替代方案，不得直接删除。
 
@@ -284,3 +285,5 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-13 | Phase 0：产出 [`product-architecture.md`](product-architecture.md)（分层/依赖/治理） | pi |
 | 2026-10-13 | 决策 Q1（OrzMCKit 可访问）+ 新增 D7（一个 `orzmc`、CLI+GUI 两面、共核、互相安装/打开）/ D8（OrzMCKit 定位） | pi |
 | 2026-10-13 | 决策 Q2（规范落 `docs/spec/`）/ Q3（OrzMCKit=Swift 可复用基础组件）/ Q5（Markdown+JSON 起步）；Phase 1 启动，产出 `docs/spec/` | pi |
+| 2026-10-13 | Phase 1 规范草案完成（`data-model`/`behavior`/`cli-surface`/`install-update`/`conformance`） | pi |
+| 2026-10-13 | 清 待定：`--root-dir/--verbose` 全局、`--json`、`--auth` 纳入、`server` 默认 vanilla、CLI 支持 AI 调用（D9）；Windows 落点 `%LOCALAPPDATA%\Programs\orzmc`、引入 `beta` 渠道、GUI 计划中；布局一次性对齐不迁移、arch 支持 x86 | pi |

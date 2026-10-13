@@ -48,9 +48,10 @@
 
 | 选项 | 说明 | 状态 |
 |:--|:--|:--|
-| `--verbose` | 输出调试日志 | Python ✅ / Swift 现为 `--debug`，需改名（`-d` 可保留别名） |
-| `--root-dir <path>` | 游戏根目录（默认 `~/minecraft`） | Python 现为**每命令**选项，规范建议**提升为全局**（子命令仍接受）；【待定】 |
-| `--version` | 打印工具版本 | 需新增（全局） |
+| `--verbose` | 输出调试日志 | **全局（已决）**；Swift 现 `--debug` 改名，`-d` 保留别名 |
+| `--root-dir <path>` | 游戏根目录（默认 `~/minecraft`） | **全局（已决）**；子命令仍接受 |
+| `--json` | 机器可读输出（见 §6 / §8） | **全局（已决）**；非 TTY/脚本/AI 场景使用 |
+| `--version` | 打印工具版本 | **全局（已决）**；与子命令 `-v`（游戏版本）靠位置区分 |
 | `-h` / `--help` | 帮助 | 两者需补齐 |
 
 ---
@@ -76,7 +77,7 @@ orzmc client [-v VER] [-u USER] [-t TYPE] [-m MIN] [-x MAX]
 | `--extract-music` | | flag | false | 提取音乐后退出 |
 | `--refresh` | | flag | false | 忽略元数据缓存 |
 | `--download-threads` | `-j` | int | 16（1–64） | 下载并发 |
-| `--auth` | | flag | false | 正版授权（**Swift 现有能力，规范纳入**；Python 待补）【待定】 |
+| `--auth` | | flag | false | 正版授权；**规范纳入（已决）**（Swift 已有，Python 待补） |
 
 > **命名收敛**：Python 现为 `--minmem/--maxmem`，Swift 现为 `--ms/-s`、`--mx/-x`。
 > 规范统一为 `--min-mem/-m`、`--max-mem/-x`；旧名保留为**弃用别名**。
@@ -92,7 +93,7 @@ orzmc server [-v VER] [-t TYPE] [-m MIN] [-x MAX] [--nogui] [--yes]
 
 | 选项 | 短 | 默认 | 说明 | 备注 |
 |:--|:--|:--|:--|:--|
-| `--type` | `-t` | `vanilla` | `vanilla\|paper\|fabric\|forge` | Swift 现默认 `paper`，规范默认 `vanilla`【待定】 |
+| `--type` | `-t` | `vanilla` | `vanilla\|paper\|fabric\|forge` | **默认 `vanilla`（已决）**；Swift 现默认 `paper`，需改 |
 | `--nogui` | | false | 无窗口模式 | Swift 现为 `--gui`（反向），需改名 |
 | `--yes` | | false | 跳过确认（自动接受 EULA） | Python ✅ |
 | `--force-upgrade` | | false | `--forceUpgrade` | Swift 现为 `--force_upgrade` |
@@ -151,8 +152,9 @@ orzmc plugin [--search TEXT] [--list] [--output DIR] [--version VER] [--count N]
 | `130` | 用户取消（Ctrl-C / 拒绝确认） |
 
 - 人类可读输出到 **stdout**；错误到 **stderr**。
-- **机器可读输出**（脚本/集成）：【待定】提供 `--json`，输出与 `data-model.md` 对齐的 JSON；
-  非 TTY 时默认仍为人类可读（避免破坏现状）。
+- **机器可读输出**：全局 `--json`（**已决**）→ 结构化 JSON，字段与 `data-model.md` 对齐；
+  非 TTY 时**默认仍为人类可读**（不破坏现状），显式 `--json` 才切换。
+  - JSON 信封（【待定细节】）：`{"ok": bool, "command": str, "data": {...}, "error": {"code": str, "message": str}?}`
 
 ---
 
@@ -170,7 +172,29 @@ orzmc plugin [--search TEXT] [--list] [--output DIR] [--version VER] [--count N]
 
 ---
 
-## 8. Shell 自动补全（用户要求）
+## 8. AI 调用与机器可读接口
+
+CLI 需支持**被 AI 智能体调用**：确定性、非交互、可发现、可解析。
+
+| 能力 | 规范 |
+|:--|:--|
+| 非交互 | 非 TTY 不阻塞（§7）；AI 调用一律走此路径 |
+| 结构化输出 | 全局 `--json`，字段与 [`data-model.md`](data-model.md) 对齐 |
+| 能力发现 | `orzmc capabilities --json`：机器可读的命令 / 选项 / 退出码清单（**建议**） |
+| 幂等/可重入 | 下载 / 安装类操作可安全重试，不产生半成品 |
+| 退出码 | 稳定且语义化（§6），AI 据此判断成败 |
+
+**关于 “open-cli”**：经核查，`open-cli` / `OpenCLI` **并非一个统一的“AI 可调用 CLI”标准**
+（现存同名项目多为“把网站变 CLI”或聊天客户端）。**建议不追逐该名词**，而采用业界事实标准组合：
+
+1. 上述机器可读接口（`--json` + `capabilities`）；
+2. **MCP（Model Context Protocol）**：提供 `orzmc mcp` 本地 MCP server，把核心操作暴露为工具
+   ——这是当前 AI 工具集成的事实标准；
+3. （可选）随 CLI 发布 agent skill / 使用说明文件，便于 AI 发现用法。
+
+> 【待定】是否实现 `orzmc mcp`，以及 `capabilities` 的 JSON schema。
+
+## 9. Shell 自动补全（用户要求）
 
 | 能力 | 规范 |
 |:--|:--|
@@ -181,10 +205,11 @@ orzmc plugin [--search TEXT] [--list] [--output DIR] [--version VER] [--count N]
 
 - Python（typer）可生成补全；**当前 `add_completion=False` 需开启**。
 - Swift（ConsoleKit）当前无补全，需补生成器或提供静态脚本。
+- 全局选项（`--root-dir/--verbose/--json`）需在所有子命令中可用（可能需在解析层提升）。
 
 ---
 
-## 9. 迁移清单（实现需做的改动）
+## 10. 迁移清单（实现需做的改动）
 
 **Swift CLI**
 1. 无子命令 → 打印帮助（去掉默认 `client`）。
@@ -194,9 +219,10 @@ orzmc plugin [--search TEXT] [--list] [--output DIR] [--version VER] [--count N]
 4. 保留 `fabric` 为隐藏别名。
 
 **Python CLI**
-1. 新增 `plugin` / `app` / `completion`。
-2. 新增全局 `--version`；`--verbose`/`--root-dir` 提升为全局（【待定】）。
-3. 选项别名：`--minmem/--maxmem` 保留为 `--min-mem/--max-mem` 的别名。
-4. 开启补全（`add_completion=True`）。
+1. 新增 `plugin` / `app` / `completion` / `capabilities`。
+2. 全局 `--version` / `--verbose` / `--root-dir`（**已决**）。
+3. 新增全局 `--json` 与 `--auth`（正版授权）。
+4. 选项别名：`--minmem/--maxmem` 保留为 `--min-mem/--max-mem` 的别名。
+5. 开启补全（`add_completion=True`）。
 
 > 收尾状态与勾选见 [`product-unification-plan.md`](../product-unification-plan.md) Phase 3/4。

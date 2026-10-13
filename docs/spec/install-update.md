@@ -20,7 +20,7 @@
 
 | 用途 | Unix（macOS/Linux） | Windows |
 |:--|:--|:--|
-| 二进制目录 | `${XDG_BIN_HOME:-$HOME/.local/bin}` | `%LOCALAPPDATA%\orzmc\bin`【待定：与 Python 现状核对】 |
+| 二进制目录 | `${XDG_BIN_HOME:-$HOME/.local/bin}` | `%LOCALAPPDATA%\Programs\orzmc`（Python 现行） |
 | 状态/记录目录 | `${XDG_STATE_HOME:-$HOME/.local/state}/orzmc` | `%LOCALAPPDATA%\orzmc` |
 | 安装记录 | `<状态目录>/install.conf` | `<状态目录>\install.conf` |
 | 记录兜底位置 | 二进制同目录 `.orzmc-manifest` | 同左 |
@@ -99,7 +99,7 @@
 | 当前版本判定 | 以**运行中二进制**内嵌版本为准（`install.conf` 可能滞后） |
 | 记录 | 升级后重写 `install.conf` |
 | 托管拒绝 | pip/pipx/venv 托管一律拒绝，提示对应包管理器升级 |
-| 渠道 | 【待定】是否引入 `beta` 渠道（插件已有 release/beta） |
+| 渠道 | `release`（默认）/ `beta`（**已决引入**）：`orzmc update --channel beta`；beta 为预发布通道，与插件口径一致 |
 
 - GUI 侧：走自己的更新通道（Swift `OrzAppUpdater` / appcast）；【待定】与 CLI 渠道口径对齐。
 
@@ -140,8 +140,10 @@
 | `appstore` | App Store | 之后发布后支持；作为 `release` 不可达时的**兜底**，反之亦可 |
 
 - **互相兜底**：某渠道网络不可达/失败时，自动尝试另一渠道并提示；`--channel` 可强制。
-- **安装落点**：macOS 用户级 `~/Applications`（免 sudo）；App Store 渠道由系统负责。
+- **安装落点**：macOS 用户级 `~/Applications`（免 sudo，`release` 渠道）；App Store 渠道由系统装到系统位置。
+- **App Store 渠道细节**：通过 `macappstore://` URL（或 `mas`）打开产品页，**需用户交互**（Apple ID）；CLI 只负责引导，**不做静默安装**。
 - **`app open`**：`open -a` 打开应用（macOS）。
+- **appcast 口径对齐**：GUI 自更新走 appcast（Swift `OrzAppUpdater`）；`orzmc app install/update` 与 appcast **必须引用同一 App 版本号与产物**，避免两套版本源打架。
 
 ---
 
@@ -164,10 +166,10 @@
 | 能力 | macOS | Windows | Linux | iOS |
 |:--|:--:|:--:|:--:|:--:|
 | CLI 独立安装 | ✅ | ✅ | ✅ | ❌（不适用） |
-| GUI 应用 | ✅ | 【待定】 | 【待定】 | ✅ |
-| GUI → 安装 CLI | ✅ | 【待定】 | 【待定】 | ❌（系统限制） |
-| CLI → 安装 GUI | ✅（`~/Applications`） | ❌ | ❌ | ❌ |
-| 双渠道兜底（Release ↔ App Store） | ✅ | — | — | 【待定】 |
+| GUI 应用 | ✅ | 🔜 计划中（未实施） | 🔜 计划中（未实施） | ✅ |
+| GUI → 安装 CLI | ✅ | 🔜 计划中 | 🔜 计划中 | ❌（系统限制） |
+| CLI → 安装 GUI | ✅（`~/Applications`） | 🔜 计划中 | 🔜 计划中 | ❌ |
+| 双渠道兜底（Release ↔ App Store） | ✅ | —（无 GUI） | —（无 GUI） | —（无 CLI） |
 
 > **红线**：能力不支持时**显式报"该平台不支持"**，不静默失败。
 

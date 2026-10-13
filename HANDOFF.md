@@ -40,7 +40,7 @@ git submodule status                   # 子模块指针是否符合预期
 | 项 | 内容 |
 |---|---|
 | **主题** | 产品统一化 — Phase 1（`docs/spec/` 规范草案完成） |
-| **状态** | 🟡 Phase 0 完成；Phase 1 规范草案完成（`data-model` / `behavior` / `cli-surface` / `install-update` / `conformance`） |
+| **状态** | 🟡 Phase 0 完成；Phase 1 规范草案完成且**「待定」项已清**（用户已拍板） |
 | **关联方案** | `docs/spec/`（规范）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` |
 | **涉及仓库** | `parent`（本轮改动全部在父仓库，未动任何子模块） |
 | **下一步** | 见第 4 章 |
@@ -54,8 +54,8 @@ git submodule status                   # 子模块指针是否符合预期
 | 项 | 值 |
 |---|---|
 | 分支 | `main` |
-| 已提交并推送 | AI 协作结构（`684d2ea`/`1142091`）+ Phase 0 架构（`93fb39b`）+ Phase 1 启动（`7b9165f`）+ 变更记录（`1b11a50`） |
-| 本轮未提交 | 新增 `docs/spec/{behavior,cli-surface,install-update,conformance}.md`；修改 `docs/spec/README.md`、`docs/README.md`、`docs/product-unification-plan.md`、`HANDOFF.md` |
+| 已提交并推送 | AI 协作结构（`684d2ea`/`1142091`）+ Phase 0（`93fb39b`）+ Phase 1 启动（`7b9165f`）+ 变更记录（`1b11a50`）+ Phase 1 规范草案（`6640ea3`） |
+| 本轮未提交 | 清「待定」：修改 `docs/spec/{cli-surface,install-update,data-model}.md`、`docs/product-architecture.md`、`docs/product-unification-plan.md`、`HANDOFF.md` |
 | 已删除（历史） | `GEMINI.md`、`.cursor/rules/`（为不需要的 agent 预留，已移除） |
 | 已知未提交 | 仅 `plugin` 子模块指针（**预期**，见 2.2） |
 
@@ -109,6 +109,22 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（清理规范「待定」项）
+
+**做了什么（用户拍板后落实）**
+- CLI：`--root-dir`/`--verbose` 升全局；新增全局 `--json`；`--auth` 纳入规范；`server` 默认 `vanilla`；
+  新增 §8「AI 调用与机器可读接口」（`capabilities` + 建议 MCP；核查后**不追 open-cli 名词**）。
+- 安装：Windows 落点定为 `%LOCALAPPDATA%\Programs\orzmc`；引入 `beta` 渠道；
+  App Store 细节（`macappstore://` 引导、需交互）与 appcast 版本口径对齐；GUI 在 Win/Linux 标为「计划中（未实施）」。
+- 数据模型：`arch` 增加 `x86`；布局**一次性对齐、不做迁移**（旧目录提示删除重建）。
+
+**结果 / 产出文件**
+- 修改：`docs/spec/{cli-surface,install-update,data-model}.md`、`docs/product-architecture.md`、
+  `docs/product-unification-plan.md`（新增 D9）、`HANDOFF.md`
+
+**遗留 / 下一步**
+- 本批未提交；下一步 Phase 2 fixtures + 双 harness；剩余【待定】：`--json` 信封、`capabilities`/MCP schema。
 
 ### 2026-10-13 — pi（Phase 1：规范草案完成）
 
