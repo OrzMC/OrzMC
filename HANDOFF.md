@@ -120,7 +120,8 @@ git diff --submodule
 - [ ] **P2｜提交本批父仓库改动 + bump `python` 指针**。
 - [x] **P2｜Q4 已决**：登记 `OrzMCKit` 为父仓库子模块（`08e6b76`，钉 `e302d4e`）；核实 MojangAPI/PaperMC 已入组织。
 - [ ] **P2｜Phase 0/1 评审**：确认决策 D1–D9 与规范。
-- [ ] **P2｜Swift 适配器**：`OrzMCKit` 接入同一批 fixtures（**已解锁**：子模块已就位）。
+- [ ] **P2｜Swift 适配器**：读 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md)，定 D-a/D-b/D-c 后开工
+      （建议先 P2.1 非破坏骨架，再 P3.1 布局对齐 + app 级联）。
 - [x] **P2/3｜Q7 已决（B/HEAD 制）**：伞内引擎版本 = `OrzMCKit` `main` HEAD；`app` 改用 `branch = main`。
 - [ ] **P2｜补样例**：`server-plan/`（`planServerDeploy`）与 `server-lifecycle/`（B7）。
 - [ ] **P2｜可选**：加轻量 CI 校验 `AGENTS.md` 子模块登记表与 `.gitmodules` 一致；父仓库跑参考适配器自检。
@@ -130,6 +131,25 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（依赖协作原则 + Swift 一致性设计）
+
+**做了什么**
+- 固化**依赖仓库协作原则**（`AGENTS.md` §7.1）：自有仓库（含 SwiftPM 依赖）必要时可直接拉本地修改，
+  以能力划分清晰、跨模块配合为目标。
+- 侦察 Swift 生态（`OrzMCKit` + `MojangAPI`/`PaperMC`/`OrzSwiftKit` 只读克隆）与 `app`。
+- 产出 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md)：能力地图、与规范差距（布局/类型/Java/缓存/并发/启动/进度/
+  非 TTY）、适配器设计、跨仓库改造清单与执行顺序。
+
+**关键发现**
+- Swift 布局是 `manifest/<v>/client/<type>/`（type 混入 client 路径），与规范 `versions/<v>/{client,server/<type>}` 不一致，
+  **改造会级联到 `app`（HEAD 制）**。
+- `MojangAPI` 有内存 `APICache`（TTL、`forceUpdate` 默认 true），**无落盘/离线回退**；`GameDir`/`GameType` 仅 `vanilla/paper`；
+  Java 走 macOS `OracleJava` 检测，**无托管**；`parseBootArgs` 扫描文件系统拼 classpath（非纯函数）。
+
+**待决策**
+- **D-a** 先做非破坏的 `ConformancePlan` 骨架，还是先做破坏性的布局对齐（+app 级联）？
+- **D-b** Java 托管放 `OrzSwiftKit` 还是 `OrzMCKit/Game`？ **D-c** 统一缓存策略归属？
 
 ### 2026-10-13 — pi（Q7=B：引擎跟随 main HEAD）
 

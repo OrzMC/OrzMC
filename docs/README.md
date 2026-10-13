@@ -32,6 +32,7 @@
 | [spec/install-update.md](spec/install-update.md) | 草案 | 安装/自升级/跨面安装：无 sudo、Shell 自动识别、补全、GUI↔CLI 双渠道兜底 | docs/spec/ |
 | [spec/conformance.md](spec/conformance.md) | 草案 | 一致性套件与黄金样例：fixture 格式、断言规则、覆盖矩阵、CI 接线 | docs/spec/ |
 | [spec/fixtures/README.md](spec/fixtures/README.md) | 草案 | **黄金样例**（26 个 `given→expect`）+ 钉住快照 + 样例格式 schema | docs/spec/fixtures/ |
+| [swift-conformance-design.md](swift-conformance-design.md) | 草案 | **Swift 引擎一致性设计**：能力地图、与规范差距、适配器设计、跨仓库改造清单与顺序 | docs/ |
 
 ---
 
