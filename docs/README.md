@@ -1,0 +1,92 @@
+# OrzMC 文档导航
+
+> 父仓库（产品伞）的伞级文档总索引。按「读者角色 + 文档时效」组织。
+> 每份文档头部标注「状态 / 最后更新」，先看状态再决定是否采信内容。
+>
+> **子模块文档不在此重复**——本索引给出入口，正文以各子模块仓库为准。
+
+---
+
+## 🧭 先读这些（所有人都需要）
+
+| 文档 | 内容 | 位置 |
+|:--|:--|:--|
+| [README.md](../README.md) | 产品总览、目录结构、子项目一览 | 仓库根 |
+| [AGENTS.md](../AGENTS.md) | **父仓库协作单一事实源**：仓库性质、三条铁律、子模块登记表、AI 协作流程 | 仓库根 |
+| [HANDOFF.md](../HANDOFF.md) | **跨会话/跨设备交接文档**：当前焦点、状态快照、下一步、会话日志、待决策 | 仓库根 |
+| [CONTRIBUTING.md](../CONTRIBUTING.md) | 人/机贡献指南：子模块工作流、提交规范、PR 流程 | 仓库根 |
+| [LICENSE](../LICENSE) | 父仓库许可证（各子模块另有各自许可证） | 仓库根 |
+
+---
+
+## 📐 架构与方案（进行中）
+
+| 文档 | 状态 | 内容 | 位置 |
+|:--|:--|:--|:--|
+| [product-unification-plan.md](product-unification-plan.md) | 草案 | 客户端/服务端工具（`python` × `app`）统一化推进计划：已核验事实、决策 D1–D6、Phase 0–5、开放问题、上下文包 | docs/ |
+
+> Phase 0 交付物 `docs/product-architecture.md`（分层与所有权）尚未创建，落地后加入本表。
+
+---
+
+## 🧩 子模块入口（按领域）
+
+> 每个子模块有自己的文档体系。改某子模块前，**先读它的 `AGENTS.md`**（若有）。
+
+### 服务器核心
+| 子模块 | 一句话职责 | 文档入口 |
+|:--|:--|:--|
+| [`plugin`](../plugin) | PaperMC 核心插件 | [README](../plugin/README.md) · [AGENTS](../plugin/AGENTS.md) · [架构](../plugin/docs/architecture.md) · [文档索引](../plugin/docs/README.md) |
+
+### 玩家端
+| 子模块 | 一句话职责 | 文档入口 |
+|:--|:--|:--|
+| [`python`](../python) | `orzmc` CLI：客户端启动 / 服务端部署 | [README](../python/README.md) · [AGENTS](../python/AGENTS.md) |
+| [`app`](../app) | macOS/iOS 启动器（SwiftUI） | [README](../app/README.md) · [项目文档](https://orzmc.github.io/OrzMCApp/) |
+| [`webmc`](../webmc) | 浏览器连服实验 | [目录](../webmc) |
+
+### 网络与部署
+| 子模块 | 一句话职责 | 文档入口 |
+|:--|:--|:--|
+| [`proxy`](../proxy) | FRP 跨运营商中转 | [README](../proxy/README.md) · [架构](../proxy/docs/architecture.md) · [部署手册](../proxy/docs/setup-guide.md) |
+| [`deploy`](../deploy) | Docker Compose 部署 | [README](../deploy/README.md) · [AGENTS](../deploy/AGENTS.md) · [架构/ADR](../deploy/docs/architecture.md) · [使用指南](../deploy/docs/usage.md) |
+
+### 运维工具
+| 子模块 | 一句话职责 | 文档入口 |
+|:--|:--|:--|
+| [`tools/OrzMCBackup`](../tools/OrzMCBackup) | 世界优化与备份（CLI + 库） | [README](../tools/OrzMCBackup/README.md) · [AGENTS](../tools/OrzMCBackup/AGENTS.md) |
+| [`tools/rust-thanos`](../tools/rust-thanos) | Rust 区块清理 | [README](../tools/rust-thanos/README.md) · [AGENTS](../tools/rust-thanos/AGENTS.md) |
+| [`tools/thanos`](../tools/thanos) | PHP 区块清理（**上游**） | [README](../tools/thanos/README.md) |
+
+### 游戏内插件（工具集）
+| 子模块 | 一句话职责 | 文档入口 |
+|:--|:--|:--|
+| [`tools/EzShops`](../tools/EzShops) | 商店插件（派生） | [README](../tools/EzShops/README.md) · [AGENTS](../tools/EzShops/AGENTS.md) |
+| [`tools/GetMeHome`](../tools/GetMeHome) | 家的传送（派生） | [README](../tools/GetMeHome/README.md) |
+| [`tools/LoginSecurity`](../tools/LoginSecurity) | 登录认证（派生） | [README](../tools/LoginSecurity/README.md) |
+| [`tools/DeathChest`](../tools/DeathChest) | 死亡掉落箱子（派生） | [目录](../tools/DeathChest) |
+
+### 站点与组织
+| 子模块 | 一句话职责 | 文档入口 |
+|:--|:--|:--|
+| [`site`](../site) | 官方 Hugo 网站 | [README](../site/README.md) · [AGENTS](../site/AGENTS.md) |
+| [`profile`](../profile) | GitHub 组织主页 | [目录](../profile) |
+
+---
+
+## 🗂️ 其它父仓库内容
+
+| 路径 | 内容 |
+|:--|:--|
+| [`scripts/`](../scripts) | 服务器运维脚本（crontab / raspberrypi / rsync / ubuntu） |
+| [`images/`](../images) | README 引用图片 |
+| [`skins/`](../skins) | Minecraft 玩家皮肤 |
+
+---
+
+## 维护约定
+
+- 新增父仓库文档 → 加入本索引，并按读者角色归类。
+- 文档头部标「状态 / 最后更新」；状态建议用：`草案` / `现行` / `已归档`。
+- AI 指引只维护 `AGENTS.md`（pi / Codex 读取）；`CLAUDE.md` 是 Claude 的桥接，不写内容。
+- 子模块文档不在本仓库复制；本索引只给入口。
