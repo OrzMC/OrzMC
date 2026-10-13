@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shlex
 import subprocess
 import sys
@@ -135,8 +136,10 @@ def validate(p, fx):
 
 # ---------------------------------------------------------------- 执行
 def invoke(adapter_cmd, request, timeout=60):
+    # 子模块适配器靠该 env 定位快照（见 conformance.md §6 / scripts/conformance/README.md）
+    env = {**os.environ, "ORZMC_CONFORMANCE_FIXTURES": str(FIXTURES)}
     proc = subprocess.run(adapter_cmd, input=json.dumps(request),
-                          capture_output=True, text=True, timeout=timeout)
+                          capture_output=True, text=True, timeout=timeout, env=env)
     if not proc.stdout.strip():
         raise RuntimeError(f"适配器无输出（exit={proc.returncode}）stderr={proc.stderr.strip()[:400]}")
     return json.loads(proc.stdout), proc.stderr.strip()

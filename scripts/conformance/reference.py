@@ -12,11 +12,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import sys
 from pathlib import Path
 
-FIXTURES = Path(__file__).resolve().parents[2] / "docs" / "spec" / "fixtures"
+# 快照定位：优先 env（供子模块适配器用），否则回退到本仓库 fixtures。
+FIXTURES = Path(os.environ.get("ORZMC_CONFORMANCE_FIXTURES") or
+                Path(__file__).resolve().parents[2] / "docs" / "spec" / "fixtures")
 RANGE_THRESHOLD = 8 * 1024 * 1024
 RANGE_PARTS = 4
 FUTURE_SKEW = 300
@@ -64,9 +67,11 @@ def layout(root, version, gtype=None, java_major=None, object_sha1=None, windows
     }
     if gtype:
         s = f"{v}/server/{gtype}"
+        name = SERVER_JAR[gtype].format(v=version)
         out.update({
             "serverDir": s,
-            "serverJarPath": SERVER_JAR[gtype].format(v=version),
+            "serverJarName": name,
+            "serverJarPath": f"{s}/{name}",
             "serverEulaPath": f"{s}/eula.txt",
             "serverPropertiesPath": f"{s}/server.properties",
             "serverPluginsDir": f"{s}/plugins",
@@ -169,7 +174,7 @@ def op_client_launch(req):
         "assets_index_name": (snap.get("assetIndex") or {}).get("id", ""),
         "auth_uuid": "00000000000000000000000000000000",
         "auth_access_token": "0",
-        "user_type": "msa",
+        "user_type": "legacy",
         "version_type": snap.get("type", "release"),
         "clientid": "",
         "auth_xuid": "",
@@ -178,8 +183,10 @@ def op_client_launch(req):
         jvm = collect(snap["arguments"].get("jvm", []), plat, features)
         game = collect(snap["arguments"].get("game", []), plat, features)
     else:  # legacy
-        jvm = ["-Djava.library.path=${natives_directory}", "-cp", "${classpath}"]
+        jvm = ["-Djava.library.path=${natives_directory}"]
         game = (snap.get("minecraftArguments") or "").split()
+    # 沿用 Python 现行：classpath 由 "-cp <joined>" 显式装配，jvmArgs 不含 -cp/${classpath}
+    jvm = [a for a in jvm if a != "-cp" and "${classpath}" not in a]
     jvm = [subst(a, tokens) for a in jvm]
     game = [subst(a, tokens) for a in game]
     return ok({
@@ -190,7 +197,7 @@ def op_client_launch(req):
         "gameArgs": game,
         "classpath": cp,
         "classpathString": sep.join(cp),
-        "memory": {"min": opts.get("minMem"), "max": opts.get("maxMem") or "2G"},
+        "memory": {"min": opts.get("minMem") or "512M", "max": opts.get("maxMem") or "2G"},
         "tokens": tokens,
         "features": features,
     })
