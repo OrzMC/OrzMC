@@ -135,7 +135,9 @@ git diff --submodule
 - [x] **P3｜Swift 基础②**：`MojangAPI` — 渠道归一 + 真实清单离线解码 + `JavaRequirement` + 消费 `CacheKit`（`bb8dbe8`，CI 绿）。
 - [ ] **P3｜注意**：`MojangAPI` 平台下限现为 macOS 13 / iOS 16（D12）；OrzMCKit 需 `swift package update` 才会跟进新 revision。
 - [x] **P3｜Swift 引擎③起步**：`OrzMCKit` `GameType` 四值 + 能力矩阵 + `GamePlan.layout`（`f4aed31`，CI 绿）。
-- [ ] **P3｜引擎③续**：`GamePlan` 的下载计划 / 启动计划 / 进度；再把 CLI/app 注迁到 `GamePlan`（退役 `GameDir`）。
+- [x] **P3｜引擎③续**：`GamePlan.planClientLaunch`（B6 纯计划，`5c60238`，CI 绿）。
+- [ ] **P4｜一致性适配器（Swift）**：在 `OrzMCKit` 加适配器目标，用 `GamePlan` + `MojangAPI` + `CacheKit`/`TransferPolicy` 驱动父仓库 fixtures。
+- [ ] **P3｜引擎③尾**：`GamePlan` 下载计划 / 进度；CLI/app 注迁到 `GamePlan`（退役 `GameDir`）。
 - [ ] **P2｜Swift 适配器**：按 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md) §7.1 顺序推进。
 - [x] **P2/3｜Q7 已决（B/HEAD 制）**：伞内引擎版本 = `OrzMCKit` `main` HEAD；`app` 改用 `branch = main`。
 - [ ] **P2｜补样例**：`server-plan/`（`planServerDeploy`）与 `server-lifecycle/`（B7）。
@@ -146,6 +148,21 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（Swift 引擎③续：GamePlan.planClientLaunch）
+
+**做了什么**
+- 新增 `GamePlan.planClientLaunch`（B6 纯计划）：
+  - 计划输入 `VersionPlan` / `ArgumentEntry` / `Rule` / `LibraryPlan`（**自带可解码子集**，解耦生成 schema，便于离线校验）
+  - 库按 rules 过滤、classpath 由 artifact 推导（**jvmArgs 不含 `-cp`**）、令牌替换、
+    legacy `minecraftArguments` 回退、`memory` 默认 `512M/2G`
+- 单测与 conformance `client-plan/vanilla` 同构。
+
+**结果 / 产出**
+- `OrzMC/OrzMCKit` main `5c60238`，CI 绿；父仓库 bump `16cbedb`。
+
+**下一步**
+- ④ Swift 一致性适配器（大部分操作已有接缝：`GamePlan` / `MojangAPI` / `CacheKit` / `TransferPolicy`）。
 
 ### 2026-10-13 — pi（Swift 引擎③起步：GameType + GamePlan.layout）
 
