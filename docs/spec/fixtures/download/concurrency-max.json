@@ -1,0 +1,13 @@
+{
+  "specVersion": "0.1",
+  "id": "download/concurrency-max",
+  "area": "download",
+  "description": "并发上限 64",
+  "given": {
+    "operation": "resolveConcurrency",
+    "threads": 100
+  },
+  "expect": {
+    "concurrency": 64
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "specVersion": "0.1",
+  "id": "cache/offline-fallback",
+  "area": "cache",
+  "description": "离线 + 有旧副本 → 回退并 warn",
+  "given": {
+    "operation": "cacheDecision",
+    "mtime": 1000,
+    "ttl": 86400,
+    "now": 91000,
+    "refresh": false,
+    "offline": true,
+    "hasStale": true
+  },
+  "expect": {
+    "action": "fallback"
+  }
+}

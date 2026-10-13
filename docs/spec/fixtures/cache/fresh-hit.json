@@ -1,0 +1,18 @@
+{
+  "specVersion": "0.1",
+  "id": "cache/fresh-hit",
+  "area": "cache",
+  "description": "未过期 → hit",
+  "given": {
+    "operation": "cacheDecision",
+    "mtime": 1000,
+    "ttl": 86400,
+    "now": 4600,
+    "refresh": false,
+    "offline": false,
+    "hasStale": true
+  },
+  "expect": {
+    "action": "hit"
+  }
+}

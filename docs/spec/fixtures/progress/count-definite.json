@@ -1,0 +1,23 @@
+{
+  "specVersion": "0.1",
+  "id": "progress/count-definite",
+  "area": "progress",
+  "description": "count 类定长",
+  "given": {
+    "operation": "normalizeProgress",
+    "input": {
+      "kind": "count",
+      "description": "assets",
+      "total": 100,
+      "current": 37,
+      "phase": "download"
+    }
+  },
+  "expect": {
+    "kind": "count",
+    "indefinite": false,
+    "total": 100,
+    "current": 37,
+    "phase": "download"
+  }
+}

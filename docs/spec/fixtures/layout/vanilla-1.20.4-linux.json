@@ -1,0 +1,46 @@
+{
+  "specVersion": "0.1",
+  "id": "layout/vanilla-1.20.4-linux",
+  "area": "layout",
+  "description": "vanilla 1.20.4 在 Linux 的规范路径集合（含 object 路径）",
+  "given": {
+    "operation": "planLayout",
+    "root": "/tmp/orzmc",
+    "version": "1.20.4",
+    "type": "vanilla",
+    "javaMajor": 17,
+    "objectSha1": "abcdef0123456789abcdef0123456789abcdef01",
+    "platform": {
+      "os": "linux",
+      "arch": "x86_64"
+    }
+  },
+  "expect": {
+    "root": "/tmp/orzmc",
+    "versionsDir": "/tmp/orzmc/versions",
+    "versionDir": "/tmp/orzmc/versions/1.20.4",
+    "clientDir": "/tmp/orzmc/versions/1.20.4/client",
+    "clientAssetsDir": "/tmp/orzmc/versions/1.20.4/client/assets",
+    "clientIndexesDir": "/tmp/orzmc/versions/1.20.4/client/assets/indexes",
+    "clientObjectsDir": "/tmp/orzmc/versions/1.20.4/client/assets/objects",
+    "clientLibrariesDir": "/tmp/orzmc/versions/1.20.4/client/libraries",
+    "clientNativesDir": "/tmp/orzmc/versions/1.20.4/client/natives",
+    "clientJarPath": "/tmp/orzmc/versions/1.20.4/client/1.20.4.jar",
+    "clientProfilesDir": "/tmp/orzmc/versions/1.20.4/client/profiles",
+    "javaDir": "/tmp/orzmc/java",
+    "cacheDir": "/tmp/orzmc/cache",
+    "versionManifestPath": "/tmp/orzmc/cache/version_manifest.json",
+    "versionJsonsDir": "/tmp/orzmc/cache/versions",
+    "downloadTmpDir": "/tmp/orzmc/cache/download_tmp",
+    "backupDir": "/tmp/orzmc/backup",
+    "serverDir": "/tmp/orzmc/versions/1.20.4/server/vanilla",
+    "serverJarPath": "server.jar",
+    "serverEulaPath": "/tmp/orzmc/versions/1.20.4/server/vanilla/eula.txt",
+    "serverPropertiesPath": "/tmp/orzmc/versions/1.20.4/server/vanilla/server.properties",
+    "serverPluginsDir": "/tmp/orzmc/versions/1.20.4/server/vanilla/plugins",
+    "serverWorldDir": "/tmp/orzmc/versions/1.20.4/server/vanilla/world",
+    "javaMajorDir": "/tmp/orzmc/java/17",
+    "javaExecutable": "/tmp/orzmc/java/17/bin/java",
+    "clientObjectPath": "/tmp/orzmc/versions/1.20.4/client/assets/objects/ab/abcdef0123456789abcdef0123456789abcdef01"
+  }
+}

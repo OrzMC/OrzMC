@@ -1,0 +1,16 @@
+{
+  "specVersion": "0.1",
+  "id": "version-resolve/latest-release",
+  "area": "version-resolve",
+  "description": "release 渠道取 latest.release",
+  "given": {
+    "operation": "resolveVersion",
+    "channel": "release",
+    "snapshot": "snapshots/version_manifest.json"
+  },
+  "expect": {
+    "id": "1.20.4",
+    "channel": "release",
+    "type": "release"
+  }
+}

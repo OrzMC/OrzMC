@@ -1,0 +1,14 @@
+{
+  "specVersion": "0.1",
+  "id": "download/small-single",
+  "area": "download",
+  "description": "<8MB → 单流",
+  "given": {
+    "operation": "planDownloadConcurrency",
+    "sizeBytes": 1000
+  },
+  "expect": {
+    "mode": "single",
+    "parts": 1
+  }
+}

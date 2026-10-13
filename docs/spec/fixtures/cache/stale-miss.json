@@ -1,0 +1,18 @@
+{
+  "specVersion": "0.1",
+  "id": "cache/stale-miss",
+  "area": "cache",
+  "description": "已过期且在线 → miss",
+  "given": {
+    "operation": "cacheDecision",
+    "mtime": 1000,
+    "ttl": 86400,
+    "now": 91000,
+    "refresh": false,
+    "offline": false,
+    "hasStale": true
+  },
+  "expect": {
+    "action": "miss"
+  }
+}

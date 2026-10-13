@@ -160,14 +160,15 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 
 - **目标**：把「计划表」变成可断言的对象，防实现漂移。
 - **交付物**
-  - `spec:fixtures/`：钉住版本的 `version_manifest.json` / `version.json` 快照（离线可跑）
-  - `spec:fixtures/expected/`：各矩阵的期望 `DownloadItem[]` / `LaunchPlan` / `ServerPlan` JSON
-  - 矩阵覆盖：`(MC 版本 × loader ∈ {vanilla,fabric,forge,paper} × client/server × 平台三元组 × 错误路径)`
-  - `python`：harness 断言 `orzmc` 生成的 plan == 期望（复用 `orzmc/tests/fakes.py`）
-  - `kit`：harness 断言 `Game.generateDownloadItemInfos()` 等 == 期望
-- **验收**：两套 harness 在 CI 中各自跑 fixtures 全绿；**故意改坏一处能被红灯抓到**（负向用例）。
+  - `docs/spec/fixtures/`：钉住快照（`version_manifest.json` / `versions/*.json`）——已落地。
+  - `docs/spec/fixtures/<area>/`：`given→expect` 黄金样例（**26 例**：layout / version-resolve / java / verify / cache / download / client-plan / non-tty / progress / error）。
+  - `scripts/conformance/`：语言无关**运行器** `run.py` + **规范参考适配器** `reference.py`（子集 / Contains / Order / Count / Set 断言、点号路径、错误码）。
+  - `python`：适配器断言 plan == 期望（复用 `orzmc` 内部 API）。
+  - `kit`：适配器断言 `Game` 纯计划 == 期望。
+  - 剩余：`server-plan/` / `server-lifecycle/` 样例；把两个真实适配器接入。
+- **验收**：参考适配器自检全绿（26/26）；两个真实适配器在 CI 跑 fixtures 全绿；**故意改坏一处能被红灯抓到**（负向用例）。
 - **依赖**：Phase 1。
-- **产出物状态**：☐ fixtures ☐ 期望输出 ☐ Python harness ☐ Swift harness ☐ CI 接线
+- **产出物状态**：☑ fixtures ☑ 期望输出 ☑ 运行器/参考适配器 ☐ Python 适配器 ☐ Swift 适配器 ☐ CI 接线
 
 ### Phase 3 — 引擎对齐与收敛
 
@@ -218,7 +219,9 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | Phase 1 | 数据模型 + 字段对照表 | ☑ 已完成（`data-model.md`） |
 | Phase 1 | CLI/安装/行为/一致性契约 | ☑ 已完成（`cli-surface.md`/`install-update.md`/`behavior.md`/`conformance.md`） |
 | Phase 1 | 字段映射验证（样例跑通） | ☐ 待 Phase 2 |
-| Phase 2 | fixtures + 双 harness | ☐ 未开始 |
+| Phase 2 | fixtures + 运行器/参考适配器 | ☑ 已完成（26/26 自检绿） |
+| Phase 2 | Python / Swift 适配器接入 | ☐ 进行中 |
+| Phase 2 | CI 接线 | ☐ 未开始 |
 | Phase 3 | 差异清零 + 行为契约 | ☐ 未开始 |
 | Phase 4 | 双语言最小示例 | ☐ 未开始 |
 | Phase 5 | RELEASES.md | ☐ 未开始 |
@@ -288,3 +291,4 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-13 | Phase 1 规范草案完成（`data-model`/`behavior`/`cli-surface`/`install-update`/`conformance`） | pi |
 | 2026-10-13 | 清 待定：`--root-dir/--verbose` 全局、`--json`、`--auth` 纳入、`server` 默认 vanilla、CLI 支持 AI 调用（D9）；Windows 落点 `%LOCALAPPDATA%\Programs\orzmc`、引入 `beta` 渠道、GUI 计划中；布局一次性对齐不迁移、arch 支持 x86 | pi |
 | 2026-10-13 | 定稿 `--json` 信封（`cli-surface.md` §6.1：`{ok,command,data,error}`）；`capabilities` / `orzmc mcp` 列为**计划、低优先级** | pi |
+| 2026-10-13 | Phase 2 启动：产出 `docs/spec/fixtures/`（26 样例 + 快照 + schema）与 `scripts/conformance/{run.py,reference.py}`（语言无关运行器 + 参考适配器，自检 26/26 绿） | pi |

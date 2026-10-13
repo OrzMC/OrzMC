@@ -1,0 +1,15 @@
+{
+  "specVersion": "0.1",
+  "id": "verify/sha1-mismatch",
+  "area": "verify",
+  "description": "内容与 SHA-1 不符 → 拒绝",
+  "given": {
+    "operation": "verifyArtifact",
+    "hashType": "sha1",
+    "expectedSha1": "0000000000000000000000000000000000000000",
+    "dataUtf8": "hello"
+  },
+  "expect": {
+    "valid": false
+  }
+}

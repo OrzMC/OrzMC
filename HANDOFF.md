@@ -39,8 +39,8 @@ git submodule status                   # 子模块指针是否符合预期
 
 | 项 | 内容 |
 |---|---|
-| **主题** | 产品统一化 — Phase 1（`docs/spec/` 规范草案完成） |
-| **状态** | 🟡 Phase 0 完成；Phase 1 规范草案完成且**「待定」项已清**（用户已拍板） |
+| **主题** | 产品统一化 — Phase 2（一致性套件落地） |
+| **状态** | 🟡 Phase 0/1 完成；Phase 2 已启动（fixtures **26 例** + 语言无关运行器/参考适配器，自检全绿） |
 | **关联方案** | `docs/spec/`（规范）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` |
 | **涉及仓库** | `parent`（本轮改动全部在父仓库，未动任何子模块） |
 | **下一步** | 见第 4 章 |
@@ -54,8 +54,8 @@ git submodule status                   # 子模块指针是否符合预期
 | 项 | 值 |
 |---|---|
 | 分支 | `main` |
-| 已提交并推送 | AI 协作结构（`684d2ea`/`1142091`）+ Phase 0（`93fb39b`）+ Phase 1 启动（`7b9165f`）+ 变更记录（`1b11a50`）+ Phase 1 规范草案（`6640ea3`） |
-| 本轮未提交 | 清「待定」：修改 `docs/spec/{cli-surface,install-update,data-model}.md`、`docs/product-architecture.md`、`docs/product-unification-plan.md`、`HANDOFF.md` |
+| 已提交并推送 | AI 协作结构（`684d2ea`/`1142091`）+ Phase 0（`93fb39b`）+ Phase 1 启动（`7b9165f`）+ 变更记录（`1b11a50`）+ Phase 1 草案（`6640ea3`）+ 清待定（`2804af8`）+ 定稿 `--json`（`4b674e5`） |
+| 本轮未提交 | Phase 2：新增 `docs/spec/fixtures/**`（26 样例 + 4 快照 + schema + README）、`scripts/conformance/{run.py,reference.py,README.md}`；修改 `docs/spec/{conformance,README}.md`、`docs/README.md`、`docs/product-unification-plan.md`、`HANDOFF.md` |
 | 已删除（历史） | `GEMINI.md`、`.cursor/rules/`（为不需要的 agent 预留，已移除） |
 | 已知未提交 | 仅 `plugin` 子模块指针（**预期**，见 2.2） |
 
@@ -100,15 +100,35 @@ git diff --submodule
 - [x] **P1｜提交并 push Phase 0**（`93fb39b`）。
 - [x] **P1｜Q2/Q3 已决**：规范落 `docs/spec/`；`OrzMCKit` 定位 Swift 可复用基础组件。
 - [x] **P1｜Phase 1 规范草案**：产出 `docs/spec/{data-model,behavior,cli-surface,install-update,conformance}.md`。
-- [ ] **P1｜提交本批 Phase 1 规范改动**（未提交，否则跨设备丢失）。
-- [ ] **P1｜Phase 0 评审**：确认决策 D1–D8 与架构文档。
-- [ ] **P2｜Phase 2**：建 `docs/spec/fixtures/` 黄金样例 + Python/Swift 两个 harness。
-- [ ] **P2｜可选**：加轻量 CI 校验 `AGENTS.md` 子模块登记表与 `.gitmodules` 一致。
+- [x] **P1｜清「待定」+ 定稿 `--json`**（`2804af8` + `4b674e5`）。
+- [x] **P2｜Phase 2 起步**：`docs/spec/fixtures/`（26 样例 + 快照 + schema）+ `scripts/conformance/{run.py,reference.py}`（自检 26/26 绿）。
+- [ ] **P2｜提交本批 Phase 2 改动**（未提交，否则跨设备丢失）。
+- [ ] **P2｜Phase 0/1 评审**：确认决策 D1–D9 与规范。
+- [ ] **P2｜接入真实适配器**：Python（`orzmc/tests/conformance/adapter.py`）与 Swift（`OrzMCKit`），跑通同一批 fixtures。
+- [ ] **P2｜补样例**：`server-plan/`（`planServerDeploy`）与 `server-lifecycle/`（B7）。
+- [ ] **P2｜可选**：加轻量 CI 校验 `AGENTS.md` 子模块登记表与 `.gitmodules` 一致；父仓库跑参考适配器自检。
 - [ ] **P2｜治理**：是否把 `OrzMCKit` 登记为子模块（plan Q4）。
 
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（Phase 2：一致性套件落地）
+
+**做了什么**
+- 建 `docs/spec/fixtures/`：4 个钉住快照（`version_manifest` / `1.20.4` / `1.16.5` / `no-java`）+ **26 个黄金样例**
+  （layout / version-resolve / java / verify / cache / download / client-plan / non-tty / progress / error）+ `schema/fixture.schema.json` + `README.md`。
+- 建 `scripts/conformance/`：语言无关**运行器** `run.py`（子集 / Contains / NotContains / Order / Count / Set / 点号路径 / `expectError`）
+  与**规范参考适配器** `reference.py`（把规范纯计划语义编码为可执行参照）+ `README.md`（适配器协议）。
+- 自检：`run.py --adapter reference.py` → **PASS=26 FAIL=0**。过程中抓到并修正一处歧义（`javaExecutable` 在 Windows 需带 `.exe`）。
+- 回填 `conformance.md`（目录 / Harness / CI）与 `docs/README.md`、`spec/README.md`、plan Phase 2 状态。
+
+**结果 / 产出文件**
+- 新增：`docs/spec/fixtures/**`、`scripts/conformance/{run.py,reference.py,README.md}`
+- 修改：`docs/spec/{conformance,README}.md`、`docs/README.md`、`docs/product-unification-plan.md`、`HANDOFF.md`
+
+**遗留 / 下一步**
+- 本批未提交；下一步把 Python/Swift 真实适配器接入并补 `server-plan`/`server-lifecycle` 样例。
 
 ### 2026-10-13 — pi（清理规范「待定」项）
 

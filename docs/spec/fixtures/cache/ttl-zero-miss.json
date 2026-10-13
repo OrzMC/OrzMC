@@ -1,0 +1,18 @@
+{
+  "specVersion": "0.1",
+  "id": "cache/ttl-zero-miss",
+  "area": "cache",
+  "description": "ttl<=0 表示永不复用 → miss",
+  "given": {
+    "operation": "cacheDecision",
+    "mtime": 1000,
+    "ttl": 0,
+    "now": 4600,
+    "refresh": false,
+    "offline": false,
+    "hasStale": true
+  },
+  "expect": {
+    "action": "miss"
+  }
+}

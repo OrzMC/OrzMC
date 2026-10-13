@@ -1,0 +1,37 @@
+{
+  "id": "1.16.5",
+  "type": "release",
+  "mainClass": "net.minecraft.client.main.Main",
+  "javaVersion": {
+    "component": "jre-legacy",
+    "majorVersion": 8
+  },
+  "assetIndex": {
+    "id": "1.16",
+    "sha1": "0000000000000000000000000000000000000016",
+    "size": 100,
+    "totalSize": 200,
+    "url": "https://piston-meta.mojang.com/asset-index.json"
+  },
+  "downloads": {
+    "client": {
+      "sha1": "000000000000000000000000000000000000001c",
+      "size": 1000,
+      "url": "https://piston-data.mojang.com/client.jar"
+    }
+  },
+  "libraries": [
+    {
+      "name": "com.example:always:1.0",
+      "downloads": {
+        "artifact": {
+          "path": "com/example/always/1.0/always-1.0.jar",
+          "sha1": "0000000000000000000000000000000000000010",
+          "size": 10,
+          "url": "https://libraries.example/always-1.0.jar"
+        }
+      }
+    }
+  ],
+  "minecraftArguments": "--username ${auth_player_name} --version ${version_name} --gameDir ${game_directory} --assetsDir ${assets_root} --assetIndex ${assets_index_name} --uuid ${auth_uuid} --accessToken ${auth_access_token} --userType ${user_type}"
+}

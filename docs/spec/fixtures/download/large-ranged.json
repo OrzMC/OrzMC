@@ -1,0 +1,14 @@
+{
+  "specVersion": "0.1",
+  "id": "download/large-ranged",
+  "area": "download",
+  "description": ">=8MB → 4 路 Range",
+  "given": {
+    "operation": "planDownloadConcurrency",
+    "sizeBytes": 10000000
+  },
+  "expect": {
+    "mode": "ranged",
+    "parts": 4
+  }
+}

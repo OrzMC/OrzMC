@@ -1,0 +1,15 @@
+{
+  "specVersion": "0.1",
+  "id": "java/missing-defaults-8",
+  "area": "java",
+  "description": "缺失 javaVersion 时默认 8，不按 MC 版本硬编码",
+  "given": {
+    "operation": "requiredJava",
+    "snapshot": "snapshots/versions/no-java.json"
+  },
+  "expect": {
+    "majorVersion": 8,
+    "distribution": "temurin",
+    "runtimeKind": "jre"
+  }
+}

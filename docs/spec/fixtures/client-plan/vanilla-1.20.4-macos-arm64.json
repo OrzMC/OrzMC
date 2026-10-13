@@ -1,0 +1,54 @@
+{
+  "specVersion": "0.1",
+  "id": "client-plan/vanilla-1.20.4-macos-arm64",
+  "area": "client-plan",
+  "description": "vanilla 现代版 macOS arm64 启动计划（含 rules 过滤与令牌替换）",
+  "given": {
+    "operation": "planClientLaunch",
+    "root": "/tmp/orzmc",
+    "version": "1.20.4",
+    "type": "vanilla",
+    "platform": {
+      "os": "osx",
+      "arch": "arm64"
+    },
+    "options": {
+      "username": "guest"
+    },
+    "snapshot": "snapshots/versions/1.20.4.json"
+  },
+  "expect": {
+    "mainClass": "net.minecraft.client.main.Main",
+    "executable": "/tmp/orzmc/java/17/bin/java",
+    "cwd": "/tmp/orzmc/versions/1.20.4/client",
+    "jvmArgsContains": [
+      "-XstartOnFirstThread",
+      "-Djava.library.path=/tmp/orzmc/versions/1.20.4/client/natives",
+      "-cp"
+    ],
+    "gameArgsContains": [
+      "--username",
+      "guest",
+      "--version",
+      "1.20.4",
+      "--assetIndex",
+      "5",
+      "--gameDir",
+      "/tmp/orzmc/versions/1.20.4/client"
+    ],
+    "classpathContains": [
+      "/tmp/orzmc/versions/1.20.4/client/libraries/com/example/always/1.0/always-1.0.jar",
+      "/tmp/orzmc/versions/1.20.4/client/libraries/com/example/maconly/1.0/maconly-1.0.jar",
+      "/tmp/orzmc/versions/1.20.4/client/1.20.4.jar"
+    ],
+    "classpathNotContains": [
+      "/tmp/orzmc/versions/1.20.4/client/libraries/com/example/notmac/1.0/notmac-1.0.jar"
+    ],
+    "tokens.assets_index_name": "5",
+    "tokens.version_type": "release",
+    "memory": {
+      "min": null,
+      "max": "2G"
+    }
+  }
+}

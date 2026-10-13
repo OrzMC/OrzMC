@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://orzmc.github.io/spec/fixture.schema.json",
+  "title": "OrzMC conformance fixture",
+  "description": "见 docs/spec/conformance.md §3。given → expect 的纯计划断言。",
+  "type": "object",
+  "required": ["specVersion", "id", "area", "description", "given"],
+  "properties": {
+    "specVersion": { "type": "string" },
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+/[A-Za-z0-9._-]+$" },
+    "area": { "type": "string" },
+    "description": { "type": "string" },
+    "given": {
+      "type": "object",
+      "required": ["operation"],
+      "properties": { "operation": { "type": "string" } }
+    },
+    "expect": { "type": "object" },
+    "expectError": {
+      "type": "object",
+      "required": ["code"],
+      "properties": { "code": { "type": "string" } }
+    }
+  },
+  "oneOf": [{ "required": ["expect"] }, { "required": ["expectError"] }],
+  "additionalProperties": true
+}

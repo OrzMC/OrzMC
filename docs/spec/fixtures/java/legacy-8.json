@@ -1,0 +1,15 @@
+{
+  "specVersion": "0.1",
+  "id": "java/legacy-8",
+  "area": "java",
+  "description": "1.16.5 读得 majorVersion=8",
+  "given": {
+    "operation": "requiredJava",
+    "snapshot": "snapshots/versions/1.16.5.json"
+  },
+  "expect": {
+    "majorVersion": 8,
+    "distribution": "temurin",
+    "runtimeKind": "jre"
+  }
+}

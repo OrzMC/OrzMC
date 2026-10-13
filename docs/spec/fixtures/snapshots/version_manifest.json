@@ -1,0 +1,35 @@
+{
+  "latest": {
+    "release": "1.20.4",
+    "snapshot": "24w03a"
+  },
+  "versions": [
+    {
+      "id": "1.20.4",
+      "type": "release",
+      "url": "https://piston-meta.mojang.com/v1/packages/0000000000000000000000000000000000000000/1.20.4.json",
+      "time": "2023-12-07T12:00:00+00:00",
+      "releaseTime": "2023-12-07T12:00:00+00:00",
+      "sha1": "0000000000000000000000000000000000000001",
+      "complianceLevel": 1
+    },
+    {
+      "id": "1.16.5",
+      "type": "release",
+      "url": "https://piston-meta.mojang.com/v1/packages/0000000000000000000000000000000000000000/1.16.5.json",
+      "time": "2021-01-15T12:00:00+00:00",
+      "releaseTime": "2021-01-15T12:00:00+00:00",
+      "sha1": "0000000000000000000000000000000000000002",
+      "complianceLevel": 1
+    },
+    {
+      "id": "24w03a",
+      "type": "snapshot",
+      "url": "https://piston-meta.mojang.com/v1/packages/0000000000000000000000000000000000000000/24w03a.json",
+      "time": "2024-01-17T12:00:00+00:00",
+      "releaseTime": "2024-01-17T12:00:00+00:00",
+      "sha1": "0000000000000000000000000000000000000003",
+      "complianceLevel": 1
+    }
+  ]
+}

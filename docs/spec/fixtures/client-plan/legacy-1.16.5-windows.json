@@ -1,0 +1,35 @@
+{
+  "specVersion": "0.1",
+  "id": "client-plan/legacy-1.16.5-windows",
+  "area": "client-plan",
+  "description": "旧版无 arguments，走 legacy 模板（minecraftArguments）",
+  "given": {
+    "operation": "planClientLaunch",
+    "root": "/tmp/orzmc",
+    "version": "1.16.5",
+    "type": "vanilla",
+    "platform": {
+      "os": "windows",
+      "arch": "x86_64"
+    },
+    "options": {
+      "username": "guest"
+    },
+    "snapshot": "snapshots/versions/1.16.5.json"
+  },
+  "expect": {
+    "mainClass": "net.minecraft.client.main.Main",
+    "executable": "/tmp/orzmc/java/8/bin/java.exe",
+    "jvmArgsContains": [
+      "-cp"
+    ],
+    "gameArgsContains": [
+      "--username",
+      "guest",
+      "--version",
+      "1.16.5",
+      "--assetIndex",
+      "1.16"
+    ]
+  }
+}

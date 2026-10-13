@@ -1,0 +1,15 @@
+{
+  "specVersion": "0.1",
+  "id": "verify/sha1-ok",
+  "area": "verify",
+  "description": "内容与 SHA-1 匹配 → valid",
+  "given": {
+    "operation": "verifyArtifact",
+    "hashType": "sha1",
+    "expectedSha1": "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d",
+    "dataUtf8": "hello"
+  },
+  "expect": {
+    "valid": true
+  }
+}

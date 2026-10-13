@@ -1,0 +1,41 @@
+{
+  "specVersion": "0.1",
+  "id": "layout/paper-1.20.4-windows",
+  "area": "layout",
+  "description": "paper 服务端在 Windows 的路径（java.exe / paper-<v>.jar）",
+  "given": {
+    "operation": "planLayout",
+    "root": "/tmp/orzmc",
+    "version": "1.20.4",
+    "type": "paper",
+    "javaMajor": 17,
+    "platform": {
+      "os": "windows",
+      "arch": "x86_64"
+    }
+  },
+  "expect": {
+    "root": "/tmp/orzmc",
+    "versionsDir": "/tmp/orzmc/versions",
+    "versionDir": "/tmp/orzmc/versions/1.20.4",
+    "clientDir": "/tmp/orzmc/versions/1.20.4/client",
+    "clientAssetsDir": "/tmp/orzmc/versions/1.20.4/client/assets",
+    "clientIndexesDir": "/tmp/orzmc/versions/1.20.4/client/assets/indexes",
+    "clientObjectsDir": "/tmp/orzmc/versions/1.20.4/client/assets/objects",
+    "clientLibrariesDir": "/tmp/orzmc/versions/1.20.4/client/libraries",
+    "clientNativesDir": "/tmp/orzmc/versions/1.20.4/client/natives",
+    "clientJarPath": "/tmp/orzmc/versions/1.20.4/client/1.20.4.jar",
+    "clientProfilesDir": "/tmp/orzmc/versions/1.20.4/client/profiles",
+    "javaDir": "/tmp/orzmc/java",
+    "cacheDir": "/tmp/orzmc/cache",
+    "versionManifestPath": "/tmp/orzmc/cache/version_manifest.json",
+    "versionJsonsDir": "/tmp/orzmc/cache/versions",
+    "downloadTmpDir": "/tmp/orzmc/cache/download_tmp",
+    "backupDir": "/tmp/orzmc/backup",
+    "serverDir": "/tmp/orzmc/versions/1.20.4/server/paper",
+    "serverJarPath": "paper-1.20.4.jar",
+    "serverEulaPath": "/tmp/orzmc/versions/1.20.4/server/paper/eula.txt",
+    "javaMajorDir": "/tmp/orzmc/java/17",
+    "javaExecutable": "/tmp/orzmc/java/17/bin/java.exe"
+  }
+}

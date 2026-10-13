@@ -1,0 +1,18 @@
+{
+  "specVersion": "0.1",
+  "id": "cache/future-skew-hit",
+  "area": "cache",
+  "description": "容忍小幅未来时间戳（now 早于 mtime 100s）→ hit",
+  "given": {
+    "operation": "cacheDecision",
+    "mtime": 1000,
+    "ttl": 86400,
+    "now": 900,
+    "refresh": false,
+    "offline": false,
+    "hasStale": true
+  },
+  "expect": {
+    "action": "hit"
+  }
+}

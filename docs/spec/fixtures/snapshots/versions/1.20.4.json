@@ -1,0 +1,112 @@
+{
+  "id": "1.20.4",
+  "type": "release",
+  "mainClass": "net.minecraft.client.main.Main",
+  "javaVersion": {
+    "component": "java-runtime-gamma",
+    "majorVersion": 17
+  },
+  "assetIndex": {
+    "id": "5",
+    "sha1": "0000000000000000000000000000000000000005",
+    "size": 100,
+    "totalSize": 200,
+    "url": "https://piston-meta.mojang.com/asset-index.json"
+  },
+  "downloads": {
+    "client": {
+      "sha1": "000000000000000000000000000000000000000c",
+      "size": 1000,
+      "url": "https://piston-data.mojang.com/client.jar"
+    }
+  },
+  "libraries": [
+    {
+      "name": "com.example:always:1.0",
+      "downloads": {
+        "artifact": {
+          "path": "com/example/always/1.0/always-1.0.jar",
+          "sha1": "0000000000000000000000000000000000000010",
+          "size": 10,
+          "url": "https://libraries.example/always-1.0.jar"
+        }
+      }
+    },
+    {
+      "name": "com.example:maconly:1.0",
+      "rules": [
+        {
+          "action": "allow",
+          "os": {
+            "name": "osx"
+          }
+        }
+      ],
+      "downloads": {
+        "artifact": {
+          "path": "com/example/maconly/1.0/maconly-1.0.jar",
+          "sha1": "0000000000000000000000000000000000000011",
+          "size": 11,
+          "url": "https://libraries.example/maconly-1.0.jar"
+        }
+      }
+    },
+    {
+      "name": "com.example:notmac:1.0",
+      "rules": [
+        {
+          "action": "disallow",
+          "os": {
+            "name": "osx"
+          }
+        }
+      ],
+      "downloads": {
+        "artifact": {
+          "path": "com/example/notmac/1.0/notmac-1.0.jar",
+          "sha1": "0000000000000000000000000000000000000012",
+          "size": 12,
+          "url": "https://libraries.example/notmac-1.0.jar"
+        }
+      }
+    }
+  ],
+  "arguments": {
+    "jvm": [
+      {
+        "rules": [
+          {
+            "action": "allow",
+            "os": {
+              "name": "osx"
+            }
+          }
+        ],
+        "value": [
+          "-XstartOnFirstThread"
+        ]
+      },
+      "-Djava.library.path=${natives_directory}",
+      "-cp",
+      "${classpath}"
+    ],
+    "game": [
+      "--username",
+      "${auth_player_name}",
+      "--version",
+      "${version_name}",
+      "--gameDir",
+      "${game_directory}",
+      "--assetsDir",
+      "${assets_root}",
+      "--assetIndex",
+      "${assets_index_name}",
+      "--uuid",
+      "${auth_uuid}",
+      "--accessToken",
+      "${auth_access_token}",
+      "--userType",
+      "${user_type}"
+    ]
+  }
+}

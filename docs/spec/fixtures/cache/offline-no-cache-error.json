@@ -1,0 +1,18 @@
+{
+  "specVersion": "0.1",
+  "id": "cache/offline-no-cache-error",
+  "area": "cache",
+  "description": "离线 + 无缓存 → 报错",
+  "given": {
+    "operation": "cacheDecision",
+    "mtime": 0,
+    "ttl": 86400,
+    "now": 91000,
+    "refresh": false,
+    "offline": true,
+    "hasStale": false
+  },
+  "expect": {
+    "action": "error"
+  }
+}

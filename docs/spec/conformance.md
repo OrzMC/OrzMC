@@ -19,12 +19,17 @@
 ```
 docs/spec/
   fixtures/
+    README.md                  # 样例索引与用法
+    schema/fixture.schema.json # 样例格式的 JSON Schema
     <area>/
-      <case-id>.json          # given + expect（单文件，自包含）
+      <case-id>.json           # given + expect（单文件，自包含）
     snapshots/                 # 钉住的上游输入快照（离线可跑）
       version_manifest.json
       versions/<id>.json
   conformance.md               # 本文件
+scripts/conformance/           # spec-owned 运行器（父仓库）
+  run.py                       # 发现样例 + 调适配器 + 子集比对 + 差异
+  reference.py                 # 规范参考适配器（纯计划语义）
 ```
 
 - `<area>` 对应契约域：`layout` / `version-manifest` / `client-plan` / `server-plan` /
@@ -98,19 +103,33 @@ docs/spec/
 
 ---
 
-## 6. Harness（各语言一个）
+## 6. Harness
 
 **统一契约**：读 `fixtures/**`，对每个 fixture 调对应 `operation`，规范化输出，与 `expect` 比对，输出差异。
 
-| 语言 | 位置 | 运行 |
+**已落地（父仓库，语言无关）**
+
+| 组件 | 位置 | 说明 |
 |:--|:--|:--|
-| Python | `orzmc/tests/conformance/`（复用 `tests/fakes.py`） | `pytest` |
-| Swift | `OrzMCKit/Tests/ConformanceTests/` | `swift test` |
+| 运行器 | [`scripts/conformance/run.py`](../../scripts/conformance/run.py) | 发现样例、调用适配器、子集比对、打印差异 |
+| 参考适配器 | [`scripts/conformance/reference.py`](../../scripts/conformance/reference.py) | 把规范纯计划语义编码为**可执行参照**，并验证样例自洽 |
+
+```bash
+python3 scripts/conformance/run.py --adapter "python3 scripts/conformance/reference.py"
+```
+
+**各语言适配器（在各自仓库，通过 `--adapter` 接入）**
+
+| 语言 | 位置 | 形态 |
+|:--|:--|:--|
+| Python | `orzmc/tests/conformance/adapter.py` | 复用 `domain/*`、`infra/cache.py` 等内部 API |
+| Swift | `OrzMCKit/Sources/ConformanceAdapter`（或 Tests） | 复用 `Game`/`MojangAPI` 的纯计划入口 |
 
 **共同要求**
 - **离线**：只用 `fixtures/snapshots/`，不打网络、不碰系统 Java。
 - **可定位**：失败时打印 `id` + 字段级 diff。
 - **确定性**：忽略时间/随机值（见 §4）。
+- **无副作用**：只做“纯计划”，不执行下载/安装/启动。
 
 ---
 
@@ -144,12 +163,12 @@ docs/spec/
 
 | 仓库 | 触发 | 动作 |
 |:--|:--|:--|
-| `OrzPythonMC` | CI | 跑 Python harness（全网离线） |
-| `OrzMCKit` | CI | 跑 Swift harness |
-| 父仓库 | 【待定】 | 仅汇总状态（不跨仓触发，见 plan Q6） |
+| `OrzPythonMC` | CI | 跑 Python 适配器（全网离线） |
+| `OrzMCKit` | CI | 跑 Swift 适配器 |
+| 父仓库 | 可跑 | 用参考适配器自检 fixtures（`run.py --adapter reference.py`），不需跨仓触发 |
 
-- 规范变更（改 `docs/spec/**`）→ 应同步更新 fixtures；漏改由任一 harness 红灯暴露。
-- 【待定】是否在父仓库加一个轻量 job 校验"fixtures 与 spec 版本一致"。
+- 规范变更（改 `docs/spec/**`）→ 应同步更新 fixtures；漏改由任一适配器红灯暴露。
+- 【待定】是否在父仓库 CI 加一个 job 跑参考适配器自检（见 plan Q6）。
 
 ---
 

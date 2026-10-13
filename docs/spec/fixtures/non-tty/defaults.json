@@ -1,0 +1,19 @@
+{
+  "specVersion": "0.1",
+  "id": "non-tty/defaults",
+  "area": "non-tty",
+  "description": "非 TTY：版本用最新 release、用户名 guest、用默认值不阻塞",
+  "given": {
+    "operation": "nonTtyDefaults",
+    "snapshot": "snapshots/version_manifest.json",
+    "stdinTty": false,
+    "providedVersion": null,
+    "providedUsername": null
+  },
+  "expect": {
+    "version": "1.20.4",
+    "username": "guest",
+    "interactive": false,
+    "confirm": true
+  }
+}

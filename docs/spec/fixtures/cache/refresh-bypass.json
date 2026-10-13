@@ -1,0 +1,18 @@
+{
+  "specVersion": "0.1",
+  "id": "cache/refresh-bypass",
+  "area": "cache",
+  "description": "--refresh 绕过所有缓存读",
+  "given": {
+    "operation": "cacheDecision",
+    "mtime": 1000,
+    "ttl": 86400,
+    "now": 4600,
+    "refresh": true,
+    "offline": false,
+    "hasStale": true
+  },
+  "expect": {
+    "action": "refresh"
+  }
+}

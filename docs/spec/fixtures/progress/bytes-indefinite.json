@@ -1,0 +1,23 @@
+{
+  "specVersion": "0.1",
+  "id": "progress/bytes-indefinite",
+  "area": "progress",
+  "description": "bytes 类且 total=null → 不定长",
+  "given": {
+    "operation": "normalizeProgress",
+    "input": {
+      "kind": "bytes",
+      "description": "download",
+      "total": null,
+      "current": 1024,
+      "phase": "download"
+    }
+  },
+  "expect": {
+    "kind": "bytes",
+    "indefinite": true,
+    "total": null,
+    "current": 1024,
+    "phase": "download"
+  }
+}
