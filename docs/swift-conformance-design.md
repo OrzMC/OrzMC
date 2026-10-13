@@ -96,8 +96,25 @@
 
 ---
 
-## 7. 待决策
+## 7. 决策（以长期正确性为准）
 
-- **D-a**：`GameDir` 布局对齐与 `app` 级联改动是否现在做（破坏性），还是先做 P2.1 骨架？
-- **D-b**：Java 托管放 `OrzSwiftKit`（通用）还是 `OrzMCKit/Game`（引擎语义）？
-- **D-c**：`MojangAPI` 是否收编"统一缓存策略"（含磁盘/回退），还是由 `Game` 包一层？
+- **D-a｜布局对齐方式：strangler-fig，不搭返工骨架**。引入**规范对齐的纯计划契约 `GamePlan`**（新契约，
+  只用规范布局），旧 `GameDir` 暂存待退役；迁移 `OrzMC` CLI 与 `app` 后删除 `GameDir`。
+  理由：在旧布局上先搭骨架会把错误路径写进适配器与测试，产生必然返工；把契约前置可让适配器/CLI/app 共建在同一正确契约上。
+- **D-b｜Java 托管分层**：**获取原语**（按 os/arch/major 解析 Adoptium → 下载 → 校验 → 解压）放
+  `OrzSwiftKit` 新 `RuntimeKit`（通用、可被非 MC 项目复用）；**托管策略与落点**（选哪个 major、放 `java/<major>`）放 `Game`。
+  理由：原语通用、策略属引擎语义；避免把通用能力埋进引擎或把业务策略塞进工具库。
+- **D-c｜统一缓存归属**：**基础设施**放 `OrzSwiftKit`（磁盘 + TTL 24h + `refresh` + 离线回退），
+  `MojangAPI` / `PaperMC` 消费。理由：B1 的缓存对象跨多个 provider（Mojang/fabric-meta/Paper/Forge），
+  与 Python `orzmc/infra/cache.py` 同层；放单一 provider 会耦合、难复用。
+
+### 7.1 执行顺序（按长期正确性排布）
+
+1. **基础设施**（`OrzSwiftKit`）：`MetadataCache`（D-c）、`RuntimeKit` JRE 获取原语（D-b）、`Downloader` 并发/Range（B2）。
+2. **元数据**（`MojangAPI`）：消费共享缓存；提供**从给定 JSON 构造**的离线接缝；`oldAlpha/oldBeta → snapshot` 渠道归一。
+3. **引擎契约**（`OrzMCKit`）：`GameType` 四值 + 能力矩阵；`GamePlan`（规范布局/下载计划/启动计划/Java 需求/进度）。
+4. **适配器**：`ConformanceAdapter` 薄层薄参 `GamePlan`；接入父仓库运行器。
+5. **产品面**：`OrzMC` CLI 与 `app` 迁到 `GamePlan`（HEAD 制，同批）；退役 `GameDir`。
+6. **CI（Q6）**：父仓库/子仓库接线。
+
+> 验证前提：本地需能编译 `swift-tools-version:6.0` 的包（见下）——否则只能靠 CI/真机。
