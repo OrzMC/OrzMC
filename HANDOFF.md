@@ -54,22 +54,21 @@ git submodule status                   # 子模块指针是否符合预期
 | 项 | 值 |
 |---|---|
 | 分支 | `main` |
-| 本轮新增（**未提交**） | `AGENTS.md`、`CLAUDE.md`、`CONTRIBUTING.md`、`.github/PULL_REQUEST_TEMPLATE.md`、`docs/README.md`、`docs/product-unification-plan.md`、`HANDOFF.md` |
-| 本轮修改（**未提交**） | `README.md`（目录树 + 协作入口章节） |
-| 本轮删除 | `GEMINI.md`、`.cursor/rules/`（为不需要的 agent 预留，已移除） |
-| 已知未提交 | `plugin` 子模块指针漂移（见 2.2） |
-
-> ⚠️ **本批次尚未提交**。新设备 pull 时如果看不到上面这些文件，说明还没 push——
-> 需先在**原设备**提交并 push，否则跨设备会丢失。
+| AI 协作结构 | ✅ 已提交（起始提交 `684d2ea`）并 push `origin/main` |
+| 新增文件 | `AGENTS.md`、`CLAUDE.md`、`CONTRIBUTING.md`、`HANDOFF.md`、`.github/PULL_REQUEST_TEMPLATE.md`、`docs/README.md`、`docs/product-unification-plan.md` |
+| 修改 | `README.md`（目录树 + 协作入口章节） |
+| 已删除 | `GEMINI.md`、`.cursor/rules/`（为不需要的 agent 预留，已移除） |
+| 已知未提交 | 仅 `plugin` 子模块指针（**预期**，见 2.2） |
 
 ### 2.2 子模块在途状态
 
-| 子模块 | 当前指针 | 分支 | 是否偏离父仓库记录 | 备注 |
+| 子模块 | 当前指针 | 分支 | 父仓库记录 | 说明 |
 |---|---|---|---|---|
-| `plugin` | `bd908b8` | `develop` | ✅ **偏离**（父仓库记录 `5eadd6e`） | 工作区干净；父仓库 `git status` 显示 `M plugin`。**需决策**：bump 到 develop 还是还原为记录指针 |
-| 其余 14 个 | 见 `git submodule status` | `main`/`master` | 否 | 指针与父仓库记录一致 |
+| `plugin` | `bd908b8` | `develop` | `5eadd6e`（main） | **有意为之，不要 bump**：plugin 工作流先在 `develop` 迭代、里程碑合并 `main`；父仓库**始终钉 `main` 发布线**，故本地检出 `develop` 时 `git status` 显示 `M plugin` 属预期 |
+| 其余 14 个 | 见 `git submodule status` | `main`/`master` | 一致 | 无偏离 |
 
 > `git submodule status` 中行首 `+` = 当前检出与父仓库记录不一致；`-` = 未初始化。
+> **父仓库指针钉发布线（`main`），不钉开发线（`develop`）。**
 
 ### 2.3 验证命令
 
@@ -90,14 +89,14 @@ git diff --submodule
 | Q1 | `OrzMCKit`（Swift 引擎）仓库能否拉取核对类型？ | ☐ 未决 | 需拉取（阻塞 plan Phase 1） |
 | Q2 | `orzmc-spec` 落点：独立仓库 + `spec/` 子模块，还是父仓库 `docs/spec/`？ | ☐ 未决 | 独立仓库 |
 | Q3 | 是否把 `OrzMCKit` 登记为父仓库子模块？ | ☐ 未决 | 登记 |
-| Q4 | `plugin` 子模块指针漂移如处理？ | ☐ 未决 | 若 develop 是有意为之则 bump，否则 checkout 还原 |
+| Q4 | `plugin` 子模块指针漂移如何处理？ | ✅ 已决 | **不 bump**：`develop` 是迭代线、`main` 是发布线，父仓库钉 `main`；`M plugin` 属预期 |
 
 ---
 
 ## 4. 下一步（Next Actions，按优先级）
 
 - [ ] **P0｜提交本批父仓库改动**（AGENTS/CLAUDE/CONTRIBUTING/HANDOFF/docs/README），否则跨设备丢失。
-- [ ] **P0｜决定 `plugin` 指针漂移处理**（Q4）。
+- [x] **P0｜决定 `plugin` 指针漂移处理**：结论=**不 bump**（父仓库钉 `main` 发布线，本地检出 `develop` 属迭代常态）。
 - [ ] **P1｜Phase 0**：写 `docs/product-architecture.md`（分层、所有权、允许依赖方向、禁止事项）。
 - [ ] **P1｜清 Q1–Q3**，解阻塞 Phase 1 的 `orzmc-spec`。
 - [ ] **P2｜可选**：加轻量 CI 校验 `AGENTS.md` 子模块登记表与 `.gitmodules` 一致。
@@ -106,6 +105,21 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（提交、push 与 plugin 漂移决策）
+
+**做了什么**
+- 将 AI 协作结构整理为一次提交并 push `origin/main`（起始提交 `684d2ea`）。
+- 处理 `plugin` 指针漂移：确认为**有意为之**——plugin 工作流先在 `develop` 迭代、
+  里程碑合并 `main`；父仓库钉 `main` 发布线，故本地检出 `develop` 时显示 `M plugin` 属预期，**不 bump**。
+
+**结果 / 产出文件**
+- 提交并推送：`AGENTS.md` / `CLAUDE.md` / `CONTRIBUTING.md` / `HANDOFF.md` /
+  `.github/PULL_REQUEST_TEMPLATE.md` / `docs/README.md` / `docs/product-unification-plan.md` / `README.md`
+- 更新 `HANDOFF.md`：记录 Q4 决策与「父仓库钉发布线」策略。
+
+**遗留 / 下一步**
+- Phase 0 `docs/product-architecture.md`；清 Q1–Q3 以解阻塞 `orzmc-spec`。
 
 ### 2026-10-13 — pi（父仓库 AI 协作结构改造）
 
