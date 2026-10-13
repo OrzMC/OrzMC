@@ -109,12 +109,15 @@
   与 Python `orzmc/infra/cache.py` 同层；放单一 provider 会耦合、难复用。
 - **D11｜外部 Swift 依赖版本策略：HEAD 制**。`OrzMCKit` 的依赖（`OrzMC/MojangAPI`、`OrzMC/PaperMC`、
   `OrzGeeker/OrzSwiftKit`）由 tag（`from:`）改为 `branch: main`，与 Q7 一致、支持快速迭代。
+- **D12｜`MojangAPI` 平台下限抬到 macOS 13 / iOS 16**（对齐 `OrzSwiftKit`），以消费 `CacheKit`；
+  不再声明 tvOS/watchOS/visionOS（产品不使用；预稳定期可接受）。
 
 ### 7.1 执行顺序（按长期正确性排布）
 
 1. **基础设施**（`OrzSwiftKit`）：☑ `CacheKit`（D-c，PR #2）；☑ `RuntimeKit` JRE 获取原语（D-b，PR #3）；
    ◑ `TransferPolicy`（B2 纯策略，PR #3）；☐ 实际分块下载接入 `Downloader`。
-2. **元数据**（`MojangAPI`）：消费共享缓存；提供**从给定 JSON 构造**的离线接缝；`oldAlpha/oldBeta → snapshot` 渠道归一。
+2. **元数据**（`MojangAPI`）：☑ 消费 `CacheKit`（manifest 落盘缓存）；☑ 真实清单离线解码 + `resolve(channel:)`；
+   ☑ `BuildKind.channel`（非 release → snapshot）；☑ `JavaRequirement` 解析。
 3. **引擎契约**（`OrzMCKit`）：`GameType` 四值 + 能力矩阵；`GamePlan`（规范布局/下载计划/启动计划/Java 需求/进度）。
 4. **适配器**：`ConformanceAdapter` 薄层薄参 `GamePlan`；接入父仓库运行器。
 5. **产品面**：`OrzMC` CLI 与 `app` 迁到 `GamePlan`（HEAD 制，同批）；退役 `GameDir`。

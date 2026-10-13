@@ -93,6 +93,7 @@ natives OS-arch 规则、Java 版本推导、Fabric/Forge/Paper provider、启�
 | D9 | CLI 需**可被 AI 调用**：全局 `--json` + 能力发现（`capabilities`）+ 非交互确定性；**评估 MCP**，不追 “open-cli” 空名 | AI 协作者需要可解析、可发现的接口 |
 | D10 | Swift/SwiftPM 依赖一律用 `OrzMC/*` **规范路径**（禁重定向）；`OrzMCKit` 本地覆盖**仅供开发态、不提交** | 消除重定向误读，同时不破坏 app 独立构建 |
 | D11 | **外部 Swift 依赖版本策略：HEAD 制**——`OrzMCKit` 的 `MojangAPI`/`PaperMC`/`OrzSwiftKit` 改用 `branch: main` | 与 Q7 一致，支撑快速迭代 |
+| D12 | **`MojangAPI` 平台下限抬到 macOS 13 / iOS 16**（消费 `CacheKit`） | 统一缓存层跨包复用；预稳定期可接受 |
 
 > 决策若被推翻，必须在本章追加「~~D#~~ 已推翻，原因…」并说明替代方案，不得直接删除。
 
@@ -303,3 +304,4 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-13 | **D11**：外部 Swift 依赖也改 HEAD 制（`OrzMCKit` → `MojangAPI`/`PaperMC`/`OrzSwiftKit` 用 `branch: main`） | pi |
 | 2026-10-13 | Swift 基础①：`OrzSwiftKit` 新增 `CacheKit`（统一元数据缓存，D-c；PR #2 已合，CI 绿）；放宽 OrzGeeker 保护（关 `enforce_admins`） | pi |
 | 2026-10-13 | Swift 基础①(续)：`OrzSwiftKit` 新增 `RuntimeKit`（Java 获取原语，D-b）与 `TransferPolicy`（B2 纯策略）（PR #3 已合，CI 绿） | pi |
+| 2026-10-13 | Swift 基础②（`MojangAPI`）：渠道归一 + 真实清单离线解码 + `JavaRequirement`；消费 `CacheKit` 落盘缓存（D-c/D12，CI 绿） | pi |

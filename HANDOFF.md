@@ -132,7 +132,8 @@ git diff --submodule
 - [x] **Swift 基础①**：`CacheKit`（PR #2 已合）；OrzGeeker 保护已放宽（`enforce_admins=false`）；D11 HEAD 制落地。
 - [x] **P3｜Swift 基础①(续)**：`RuntimeKit`（D-b）+ `TransferPolicy`（B2）→ PR #3 已合（`cd93070`）。
 - [ ] **P3｜B2 剩余**：把 `TransferPolicy` 接入 `Downloader`（实际 4 路 Range + 池）。
-- [ ] **P3｜Swift 基础②**：`MojangAPI` 消费 `CacheKit` + 离线快照接缝 + 渠道归一。
+- [x] **P3｜Swift 基础②**：`MojangAPI` — 渠道归一 + 真实清单离线解码 + `JavaRequirement` + 消费 `CacheKit`（`bb8dbe8`，CI 绿）。
+- [ ] **P3｜注意**：`MojangAPI` 平台下限现为 macOS 13 / iOS 16（D12）；OrzMCKit 需 `swift package update` 才会跟进新 revision。
 - [ ] **P3｜Swift 基础③**：`OrzMCKit` `GameType` 四值 + `GamePlan`。
 - [ ] **P2｜Swift 适配器**：按 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md) §7.1 顺序推进。
 - [x] **P2/3｜Q7 已决（B/HEAD 制）**：伞内引擎版本 = `OrzMCKit` `main` HEAD；`app` 改用 `branch = main`。
@@ -144,6 +145,22 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（Swift 基础②：MojangAPI 渠道/离线/缓存）
+
+**做了什么**
+- 渠道归一：`BuildChannel` + `BuildKind.channel`（非 release → snapshot，B10）。
+- 真实清单离线解码：`ManifestSummary` 自定义 `Codable` 兼容 Mojang 原生格式（`latest.release/snapshot`）；`resolve(channel:)`。
+- `JavaRequirement` DTO + `Mojang.javaRequirement(fromVersionJSON:)`（读 `javaVersion.majorVersion`，缺失默认 8，B5）。
+- **消费 `CacheKit`**（D-c）：`manifest` 改用落盘 `MetadataCache`（TTL 24h / `forceUpdate` 绕过 / 失败回退旧副本）；
+  新增 `Mojang.configureCache(directory:/policy:)`；精简 `APICache`（仅剩 game-version/asset LRU）。
+- **D12**：`MojangAPI` 平台下限抬到 macOS 13 / iOS 16（对齐 OrzSwiftKit）。
+
+**结果 / 产出**
+- `OrzMC/MojangAPI` main `3cbb04b` + `bb8dbe8`，CI 绿（macos-latest）。
+
+**下一步**
+- ③ `OrzMCKit`：`GameType` 四值 + `GamePlan` 纯计划契约（下一步开工）。
 
 ### 2026-10-13 — pi（Swift 基础① 续：RuntimeKit + TransferPolicy）
 
