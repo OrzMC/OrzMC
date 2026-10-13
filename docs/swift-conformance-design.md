@@ -112,7 +112,8 @@
 
 ### 7.1 执行顺序（按长期正确性排布）
 
-1. **基础设施**（`OrzSwiftKit`）：☑ `CacheKit`（D-c，PR #2 已合）；☐ `RuntimeKit` JRE 获取原语（D-b）；☐ `Downloader` 并发/Range（B2）。
+1. **基础设施**（`OrzSwiftKit`）：☑ `CacheKit`（D-c，PR #2）；☑ `RuntimeKit` JRE 获取原语（D-b，PR #3）；
+   ◑ `TransferPolicy`（B2 纯策略，PR #3）；☐ 实际分块下载接入 `Downloader`。
 2. **元数据**（`MojangAPI`）：消费共享缓存；提供**从给定 JSON 构造**的离线接缝；`oldAlpha/oldBeta → snapshot` 渠道归一。
 3. **引擎契约**（`OrzMCKit`）：`GameType` 四值 + 能力矩阵；`GamePlan`（规范布局/下载计划/启动计划/Java 需求/进度）。
 4. **适配器**：`ConformanceAdapter` 薄层薄参 `GamePlan`；接入父仓库运行器。

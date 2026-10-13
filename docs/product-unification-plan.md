@@ -302,3 +302,4 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-13 | **Q7 已决（B/HEAD 制）**：伞内引擎版本 = `OrzMCKit` `main` HEAD；`app` 的 SwiftPM 依赖改用 `branch = main` | pi |
 | 2026-10-13 | **D11**：外部 Swift 依赖也改 HEAD 制（`OrzMCKit` → `MojangAPI`/`PaperMC`/`OrzSwiftKit` 用 `branch: main`） | pi |
 | 2026-10-13 | Swift 基础①：`OrzSwiftKit` 新增 `CacheKit`（统一元数据缓存，D-c；PR #2 已合，CI 绿）；放宽 OrzGeeker 保护（关 `enforce_admins`） | pi |
+| 2026-10-13 | Swift 基础①(续)：`OrzSwiftKit` 新增 `RuntimeKit`（Java 获取原语，D-b）与 `TransferPolicy`（B2 纯策略）（PR #3 已合，CI 绿） | pi |

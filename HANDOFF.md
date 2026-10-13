@@ -130,8 +130,10 @@ git diff --submodule
 - [x] **P2｜Q4 已决**：登记 `OrzMCKit` 为父仓库子模块（`08e6b76`，钉 `e302d4e`）；核实 MojangAPI/PaperMC 已入组织。
 - [ ] **P2｜Phase 0/1 评审**：确认决策 D1–D9 与规范。
 - [x] **Swift 基础①**：`CacheKit`（PR #2 已合）；OrzGeeker 保护已放宽（`enforce_admins=false`）；D11 HEAD 制落地。
-- [ ] **P3｜Swift 基础②**：`RuntimeKit`（D-b）、`Downloader` 并发/Range（B2）。
-- [ ] **P3｜Swift 基础③**：`MojangAPI` 消费 `CacheKit` + 离线快照接缝 + 渠道归一。
+- [x] **P3｜Swift 基础①(续)**：`RuntimeKit`（D-b）+ `TransferPolicy`（B2）→ PR #3 已合（`cd93070`）。
+- [ ] **P3｜B2 剩余**：把 `TransferPolicy` 接入 `Downloader`（实际 4 路 Range + 池）。
+- [ ] **P3｜Swift 基础②**：`MojangAPI` 消费 `CacheKit` + 离线快照接缝 + 渠道归一。
+- [ ] **P3｜Swift 基础③**：`OrzMCKit` `GameType` 四值 + `GamePlan`。
 - [ ] **P2｜Swift 适配器**：按 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md) §7.1 顺序推进。
 - [x] **P2/3｜Q7 已决（B/HEAD 制）**：伞内引擎版本 = `OrzMCKit` `main` HEAD；`app` 改用 `branch = main`。
 - [ ] **P2｜补样例**：`server-plan/`（`planServerDeploy`）与 `server-lifecycle/`（B7）。
@@ -142,6 +144,24 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（Swift 基础① 续：RuntimeKit + TransferPolicy）
+
+**做了什么**
+- `OrzSwiftKit` 新增 **`RuntimeKit`**（D-b，Java 获取原语）：
+  - `AdoptiumQuery`（`Utils.Platform` → Adoptium os/arch 映射 + `assets/latest` URL）
+  - `AdoptiumAssetSelector`（纯选取）、`ArchiveExtractor`（tar.gz/tgz/zip）
+  - `JavaRuntimeInstaller`（下载 → SHA-256 校验 → 解压 → 定位 `bin/java`，兼容 macOS `Contents/Home`）
+- `JokerKits` 新增 **`TransferPolicy`**（B2 纯策略）：并发 clamp(1–64)、≥8MB 分 4 路、range 切分。
+- 测试：Adoptium / Archive / TransferPolicy；CI 过滤扩展。
+
+**结果 / 产出**
+- `OrzGeeker/OrzSwiftKit` **PR #3 已合并**（squash，main `cd93070`），CI 绿（24 测试）。
+- 本地：`swift build --target RuntimeKit/CacheKit` 通过（本机 SDK/链接限制见 2.5）。
+
+**下一步**
+- ② `MojangAPI`：消费 `CacheKit`（唯一缓存层）+ 离线快照接缝 + `oldAlpha/oldBeta → snapshot` 渠道归一。
+- ③ `OrzMCKit`：`GameType` 四值 + `GamePlan`。
 
 ### 2026-10-13 — pi（Swift 基础 ①：OrzSwiftKit CacheKit 统一缓存）
 
