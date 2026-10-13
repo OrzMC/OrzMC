@@ -205,6 +205,27 @@ git diff --submodule <路径>
   ```
 - 子模块指针要指向**已存在于远端的分支/提交**（不要在子模块里留本地未推送的提交就 bump 父仓库）。
 
+### 8.1 远程真机验证（Windows）
+
+需要 Windows 平台实测（路径分隔 / `java.exe` / PATH / 补全 / `install.ps1` / 下载与启动）时，
+通过 SSH 登录 Windows 真机执行。
+
+| 项 | 值 |
+|---|---|
+| SSH 主机 | `win`（`WangA@192.168.0.33`，免密 key） |
+| 默认 shell | **PowerShell**（不是 cmd；命令里的 `&` 会被当作后台运算符） |
+| **收敛工作根** | **`E:\orzmc-verify\`**（子目录 `bin/` `minecraft/` `tmp/` `logs/`） |
+| 清理 | `scripts/win/run.sh -c 'Remove-Item -Recurse -Force E:\orzmc-verify'` |
+
+- **统一用 [`scripts/win/run.sh`](scripts/win/run.sh)** 执行（自动 `-EncodedCommand`，规避 bash→ssh→PowerShell 的引号与 `&` 陷阱）：
+  ```bash
+  scripts/win/run.sh -c 'Get-PSDrive E | Select-Object Used,Free'
+  scripts/win/run.sh -f scripts/win/foo.ps1
+  ```
+- **产物一律放在 `E:\orzmc-verify\` 下**，不要散落到 `E:\` 根或系统目录，方便后续一次性清理。
+- ⚠️ **`E:\orzmc` 是生产部署目录**（caddy / cloudflared / database / mcsmanager）——**绝对不要动**。
+- 真机验证的结论/关键命令记入 [`HANDOFF.md`](HANDOFF.md)。
+
 ---
 
 ## 9. 进行中的计划与状态

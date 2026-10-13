@@ -77,6 +77,19 @@ git status --porcelain
 git diff --submodule
 ```
 
+### 2.4 远程真机验证环境（Windows）
+
+| 项 | 值 |
+|---|---|
+| SSH 主机 | `win`（`WangA@192.168.0.33`，免密 key；主机名 `LAPTOP-APCBNCLR`） |
+| 默认 shell | **PowerShell**（`&` 是后台运算符，注意引号） |
+| 收敛工作根 | **`E:\orzmc-verify\`**（`bin/ minecraft/ tmp/ logs/`，已创建） |
+| 执行助手 | `scripts/win/run.sh -c '<ps>'` / `-f <file.ps1>` / stdin |
+| 清理 | `scripts/win/run.sh -c 'Remove-Item -Recurse -Force E:\orzmc-verify'` |
+
+> ⚠️ `E:\orzmc` 是**生产部署**（caddy/cloudflared/database/mcsmanager），**勿动**。
+> 详见 [`AGENTS.md` §8.1](AGENTS.md)。
+
 ---
 
 ## 3. 待决策 / 开放问题
@@ -107,11 +120,28 @@ git diff --submodule
 - [ ] **P2｜接入真实适配器**：Python（`orzmc/tests/conformance/adapter.py`）与 Swift（`OrzMCKit`），跑通同一批 fixtures。
 - [ ] **P2｜补样例**：`server-plan/`（`planServerDeploy`）与 `server-lifecycle/`（B7）。
 - [ ] **P2｜可选**：加轻量 CI 校验 `AGENTS.md` 子模块登记表与 `.gitmodules` 一致；父仓库跑参考适配器自检。
+- [ ] **P2｜Windows 真机验证**：需要时经 `scripts/win/run.sh` 在 `win` 上实测（产物限于 `E:\orzmc-verify\`）。
 - [ ] **P2｜治理**：是否把 `OrzMCKit` 登记为子模块（plan Q4）。
 
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（远程 Windows 验证环境）
+
+**做了什么**
+- 确认 `win`（`WangA@192.168.0.33`）免密可连；默认 shell 为 **PowerShell**。
+- 建立**收敛工作根** `E:\orzmc-verify\`（`bin/ minecraft/ tmp/ logs/`），避免散落到 E: 根。
+- 新增 [`scripts/win/run.sh`](scripts/win/run.sh)：用 `-EncodedCommand`(base64/UTF-16LE) 远程执行 PowerShell，
+  规避引号与 `&` 陷阱，并静音进度流、统一 UTF-8 输出。
+- 写入 [`AGENTS.md` §8.1](AGENTS.md) 与本文档 2.4。
+
+**结果 / 产出文件**
+- 新增：`scripts/win/run.sh`
+- 修改：`AGENTS.md`、`HANDOFF.md`
+
+**遗留 / 下一步**
+- 尚未做实际 Windows 功能验证；待 Phase 2/3 需要时使用。
 
 ### 2026-10-13 — pi（Phase 2：一致性套件落地）
 
