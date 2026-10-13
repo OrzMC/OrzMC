@@ -91,6 +91,15 @@ git diff --submodule
 > ⚠️ `E:\orzmc` 是**生产部署**（caddy/cloudflared/database/mcsmanager），**勿动**。
 > 详见 [`AGENTS.md` §8.1](AGENTS.md)。
 
+### 2.5 Swift 构建与验证
+
+| 项 | 值 |
+|---|---|
+| 本地工具链 | `~/Library/Developer/Toolchains/swift-6.0.3-RELEASE.xctoolchain`（Swift 6.0.3，已装） |
+| 本地 SDK | 仅 macOS 12/13（CLT）→ `OrzMCKit` 整包 **无法本地编译**（OpenAPIKit 需 macOS 14 API） |
+| 验证途径 | `OrzMCKit` CI（`macos-15`：`swift build` + `swift test`，已绿）；不依赖 OpenAPIKit 的独立包可本地编译 |
+| 不可用 | `swift-latest` / 6.5-dev 工具链需 macOS 15；`swiftly` 在本机崩溃 |
+
 ---
 
 ## 3. 待决策 / 开放问题
@@ -131,6 +140,22 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（Swift 工具链/CI 基座）
+
+**做了什么**
+- 固化 **D-a/D-b/D-c** 决策（以长期正确性为准），写入 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md) §7。
+- 本机环境：macOS 13.7；CLT Swift 5.8；6.5-dev 工具链需 macOS 15 不可用。
+  自行安装 **Swift 6.0.3** 到 `~/Library/Developer/Toolchains/swift-6.0.3-RELEASE.xctoolchain`（无 root，解包 pkg）。
+- 但本机 SDK 仅 macOS 12/13，而 `OrzMCKit` 依赖的 OpenAPIKit 需 macOS 14 API → **本地无法编译整包**。
+- 给 `OrzMCKit` 加 **CI（`macos-15`：`swift build` + `swift test`）**；把样板 `example` 测试换成确定性离线单测 → **CI 全绿**。
+
+**结果 / 产出**
+- OrzMCKit `328de49`（CI 绿）；父仓库 bump `OrzMCKit`。
+
+**遗留 / 下一步**
+- 按设计 §7.1 顺序：先 `OrzSwiftKit`（MetadataCache / RuntimeKit / Downloader）→ MojangAPI → Game、GamePlan → 适配器 → app 迁移。
+- 本地验证受限；Swift 整包靠 OrzMCKit CI。
 
 ### 2026-10-13 — pi（依赖协作原则 + Swift 一致性设计）
 
