@@ -121,7 +121,7 @@ git diff --submodule
 - [x] **P2｜Q4 已决**：登记 `OrzMCKit` 为父仓库子模块（`08e6b76`，钉 `e302d4e`）；核实 MojangAPI/PaperMC 已入组织。
 - [ ] **P2｜Phase 0/1 评审**：确认决策 D1–D9 与规范。
 - [ ] **P2｜Swift 适配器**：`OrzMCKit` 接入同一批 fixtures（**已解锁**：子模块已就位）。
-- [ ] **P2/3｜Q7 引擎版本对齐**：定“伞内引擎版本”= tag 还是 HEAD，并让 `app` 的 `Package.resolved` 与子模块一致。
+- [x] **P2/3｜Q7 已决（B/HEAD 制）**：伞内引擎版本 = `OrzMCKit` `main` HEAD；`app` 改用 `branch = main`。
 - [ ] **P2｜补样例**：`server-plan/`（`planServerDeploy`）与 `server-lifecycle/`（B7）。
 - [ ] **P2｜可选**：加轻量 CI 校验 `AGENTS.md` 子模块登记表与 `.gitmodules` 一致；父仓库跑参考适配器自检。
 - [ ] **P2｜Windows 真机验证**：需要时经 `scripts/win/run.sh` 在 `win` 上实测（产物限于 `E:\orzmc-verify\`）。
@@ -130,6 +130,20 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（Q7=B：引擎跟随 main HEAD）
+
+**做了什么**
+- Q7 决策：**B / HEAD 制**（为快速迭代，伞内引擎版本 = `OrzMCKit` `main` HEAD，不依赖 tag）。
+- `app`：`XCRemoteSwiftPackageReference "OrzMCKit"` 的 requirement 由 `upToNextMajorVersion 0.0.6`
+  改为 `branch = main`；`Package.resolved` 的 orzmckit 钉子由 `version: 0.0.6` 改为 `branch: main @ 1244125`。
+- 父仓库 bump app 指针至 `6555c10`（OrzMCKit 子模块已是 HEAD，无变化）。
+
+**结果 / 产出**
+- app `6555c10`；父仓库 `d55bdae`；docs：plan Q7/变更记录、架构 §7.1、本文件。
+
+**遗留 / 关注点**
+- HEAD 制意味着 `app` 需在引擎改动后重跑 `xcodebuild -resolvePackageDependencies` 跟进；必要时可在本地覆盖。
 
 ### 2026-10-13 — pi（依赖 URL 规范化 + 本地覆盖策略）
 

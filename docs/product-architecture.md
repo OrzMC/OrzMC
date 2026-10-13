@@ -229,8 +229,8 @@ L3 产品伞 ──▶ 只做锁定与文档，不改任何实现代码
   从而用伞内本地引擎源开发。
 - ⚠️ **本地覆盖不提交**：`app` 的发布/文档 CI（`release-app.yml` / `publish-docs.yml`）只检出 app 仓库本身，
   提交 `../OrzMCKit` 本地路径依赖会**打断独立构建**。开发时覆盖、验证后还原；正式版仍以规范路径的 SwiftPM 版本为准。
-- **版本对齐（待办）**：`app` 的 `Package.resolved` 钉引擎 tag `0.0.6`，而父仓库子模块钉 `main` HEAD（`0.0.6-4`），
-  两者不一致 —— 需明确定义“伞内引擎版本”是 tag 还是分支 HEAD（见计划）。
+- **版本策略（Q7 已决：HEAD 制）**：伞内引擎版本 = `OrzMCKit` 的 `main` HEAD。父仓库子模块与 `app` 的
+  SwiftPM 依赖（`branch = main`）都跟随 HEAD、保持同步，**不再依赖 tag**（为快速迭代）。
 
 ---
 

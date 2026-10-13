@@ -240,7 +240,7 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | Q4 | app 仓库 `.gitmodules` 已空、且曾移除 OrzMCKit 子模块——是否要恢复登记以避免"引擎游离"？ | D5 具体做法 | ✅ 已决：**登记为父仓库子模块**（`OrzMCKit`，路径 `OrzMCKit/`，`main`，钉 `e302d4e`） | ✅ |
 | Q5 | spec 数据模型用 JSON Schema 还是「Markdown + JSON 样例」起步？ | Phase 1 工作量 | ✅ 已决：先 **Markdown + JSON 样例**（已落 `docs/spec/data-model.md`），稳定后再补 Schema | ✅ |
 | Q6 | conformance 是否要求 Swift 侧也进父仓库 CI（跨仓库触发）？ | Phase 2 复杂度 | 各自仓库 CI 内跑，父仓库只做状态汇总 | ☐ |
-| Q7 | “伞内引擎版本”定为 tag（`0.0.6`）还是分支 HEAD？子模块钉 HEAD，app 的 `Package.resolved` 钉 tag，当前不一致 | Phase 2/3 对齐 | 待定：或“子模块钉 tag + app 跟 tag”，或“app 本地覆盖不固定” | ☐ |
+| Q7 | “伞内引擎版本”定为 tag（`0.0.6`）还是分支 HEAD？子模块钉 HEAD，app 的 `Package.resolved` 钉 tag，当前不一致 | Phase 2/3 对齐 | ✅ 已决：**HEAD 制（B）**——子模块与 app 都跟随 `OrzMCKit` 的 `main` HEAD（app 改用 `branch = main`），因需快速迭代 | ✅ |
 
 ---
 
@@ -298,3 +298,4 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-13 | Python 适配器接入：`OrzPythonMC#32` 新增 `orzmc/tests/conformance/adapter.py`（26/26 绿，6 平台 CI 过） | pi |
 | 2026-10-13 | **Q4 已决**：登记 `OrzMCKit`（`OrzMC/OrzMCKit`，`main`，钉 `e302d4e`）为父仓库子模块；核实 `MojangAPI`/`PaperMC` 已入组织 | pi |
 | 2026-10-13 | 依赖 URL 统一迁到组织规范路径（`OrzMC/MojangAPI`、`OrzMC/PaperMC`、`OrzMC/ExarotonAPI`、`OrzMC/OrzMCKit`、`OrzMC/OrzMCApp`，含 `SUFeedURL`）；明确本地覆盖仅供开发态（D10） | pi |
+| 2026-10-13 | **Q7 已决（B/HEAD 制）**：伞内引擎版本 = `OrzMCKit` `main` HEAD；`app` 的 SwiftPM 依赖改用 `branch = main` | pi |
