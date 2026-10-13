@@ -8,11 +8,34 @@
 
 ---
 
-## 1. 一句话定义
+## 1. 定义与产品形态
+
+### 1.1 一句话定义
 
 OrzMC 是一个围绕 **PaperMC 生态**的 Minecraft 社区服务器开源组织，对外是**一个产品**
 （玩家能连、能玩、能管理的私服体验），对内是**一组可独立发布的仓库**：
-一套**语言无关规范** + 多套**引擎实现** + 多个**前端** + 服务器**运行面** + **产品伞**。
+一套**语言无关规范** + 多套**核心实现** + 多个**产品面** + 服务器**运行面** + **产品伞**。
+
+### 1.2 工具产品形态（目标）：一个 `orzmc`，两个面，一套核心
+
+- **一个产品 `orzmc`**，对外暴露两个**产品面（surface）**：
+
+  | 面 | 形态 | 说明 |
+  |---|---|---|
+  | **CLI** | 命令行 `orzmc` | 可**独立安装**（脚本 / PATH），无 GUI 也能完成全部核心操作 |
+  | **GUI** | `OrzMCApp` | macOS / iOS 图形应用 |
+
+- **互相安装 / 打开**（产品要求）：
+  - CLI → GUI：`orzmc app install` / `orzmc app open`（安装并打开图形应用）。
+  - GUI → CLI：GUI 内提供「安装命令行工具」入口（把 `orzmc` 装入 PATH）。
+- **共用核心逻辑**：
+  - **同一平台内**：CLI 与 GUI 链接**同一份核心** —— Apple 平台用 `OrzMCKit`；
+    非 Apple 平台 CLI 用 Python `orzmc` 库。
+  - **跨语言**：通过 [`docs/spec`](spec/README.md) 契约 + conformance 套件保证行为一致。
+- **允许差异化功能，但主体核心逻辑统一**：各面可有特有交互（GUI 专属视图、CLI 专属脚本化输出），
+  但**版本解析、下载、校验、Java 托管、启动/部署**等核心行为必须一致。
+- **一个 CLI 面**：Swift CLI 与 Python CLI 是**同一工具的不同实现**，命令 / 参数 / 输出契约统一，
+  用户看到的始终是**一个 `orzmc`**（契约见 `docs/spec`，待建）。
 
 ---
 
@@ -87,11 +110,14 @@ flowchart TB
   - Swift：`OrzMCKit`（`Game` / `Fabric`）+ 依赖包（`MojangAPI` / `PaperMC` / `OrzSwiftKit`）。
 - **要求**：两者**输入/输出符合 L0 契约**；内部实现可不同。跨语言一致性由 conformance 套件保证（计划 Phase 2）。
 
-### L2 前端（多个，独立发布）
+### L2 产品面（CLI / GUI，独立发布）
 
-- **职责**：只做交互与编排，**只调用所属引擎的公共 API**，不触碰引擎内部实现。
-- **现有**：`orzmc-app`（Python CLI）、`OrzMCApp`（SwiftUI GUI）、`OrzMCKit` 的 `orzmc` 可执行。
-- **注意**：Swift 侧同时存在 GUI（App）与 CLI（Kit 的 `orzmc`）两个前端。
+- **职责**：只做交互与编排，**只调用所属核心的公共 API**，不触碰核心内部实现。
+- **两个面**：CLI（`orzmc`）与 GUI（`OrzMCApp`）；CLI 有 Python / Swift 两个实现，
+  共同收敛为**一个命令契约**（同一工具的不同实现）。
+- **同平台共核**：Apple 平台的 CLI 与 GUI 共用 `OrzMCKit`；非 Apple 平台 CLI 用 Python `orzmc` 库。
+- **跨面集成**：CLI ↔ GUI 的安装 / 打开 / 更新能力（见 §1.2）是**产品要求**，
+  需在 `docs/spec` 中定义接口与安装记录格式（与 Python 现有 `install.conf` 对齐）。
 
 ### L3 产品伞
 
@@ -170,9 +196,9 @@ L3 产品伞 ──▶ 只做锁定与文档，不改任何实现代码
 
 | 资产 | 归属 | 决策权 |
 |---|---|---|
-| L0 `orzmc-spec`（待建） | `OrzMC` 组织 | 组织 |
-| Python 引擎 + CLI | `OrzMC/OrzPythonMC` | 组织 |
-| Swift 引擎 + `orzmc` CLI | `OrzMC/OrzMCKit` | 组织 |
+| L0 规范 `docs/spec/`（现行）/ 未来 `orzmc-spec` | 父仓库 `OrzMC/OrzMC` | 组织 |
+| Python 核心 + CLI | `OrzMC/OrzPythonMC` | 组织 |
+| Swift 可复用基础组件（`Game`/`Fabric`）+ `orzmc` CLI | `OrzMC/OrzMCKit` | 组织 |
 | Swift 引擎依赖 | `wangzhizhou/MojangAPI`、`wangzhizhou/PaperMC`、`OrzGeeker/OrzSwiftKit` | **个人仓库** ⚠️ |
 | GUI | `OrzMC/OrzMCApp` | 组织 |
 | 运行面 | 各 `OrzMC/*` 子模块 | 各自仓库 |
@@ -247,6 +273,8 @@ L3 产品伞 ──▶ 只做锁定与文档，不改任何实现代码
 4. **Phase 3**：引擎对齐，消除第 8 章差异。
 5. **Phase 4**：前端组件化与二次开发指南。
 6. **Phase 5**：统一产品发布列车（`RELEASES.md`）。
+
+> **产品形态目标见 §1.2**：一个 `orzmc`、CLI 与 GUI 两面、共用核心逻辑、可互相安装/打开。
 
 > 本文档随架构演进更新；每次架构改动（分层/依赖/所有权变化）都应在此追加说明，
 > 并同步 `AGENTS.md` 与 `HANDOFF.md`。

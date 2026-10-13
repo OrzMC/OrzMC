@@ -24,7 +24,9 @@
 | 文档 | 状态 | 内容 | 位置 |
 |:--|:--|:--|:--|
 | [product-architecture.md](product-architecture.md) | 现行 | **产品架构**：仓库角色地图、分层模型（L0 规范 / L1 引擎 / L2 前端 / L3 产品伞）、引擎六阶段、**允许依赖方向与禁止事项**、治理与已知差异 | docs/ |
-| [product-unification-plan.md](product-unification-plan.md) | 草案 | 客户端/服务端工具（`python` × `app`）统一化推进计划：已核验事实、决策 D1–D6、Phase 0–5、开放问题、上下文包 | docs/ |
+| [product-unification-plan.md](product-unification-plan.md) | 草案 | 客户端/服务端工具（`python` × `app`）统一化推进计划：已核验事实、决策 D1–D8、Phase 0–5、开放问题、上下文包 | docs/ |
+| [spec/README.md](spec/README.md) | 草案 | **语言无关规范**（`orzmc-spec` 雏形）：定位、原则、实现映射、已知差异 | docs/spec/ |
+| [spec/data-model.md](spec/data-model.md) | 草案 | 核心数据模型（路径/版本/下载/Java/启动计划…）+ Python ↔ Swift 字段对照 | docs/spec/ |
 
 ---
 

@@ -34,7 +34,8 @@
 
 ### 1.3 目标（可验收）
 
-- G1：沉淀语言无关的 **`orzmc-spec`**：统一数据模型、中间表示（计划表）、行为契约、版本化。
+- G1：沉淀语言无关规范 **`docs/spec/`**（= `orzmc-spec` 雏形）：统一数据模型、中间表示（计划表）、行为契约、版本化；成熟后再下沉独立仓库。
+- G6：产品形态统一为**一个 `orzmc`**：CLI 与 GUI 两面、**共用核心逻辑**、可**互相安装/打开**；允许差异化功能，但主体核心逻辑一致。
 - G2：建立**跨语言一致性套件**（黄金样例），Python 与 Swift 实现跑同一套用例，差异即红灯。
 - G3：引擎收敛为**可分阶段调用的可组合组件**（resolve → plan → download → verify → assemble → launch）。
 - G4：前端各自独立发布，父仓库提供**统一产品伞**（品牌 / 文档索引 / 版本列车）。
@@ -83,10 +84,12 @@ natives OS-arch 规则、Java 版本推导、Fabric/Forge/Paper provider、启�
 |---|---|---|
 | D1 | **不合并 python 与 app 仓库** | 工具链（uv vs Xcode/SwiftPM）、CI runner（6 廉价 vs `macos-26`+证书）、发布通道（PyPI vs notarize/appcast）、平台矩阵（6 平台 vs Apple only）不兼容；iOS 不能跑 Python，「同一仓库=同一产品」不成立 |
 | D2 | 目标架构 = **一份规范 + 多套实现 + 多个前端 + 一个产品伞** | 消灭引擎重复且不牺牲平台灵活性 |
-| D3 | **语言无关标准**落到独立、可版本化的 `orzmc-spec`（具体落点待 D5） | 标准不应寄居在某语言仓库里，否则天然偏袒一方 |
+| D3 | **语言无关标准**落到父仓库 `docs/spec/`（Q2 已决；成熟稳定后再下沉独立仓库 `orzmc-spec`） | 先降低落地成本不新增仓库；成熟后独立可避免寄居某语言仓库 |
 | D4 | 一致性靠**黄金样例 + 跨语言 conformance 套件**，不靠人肉对表 | 唯一能长期防漂移的手段 |
 | D5 | `OrzMCKit`（Swift 引擎）应纳入 org 治理视野（子模块登记或迁移） | 目前是「编外引擎」，是上下文丢失的最大来源之一 |
 | D6 | 父仓库（OrzMC）承担**产品伞**：品牌 / 文档索引 / 版本列车 | 父仓库本就是统一入口，无需代码合并 |
+| D7 | 产品形态：**一个 `orzmc`**，CLI + GUI 两面，**共用核心逻辑**、可**互相安装/打开**；允许差异化功能、核心统一 | 用户期望的是一个可自洽的产品，而非两个同名工具 |
+| D8 | `OrzMCKit` 定位为 **Swift 语言下可复用的基础组件**（非 App 私有引擎）：既服务 Swift CLI，也服务 GUI | 使其可被其它 Swift 项目复用，改善治理 |
 
 > 决策若被推翻，必须在本章追加「~~D#~~ 已推翻，原因…」并说明替代方案，不得直接删除。
 
@@ -136,10 +139,10 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 - **依赖**：无。
 - **产出物状态**：☑ 计划文档 ☑ 架构文档（`docs/product-architecture.md`）☑ README 链接
 
-### Phase 1 — `orzmc-spec` v0.1：数据模型与中间表示
+### Phase 1 — `docs/spec/`（orzmc-spec 雏形）：数据模型与中间表示
 
-- **目标**：抽出跨语言共用的纯数据契约。
-- **落点（待 D5 决策）**：优先新建独立仓库 `OrzMC/orzmc-spec`，作为父仓库子模块挂到 `spec/`。
+- **目标**：抽出跨语言共用的纯数据契约，并定义统一的 CLI/产品面契约。
+- **落点（Q2 已决）**：父仓库 `docs/spec/`，成熟稳定后再考虑下沉独立仓库 `OrzMC/orzmc-spec`。
 - **交付物**
   - 数据模型（建议同时给 JSON Schema 与 Markdown 说明）：
     - `VersionManifest` / `VersionEntry`（id、type、channel、releaseTime、sha1）
@@ -213,7 +216,7 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | Phase 0 | 计划文档落库 | ☑ 已完成（本文件） |
 | Phase 0 | `product-architecture.md` | ☑ 已完成 |
 | Phase 0 | 第 3 章决策评审通过 | ☐ 待评审 |
-| Phase 1 | `orzmc-spec` 仓库建立 | ☐ 未开始（阻塞于 Q1/Q2） |
+| Phase 1 | `docs/spec/` 规范建立 | ☐ 未开始（Q1/Q2 已决，可开工） |
 | Phase 1 | 数据模型 + 字段对照表 | ☐ 未开始 |
 | Phase 2 | fixtures + 双 harness | ☐ 未开始 |
 | Phase 3 | 差异清零 + 行为契约 | ☐ 未开始 |
@@ -227,10 +230,10 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | # | 问题 | 影响 | 建议默认 | 状态 |
 |---|---|---|---|---|
 | Q1 | `OrzMCKit` 仓库是否可读/可改？（决定 Phase 1 能否核对 Swift 类型） | 解阻塞 Phase 1 | ✅ 已确认：可访问（`main`），已浅克隆核验；注意其引擎依赖 `MojangAPI`/`PaperMC`/`OrzSwiftKit` 在个人仓库 | ✅ |
-| Q2 | `orzmc-spec` 落点：独立仓库 + 父仓库 `spec/` 子模块，还是父仓库内 `docs/spec/`？ | 决定 Phase 1 落点 | 独立仓库，长期更干净 | ☐ |
-| Q3 | 是否把 `OrzMCKit` 纳入父仓库子模块（D5）？ | 治理与上下文 | 纳入 | ☐ |
+| Q2 | `orzmc-spec` 落点？ | 决定 Phase 1 落点 | ✅ 已决：**父仓库 `docs/spec/`**，成熟后再下沉独立仓库 | ✅ |
+| Q3 | `OrzMCKit` 如何定位？ | 治理与复用 | ✅ 已决：**Swift 可复用基础组件**（非 App 私有引擎），服务 Swift CLI 与 GUI | ✅ |
 | Q4 | app 仓库 `.gitmodules` 已空、且曾移除 OrzMCKit 子模块——是否要恢复登记以避免"引擎游离"？ | D5 具体做法 | 与 Q3 合并决策 | ☐ |
-| Q5 | spec 数据模型用 JSON Schema 还是「Markdown + JSON 样例」起步？ | Phase 1 工作量 | 先 Markdown + 样例，稳定后再补 Schema | ☐ |
+| Q5 | spec 数据模型用 JSON Schema 还是「Markdown + JSON 样例」起步？ | Phase 1 工作量 | ✅ 已决：先 **Markdown + JSON 样例**（已落 `docs/spec/data-model.md`），稳定后再补 Schema | ✅ |
 | Q6 | conformance 是否要求 Swift 侧也进父仓库 CI（跨仓库触发）？ | Phase 2 复杂度 | 各自仓库 CI 内跑，父仓库只做状态汇总 | ☐ |
 
 ---
