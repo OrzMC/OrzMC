@@ -39,8 +39,8 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 项 | 内容 |
 |---|---|
-| **主题** | 产品统一化 — **Phase 0/1/2/3 完成；Phase 4 起步；Phase 5 治理已上线** |
-| **状态** | 🟢 目标达成：一份规范 + 多实现 + 前端共用核心；一致性套件 **31/31**（参考/Python/Swift）；Swift 侧 B1–B11 全部实现 |
+| **主题** | 产品统一化 — Phase 0–3 完成；Phase 5 治理已上线；**T1 端到端完成**；**T2 命令面统一进行中** |
+| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **31/31**；Swift 侧 B1–B11 全部实现；T2：Python 已补全局 `--json`/`--version`/`--root-dir`/`completion`/`capabilities`，Swift 已收敛选项 + 补 `list`/`remove`/`backup` |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
 | **下一步** | 见第 4 章（均为增量、非阻塞） |
@@ -65,7 +65,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `b6886fbb8c95` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41） |
 | `app` | `4a4c6b4` | `OrzMCApp`；有构建校验 CI |
-| `OrzMCKit` | `b9398b1ea5ec` | **Swift 引擎**（组织自有）；含 `ConformanceAdapter`；CLI 命令面（选项收敛 #2、`list`/`remove` #3） |
+| `OrzMCKit` | `70f3751c0b1e` | **Swift 引擎**（组织自有）；含 `ConformanceAdapter`；CLI 命令面（选项收敛 #2、`list`/`remove` #3、`backup` #4） |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
 > `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
@@ -146,7 +146,8 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - [x] **Python `capabilities`**（D9 能力发现）：内省输出命令/选项/退出码/信封 schema。
 - [ ] **Python 其余**：`plugin`（Hangar，需新实现 Hangar 客户端）/`app`；全局 `--auth`（需库支持）。
 - [x] **Swift `list`/`remove`**：引擎 `installedVersions`/`removeInstalled` + CLI 命令（#3）。
-- [ ] **Swift 补命令**：`version`/`backup`/`update`/`self-uninstall`/`app`/`completion`；`fabric` 隐藏别名；全局 `--root-dir`/`--json`（可在 `ssh air` 上编译验证）。
+- [x] **Swift `backup`**：引擎 `GamePlan.backupWorld` + CLI 命令（#4）。
+- [ ] **Swift 补命令**：`version`/`update`/`self-uninstall`/`app`/`completion`；`fabric` 隐藏别名；全局 `--root-dir`/`--json`（可在 `ssh air` 上编译验证）。
 
 **其他**
 - [ ] **Phase 4｜继续前端收敛**：把 `downloadClient`（下载编排）也抽到引擎 `Client`，CLI/GUI 共用（需进度 UI 抽象）。
@@ -159,6 +160,18 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（T2 续：Swift backup 命令）
+
+**做了什么**
+- `OrzMCKit` 引擎新增 `GamePlan.backupWorld`（zip 世界到 `backup/worlds/`，对齐 Python `Backup.backup_world`）与 `GameError.worldNotFound`；CLI 新增 `orzmc backup [-v] [-t] [--root-dir]`（版本缺省自动推断）；离线单测 2 例。
+- 踩坑：新增 `GameError` case 后，`ErrorPresentation` 的 `switch` 必须补分支（switch 穷尽）。
+
+**结果 / 产出**
+- `OrzMCKit` PR #4 已合（`70f3751c0b1e`，CI test + conformance 绿）；父仓库 bump `0454887`；`RELEASES.md` 刷新。
+
+**下一步**
+- Swift 补 `version`/`update`/`self-uninstall`/`app`/`completion` 与全局 `--root-dir`/`--json`；Python `plugin`/`app`。
 
 ### 2026-10-14 — pi（T2 续：Swift list/remove 命令）
 
