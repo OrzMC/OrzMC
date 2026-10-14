@@ -40,7 +40,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | 产品统一化 — Phase 0–3 完成；Phase 5 治理已上线；**T1 端到端完成**；**T2 命令面统一进行中** |
-| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **31/31**；Swift 侧 B1–B11 全部实现；T2：Python 已补全局 `--json`/`--version`/`--root-dir`/`completion`/`capabilities`，**Swift 命令面已全部对齐规范**（`list`/`remove`/`backup`/`version`/`completion`/`capabilities`/`update`/`self-uninstall`/`app` + `fabric` 隐藏别名 + 全局选项）；**D13：Swift `orzmc` CLI 发行化（发版链路 + 一键安装 + 首次 release `v0.0.6`）已落地** |
+| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **31/31**；Swift 侧 B1–B11 全部实现；**T2 命令面统一完成**：Python 已补 `--json`/`--version`/`--root-dir`/`completion`/`capabilities`/`plugin`/`app`，Swift 已全部对齐（`list`/`remove`/`backup`/`version`/`completion`/`capabilities`/`update`/`self-uninstall`/`app` + `fabric` 隐藏别名 + 全局选项）；**D13：Swift `orzmc` CLI 发行化（发版链路 + 一键安装 + 首次 release `v0.0.6`）已落地** |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
 | **下一步** | 见第 4 章（均为增量、非阻塞） |
@@ -63,7 +63,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `b6886fbb8c95` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41） |
+| `python` | `11a423a7cceb` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41）+ `plugin`/`app`（#42） |
 | `app` | `4a4c6b4` | `OrzMCApp`；有构建校验 CI |
 | `OrzMCKit` | `33504ac6bc52` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`；命令面 #2–#5、#7、#9–#11；发版链路（release-please + `release.yml`）+ `scripts/install.sh` #6；已发 `v0.0.6` |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
@@ -150,7 +150,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - [x] **Python `--json` 信封**（D9 AI 调用核心）：全局 `--json`，`{ok,command,data,error}`，日志/进度转 stderr。
 - [x] **Python `completion`**：`orzmc completion <shell>` / `install`（typer `add_completion=True`）。
 - [x] **Python `capabilities`**（D9 能力发现）：内省输出命令/选项/退出码/信封 schema。
-- [ ] **Python 其余**：`plugin`（Hangar，需新实现 Hangar 客户端）/`app`；全局 `--auth`（需库支持）。
+- [x] **Python `plugin`/`app`**：`plugin` 吸收自 Swift（Hangar 搜索/列表/下载）；`app` 跨面 GUI（macOS）。全局 `--auth`（正版授权，需库支持）仍待办。
 - [x] **Swift `list`/`remove`**：引擎 `installedVersions`/`removeInstalled` + CLI 命令（#3）。
 - [x] **Swift `backup`**：引擎 `GamePlan.backupWorld` + CLI 命令（#4）。
 - [x] **Swift `version` + 全局选项**：工具版本单一事实源 `Game/OrzMCVersion` + `version` 命令；全局 `--version`/`--verbose`/`--root-dir`/`--json`（ConsoleKit 之上预解析 argv）；`--json` 信封；`ClientInfo`/`ServerInfo` 贯通 `rootDir`；无子命令退出 0；服务端 `--type` 缺省 vanilla（#5）。
@@ -167,6 +167,22 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（T2 收尾：Python `plugin` / `app`）
+
+**做了什么**
+- `OrzPythonMC` 新增 `orzmc plugin`（#42）：`core/hangar.py` Hangar v1 适配器 + `services/plugins.py` `PluginService`；CLI `--search/--list/--output/--version/--count`。
+- 新增 `orzmc app`（#42）：`services/app.py` `AppInstaller`（macOS 跨面 GUI：resolve/install/open/uninstall/status；非 macOS 显式拒绝；App Store 渠道上架前 E_UNSUPPORTED）。
+- 公共 API 导出 + `--json` 信封；离线测试（FakeHttp / fake process / 沙箱 HOME）。
+
+**结果 / 产出**
+- `OrzPythonMC` PR #42 已合（`11a423a7cceb`，`quality` + 6 平台 `test` + `pr-title` 全绿）；父仓库 bump + `RELEASES.md` 刷新；`cli-surface.md` §2/§10 同步。
+- 本地门禁：ruff / mypy / pytest（349 passed）全绿。
+- **T2「统一 CLI 命令面」完成：两套实现的命令面已全部对齐规范。**
+
+**尾部**
+- 合并 `OrzMCKit` #10/#11 后 release-please 持续维护 0.1.0 的 release PR（#8）。
+- 剩余非阻塞：Python `--auth`（需库支持）、`capabilities`/`mcp` schema、Phase 4 前端收敛、一致性样例扩展。
 
 ### 2026-10-14 — pi（T2 Step 2：Swift `app` 命令 - 跨面 GUI）
 

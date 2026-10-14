@@ -29,13 +29,13 @@
 |:--|:--|:--|:--|
 | `client` | 启动客户端（缺文件自动下载即安装） | ✅ | ✅ |
 | `server` | 部署并启动服务端 | ✅ | ✅ |
-| `plugin` | Hangar 搜索 / 下载服务端插件（**吸收自 Swift**） | ❌ 无 | ✅ |
+| `plugin` | Hangar 搜索 / 下载服务端插件（**吸收自 Swift**） | ✅ | ✅ |
 | `list` | 列出已安装版本 | ✅ | ❌ |
 | `remove` | 移除已安装版本 | ✅ | ❌ |
 | `backup` | 备份服务端世界 | ✅ | ❌ |
 | `update` | 升级工具自身（非游戏版本） | ✅ | ❌ |
 | `self-uninstall` | 卸载工具自身 | ✅ | ❌ |
-| `app` | **跨面**：安装 / 打开 / 卸载 GUI 应用 | ❌ 新增 | ❌ 新增 |
+| `app` | **跨面**：安装 / 打开 / 卸载 GUI 应用 | ✅ (macOS) | ✅ (macOS) |
 | `completion` | 生成 / 安装 Shell 补全 | ✅ 新增 | ✅ 新增（bash/zsh） |
 | `version` | 打印工具版本 | ✅ | ✅ |
 
@@ -245,7 +245,7 @@ CLI 需支持**被 AI 智能体调用**：确定性、非交互、可发现、�
 5. `fabric` 已保留为隐藏别名 ✅（可用，不列入帮助/补全/capabilities）。
 
 **Python CLI**
-1. 新增 `plugin` / `app` / `completion` / `capabilities`。—— `completion` ✅、`capabilities` ✅；`plugin`/`app` 待办。
+1. 新增 `plugin` / `app` / `completion` / `capabilities`。—— 均 ✅（`app` macOS）。
 2. 全局 `--version` / `--verbose` / `--root-dir`（**已决**）✅。
 3. 新增全局 `--json` ✅ 与 `--auth`（正版授权，待办：需库支持）。
 4. 选项别名：`--minmem/--maxmem` 保留为 `--min-mem/--max-mem` 的别名 ✅。
