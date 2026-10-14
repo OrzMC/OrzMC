@@ -238,7 +238,7 @@ CLI 需支持**被 AI 智能体调用**：确定性、非交互、可发现、�
 
 **Swift CLI**
 1. 无子命令 → 打印帮助并退出 0（去掉默认 `client`）。✅
-2. 新增命令：`list` / `remove` / `backup` / `version` / `completion`（bash/zsh）/ `capabilities` / `update` / `self-uninstall` ✅；`app` 待办。
+2. 新增命令：`list` / `remove` / `backup` / `version` / `completion`（bash/zsh）/ `capabilities` / `update` / `self-uninstall` / `app` ✅。
 3. 选项改名：`--ms/--mx` → `--min-mem/--max-mem`；`--debug` → `--verbose`；`--force_upgrade` → `--force-upgrade`；
    `--jar-opts` → `--server-args`；`--gui` → `--nogui`（反向）。✅
 4. 全局 `--version` / `--verbose` / `--root-dir` / `--json` ✅（在 main 预解析 argv）。
