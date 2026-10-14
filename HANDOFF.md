@@ -42,7 +42,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **主题** | 产品统一化 — **Phase 0/1/2/3 完成；Phase 4 起步；Phase 5 治理已上线** |
 | **状态** | 🟢 目标达成：一份规范 + 多实现 + 前端共用核心；一致性套件 **31/31**（参考/Python/Swift）；Swift 侧 B1–B11 全部实现 |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
-| **当前基线** | 父仓库 `cef9bdb`；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
+| **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
 | **下一步** | 见第 4 章（均为增量、非阻塞） |
 
 ## 2. 状态快照（Repo State）
@@ -51,7 +51,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 项 | 值 |
 |---|---|
-| 分支 | `main`（本地 = 远端 = `cef9bdb`） |
+| 分支 | `main`（跟随远端；子模块指针以 `git ls-tree HEAD` / `RELEASES.md` 为准） |
 | 工作区 | 干净；仅 `M plugin`（**预期**，见 2.2） |
 | 父仓库 CI | ✅ `.github/workflows/ci.yml` → `python3 scripts/verify/check.py` |
 | 已删除（历史） | `GEMINI.md`、`.cursor/rules/` |
