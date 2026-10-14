@@ -142,6 +142,7 @@ git diff --submodule
 - [ ] **P5｜注全迁移**：逐步把调用点（含 app）迁到 `GamePlan`，再退役 `GameDir`。
 - [x] **P3｜Java 托管（B5）**：`JavaRuntime` 接入服务端/客户端/CLI/GUI；移除 `which java`（`db70ad8`）。
 - [x] **P3｜网络统一（B2）**：`TransferKit`（URLSession + 4 路 Range + 连接池 + 哈希跳过），**移除 Alamofire**（`b642b55`/`a700ebd`）。
+- [x] **P3｜断点续传**：`.part` 持久化 + `Range` 续传（单流/4 路分块）（`d017efe`/`8dc6bb9`）。
 - [ ] **P3｜B8 进度**：`count`/`bytes` 结构化事件（`TransferKit` 现为完成计数）。
 - [ ] **P3｜B7/B9**：`server-lifecycle`（优雅退出/退出码）与非 TTY 默认值对齐（补 `server-plan`/`server-lifecycle` 样例）。
 - [ ] **P3｜引擎③尾**：`GamePlan` 下载计划 / 进度；CLI/app 注迁到 `GamePlan`（退役 `GameDir`）。
@@ -155,6 +156,23 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（断点续传）
+
+**做了什么**
+- `TransferKit` 新增**断点续传**：进度持久化到与目标同级的 `.part` / `.partN`；
+  - 单流：已有 `.part` 时用 `Range: bytes=<have>-` 续传；服务器返回 200（忽略 Range）则从零重下；
+  - 4 路分块：每块独立 `.partN` 续传，全部就绪后按序拼接；
+  - 完成后校验哈希再落盘，失败清理进度。
+
+**结果 / 产出**
+- `OrzSwiftKit` `d017efe`（CI 绿）；`OrzMCKit` `8dc6bb9`（test + conformance 26/26 绿）；`app` 构建 CI 绿；父仓库 bump `add4a15`。
+
+**备注**
+- 续传为运行时行为，目前无离线单测（`URLSession` download task 难以用 `URLProtocol` 模拟）；靠 CI 构建 + 代码审阅覆盖。
+
+**下一步**
+- B8 进度结构；B7/B9 样例与对齐；全量退役 `GameDir`。
 
 ### 2026-10-13 — pi（网络层统一：TransferKit，移除 Alamofire）
 

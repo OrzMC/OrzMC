@@ -115,7 +115,7 @@
 ### 7.1 执行顺序（按长期正确性排布）
 
 1. **基础设施**（`OrzSwiftKit`）：☑ `CacheKit`（D-c）；☑ `RuntimeKit` JRE 获取原语（D-b）；
-   ☑ `TransferKit`（B2：**URLSession** + 4 路 `Range` 并行 + 200 回退 + 连接池 + 哈希跳过；**移除 Alamofire**）。
+   ☑ `TransferKit`（B2：**URLSession** + 4 路 `Range` 并行 + 200 回退 + 连接池 + 哈希跳过 + **断点续传**；**移除 Alamofire**）。
 2. **元数据**（`MojangAPI`）：☑ 消费 `CacheKit`（manifest 落盘缓存）；☑ 真实清单离线解码 + `resolve(channel:)`；
    ☑ `BuildKind.channel`（非 release → snapshot）；☑ `JavaRequirement` 解析。
 3. **引擎契约**（`OrzMCKit`）：☑ `GameType` 四值 + 能力矩阵 + `serverJarName`；☑ `GamePlan.layout`（规范布局）；
