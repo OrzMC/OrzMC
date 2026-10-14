@@ -63,7 +63,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `55a4d62` | `OrzPythonMC`；一致性适配器已接入（PR #32/#33/#34） |
+| `python` | `50ef96c` | `OrzPythonMC`；一致性适配器（PR #32/#33/#34）+ 下载中断续传（PR #36） |
 | `app` | `4a4c6b4` | `OrzMCApp`；有构建校验 CI |
 | `OrzMCKit` | `9bffcbc` | **Swift 引擎**（组织自有）；含 `ConformanceAdapter` |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
@@ -125,16 +125,37 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 4. 下一步（Next Actions，增量、非阻塞）
 
+**T1 端到端实跑（进行中，降最大风险）**
+- [x] **macOS 实跑**（Python `orzmc`）：真实下载 Java17 + 服务端 → 世界生成 → `stop` 优雅停止 → 退出码 0；顺带发现并修复「流式中途断连不重试」。
+- [ ] **Windows 真机**：经 `scripts/win/run.sh` 跑同流程（产物限 `E:\orzmc-verify\`）。
+- [ ] **Swift 冒烟**：OrzMCKit CI 加 `workflow_dispatch` 真实小文件下载 + 哈希校验。
+
+**其他**
 - [ ] **Phase 4｜继续前端收敛**：把 `downloadClient`（下载编排）也抽到引擎 `Client`，CLI/GUI 共用（需进度 UI 抽象）。
 - [ ] **一致性｜继续扩样例**：`planClientDownload`、`server-lifecycle`（退出码）等；新增操作需三适配器同步实现。
 - [ ] **可选｜Python 侧反向对齐**：把 Swift 已统一的语义收敛到 Python（当前靠套件保证行为一致）。
-- [ ] **可选｜Windows 真机实测**：经 `scripts/win/run.sh` 在 `win` 上跑（产物限 `E:\orzmc-verify\`）。
+- [ ] **可选｜Windows 真机实测**：见上 T1（产物限 `E:\orzmc-verify\`）。
 - [ ] **治理｜外部依赖**：`OrzAppUpdater` 已发 tag `0.0.3`；`OrzSwiftKit`/`MojangAPI`/`PaperMC` 走 `main` HEAD。
 
 > 历史（本会话已完成）：Phase 0/1/2/3 全部、Phase 5 治理（`RELEASES.md`+`check.py`+父仓库 CI）、Phase 4 起步（`launchClient`）、
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（T1 端到端实跑 + 修复下载中断）
+
+**做了什么**
+- macOS 真机跑通 Python `orzmc` 服务端全链路（临时 root `/tmp/orzmc-e2e`，不动 `~/minecraft`）：
+  真实下载 Java 17 + 服务端 → 世界生成 → `Done (12.578s)!` → 发 `stop` 优雅停止 → **退出码 0**、无残留 java。
+- 首两次随机失败于 `Connection broken: IncompleteRead`（流式下载中途断连），定位为 **urllib3 Retry 不覆盖 body 读取**（只管建连）。
+- 修复（`OrzPythonMC#36` → `50ef96c`）：`HttpClient.stream_range`/`fetch_range` 断连后按已落盘字节 `Range` 续传（最多 4 次），服务器忽略 Range 回 200 则整份重来；`download()` 与分块统一走该原语；新增续传/忽略Range/重试预算/loopback 截断测试。
+
+**结果 / 产出**
+- 父仓库 bump `python` → `50ef96c`（`eaf55e9`）；规范 B2 增「中断续传」契约；`RELEASES.md` 刷新。
+- Python 门禁全绿（ruff/format/mypy/pytest + 6 平台 CI）；真实网络 49MB 两路径哈希一致。
+
+**下一步**
+- Windows 真机 E2E；Swift 冒烟（见第 4 章 T1）。
 
 ### 2026-10-14 — pi（阶段性收尾：产品统一化达成）
 

@@ -28,9 +28,10 @@
 | 小文件 | 资源阶段几千个小文件，耗时 ≈ 每请求延迟 × 并发数 |
 | 大文件分块 | ≥ `8MB` 分 `4` 路 `Range` 并行取再拼接 |
 | 回退 | 服务器忽略 `Range`（返回 200）→ 直接单流写完 |
+| 中断续传 | 流式 body 中途断连（代理重置/丢包）→ 按已落盘字节 `Range: bytes=<have>-` 续传（有限次重试）；服务器对续传回 200 则整份重来 |
 | 清理 | 拼接后校验总字节数，`.part*`/`.tmp` 在 `finally` 清理 |
 
-- 现状：`P` ✅（`infra/transfer.py`）；`S` ⚠️（`DownloadAPI`，需对齐分块/回退）。
+- 现状：`P` ✅（`infra/transfer.py` + `infra/http.py` `stream_range`/`fetch_range`）；`S` ✅（`TransferKit`，含 `.part` + `Range` 续传）。
 - 样例：单流、4 路、Range 不支持回退、字节数不符拒绝。
 
 ## B3 完整性校验
