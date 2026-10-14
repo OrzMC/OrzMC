@@ -127,6 +127,10 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 **待定（计划项，非阻塞）**：`--json` 错误码表、`capabilities`/`orzmc mcp` schema、Phase 4 前端进一步收敛。
 
+**待决策（需维护者拍板）**
+- **T2 Step 2 的发行前置**：Swift `orzmc` CLI 目前**没有发行/安装落点**——`OrzMCKit` 只有 CI（无 release 工作流），app 走 `release-app.yml` 且只用引擎 `Game`、不用该 CLI。因此 Swift 的 `update`/`self-uninstall`/`app` 属于「发行/安装」功能，**在决定 Swift CLI 是否作为发行物之前不实现**（无发行则 `update`/`self-uninstall` 无意义）。
+- **两套 CLI 的定位**：是否长期维持「Python CLI + Swift CLI」双前端；若维持，命令面应单一化（manifest + 生成/校验），不要手写两遍。详见第 5 章会话日志「ConsoleKit 调研 + 双 CLI 冗余评估」。
+
 ## 4. 下一步（Next Actions，增量、非阻塞）
 
 **T1 端到端实跑（进行中，降最大风险）**
@@ -161,6 +165,21 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（调研：ConsoleKit 维护现状 + 双 CLI 冗余评估）
+
+**做了什么（只读调研，未改代码）**
+- 核实 **ConsoleKit 未停止维护**：`vapor/console-kit` 最近提交 `5acfda6`（2026-08-14）、发布 `5.0.0-beta.2` 与 `4.16.1`（2026-08-11）；未归档、4 个 open issue、583★。**Vapor main 仍依赖 `console-kit from 5.0.0-beta`**（product `ConsoleLogger`）。
+- 澄清误解：`OrzMCKit` 锁定 `4.15.2`（2025-01-13）是因为它是 **`OrzSwiftKit`/`JokerKits` 的传递依赖**（`from: 4.15.2`），且未 `swift package update`；`Game`/`OrzMC` 直接 `import ConsoleKit` 但未在 `Package.swift` 声明。
+- 替代方案：参数解析主流是 `apple/swift-argument-parser`（3790★、活跃、bash/zsh/fish 补全）；终端 UI/颜色/进度无单一标准（`Rainbow`/`Chalk`、`swift-tools-support-core`）。Vapor 社区并未替换 ConsoleKit。
+- 双 CLI 评估：Swift CLI 无发行、app 只用引擎；Python CLI 是唯一发行的跨平台 CLI（PyInstaller 6 平台 + 自升级）。命令面/编排逻辑重复，由一致性套件（31 例）约束；已见分叉成本（Transfer 重试、缓存 TTL、`.exe`）。
+
+**结论 / 建议**
+- 无需替换 ConsoleKit；可选把 `OrzSwiftKit` 的 console-kit 升到 `4.16.1`，并让 `OrzMCKit` **显式声明** console-kit 依赖（消除传递依赖脆弱性）。
+- 双 CLI 屬「跨语言跨平台 + GUI 共用引擎」的固有成本，**部分冗余可接受**；但命令面应单一化 + 用 conformance 守住行为；**优先决策 Swift CLI 是否作为发行物**（决定 T2 Step 2 是否值得做）。
+
+**下一步**
+- 等维护者对上述两个待决策项拍板；不做未授权的发版/架构变更。
 
 ### 2026-10-14 — pi（T2 续：Swift version + 全局选项 + --json 信封）
 
