@@ -168,6 +168,13 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-14 — pi（D13 续：首次 Swift release `v0.0.6` 实测通过）
+
+**结果**
+- 合并 `OrzMCKit#6` 后 `release-please.yml` 在 main push 触发 → 依 manifest/代码版本 `0.0.6` 建 `v0.0.6` tag → 接力 `release.yml` → macos-15(arm64, 14m45s) / macos-15-intel(x86_64, 34m55s) 构建 + 校验 → 发布 GitHub Release `v0.0.6`，资产：`orzmc-macos-arm64`、`orzmc-macos-x86_64`、`SHA256SUMS`。**发版链路端到端验证通过。**
+- 说明：这是 merge 触发的**引导性发布**（OrzMCKit 旧 tag 无 `v` 前缀，`v0.0.6` 成为新发布线起点）；后续 release-please 从 0.0.6 起开下一个 release PR。
+- 另记：OrzMCKit main 的 CI `test` 曾因 SwiftPM 缓存里 SwiftLint artifact「already exists」瞬时失败（conformance 绿），属 runner 缓存 flake，非代码问题；必要时可在 CI 加 `rm -rf ~/Library/Caches/org.swift.swiftpm/artifacts` 缓解。
+
 ### 2026-10-14 — pi（D13：Swift `orzmc` CLI 发行化 - 发版链路 + 一键安装）
 
 **背景**
