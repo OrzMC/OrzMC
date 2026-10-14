@@ -65,7 +65,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `b6886fbb8c95` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41） |
 | `app` | `4a4c6b4` | `OrzMCApp`；有构建校验 CI |
-| `OrzMCKit` | `e075e1ad1584` | **Swift 引擎**（组织自有）；含 `ConformanceAdapter`；CLI 命令面已收敛（PR #2） |
+| `OrzMCKit` | `b9398b1ea5ec` | **Swift 引擎**（组织自有）；含 `ConformanceAdapter`；CLI 命令面（选项收敛 #2、`list`/`remove` #3） |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
 > `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
@@ -145,7 +145,8 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - [x] **Python `completion`**：`orzmc completion <shell>` / `install`（typer `add_completion=True`）。
 - [x] **Python `capabilities`**（D9 能力发现）：内省输出命令/选项/退出码/信封 schema。
 - [ ] **Python 其余**：`plugin`（Hangar，需新实现 Hangar 客户端）/`app`；全局 `--auth`（需库支持）。
-- [ ] **Swift 补命令**：`version`/`list`/`remove`/`backup`/`update`/`self-uninstall`/`app`/`completion`；`fabric` 隐藏别名；全局 `--root-dir`/`--json`（可在 `ssh air` 上编译验证）。
+- [x] **Swift `list`/`remove`**：引擎 `installedVersions`/`removeInstalled` + CLI 命令（#3）。
+- [ ] **Swift 补命令**：`version`/`backup`/`update`/`self-uninstall`/`app`/`completion`；`fabric` 隐藏别名；全局 `--root-dir`/`--json`（可在 `ssh air` 上编译验证）。
 
 **其他**
 - [ ] **Phase 4｜继续前端收敛**：把 `downloadClient`（下载编排）也抽到引擎 `Client`，CLI/GUI 共用（需进度 UI 抽象）。
@@ -158,6 +159,18 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（T2 续：Swift list/remove 命令）
+
+**做了什么**
+- `OrzMCKit` 引擎新增 `GamePlan.installedVersions` / `removeInstalled`（扫描 / 清理 `<root>/versions/<v>/{client,server/<type>}`）；CLI 新增 `orzmc list`（含 `--root-dir`）与 `orzmc remove -v <ver> [--server -t <type>]`；引擎离线单测 4 例。
+- 踩坑：ConsoleKit `@Option` 属性必须可空（`Value?`），非可选会编译失败。
+
+**结果 / 产出**
+- `OrzMCKit` PR #3 已合（`b9398b1ea5ec`，CI test + conformance 绿）；父仓库 bump `ed107d1`；`RELEASES.md` 刷新。
+
+**下一步**
+- Swift 补 `version`/`backup`/`update`/`self-uninstall`/`app`/`completion` 与全局 `--root-dir`/`--json`（可在 `ssh air` 上编译）。
 
 ### 2026-10-14 — pi（T2 续：Python capabilities 命令）
 
