@@ -163,6 +163,22 @@ git diff --submodule
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-14 — pi（产品伞治理：发版组合 + 父仓库 CI）
+
+**做了什么**
+- 新增 [`RELEASES.md`](RELEASES.md)：记录 `main` 基准组合的各子模块**记录指针**（gitlink，不受本地检出分支影响），
+  由 `scripts/release/composition.py` 生成。
+- 新增 `scripts/verify/check.py`：① `AGENTS.md` 登记表 与 `.gitmodules` 路径一致性；② 一致性参考自检（离线）；
+  `--remote` 追加子模块指针远端存在性检查。
+- 新增父仓库 CI（`.github/workflows/ci.yml`）跑该脚本。
+- `AGENTS.md` §7/§8、`docs/README.md` 同步。
+
+**结果 / 产出**
+- 本地：`check.py` → 登记表一致（16）+ `PASS=29`。
+
+**下一步**
+- Phase 4 前端收敛（可选）：CLI/GUI 共用 `Game` 公共 API。
+
 ### 2026-10-14 — pi（B2 硬化：传输接缝 + 离线测试）
 
 **做了什么**

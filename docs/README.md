@@ -15,6 +15,7 @@
 | [AGENTS.md](../AGENTS.md) | **父仓库协作单一事实源**：仓库性质、三条铁律、子模块登记表、AI 协作流程 | 仓库根 |
 | [HANDOFF.md](../HANDOFF.md) | **跨会话/跨设备交接文档**：当前焦点、状态快照、下一步、会话日志、待决策 | 仓库根 |
 | [CONTRIBUTING.md](../CONTRIBUTING.md) | 人/机贡献指南：子模块工作流、提交规范、PR 流程 | 仓库根 |
+| [RELEASES.md](../RELEASES.md) | **发版组合**：`main` 基准组合的各子模块记录指针 | 仓库根 |
 | [LICENSE](../LICENSE) | 父仓库许可证（各子模块另有各自许可证） | 仓库根 |
 
 ---

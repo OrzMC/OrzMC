@@ -322,3 +322,4 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-14 | `planServerLaunch` 样例（29 例）+ **服务端启动参数跨实现统一**（userJvm→-Xms/-Xmx；nogui→userArgs→--forceUpgrade）；Swift `Server+Launch` 去 `-server`/`--pidFile` | pi |
 | 2026-10-14 | **退役 `GameDir`**：路径统一到 `GamePlan`（`GamePlan+Paths` 便捷 API）；OrzMCKit CLI 与 app 调用点全部迁移 | pi |
 | 2026-10-14 | B2 硬化：`TransferKit` 引入可注入 `TransferTransport` + 离线测试（单流/4 路/200 回退/断点续传/校验） | pi |
+| 2026-10-14 | 产品伞治理：`RELEASES.md`（发版组合）+ `scripts/verify/check.py`（登记表一致性 + 一致性自检）+ 父仓库 CI | pi |

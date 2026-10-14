@@ -186,8 +186,8 @@ git diff --submodule <路径>
   - 文档：`docs: ...`；父仓库脚本/杂项：`chore: ...` / `fix: ...`
 - **一次提交一个子模块**（现状惯例，便于审查与回滚）。
 - **不写无信息量的提交**（如 "update"）；说明"为什么 bump / 改了什么"。
-- **发版列车**：父仓库是产品组合的锚点。跨子模块的一次产品级变更，应在提交信息或
-  （未来的）`RELEASES.md` 中记录涉及哪些子模块版本（见第 9 章）。
+- **发版列车**：父仓库是产品组合的锚点。跨子模块的一次产品级变更，记入 [`RELEASES.md`](RELEASES.md)
+  （用 `python3 scripts/release/composition.py` 生成基准组合表）。
 
 ### 7.1 依赖仓库协作（自有仓库可直接改）
 
@@ -202,7 +202,9 @@ git diff --submodule <路径>
 
 ## 8. 构建与验证
 
-- 父仓库**没有**根级构建、测试或 CI。质量门禁在**各子模块内部**：
+- 父仓库**（可选）组合校验**：`python3 scripts/verify/check.py`（登记表与 `.gitmodules` 一致性 +
+  一致性参考自检），已接父仓库 CI（`.github/workflows/ci.yml`）；`--remote` 追加远端指针存在性检查。
+- 质量门禁在**各子模块内部**（业务构建/测试）：
   - `plugin` → `./gradlew check`
   - `python` → `ruff` / `mypy` / `pytest` / `uv build`
   - `site` → `./preview` / `./deploy -n`
