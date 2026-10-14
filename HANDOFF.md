@@ -63,7 +63,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `b4c8dabcbee5` | `OrzPythonMC`；一致性适配器（PR #32/#33/#34）+ 下载中断续传（#36）+ CLI 全局（#38） |
+| `python` | `c49b1d2c28be` | `OrzPythonMC`；一致性适配器（#32/#33/#34）+ 下载中断续传（#36）+ 全局选项（#38）+ **`--json` 信封**（#39） |
 | `app` | `4a4c6b4` | `OrzMCApp`；有构建校验 CI |
 | `OrzMCKit` | `e075e1ad1584` | **Swift 引擎**（组织自有）；含 `ConformanceAdapter`；CLI 命令面已收敛（PR #2） |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
@@ -141,7 +141,8 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - [x] **Swift 选项收敛**：`--debug→--verbose`、`--ms/--mx→--min-mem/--max-mem`、`--gui→--nogui`、`--force_upgrade→--force-upgrade`、`--jar-opts→--server-args`；去掉 `defaultCommand`（无子命令打印帮助）。
 - [ ] **Swift 补命令**：`version`/`list`/`remove`/`backup`/`update`/`self-uninstall`/`app`/`completion`；`fabric` 隐藏别名；全局 `--root-dir`/`--json`。
 - [x] **Python 全局项**：`--version`/`--root-dir` 全局；内存选项规范名 `--min-mem/--max-mem`（旧名别名）。
-- [ ] **Python `--json` 信封**（D9 AI 调用核心）+ `completion` + `plugin`/`capabilities`/`app`；全局 `--auth`（需库支持）。
+- [x] **Python `--json` 信封**（D9 AI 调用核心）：全局 `--json`，`{ok,command,data,error}`，日志/进度转 stderr。
+- [ ] **Python 其余**：`completion`/`plugin`/`capabilities`/`app`；全局 `--auth`（需库支持）。
 - [ ] **Swift 补命令**：`version`/`list`/`remove`/`backup`/`update`/`self-uninstall`/`app`/`completion`；`fabric` 隐藏别名；全局 `--root-dir`/`--json`（可在 `ssh air` 上编译验证）。
 
 **其他**
@@ -155,6 +156,18 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（T2 续：Python 全局 --json 信封）
+
+**做了什么**
+- Python CLI 新增全局 `--json`（D9 AI 调用核心）：成功/失败各输出恰好一个 JSON 对象 `{ok,command,data,error}`（失败时 `error={code,message}` 且退出码 1）；`--json` 下进度/日志改走 stderr，stdout 只留信封；覆盖 `version`/`list`/`client`/`server`/`remove`/`update`/`backup`/`self-uninstall`；错误码 `E_USAGE`/`E_UNSUPPORTED`/`E_RUNTIME`。
+- 人类可读模式输出保持不变。新增 3 个信封单测。
+
+**结果 / 产出**
+- `OrzPythonMC` PR #39 已合（`c49b1d2c28be`，6 平台 CI + quality 绿）；父仓库 bump `205a3bb`；`RELEASES.md` 刷新。
+
+**下一步**
+- Python 其余命令（`completion`/`plugin`/`capabilities`/`app`）；Swift 补命令（可在 `ssh air` 上编译）。
 
 ### 2026-10-14 — pi（T2 续：Python 全局选项收敛）
 
