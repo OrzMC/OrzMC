@@ -155,6 +155,9 @@ git diff --submodule <路径>
 - **忘记提交子模块指针**：在子模块里 commit 了但父仓库没 `git add`，等于这次变更没进产品组合。
 - **误改上游**：`tools/thanos` 是外部上游仓库。若确需改动，应先 fork 到 `OrzMC/` 再改 `.gitmodules`，
   不要直接向上游推。
+- **不要用 `git add -A` / `git add .`**：会把**所有**子模块的指针变更一并暂存（例如 `plugin` 本地在 `develop`、
+  父仓库却应钉 `main`），造成误 bump。改父仓库自有内容时始终 **显式 `git add <路径>`**。
+  （历史上真踩过：一次 `git add -A` 误把 `plugin` 的 `develop` 记录进了父仓库。）
 - **分支同名不同义**：父仓库 `.gitmodules` 的 `branch` 只影响 `submodule update --remote`，
   不代表子模块的默认分支/开发分支。以各子模块 AGENTS/CONTRIBUTING 为准。
 
