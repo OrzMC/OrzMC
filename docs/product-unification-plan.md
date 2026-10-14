@@ -324,3 +324,4 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-14 | B2 硬化：`TransferKit` 引入可注入 `TransferTransport` + 离线测试（单流/4 路/200 回退/断点续传/校验） | pi |
 | 2026-10-14 | 产品伞治理：`RELEASES.md`（发版组合）+ `scripts/verify/check.py`（登记表一致性 + 一致性自检）+ 父仓库 CI | pi |
 | 2026-10-14 | Phase 4 前端收敛：引擎抽出共用 `Client.launchClient()`（参数→托管 JRE→受管进程），CLI `Launcher` 与 app `GUIClient` 共用 | pi |
+| 2026-10-14 | 一致性扩到类型/自定义 root：新增 `layout/fabric-1.20.4-custom-root`、`layout/forge-1.20.4-windows`（**31 例**） | pi |

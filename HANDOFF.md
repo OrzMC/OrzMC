@@ -174,7 +174,17 @@ git diff --submodule
 - `OrzMCKit` `9bffcbc`（test + conformance 29/29 绿）；`app` `4a4c6b4`（构建 CI 绿）；父仓库 bump。
 
 **下一步**
-- 更多共用编排（如 `downloadClient`）可选；否则产品目标已达成。
+- 更多共用编排（如 `downloadClient`）可选。
+
+### 2026-10-14 — pi（一致性扩到 31 例）
+
+**做了什么**
+- 新增 `layout/fabric-1.20.4-custom-root`（自定义 root + fabric 服务端 jar 名）、`layout/forge-1.20.4-windows`
+  （forge jar 名 + `java.exe`）。
+- 三适配器均无需改（已支持类型/自定义 root）；参考/Python 本地 31/31；Swift CI 31/31。
+
+**结果 / 产出**
+- 父仓库 `336016d`（fixtures + 计数 31）。
 
 ### 2026-10-14 — pi（产品伞治理：发版组合 + 父仓库 CI）
 
