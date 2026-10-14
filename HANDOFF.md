@@ -163,6 +163,19 @@ git diff --submodule
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-14 — pi（B2 硬化：传输接缝 + 离线测试）
+
+**做了什么**
+- `TransferKit` 抽出可注入的 `TransferTransport`（生产 `URLSession`，测试假实现）；`Transfer` 走 transport。
+- `TransferPolicy` 支持实例化配置（阈值/路数/上限），静态默认保留（一致性适配器不变）。
+- 离线测试：单流、**4 路拼装**、**200 回退**、**断点续传**（预置 `.part` + 断言 `Range: bytes=4-`）、**哈希不符拒绝**。
+
+**结果 / 产出**
+- `OrzSwiftKit` `a7f9716`（CI 绿）；`OrzMCKit` `f0267a5`（跟进，CI 绿）；父仓库 bump `aee11b9`。
+
+**说明**
+- 未用 `URLProtocol`（download task 不保证走它），改用显式 `TransferTransport` 接缝，测试更稳定。
+
 ### 2026-10-14 — pi（退役 GameDir）
 
 **做了什么**
@@ -179,7 +192,7 @@ git diff --submodule
 - 若干 `.dirPath` 残留（迁移后为 `String`）由 app CI 拓出并修。
 
 **下一步**
-- 可选硬化：`TransferKit` 续传/分块的离线单测（`URLProtocol`）。
+- 已做 B2 硬化（见下一条会话）。
 
 ### 2026-10-14 — pi（planServerLaunch + 服务端参数统一）
 
