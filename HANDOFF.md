@@ -148,7 +148,9 @@ git diff --submodule
 - [x] **P3｜B7 进程原语**：`OrzSwiftKit` `ProcessRunner`/`ManagedProcess`（优雅停止→TERM→KILL、退出码归一、`onLine`）（`10b4095`）。
 - [x] **P3｜B7 接线**：`Server.start()`/`launchServer` 返回 `ManagedProcess`；CLI 前台等待并打印退出码；app `GUIServer` 同步（`3bba300`/`d4362bc`）。
 - [x] **P3｜B9 非 TTY**：CLI 不阻塞（显式版本命中即用/找不到报错；非 TTY 最新 release；用户名 `guest`）（`1bc336d`）。
-- [ ] **P3｜planServerLaunch**：`planServerLaunch` 计划与样例（需跨实现统一启动参数）。
+- [x] **P3｜B11 错误语义**：CLI 归一为用户可读信息、写 stderr、退出码 1（`82ff17c`）。
+- [ ] **P3｜planServerLaunch**：需先做跨实现服务端启动参数统一（Python `nogui`/顺序 vs Swift `-server`/`--nogui`/`--pidFile`）——较大设计，未开工。
+- [ ] **P3｜退役 `GameDir`**：把调用点（含 app）迁到 `GamePlan`。
 - [ ] **P3｜引擎③尾**：`GamePlan` 下载计划 / 进度；CLI/app 注迁到 `GamePlan`（退役 `GameDir`）。
 - [ ] **P2｜Swift 适配器**：按 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md) §7.1 顺序推进。
 - [x] **P2/3｜Q7 已决（B/HEAD 制）**：伞内引擎版本 = `OrzMCKit` `main` HEAD；`app` 改用 `branch = main`。
