@@ -320,3 +320,4 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-14 | B9 非 TTY：CLI 不阻塞——显式版本命中即用/找不到报错、否则最新 release；用户名默认 `guest`；不做交互式授权 | pi |
 | 2026-10-14 | B11 错误语义：CLI 把底层错误归一为用户可读信息，写 stderr、退出码 1 | pi |
 | 2026-10-14 | `planServerLaunch` 样例（29 例）+ **服务端启动参数跨实现统一**（userJvm→-Xms/-Xmx；nogui→userArgs→--forceUpgrade）；Swift `Server+Launch` 去 `-server`/`--pidFile` | pi |
+| 2026-10-14 | **退役 `GameDir`**：路径统一到 `GamePlan`（`GamePlan+Paths` 便捷 API）；OrzMCKit CLI 与 app 调用点全部迁移 | pi |

@@ -150,7 +150,7 @@ git diff --submodule
 - [x] **P3｜B9 非 TTY**：CLI 不阻塞（显式版本命中即用/找不到报错；非 TTY 最新 release；用户名 `guest`）（`1bc336d`）。
 - [x] **P3｜B11 错误语义**：CLI 归一为用户可读信息、写 stderr、退出码 1（`82ff17c`）。
 - [x] **P3｜planServerLaunch + 参数统一**：`GamePlan.planServerLaunch`（29 例）；`Server+Launch` 去掉 `-server`/`--pidFile`，对齐 Python 参数顺序（`52abfdc`/`OrzPythonMC#34`）。
-- [ ] **P3｜退役 `GameDir`**：把调用点（含 app）迁到 `GamePlan`。
+- [x] **P3｜退役 `GameDir`**：新增 `GamePlan+Paths` 便捷 API；OrzMCKit CLI + app 调用点全部迁移；删除 `GameDir.swift`（`8d98ec0`/`23e64e0`）。
 - [ ] **P3｜引擎③尾**：`GamePlan` 下载计划 / 进度；CLI/app 注迁到 `GamePlan`（退役 `GameDir`）。
 - [ ] **P2｜Swift 适配器**：按 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md) §7.1 顺序推进。
 - [x] **P2/3｜Q7 已决（B/HEAD 制）**：伞内引擎版本 = `OrzMCKit` `main` HEAD；`app` 改用 `branch = main`。
@@ -162,6 +162,24 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（退役 GameDir）
+
+**做了什么**
+- 新增 `GamePlan+Paths`：`clientDir/serverDir/serverPluginDir/…` 等便捷 API（委托 `GamePlan.layout`）。
+- 迁移 `OrzMCKit`（Client/Server/Launcher/CLI）与 `app`（GameList/BasicInfo/GUIClient/GUIServer/ServerPluginDownloadService）调用点；
+  `launchServer` 的 `workDirectory` 由 `GameDir` 改为 `String`。
+- 删除 `GameDir.swift`；`GameType`/`GameError` 拆到独立文件保留。
+
+**结果 / 产出**
+- `OrzMCKit` `8d98ec0`（test + conformance 29/29 绿）；`app` `23e64e0`（构建 CI 绿）；父仓库 bump `19075f9`。
+
+**踩坑**
+- `GameType` 原在 `GameDir.swift` 里，删除时一并被删 → 拆出 `GameType.swift`。
+- 若干 `.dirPath` 残留（迁移后为 `String`）由 app CI 拓出并修。
+
+**下一步**
+- 可选硬化：`TransferKit` 续传/分块的离线单测（`URLProtocol`）。
 
 ### 2026-10-14 — pi（planServerLaunch + 服务端参数统一）
 

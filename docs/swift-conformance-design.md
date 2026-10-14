@@ -122,8 +122,7 @@
    ☑ `GamePlan.planClientLaunch`（B6 纯计划）；☑ `GamePlan.planServerDeploy`（data-model §9）；☑ `JavaRuntime`（托管 JRE 接入服务端/客户端，B5）；
    ☑ 服务端生命周期切到 `ManagedProcess`（B7）；☐ `GamePlan` 下载计划 / 进度；☐ 全量退役 `GameDir`。
 4. **适配器**：☑ `ConformanceAdapter`（`OrzMCKit`）接入父仓库运行器；☑ OrzMCKit CI `conformance` job（Q6）。
-5. **产品面**：◑ `GameDir` 已改为**委托 `GamePlan` 的兼容层**（API 不变、路径切规范布局，CLI/app 无需改动即可切换）；
-   ☐ 逐步把调用点迁到 `GamePlan` 并退役 `GameDir`（与 `app` 同批）。
+5. **产品面**：☑ `GameDir` 已**退役**；CLI 与 app 调用点迁到 `GamePlan`（`GamePlan+Paths` 提供路径便捷 API）。
 6. **CI（Q6）**：父仓库/子仓库接线。
 
 > 验证前提：本地需能编译 `swift-tools-version:6.0` 的包（见下）——否则只能靠 CI/真机。
