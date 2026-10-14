@@ -145,7 +145,9 @@ git diff --submodule
 - [x] **P3｜断点续传**：`.part` 持久化 + `Range` 续传（单流/4 路分块）（`d017efe`/`8dc6bb9`）。
 - [x] **P3｜B8 进度结构**：`TransferProgress{kind:count|bytes}`，单流字节/批量计数（`d6f4769`/`ab61ac6`）。
 - [x] **P3｜server-plan 样例**：`planServerDeploy`（27 例），Swift/参考/Python 三适配器均齐（`507d467`/`OrzPythonMC#33`）。
-- [ ] **P3｜B7/B9**：`server-lifecycle`（优雅退出/退出码）与 `planServerLaunch`；非 TTY 默认值对齐。
+- [x] **P3｜B7 进程原语**：`OrzSwiftKit` `ProcessRunner`/`ManagedProcess`（优雅停止→TERM→KILL、退出码归一、`onLine`）（`10b4095`）。
+- [ ] **P3｜B7 接线**：把引擎 `Server+Launch`/CLI/app 的生命周期切到 `ManagedProcess`（会改 `Server.start` 返回类型，级联 app）。
+- [ ] **P3｜B9/planServerLaunch**：非 TTY 默认值；`planServerLaunch` 计划与样例。
 - [ ] **P3｜引擎③尾**：`GamePlan` 下载计划 / 进度；CLI/app 注迁到 `GamePlan`（退役 `GameDir`）。
 - [ ] **P2｜Swift 适配器**：按 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md) §7.1 顺序推进。
 - [x] **P2/3｜Q7 已决（B/HEAD 制）**：伞内引擎版本 = `OrzMCKit` `main` HEAD；`app` 改用 `branch = main`。
@@ -157,6 +159,22 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（B7 进程原语）
+
+**做了什么**
+- `OrzSwiftKit/JokerKits` 新增 `ProcessRunner` / `ManagedProcess`（B7 原语）：
+  - 优雅停止（向 stdin 写 `stop`）→ 超时升级 `SIGTERM` → 再升级 `SIGKILL`；
+  - 退出码归一（被杀信号 → `128 + signal`），取消退出码常量 `130`；
+  - `onLine` 透传 stdout/stderr；`Policy` 可配 graceful/terminate 超时。
+- 测试：正常退出码、优雅 stop 退出、忽略 TERM 时升级到 KILL（`128+9`）。
+
+**结果 / 产出**
+- `OrzSwiftKit` `10b4095`（CI 绿）；`OrzMCKit` `46b5499`（跟进依赖）；父仓库 bump `31374d6`。
+
+**下一步**
+- 把引擎 `Server+Launch` 与 CLI/app 的生命周期切到 `ManagedProcess`（会改 `Server.start` 返回类型，需同批改 app）。
+- B9 非 TTY；`planServerLaunch` 样例。
 
 ### 2026-10-13 — pi（server-plan 一致性样例）
 
