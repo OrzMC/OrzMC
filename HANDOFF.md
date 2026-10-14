@@ -125,7 +125,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 **开放问题**：Q1–Q7 均已决（见 [`docs/product-unification-plan.md`](docs/product-unification-plan.md) 第 7 章）。**当前无阻塞项。**
 
-**待定（计划项，非阻塞）**：`--json` 错误码表、`capabilities`/`orzmc mcp` schema、Phase 4 前端进一步收敛。
+**待定（计划项，非阻塞）**：`capabilities` schema ✅（§8.1）；`orzmc mcp` schema ✅（§8.2，server 待实现）；`--json` 错误码表 ✅（§6.1）。
 
 **待决策（需维护者拍板）**
 - **版本身份**（D13 已定「Swift CLI 要发行」，此为其子问题）：Swift CLI 暂用 OrzMCKit 自己的版本线（当前 `0.0.6`，下一版由 release-please 决定）；是否与 Python `orzmc`（`2.4.x`）统一为**同一产品版本**？统一会牵动 release-please manifest 与既有 tag，需维护者确定后再改。
@@ -139,8 +139,8 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - [x] **Windows 真机**：经 `scripts/win/e2e-server.ps1` 跑通同流程（1.20.4 vanilla：下载→启动→`Done (`→`stop`→退出码 0、无残留 java；root 236MB）。
 - [x] **Swift 冒烟**：`OrzSwiftKit` 新增真实网络下载测试（`TransferNetworkSmokeTests`，`ORZMC_NETWORK_SMOKE=1` 触发）+ CI `network-smoke` job；单流与 2 路 Range 均通过。
 
-**新发现（待办）**
-- [ ] **Swift `Transfer` 无运行内重试**：`downloadSingle`/`downloadRanged` 在 body 中途断连时直接抛错（仅靠持久化 `.part` 重跑续传），与 Python 现行「运行内重试 + `Range` 续传」及 spec B2「有限次重试」不一致。GUI 无手动重跑，建议补运行内有界重试。
+**新发现（已修复）**
+- [x] **Swift `Transfer` 无运行内重试**：已在 `OrzSwiftKit` 补**运行内有界重试**（`TransferPolicy.maxAttempts`，默认 4；失败保留 `.part`/`.partN`，`Range` 续传；size/hash 校验不重试）。`OrzSwiftKit#5`（`5c05337`）+ `OrzMCKit#13` 跟进 `Package.resolved`。
 
 **T2 统一 CLI 命令面（进行中）**
 - [x] **Swift 选项收敛**：`--debug→--verbose`、`--ms/--mx→--min-mem/--max-mem`、`--gui→--nogui`、`--force_upgrade→--force-upgrade`、`--jar-opts→--server-args`；去掉 `defaultCommand`（无子命令打印帮助）。
@@ -157,16 +157,32 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - [ ] **Swift 补命令**：`capabilities`、`fabric` 隐藏别名；`update`/`self-uninstall`/`app`（发版链路已就绪）。
 
 **其他**
-- [ ] **Phase 4｜继续前端收敛**：把 `downloadClient`（下载编排）也抽到引擎 `Client`，CLI/GUI 共用（需进度 UI 抽象）。
-- [ ] **一致性｜继续扩样例**：`planClientDownload`、`server-lifecycle`（退出码）等；新增操作需三适配器同步实现。
-- [ ] **可选｜Python 侧反向对齐**：把 Swift 已统一的语义收敛到 Python（当前靠套件保证行为一致）。
-- [ ] **可选｜Windows 真机实测**：见上 T1（产物限 `E:\orzmc-verify\`）。
-- [ ] **治理｜外部依赖**：`OrzAppUpdater` 已发 tag `0.0.3`；`OrzSwiftKit`/`MojangAPI`/`PaperMC` 走 `main` HEAD。
+- [x] **规范收尾**：`cli-surface.md` §6.1 补**错误码表**（E_USAGE/E_UNSUPPORTED/E_UNSUPPORTED_TYPE/E_VERSION_NOT_FOUND/E_NOT_FOUND/E_VERIFY/E_NETWORK/E_CANCELLED(130)/E_INTERNAL/E_RUNTIME）；§8.1 `capabilities` schema（已实现）/§8.2 `orzmc mcp` schema（已定稿，server 低优先级计划）；Python/Swift 用户取消退出码统一为 **130**。
+- [ ] **Phase 4｜`downloadClient` 收敛**（评估后暂缓）：CLI 与 GUI 已各自可用（CLI `Downloader.download`、GUI `asyncSequence`），抽到引擎需引入进度 UI 抽象 + 改 app；收益偏“去重”，风险/改动大，排在 `app` 发行验证之后。
+- [ ] **一致性｜扩样例**（评估后暂缓）：`planClientDownload` 需先在 Python/Swift 把“客户端下载清单”从网络编排中抽成纯计划（`prepare_client`/`generateDownloadItemInfos` 重构），再补参考+三适配器；属较大重构，建议单独立项。
+- [ ] **Python `--auth`**（**阻塞**）：两套实现的 `--auth` 目前均为 **stub**（Swift `auth()` 直接 `return false`；Python 库无认证，`auth_access_token` 固定 `"0"`）。真实现需 Microsoft/Xbox/Minecraft 设备码认证 + 令牌交换（安全敏感），需先定方案，不宜仓促落地。
+- [ ] **`orzmc mcp` server**（计划/低优先级）：schema 已写入 §8.2；server 实现未做。
+- [ ] **可选｜Python 侧反向对齐**：目前由一致性套件（31 例）保证行为一致，无新增分叉，暂不单独重构。
+- [ ] **可选｜Windows 真机实测**：T1 已完成服务端 E2E；CLI 新增的 `plugin`/`app` 无 Windows 侧差异（`app` 仅 macOS）。
+- [ ] **治理｜外部依赖**：`OrzAppUpdater` 已发 tag `0.0.3`；`OrzSwiftKit`/`MojangAPI`/`PaperMC` 走 `main` HEAD（本次 `OrzSwiftKit` 已跟进到 `5c05337`）。
 
 > 历史（本会话已完成）：Phase 0/1/2/3 全部、Phase 5 治理（`RELEASES.md`+`check.py`+父仓库 CI）、Phase 4 起步（`launchClient`）、
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（遗留项：Transfer 重试 / 错误码与 schema / 退出码 130）
+
+**做了什么**
+- **Swift `Transfer` 运行内有界重试**（`OrzSwiftKit#5`，`5c05337`）：`TransferPolicy.maxAttempts`（默认 4）；单流与 Range 分块各自重试，失败保留 `.part`/`.partN` 并 `Range` 续传；校验错不重试；新增离线测试（FlakyTransport）。`OrzMCKit#13` 跟进 `Package.resolved`。
+- **规范收尾**（父仓库 `cli-surface.md`）：§6.1 错误码表；§8.1 `capabilities` schema；§8.2 `orzmc mcp` schema。
+- **退出码 130**：Python（`OrzPythonMC#43`）与 Swift（`OrzMCKit#12`）用户取消统一退出 130。
+
+**结果**
+- `OrzSwiftKit#5`（build-test 绿）、`OrzMCKit#12`（test+conformance 绿）、`OrzPythonMC#43`（quality+6 平台绿）均已合；`OrzMCKit#13` 待合。
+
+**评估后暂缓（非阻塞，已记入第 4 章）**
+- Phase 4 `downloadClient` 收敛（需进度抽象 + 改 app）；一致性 `planClientDownload`（需先把客户端下载清单抽成纯计划）；Python `--auth`（两套均为 stub，需 Microsoft 认证方案）；`orzmc mcp` server（低优先级计划）。
 
 ### 2026-10-14 — pi（T2 收尾：Python `plugin` / `app`）
 
