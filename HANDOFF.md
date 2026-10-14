@@ -40,7 +40,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | 产品统一化 — Phase 0–3 完成；Phase 5 治理已上线；**T1 端到端完成**；**T2 命令面统一进行中** |
-| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **32/32**；Swift 侧 B1–B11 全部实现；**T2 命令面统一完成** + **Phase 4 前端收敛完成**（CLI/GUI 共用 `launchClient`/`downloadClient`）；**Swift `orzmc` CLI 已发 `v0.1.0`**（含全部新命令）；Transfer 运行内重试、错误码表/schema、退出码 130 均已落地 |
+| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **34/34**；Swift 侧 B1–B11 全部实现；**T2 命令面统一完成** + **Phase 4 前端收敛完成**（CLI/GUI 共用 `launchClient`/`downloadClient`）；**Swift `orzmc` CLI 已发 `v0.1.0`**（含全部新命令）；Transfer 运行内重试、错误码表/schema、退出码 130 均已落地 |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
 | **下一步** | 见第 4 章（均为增量、非阻塞） |
@@ -77,7 +77,7 @@ git submodule status
 git status --porcelain
 python3 scripts/verify/check.py            # 父仓库组合校验（CI 同款）
 python3 scripts/verify/check.py --remote   # 追加：子模块指针是否在远端（需网络）
-python3 scripts/conformance/run.py --list  # 列出一致性样例（当前 32）
+python3 scripts/conformance/run.py --list  # 列出一致性样例（当前 34）
 python3 scripts/release/composition.py     # 生成发版组合表（更新 RELEASES.md 用）
 ```
 
@@ -159,7 +159,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 **其他**
 - [x] **规范收尾**：`cli-surface.md` §6.1 补**错误码表**（E_USAGE/E_UNSUPPORTED/E_UNSUPPORTED_TYPE/E_VERSION_NOT_FOUND/E_NOT_FOUND/E_VERIFY/E_NETWORK/E_CANCELLED(130)/E_INTERNAL/E_RUNTIME）；§8.1 `capabilities` schema（已实现）/§8.2 `orzmc mcp` schema（已定稿，server 低优先级计划）；Python/Swift 用户取消退出码统一为 **130**。
 - [x] **Phase 4｜`downloadClient` 收敛**：`Downloader.download` 加 `onProgress`（`OrzSwiftKit#6`）；引擎新增 `Client.downloadClient(onProgress:)`（`OrzMCKit#14`）；CLI `Launcher.download()` 与 GUI `GUIClient.download()` 共用（`app#16`）。
-- [x] **一致性｜`planClientDownload` 样例**：新增操作 + fixture `client-download/vanilla-1.20.4-macos-arm64`（客户端 jar / 资源索引 / 资源对象 / 库，含 rules 过滤与 `itemsContains`/`itemsNotContains`/`count`）；参考 + Python + Swift 三适配器均 32/32。`server-lifecycle`（B7 退出码）仍待补。
+- [x] **一致性｜新增操作**：`planClientDownload`（客户端下载清单）与 `normalizeExit`（B7 退出码归一，暴露并修了 Python 服务端退出码未归一的分叉）；参考 + Python + Swift 三适配器 **34/34**。
 - [ ] **Python `--auth`**（**阻塞**）：两套实现的 `--auth` 目前均为 **stub**（Swift `auth()` 直接 `return false`；Python 库无认证，`auth_access_token` 固定 `"0"`）。真实现需 Microsoft/Xbox/Minecraft 设备码认证 + 令牌交换（安全敏感），需先定方案，不宜仓促落地。
 - [ ] **`orzmc mcp` server**（计划/低优先级）：schema 已写入 §8.2；server 实现未做。
 - [ ] **可选｜Python 侧反向对齐**：目前由一致性套件（31 例）保证行为一致，无新增分叉，暂不单独重构。

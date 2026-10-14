@@ -32,8 +32,8 @@ scripts/conformance/           # spec-owned 运行器（父仓库）
   reference.py                 # 规范参考适配器（纯计划语义）
 ```
 
-- `<area>` 对应契约域：`layout` / `version-manifest` / `client-plan` / `client-download` / `server-plan` /
-  `download` / `verify` / `cache` / `java` / `progress` / `non-tty` / `error`。
+- `<area>` 对应契约域：`layout` / `version-manifest` / `client-plan` / `client-download` / `server-plan` / `server-launch` /
+  `server-lifecycle` / `download` / `verify` / `cache` / `java` / `progress` / `non-tty` / `error`。
 - `snapshots/` 是**钉住版本**的上游 JSON，保证 fixture 离线、可复现。
 
 ---
@@ -95,6 +95,7 @@ scripts/conformance/           # spec-owned 运行器（父仓库）
 | `planServerDeploy` | version/type/snapshot | `ServerDeployPlan` |
 | `planClientLaunch` | version/platform/options/snapshot | `ClientLaunchPlan` |
 | `planServerLaunch` | version/type/options | `ServerLaunchPlan` |
+| `normalizeExit` | returnCode | `{exitCode, signaled, signal}` |
 | `requiredJava` | snapshot | `JavaRequirement` |
 | `verifyArtifact` | bytes + sha1 | pass/fail |
 | `cacheDecision` | mtime/ttl/refresh/now | hit/miss/refresh/fallback |
@@ -125,8 +126,8 @@ python3 scripts/conformance/run.py --adapter "python3 scripts/conformance/refere
 
 | 语言 | 位置 | 状态 |
 |:--|:--|:--:|
-| Python | `python/orzmc/tests/conformance/adapter.py` | ☑ 已接入（32/32） |
-| Swift | `OrzMCKit/Sources/ConformanceAdapter` | ☑ 已接入（32/32，OrzMCKit CI 内运行） |
+| Python | `python/orzmc/tests/conformance/adapter.py` | ☑ 已接入（34/34） |
+| Swift | `OrzMCKit/Sources/ConformanceAdapter` | ☑ 已接入（34/34，OrzMCKit CI 内运行） |
 
 ```bash
 # Python 适配器（在父仓库根执行）

@@ -1,0 +1,15 @@
+{
+  "specVersion": "0.1",
+  "id": "server-lifecycle/killed-by-sigterm",
+  "area": "server-lifecycle",
+  "description": "服务端被信号杀死：退出码归一为 128+signal（POSIX 原始返回 -signal）",
+  "given": {
+    "operation": "normalizeExit",
+    "returnCode": -15
+  },
+  "expect": {
+    "exitCode": 143,
+    "signaled": true,
+    "signal": 15
+  }
+}

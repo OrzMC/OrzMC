@@ -330,6 +330,14 @@ def op_concurrency(req):
     return ok({"concurrency": max(1, min(64, req["threads"]))})
 
 
+# ---------------------------------------------------------------- server lifecycle
+def op_normalize_exit(req):
+    code = req.get("returnCode", 0)
+    if code < 0:  # POSIX: 负值表示被信号 N 杀死
+        return ok({"exitCode": 128 + (-code), "signaled": True, "signal": -code})
+    return ok({"exitCode": code, "signaled": False, "signal": None})
+
+
 # ---------------------------------------------------------------- misc
 def op_resolve_version(req):
     man = load(req["snapshot"])
@@ -367,6 +375,7 @@ OPS = {
     "planServerDeploy": op_plan_server_deploy,
     "planDownloadConcurrency": op_dl_concurrency,
     "resolveConcurrency": op_concurrency,
+    "normalizeExit": op_normalize_exit,
     "resolveVersion": op_resolve_version,
     "nonTtyDefaults": op_non_tty,
     "normalizeProgress": op_progress,

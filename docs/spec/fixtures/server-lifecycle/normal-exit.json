@@ -1,0 +1,15 @@
+{
+  "specVersion": "0.1",
+  "id": "server-lifecycle/normal-exit",
+  "area": "server-lifecycle",
+  "description": "服务端正常退出：退出码原样返回，非信号终止",
+  "given": {
+    "operation": "normalizeExit",
+    "returnCode": 0
+  },
+  "expect": {
+    "exitCode": 0,
+    "signaled": false,
+    "signal": null
+  }
+}

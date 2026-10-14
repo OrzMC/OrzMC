@@ -33,6 +33,7 @@ python3 scripts/conformance/run.py --adapter "<cmd>" --filter cache
 | `error/` | `expectError`（如 `E_UNSUPPORTED_TYPE`） | B11 错误 |
 | `server-plan/` | `planServerDeploy` | data-model §9 / B7 |
 | `server-launch/` | `planServerLaunch` | data-model §10 / B7 |
+| `server-lifecycle/` | `normalizeExit` | B7 退出码归一 |
 
 ## 快照（离线输入）
 
@@ -63,11 +64,11 @@ python3 scripts/conformance/run.py --adapter "<cmd>" --filter cache
 
 | 适配器 | 状态 |
 |:--|:--:|
-| 规范参考 `scripts/conformance/reference.py` | ☑ 32/32 |
-| Python `python/orzmc/tests/conformance/adapter.py` | ☑ 32/32 |
-| Swift `OrzMCKit` | ☑ 32/32 |
+| 规范参考 `scripts/conformance/reference.py` | ☑ 34/34 |
+| Python `python/orzmc/tests/conformance/adapter.py` | ☑ 34/34 |
+| Swift `OrzMCKit` | ☑ 34/34 |
 
 ## 待补（Phase 2 后续）
 
 - 服务端 Forge/Fabric 装载、natives 解压的样例。
-- `server-lifecycle/`（B7 退出码归一）样例。
+- `planClientDownload` 的更多平台/legacy（`natives` classifier）组合。
