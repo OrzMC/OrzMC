@@ -231,6 +231,32 @@ def op_cache(req):
 
 
 # ---------------------------------------------------------------- download
+def op_plan_server_deploy(req):
+    gtype = req.get("type", "vanilla")
+    if gtype != "vanilla":
+        return err("E_UNSUPPORTED_OP", f"{gtype} 无离线部署计划")
+    snap = load(req["snapshot"])
+    server = (snap.get("downloads") or {}).get("server")
+    if not server:
+        return err("E_NO_SERVER_DOWNLOAD", "快照缺少服务端下载")
+    version = snap.get("id", req.get("version", ""))
+    lay = layout(req["root"], version, gtype)
+    name = SERVER_JAR[gtype].format(v=version)
+    return ok({
+        "version": version,
+        "type": gtype,
+        "workdir": lay["serverDir"],
+        "jarName": name,
+        "eula": True,
+        "coreArtifact": {
+            "url": server["url"],
+            "sha1": server.get("sha1"),
+            "size": server.get("size"),
+            "filename": name,
+        },
+    })
+
+
 def op_dl_concurrency(req):
     if req["sizeBytes"] >= RANGE_THRESHOLD:
         return ok({"mode": "ranged", "parts": RANGE_PARTS})
@@ -273,6 +299,7 @@ OPS = {
     "requiredJava": op_required_java,
     "verifyArtifact": op_verify,
     "cacheDecision": op_cache,
+    "planServerDeploy": op_plan_server_deploy,
     "planDownloadConcurrency": op_dl_concurrency,
     "resolveConcurrency": op_concurrency,
     "resolveVersion": op_resolve_version,

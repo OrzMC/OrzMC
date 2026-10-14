@@ -1,0 +1,26 @@
+{
+  "specVersion": "0.1",
+  "id": "server-plan/vanilla-1.20.4",
+  "area": "server-plan",
+  "description": "vanilla 服务端部署计划（核心制品 + 落点 + jar 名）",
+  "given": {
+    "operation": "planServerDeploy",
+    "root": "/tmp/orzmc",
+    "version": "1.20.4",
+    "type": "vanilla",
+    "snapshot": "snapshots/versions/1.20.4.json"
+  },
+  "expect": {
+    "version": "1.20.4",
+    "type": "vanilla",
+    "workdir": "/tmp/orzmc/versions/1.20.4/server/vanilla",
+    "jarName": "server.jar",
+    "eula": true,
+    "coreArtifact": {
+      "url": "https://piston-data.mojang.com/server.jar",
+      "sha1": "000000000000000000000000000000000000000d",
+      "size": 2000,
+      "filename": "server.jar"
+    }
+  }
+}

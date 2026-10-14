@@ -164,12 +164,12 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 - **目标**：把「计划表」变成可断言的对象，防实现漂移。
 - **交付物**
   - `docs/spec/fixtures/`：钉住快照（`version_manifest.json` / `versions/*.json`）——已落地。
-  - `docs/spec/fixtures/<area>/`：`given→expect` 黄金样例（**26 例**：layout / version-resolve / java / verify / cache / download / client-plan / non-tty / progress / error）。
+  - `docs/spec/fixtures/<area>/`：`given→expect` 黄金样例（**27 例**：layout / version-resolve / java / verify / cache / download / client-plan / server-plan / non-tty / progress / error）。
   - `scripts/conformance/`：语言无关**运行器** `run.py` + **规范参考适配器** `reference.py`（子集 / Contains / Order / Count / Set 断言、点号路径、错误码）。
   - `python`：适配器断言 plan == 期望（复用 `orzmc` 内部 API）。
   - `kit`：适配器断言 `Game` 纯计划 == 期望。
   - 剩余：`server-plan/` / `server-lifecycle/` 样例；把两个真实适配器接入。
-- **验收**：参考适配器自检全绿（26/26）；两个真实适配器在 CI 跑 fixtures 全绿；**故意改坏一处能被红灯抓到**（负向用例）。
+- **验收**：参考适配器自检全绿（27/27）；两个真实适配器在 CI 跑 fixtures 全绿；**故意改坏一处能被红灯抓到**（负向用例）。
 - **依赖**：Phase 1。
 - **产出物状态**：☑ fixtures ☑ 期望输出 ☑ 运行器/参考适配器 ☑ Python 适配器 ☐ Swift 适配器 ☐ CI 接线
 
@@ -222,8 +222,8 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | Phase 1 | 数据模型 + 字段对照表 | ☑ 已完成（`data-model.md`） |
 | Phase 1 | CLI/安装/行为/一致性契约 | ☑ 已完成（`cli-surface.md`/`install-update.md`/`behavior.md`/`conformance.md`） |
 | Phase 1 | 字段映射验证（样例跑通） | ☐ 待 Phase 2 |
-| Phase 2 | fixtures + 运行器/参考适配器 | ☑ 已完成（26/26 自检绿） |
-| Phase 2 | Python 适配器接入 | ☑ 已完成（26/26，PR #32） |
+| Phase 2 | fixtures + 运行器/参考适配器 | ☑ 已完成（27/27 自检绿） |
+| Phase 2 | Python 适配器接入 | ☑ 已完成（27/27，PR #32/#33） |
 | Phase 2 | Swift 适配器接入 | ☑ 已完成（26/26，OrzMCKit CI） |
 | Phase 2 | CI 接线 | ☐ 未开始 |
 | Phase 3 | 差异清零 + 行为契约 | ☐ 未开始 |
@@ -314,3 +314,4 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-13 | 网络层统一：`OrzSwiftKit` 新增 `TransferKit`（B2，URLSession），**移除 Alamofire**（Swift 侧不再有三方 HTTP 客户端） | pi |
 | 2026-10-13 | `TransferKit` 新增**断点续传**：`.part` 持久化 + `Range` 续传（单流与 4 路分块均支持） | pi |
 | 2026-10-13 | `TransferKit` 新增**结构化进度 `TransferProgress`**（B8）：单流报 `bytes`、批量报 `count` | pi |
+| 2026-10-13 | 一致性扩到服务端：新增 `server-plan/`（`planServerDeploy`，27 例）；Swift/参考/Python 三适配器均实现（OrzMCKit `507d467`、`OrzPythonMC#33`） | pi |

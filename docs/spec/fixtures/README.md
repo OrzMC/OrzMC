@@ -30,6 +30,7 @@ python3 scripts/conformance/run.py --adapter "<cmd>" --filter cache
 | `non-tty/` | `nonTtyDefaults` | B9 非 TTY |
 | `progress/` | `normalizeProgress` | B8 进度 |
 | `error/` | `expectError`（如 `E_UNSUPPORTED_TYPE`） | B11 错误 |
+| `server-plan/` | `planServerDeploy` | data-model §9 / B7 |
 
 ## 快照（离线输入）
 
@@ -59,9 +60,9 @@ python3 scripts/conformance/run.py --adapter "<cmd>" --filter cache
 
 | 适配器 | 状态 |
 |:--|:--:|
-| 规范参考 `scripts/conformance/reference.py` | ☑ 26/26 |
-| Python `python/orzmc/tests/conformance/adapter.py` | ☑ 26/26 |
-| Swift `OrzMCKit` | ☑ 26/26 |
+| 规范参考 `scripts/conformance/reference.py` | ☑ 27/27 |
+| Python `python/orzmc/tests/conformance/adapter.py` | ☑ 27/27 |
+| Swift `OrzMCKit` | ☑ 27/27 |
 
 ## 待补（Phase 2 后续）
 
