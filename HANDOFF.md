@@ -141,7 +141,8 @@ git diff --submodule
 - [x] **P5｜app 构建校验 CI**：`OrzMCApp` 新增 `ci.yml`（xcodebuild build，无签名 + 跳过插件/宏校验），**绿**（`e23853d`）。
 - [ ] **P5｜注全迁移**：逐步把调用点（含 app）迁到 `GamePlan`，再退役 `GameDir`。
 - [x] **P3｜Java 托管（B5）**：`JavaRuntime` 接入服务端/客户端/CLI/GUI；移除 `which java`（`db70ad8`）。
-- [ ] **P3｜B2 剩余**：`Downloader` 实际分块（Range）接入；进度结构（B8）。
+- [x] **P3｜网络统一（B2）**：`TransferKit`（URLSession + 4 路 Range + 连接池 + 哈希跳过），**移除 Alamofire**（`b642b55`/`a700ebd`）。
+- [ ] **P3｜B8 进度**：`count`/`bytes` 结构化事件（`TransferKit` 现为完成计数）。
 - [ ] **P3｜B7/B9**：`server-lifecycle`（优雅退出/退出码）与非 TTY 默认值对齐（补 `server-plan`/`server-lifecycle` 样例）。
 - [ ] **P3｜引擎③尾**：`GamePlan` 下载计划 / 进度；CLI/app 注迁到 `GamePlan`（退役 `GameDir`）。
 - [ ] **P2｜Swift 适配器**：按 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md) §7.1 顺序推进。
@@ -154,6 +155,22 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（网络层统一：TransferKit，移除 Alamofire）
+
+**做了什么**
+- `OrzSwiftKit` 新增 **`TransferKit`**（B2）：`TransferPolicy` + `DownloadItem` + `Transfer`
+  （**URLSession** 单一实现；哈希命中跳过；≥8MB **4 路 `Range` 并行**，服务器返回 200 时回退单流；
+  连接池 ≥ 并发；`.part` 原子写 + 下载后校验）。
+- `JokerKits.Downloader` 基于 `TransferKit` 重写（保留 `DownloadItemInfo` 公开 API）；`OracleJDK` 下载改走 `TransferKit`。
+- **移除 Alamofire**（Swift 侧不再有三方 HTTP 客户端）；`TransferPolicy` 从 `JokerKits` 迁到 `TransferKit`。
+- `OrzMCKit`：`ConformanceAdapter` 改用 `TransferKit.TransferPolicy`；`FabricCommand` 安装器下载改走 `TransferKit`。
+
+**结果 / 产出**
+- `OrzSwiftKit` `b642b55`（CI 绿）；`OrzMCKit` `a700ebd`（test + conformance 26/26 绿）；`app` 构建 CI 绿；父仓库 bump `3bc436a`。
+
+**下一步**
+- B8 进度结构；B7/B9 样例与对齐；全量退役 `GameDir`。
 
 ### 2026-10-13 — pi（运行时：Java 托管 JRE 接入，B5）
 

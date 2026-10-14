@@ -311,3 +311,4 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-13 | Phase 3：`GameDir` 改为**委托 `GamePlan` 的兼容层**（路径切规范布局，CLI/app 无需改动）；Swift 引擎布局对齐 | pi |
 | 2026-10-13 | `OrzMCApp` 新增**构建校验 CI**（xcodebuild build），验证布局切换后 app 仍可编译（绿） | pi |
 | 2026-10-13 | 运行时：`JavaRuntime` 托管 JRE（B5）接入引擎（服务端/客户端/CLI/GUI），移除 `which java`；修 `OrzAppUpdater` 平台声明并发 0.0.3 | pi |
+| 2026-10-13 | 网络层统一：`OrzSwiftKit` 新增 `TransferKit`（B2，URLSession），**移除 Alamofire**（Swift 侧不再有三方 HTTP 客户端） | pi |
