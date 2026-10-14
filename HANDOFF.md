@@ -63,9 +63,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `11a423a7cceb` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41）+ `plugin`/`app`（#42） |
+| `python` | `c66e3a60f3cf` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41）+ `plugin`/`app`（#42）+ `planClientDownload` 适配器（#44） |
 | `app` | `3e4d92f6ea00` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
-| `OrzMCKit` | `741419d6d37e` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`；命令面 #2–#5、#7、#9–#11；发版链路 `#6`；Phase 4 `downloadClient` `#14`；**已发 `v0.0.6` / `v0.1.0`**（0.1.0 含全部新命令） |
+| `OrzMCKit` | `064bca179b0d` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（32/32）；命令面 #2–#5、#7、#9–#11、#14–#15；发版链路 `#6`；已发 `v0.0.6` / `v0.1.0` |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
 > `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
@@ -170,6 +170,17 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（一致性：新增 `planClientDownload` 样例，31→32）
+
+**做了什么**
+- 规范新增操作 `planClientDownload`（`conformance.md` §5）：版本 JSON + 布局（+ 可选资源索引）→ 客户端下载清单 `{url,path,sha1,size}`（客户端 jar / 资源索引 / 资源对象 / 库，rules 过滤 + legacy natives）。
+- 父仓库：`reference.py` 实现 + fixture `client-download/vanilla-1.20.4-macos-arm64` + 紧凑资源索引快照 `snapshots/assets/5.json`；`conformance.md`/`fixtures README`/`spec README` 状态 31→32。
+- Python（`OrzPythonMC#44`）：适配器实现（`resolve_libraries` + `Mojang.assets_object_url`）。
+- Swift（`OrzMCKit#15`）：`VersionPlan.AssetIndex` 补 `url/sha1/size`；新增 `AssetIndexPlan`/`DownloadPlanItem` 与 `GamePlan.planClientDownload`；适配器分发。
+
+**结果**
+- 参考 / Python / Swift 三适配器均 **32/32**；父仓库 fixtures/reference 先合（`2e6d183`），随后子模块 PR CI 绿；父仓库 bump `OrzMCKit`/`python` + `RELEASES.md`。
 
 ### 2026-10-14 — pi（发布 0.1.0 + Phase 4 前端收敛）
 
