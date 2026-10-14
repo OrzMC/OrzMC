@@ -144,7 +144,8 @@ git diff --submodule
 - [x] **P3｜网络统一（B2）**：`TransferKit`（URLSession + 4 路 Range + 连接池 + 哈希跳过），**移除 Alamofire**（`b642b55`/`a700ebd`）。
 - [x] **P3｜断点续传**：`.part` 持久化 + `Range` 续传（单流/4 路分块）（`d017efe`/`8dc6bb9`）。
 - [x] **P3｜B8 进度结构**：`TransferProgress{kind:count|bytes}`，单流字节/批量计数（`d6f4769`/`ab61ac6`）。
-- [ ] **P3｜B7/B9**：`server-lifecycle`（优雅退出/退出码）与非 TTY 默认值对齐（补 `server-plan`/`server-lifecycle` 样例）。
+- [x] **P3｜server-plan 样例**：`planServerDeploy`（27 例），Swift/参考/Python 三适配器均齐（`507d467`/`OrzPythonMC#33`）。
+- [ ] **P3｜B7/B9**：`server-lifecycle`（优雅退出/退出码）与 `planServerLaunch`；非 TTY 默认值对齐。
 - [ ] **P3｜引擎③尾**：`GamePlan` 下载计划 / 进度；CLI/app 注迁到 `GamePlan`（退役 `GameDir`）。
 - [ ] **P2｜Swift 适配器**：按 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md) §7.1 顺序推进。
 - [x] **P2/3｜Q7 已决（B/HEAD 制）**：伞内引擎版本 = `OrzMCKit` `main` HEAD；`app` 改用 `branch = main`。
@@ -156,6 +157,19 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-13 — pi（server-plan 一致性样例）
+
+**做了什么**
+- 新增一致性操作 `planServerDeploy` + fixture `server-plan/vanilla-1.20.4`（核心制品/落点/jar 名/eula）。
+- 快照 `1.20.4.json` 补 `downloads.server`。
+- 三适配器实现：参考 `reference.py`、Swift（`GamePlan.planServerDeploy` + `ServerDeployPlan`）、Python（`adapter.py`）。
+
+**结果 / 产出**
+- 套件 **27/27**（参考本地自检绿；Python 本地 27/27）；Swift `507d467`（CI conformance）；`OrzPythonMC#33` 已合（`9a96ac9`）。
+
+**下一步**
+- B7 `server-lifecycle`（优雅退出/退出码）与 `planServerLaunch`；B9 非 TTY 默认值。
 
 ### 2026-10-13 — pi（B8：结构化进度）
 
