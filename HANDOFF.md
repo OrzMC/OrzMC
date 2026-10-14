@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-10-13 by pi
+> **最后更新**：2026-10-14 by pi
 
 ---
 
@@ -23,29 +23,27 @@ git pull --recurse-submodules          # 拉到各设备一致状态
 git submodule update --init --recursive
 git status --porcelain                 # 有无未提交的父仓库/子模块变更
 git submodule status                   # 子模块指针是否符合预期
+python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致 + 一致性参考自检）
 ```
 
 然后按顺序读：
 
-1. [`AGENTS.md`](AGENTS.md) —— 规则（三条铁律、子模块登记表、协作流程）
+1. [`AGENTS.md`](AGENTS.md) —— 规则（三条铁律、子模块登记表、协作流程；**§5 含「禁止 git add -A」**）
 2. **本文件** —— 当前状态与下一步
-3. [`docs/product-unification-plan.md`](docs/product-unification-plan.md) —— 进行中的方案（如有相关任务）
+3. [`docs/spec/README.md`](docs/spec/README.md)（规范）+ [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md)（Swift 侧设计）
+4. [`docs/product-unification-plan.md`](docs/product-unification-plan.md)（方案/决策）
 
-**结束会话前**：更新本文件第 1 / 2 / 5 章，并 `git add HANDOFF.md` 提交。
-
----
+**结束会话前**：更新本文件第 1 / 2 / 4 / 5 章，并 `git add HANDOFF.md` 提交。
 
 ## 1. 当前焦点（Current Focus）
 
 | 项 | 内容 |
 |---|---|
-| **主题** | 产品统一化 — Phase 2（一致性套件：Python 适配器已接入） |
-| **状态** | 🟡 Phase 0/1 完成；Phase 2：fixtures **26 例** + 运行器/参考适配器 + **Python 适配器**（26/26 绿，PR #32 已合）；**Q4 已决**：引入 `OrzMCKit` 子模块 |
-| **关联方案** | `docs/spec/`（规范）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` |
-| **涉及仓库** | `parent`（本轮改动全部在父仓库，未动任何子模块） |
-| **下一步** | 见第 4 章 |
-
----
+| **主题** | 产品统一化 — **Phase 0/1/2/3 完成；Phase 4 起步；Phase 5 治理已上线** |
+| **状态** | 🟢 目标达成：一份规范 + 多实现 + 前端共用核心；一致性套件 **31/31**（参考/Python/Swift）；Swift 侧 B1–B11 全部实现 |
+| **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
+| **当前基线** | 父仓库 `cef9bdb`；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
+| **下一步** | 见第 4 章（均为增量、非阻塞） |
 
 ## 2. 状态快照（Repo State）
 
@@ -53,29 +51,34 @@ git submodule status                   # 子模块指针是否符合预期
 
 | 项 | 值 |
 |---|---|
-| 分支 | `main` |
-| 已提交并推送 | AI 协作结构（`684d2ea`/`1142091`）+ Phase 0（`93fb39b`）+ Phase 1（`7b9165f`/`6640ea3`）+ 变更记录（`1b11a50`）+ 清待定（`2804af8`）+ 定稿 `--json`（`4b674e5`）+ Phase 2 fixtures/运行器（`ee0967b`）+ win 验证环境（`d5198e9`） |
-| 本轮未提交 | Python 适配器接入：修改 `docs/spec/{conformance.md,fixtures/README.md}`、`docs/product-unification-plan.md`、`HANDOFF.md`；bump `python` 指针 |
-| 已删除（历史） | `GEMINI.md`、`.cursor/rules/`（为不需要的 agent 预留，已移除） |
-| 已知未提交 | 仅 `plugin` 子模块指针（**预期**，见 2.2） |
+| 分支 | `main`（本地 = 远端 = `cef9bdb`） |
+| 工作区 | 干净；仅 `M plugin`（**预期**，见 2.2） |
+| 父仓库 CI | ✅ `.github/workflows/ci.yml` → `python3 scripts/verify/check.py` |
+| 已删除（历史） | `GEMINI.md`、`.cursor/rules/` |
 
-### 2.2 子模块在途状态
+> ⚠️ 父仓库禁用 `git add -A`/`git add .`——会误暂存**所有**子模块指针（曾误将 `plugin` 的 develop 记入），**始终显式 `git add <路径>`**。
 
-| 子模块 | 当前指针 | 分支 | 父仓库记录 | 说明 |
-|---|---|---|---|---|
-| `plugin` | `bd908b8` | `develop` | `5eadd6e`（main） | **有意为之，不要 bump**：plugin 工作流先在 `develop` 迭代、里程碑合并 `main`；父仓库**始终钉 `main` 发布线**，故本地检出 `develop` 时 `git status` 显示 `M plugin` 属预期 |
-| `OrzMCKit` | `e302d4e` | `main` | `e302d4e` | **新增**（`08e6b76`）：Swift 引擎子模块，已对齐 |
-| 其余 14 个 | 见 `git submodule status` | `main`/`master` | 一致 | 无偏离 |
+### 2.2 子模块记录指针（`git ls-tree HEAD`，钉 `main` 发布线）
 
-> `git submodule status` 中行首 `+` = 当前检出与父仓库记录不一致；`-` = 未初始化。
-> **父仓库指针钉发布线（`main`），不钉开发线（`develop`）。**
+| 子模块 | 记录指针 | 说明 |
+|---|---|---|
+| `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
+| `python` | `55a4d62` | `OrzPythonMC`；一致性适配器已接入（PR #32/#33/#34） |
+| `app` | `4a4c6b4` | `OrzMCApp`；有构建校验 CI |
+| `OrzMCKit` | `9bffcbc` | **Swift 引擎**（组织自有）；含 `ConformanceAdapter` |
+| `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
-### 2.3 验证命令
+> `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
+
+### 2.3 验证 / 治理命令
 
 ```bash
 git submodule status
 git status --porcelain
-git diff --submodule
+python3 scripts/verify/check.py            # 父仓库组合校验（CI 同款）
+python3 scripts/verify/check.py --remote   # 追加：子模块指针是否在远端（需网络）
+python3 scripts/conformance/run.py --list  # 列出一致性样例（当前 31）
+python3 scripts/release/composition.py     # 生成发版组合表（更新 RELEASES.md 用）
 ```
 
 ### 2.4 远程真机验证环境（Windows）
@@ -88,80 +91,60 @@ git diff --submodule
 | 执行助手 | `scripts/win/run.sh -c '<ps>'` / `-f <file.ps1>` / stdin |
 | 清理 | `scripts/win/run.sh -c 'Remove-Item -Recurse -Force E:\orzmc-verify'` |
 
-> ⚠️ `E:\orzmc` 是**生产部署**（caddy/cloudflared/database/mcsmanager），**勿动**。
-> 详见 [`AGENTS.md` §8.1](AGENTS.md)。
+> ⚠️ `E:\orzmc` 是**生产部署**（caddy/cloudflared/database/mcsmanager），**勿动**。详见 [`AGENTS.md` §8.1](AGENTS.md)。
 
 ### 2.5 Swift 构建与验证
 
 | 项 | 值 |
 |---|---|
 | 本地工具链 | `~/Library/Developer/Toolchains/swift-6.0.3-RELEASE.xctoolchain`（Swift 6.0.3，已装） |
-| 本地 SDK | 仅 macOS 12/13（CLT）→ `OrzMCKit` 整包 **无法本地编译**（OpenAPIKit 需 macOS 14 API） |
-| 验证途径 | `OrzMCKit` CI（`macos-15`：`swift build` + `swift test`，已绿）；不依赖 OpenAPIKit 的独立包可本地编译 |
-| 不可用 | `swift-latest` / 6.5-dev 工具链需 macOS 15；`swiftly` 在本机崩溃 |
+| 本地 SDK | 仅 macOS 12/13（CLT）→ **`OrzMCKit` 整包无法本地编译**（OpenAPIKit 需 macOS 14 API） |
+| 验证途径 | `OrzMCKit` CI（`macos-15`：`swift build`+`swift test`+`conformance`）；不依赖 OpenAPIKit 的包（`OrzSwiftKit` 的 kit）可本地编译 |
+| 不可用 | `swift-latest`/6.5-dev 工具链需 macOS 15；`swiftly` 在本机崩溃 |
 
----
+### 2.6 关键版本与外部依赖（非父仓库子模块，HEAD 制）
+
+| 仓库 | 当前 | 说明 |
+|---|---|---|
+| `OrzGeeker/OrzSwiftKit` | `main` | 基础设施：`CacheKit`/`RuntimeKit`/`TransferKit`/`JokerKits`(含 `ProcessRunner`)；CI 已接入；已关 `enforce_admins` |
+| `OrzMC/MojangAPI` | `main` | 元数据；平台 macOS 13 / iOS 16（D12） |
+| `OrzMC/PaperMC` | `main` | Paper/Hangar |
+| `OrzGeeker/OrzAppUpdater` | tag `0.0.3` | 平台 macOS 13；被 app 以 tag 依赖 |
 
 ## 3. 待决策 / 开放问题
 
-> 产品统一化的开放问题以 `docs/product-unification-plan.md` 第 7 章为准；此处只列**当前阻塞推进**的。
+**决策（已落定）**：
+- D1 不合并 `python` 与 `app` 仓库；D2 一份规范 + 多实现 + 多前端 + 一个产品伞；D3 规范落父仓库 `docs/spec/`（成熟后下沉）；
+- D4 黄金样例 + 跨语言 conformance；D5/D8 `OrzMCKit` = Swift 可复用基础组件；D6 父仓库 = 产品伞；
+- D7 一个 `orzmc`（CLI+GUI 两面、共核、互相安装/打开）；D9 CLI 可被 AI 调用（`--json` + `capabilities`；评估 MCP）；
+- D10 依赖用 `OrzMC/*` 规范路径 + 本地覆盖仅开发态；D11 外部 Swift 依赖 **HEAD 制**；D12 `MojangAPI` 平台 macOS13/iOS16。
 
-| # | 问题 | 状态 | 建议默认 |
-|---|---|---|---|
-| Q1 | `OrzMCKit`（Swift 引擎）仓库能否拉取核对类型？ | ✅ 已决 | 可访问（`main`），已浅克隆核验：`Game`/`Fabric` + `orzmc` CLI；引擎依赖 `MojangAPI`/`PaperMC`/`OrzSwiftKit` 在个人仓库 |
-| Q2 | `orzmc-spec` 落点？ | ✅ 已决 | 父仓库 `docs/spec/`；成熟后再下沉独立仓库 |
-| Q3 | `OrzMCKit` 如何定位？ | ✅ 已决 | **Swift 可复用基础组件**（非 App 私有引擎），服务 Swift CLI 与 GUI；登记为子模块见 plan Q4 |
-| Q4 | `plugin` 子模块指针漂移如何处理？ | ✅ 已决 | **不 bump**：`develop` 是迭代线、`main` 是发布线，父仓库钉 `main`；`M plugin` 属预期 |
+**开放问题**：Q1–Q7 均已决（见 [`docs/product-unification-plan.md`](docs/product-unification-plan.md) 第 7 章）。**当前无阻塞项。**
 
----
+**待定（计划项，非阻塞）**：`--json` 错误码表、`capabilities`/`orzmc mcp` schema、Phase 4 前端进一步收敛。
 
-## 4. 下一步（Next Actions，按优先级）
+## 4. 下一步（Next Actions，增量、非阻塞）
 
-- [x] **P0｜提交并 push 父仓库 AI 协作结构**（`684d2ea` + `1142091`）。
-- [x] **P0｜决定 `plugin` 指针漂移处理**：结论=**不 bump**（父仓库钉 `main` 发布线，本地检出 `develop` 属迭代常态）。
-- [x] **P1｜Phase 0**：产出 `docs/product-architecture.md`（分层、所有权、允许依赖方向、禁止事项）。
-- [x] **P1｜提交并 push Phase 0**（`93fb39b`）。
-- [x] **P1｜Q2/Q3 已决**：规范落 `docs/spec/`；`OrzMCKit` 定位 Swift 可复用基础组件。
-- [x] **P1｜Phase 1 规范草案**：产出 `docs/spec/{data-model,behavior,cli-surface,install-update,conformance}.md`。
-- [x] **P1｜清「待定」+ 定稿 `--json`**（`2804af8` + `4b674e5`）。
-- [x] **P2｜Phase 2 起步**：`docs/spec/fixtures/`（26 样例 + 快照 + schema）+ `scripts/conformance/{run.py,reference.py}`（自检 26/26 绿）。
-- [x] **P2｜Python 适配器**：`OrzPythonMC#32` → `orzmc/tests/conformance/adapter.py`（26/26，已合并 `645aace`）。
-- [ ] **P2｜提交本批父仓库改动 + bump `python` 指针**。
-- [x] **P2｜Q4 已决**：登记 `OrzMCKit` 为父仓库子模块（`08e6b76`，钉 `e302d4e`）；核实 MojangAPI/PaperMC 已入组织。
-- [ ] **P2｜Phase 0/1 评审**：确认决策 D1–D9 与规范。
-- [x] **Swift 基础①**：`CacheKit`（PR #2 已合）；OrzGeeker 保护已放宽（`enforce_admins=false`）；D11 HEAD 制落地。
-- [x] **P3｜Swift 基础①(续)**：`RuntimeKit`（D-b）+ `TransferPolicy`（B2）→ PR #3 已合（`cd93070`）。
-- [ ] **P3｜B2 剩余**：把 `TransferPolicy` 接入 `Downloader`（实际 4 路 Range + 池）。
-- [x] **P3｜Swift 基础②**：`MojangAPI` — 渠道归一 + 真实清单离线解码 + `JavaRequirement` + 消费 `CacheKit`（`bb8dbe8`，CI 绿）。
-- [ ] **P3｜注意**：`MojangAPI` 平台下限现为 macOS 13 / iOS 16（D12）；OrzMCKit 需 `swift package update` 才会跟进新 revision。
-- [x] **P3｜Swift 引擎③起步**：`OrzMCKit` `GameType` 四值 + 能力矩阵 + `GamePlan.layout`（`f4aed31`，CI 绿）。
-- [x] **P3｜引擎③续**：`GamePlan.planClientLaunch`（B6 纯计划，`5c60238`，CI 绿）。
-- [x] **P4｜一致性适配器（Swift）**：`OrzMCKit` `ConformanceAdapter` 26/26 绿；OrzMCKit CI `conformance` job（Q6 已决，`558dc70`）。
-- [x] **P5｜布局切换**：`GameDir` 改为**委托 `GamePlan` 的兼容层**（`1fd5934`）——CLI/app 无需改动即得规范布局。
-- [x] **P5｜app 构建校验 CI**：`OrzMCApp` 新增 `ci.yml`（xcodebuild build，无签名 + 跳过插件/宏校验），**绿**（`e23853d`）。
-- [ ] **P5｜注全迁移**：逐步把调用点（含 app）迁到 `GamePlan`，再退役 `GameDir`。
-- [x] **P3｜Java 托管（B5）**：`JavaRuntime` 接入服务端/客户端/CLI/GUI；移除 `which java`（`db70ad8`）。
-- [x] **P3｜网络统一（B2）**：`TransferKit`（URLSession + 4 路 Range + 连接池 + 哈希跳过），**移除 Alamofire**（`b642b55`/`a700ebd`）。
-- [x] **P3｜断点续传**：`.part` 持久化 + `Range` 续传（单流/4 路分块）（`d017efe`/`8dc6bb9`）。
-- [x] **P3｜B8 进度结构**：`TransferProgress{kind:count|bytes}`，单流字节/批量计数（`d6f4769`/`ab61ac6`）。
-- [x] **P3｜server-plan 样例**：`planServerDeploy`（27 例），Swift/参考/Python 三适配器均齐（`507d467`/`OrzPythonMC#33`）。
-- [x] **P3｜B7 进程原语**：`OrzSwiftKit` `ProcessRunner`/`ManagedProcess`（优雅停止→TERM→KILL、退出码归一、`onLine`）（`10b4095`）。
-- [x] **P3｜B7 接线**：`Server.start()`/`launchServer` 返回 `ManagedProcess`；CLI 前台等待并打印退出码；app `GUIServer` 同步（`3bba300`/`d4362bc`）。
-- [x] **P3｜B9 非 TTY**：CLI 不阻塞（显式版本命中即用/找不到报错；非 TTY 最新 release；用户名 `guest`）（`1bc336d`）。
-- [x] **P3｜B11 错误语义**：CLI 归一为用户可读信息、写 stderr、退出码 1（`82ff17c`）。
-- [x] **P3｜planServerLaunch + 参数统一**：`GamePlan.planServerLaunch`（29 例）；`Server+Launch` 去掉 `-server`/`--pidFile`，对齐 Python 参数顺序（`52abfdc`/`OrzPythonMC#34`）。
-- [x] **P3｜退役 `GameDir`**：新增 `GamePlan+Paths` 便捷 API；OrzMCKit CLI + app 调用点全部迁移；删除 `GameDir.swift`（`8d98ec0`/`23e64e0`）。
-- [ ] **P3｜引擎③尾**：`GamePlan` 下载计划 / 进度；CLI/app 注迁到 `GamePlan`（退役 `GameDir`）。
-- [ ] **P2｜Swift 适配器**：按 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md) §7.1 顺序推进。
-- [x] **P2/3｜Q7 已决（B/HEAD 制）**：伞内引擎版本 = `OrzMCKit` `main` HEAD；`app` 改用 `branch = main`。
-- [ ] **P2｜补样例**：`server-plan/`（`planServerDeploy`）与 `server-lifecycle/`（B7）。
-- [ ] **P2｜可选**：加轻量 CI 校验 `AGENTS.md` 子模块登记表与 `.gitmodules` 一致；父仓库跑参考适配器自检。
-- [ ] **P2｜Windows 真机验证**：需要时经 `scripts/win/run.sh` 在 `win` 上实测（产物限于 `E:\orzmc-verify\`）。
-- [ ] **P2｜治理**：是否把 `OrzMCKit` 登记为子模块（plan Q4）。
+- [ ] **Phase 4｜继续前端收敛**：把 `downloadClient`（下载编排）也抽到引擎 `Client`，CLI/GUI 共用（需进度 UI 抽象）。
+- [ ] **一致性｜继续扩样例**：`planClientDownload`、`server-lifecycle`（退出码）等；新增操作需三适配器同步实现。
+- [ ] **可选｜Python 侧反向对齐**：把 Swift 已统一的语义收敛到 Python（当前靠套件保证行为一致）。
+- [ ] **可选｜Windows 真机实测**：经 `scripts/win/run.sh` 在 `win` 上跑（产物限 `E:\orzmc-verify\`）。
+- [ ] **治理｜外部依赖**：`OrzAppUpdater` 已发 tag `0.0.3`；`OrzSwiftKit`/`MojangAPI`/`PaperMC` 走 `main` HEAD。
 
----
+> 历史（本会话已完成）：Phase 0/1/2/3 全部、Phase 5 治理（`RELEASES.md`+`check.py`+父仓库 CI）、Phase 4 起步（`launchClient`）、
+> 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（阶段性收尾：产品统一化达成）
+
+**总览**
+- Phase 0/1/2/3 完成 + Phase 5 治理上线（`RELEASES.md` + `scripts/verify/check.py` + 父仓库 CI）+ Phase 4 起步（引擎共用 `Client.launchClient()`）。
+- 一致性套件 **31 例**，参考 / Python / Swift 三适配器全绿（`OrzMCKit` CI 内跑）。
+- Swift 侧 **B1–B11 全部实现**；`OrzSwiftKit` 收敛出 `CacheKit`/`RuntimeKit`/`TransferKit` + `ProcessRunner`，**移除 Alamofire**。
+- 当前基线：父仓库 `cef9bdb`、`OrzMCKit=9bffcbc`、`app=4a4c6b4`、`python=55a4d62`、`plugin` 记录 `5eadd6e`(main)/检出 develop。
+
+**下一步**：见第 4 章（增量、非阻塞）。
 
 ### 2026-10-14 — pi（Phase 4 前端收敛：共用 launchClient）
 
@@ -754,29 +737,23 @@ git diff --submodule
 
 ## 6. 环境与设备差异（Environment）
 
-> 跨设备接手的常见坑：某设备缺工具/凭据、路径不同、子模块未初始化。新设备首次接手时补记。
-
 | 设备 | 用途 | 已具备 | 备注 |
 |---|---|---|---|
-| （示例）macOS 开发机 | 主力 | git / pi / claude / 各语言工具链 | 路径 `/Users/bot/OrzMC` |
-| （待补） | | | |
+| macOS 开发机（`/Users/bot/OrzMC`） | 主力 | git / gh / pi / Swift 6.0.3 工具链 | **SDK 仅 macOS 12/13** → OrzMCKit 整包靠 CI |
+| Windows 真机（`ssh win`） | 平台实测 | PowerShell / git | 工作根 `E:\orzmc-verify\`（见 2.4） |
+| GitHub（`OrzMC` / `OrzGeeker`） | CI / 发布 | OrzMCKit / App / Python 均有 CI | OrzGeeker 需 admin 绕过 review |
 
-**通用注意**
-- 首次 clone 必须 `--recurse-submodules`，否则子模块目录为空。
-- 子模块默认分支各不相同（见 `AGENTS.md` 第 4 章）；`plugin` 开发用 `develop`，其余多为 `main`。
-- 不要在**未初始化的子模块**目录里工作。
-
----
+**外部依赖仓库**（非父仓库子模块）：`OrzGeeker/OrzSwiftKit`、`OrzMC/MojangAPI`、`OrzMC/PaperMC`、`OrzGeeker/OrzAppUpdater`。
 
 ## 7. 禁忌 / 易错点（本仓库特有）
 
 - ❌ 在父仓库直接提交子模块**内部**文件——代码改动必须进子模块仓库（`AGENTS.md` 铁律 1）。
+- ❌ **`git add -A` / `git add .`**：会误暂存所有子模块指针（曾误 bump `plugin`）——始终显式 `git add <路径>`。
 - ❌ 在子模块 detached HEAD 状态下改代码并提交——先 `git switch <分支>`。
 - ❌ 把"只存在于本机/本会话"的关键信息留在脑子里——**一律写进本文件或 `docs/`**。
 - ❌ 直接改 `tools/thanos`（外部上游仓库）。
 - ❌ 修改 `AGENTS.md` 之外的桥接文件（`CLAUDE.md`）写内容——桥接不写内容。
-
----
+- ⚠️ HEAD 制下改了 `OrzSwiftKit`/`MojangAPI`/`PaperMC` 后，依赖方需 `swift package update` 才会跟进 revision；`app` 侧 CI 已改为删 `Package.resolved` 重解析。
 
 ## 8. 交接模板（复制用）
 
