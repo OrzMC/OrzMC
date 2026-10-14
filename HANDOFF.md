@@ -88,10 +88,13 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 | SSH 主机 | `win`（`WangA@192.168.0.33`，免密 key；主机名 `LAPTOP-APCBNCLR`） |
 | 默认 shell | **PowerShell**（`&` 是后台运算符，注意引号） |
 | 收敛工作根 | **`E:\orzmc-verify\`**（`bin/ minecraft/ tmp/ logs/`，已创建） |
-| 执行助手 | `scripts/win/run.sh -c '<ps>'` / `-f <file.ps1>` / stdin |
+| 执行助手 | `scripts/win/run.sh -c '<ps>'` / `-f <file.ps1>` / stdin；服务端 E2E 用 [`scripts/win/e2e-server.ps1`](scripts/win/e2e-server.ps1) |
 | 清理 | `scripts/win/run.sh -c 'Remove-Item -Recurse -Force E:\orzmc-verify'` |
 
 > ⚠️ `E:\orzmc` 是**生产部署**（caddy/cloudflared/database/mcsmanager），**勿动**。详见 [`AGENTS.md` §8.1](AGENTS.md)。
+>
+> ⚠️ **Windows 上 `uv` 坑**：默认托管目录可能残留不可信装入点（`os error 448`）→ `uv sync` 失败。
+> 解决：`$env:UV_PYTHON_INSTALL_DIR="E:\orzmc-verify\uvpython"` 后 `uv sync --directory E:\orzmc-verify\src --all-packages`（`git`/`uv` 已装，无系统 Python）。
 
 ### 2.5 Swift 构建与验证
 
@@ -127,7 +130,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 **T1 端到端实跑（进行中，降最大风险）**
 - [x] **macOS 实跑**（Python `orzmc`）：真实下载 Java17 + 服务端 → 世界生成 → `stop` 优雅停止 → 退出码 0；顺带发现并修复「流式中途断连不重试」。
-- [ ] **Windows 真机**：经 `scripts/win/run.sh` 跑同流程（产物限 `E:\orzmc-verify\`）。
+- [x] **Windows 真机**：经 `scripts/win/e2e-server.ps1` 跑通同流程（1.20.4 vanilla：下载→启动→`Done (`→`stop`→退出码 0、无残留 java；root 236MB）。
 - [ ] **Swift 冒烟**：OrzMCKit CI 加 `workflow_dispatch` 真实小文件下载 + 哈希校验。
 
 **其他**
@@ -141,6 +144,20 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（T1 收尾：Windows 真机 E2E）
+
+**做了什么**
+- Windows 真机（`ssh win`，收敛根 `E:\orzmc-verify\`）跑通 Python `orzmc` 服务端全链路：
+  clone `OrzPythonMC`（`50ef96c`，含续传修复）→ `uv sync` → 部署 `1.20.4 vanilla` → `Done (` → `stop` → **退出码 0**、无残留 java、root 236MB。
+- 新增可复用脚本 [`scripts/win/e2e-server.ps1`](scripts/win/e2e-server.ps1)（截获 stdout、等 `Done (` 后写 stdin `stop`）。
+- 踩坑：Windows 上 `uv` 默认托管 Python 目录残留不可信装入点（`os error 448`），须 `UV_PYTHON_INSTALL_DIR` 指向干净目录（已记入 §2.4）。
+
+**结果 / 产出**
+- T1 macOS + Windows 两端实跑均 ✅；父仓库脚本 + HANDOFF。
+
+**下一步**
+- Swift 冒烟（OrzMCKit CI 真实小文件下载 + 哈希）。
 
 ### 2026-10-14 — pi（T1 端到端实跑 + 修复下载中断）
 
