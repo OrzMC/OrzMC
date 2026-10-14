@@ -40,7 +40,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | 产品统一化 — Phase 0–3 完成；Phase 5 治理已上线；**T1 端到端完成**；**T2 命令面统一进行中** |
-| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **31/31**；Swift 侧 B1–B11 全部实现；T2：Python 已补全局 `--json`/`--version`/`--root-dir`/`completion`/`capabilities`，Swift 已收敛选项 + 补 `list`/`remove`/`backup`/`version`/`completion`/`capabilities` + `fabric` 隐藏别名 + 全局 `--version/--verbose/--root-dir/--json`；**D13：Swift `orzmc` CLI 发行化（发版链路 + 一键安装 + 首次 release `v0.0.6`）已落地** |
+| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **31/31**；Swift 侧 B1–B11 全部实现；T2：Python 已补全局 `--json`/`--version`/`--root-dir`/`completion`/`capabilities`，Swift 已补 `list`/`remove`/`backup`/`version`/`completion`/`capabilities`/`update`/`self-uninstall` + `fabric` 隐藏别名 + 全局 `--version/--verbose/--root-dir/--json`（`app` 待办）；**D13：Swift `orzmc` CLI 发行化（发版链路 + 一键安装 + 首次 release `v0.0.6`）已落地** |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
 | **下一步** | 见第 4 章（均为增量、非阻塞） |
@@ -65,7 +65,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `b6886fbb8c95` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41） |
 | `app` | `4a4c6b4` | `OrzMCApp`；有构建校验 CI |
-| `OrzMCKit` | `c4ec57f94fb4` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`；命令面 #2–#5、#7、#9；发版链路（release-please + `release.yml`）+ `scripts/install.sh` #6；已发 `v0.0.6` |
+| `OrzMCKit` | `586cc605ba8c` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`；命令面 #2–#5、#7、#9、#10；发版链路（release-please + `release.yml`）+ `scripts/install.sh` #6；已发 `v0.0.6` |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
 > `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
@@ -144,7 +144,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 **T2 统一 CLI 命令面（进行中）**
 - [x] **Swift 选项收敛**：`--debug→--verbose`、`--ms/--mx→--min-mem/--max-mem`、`--gui→--nogui`、`--force_upgrade→--force-upgrade`、`--jar-opts→--server-args`；去掉 `defaultCommand`（无子命令打印帮助）。
-- [x] **Swift 补命令**：`version`/`list`/`remove`/`backup`/`completion`(bash/zsh)/`capabilities` ✅；`fabric` 隐藏别名 ✅；全局 `--version`/`--verbose`/`--root-dir`/`--json` ✅；`update`/`self-uninstall`/`app` 待办。
+- [x] **Swift 补命令**：`version`/`list`/`remove`/`backup`/`completion`(bash/zsh)/`capabilities`/`update`/`self-uninstall` ✅；`fabric` 隐藏别名 ✅；全局 `--version`/`--verbose`/`--root-dir`/`--json` ✅；`app` 待办。
 - [x] **Swift CLI 发行化（D13）**：release-please + `release.yml`（tag→`orzmc-macos-{arm64,x86_64}` + SHA256SUMS）+ `scripts/install.sh`；README（#6）。
 - [x] **Python 全局项**：`--version`/`--root-dir` 全局；内存选项规范名 `--min-mem/--max-mem`（旧名别名）。
 - [x] **Python `--json` 信封**（D9 AI 调用核心）：全局 `--json`，`{ok,command,data,error}`，日志/进度转 stderr。
@@ -167,6 +167,19 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（T2 Step 2：Swift `update` / `self-uninstall`）
+
+**做了什么**
+- `OrzMCKit` 新增发行产品生命周期（#10）：`InstallManifest`（`install.conf` 读写）、`orzmc update`（GitHub releases 解析 + 版本比较 + 下载/本地文件 + Mach-O magic 校验 + 分离助手延迟替换）、`orzmc self-uninstall`（还原 PATH / 删补全与记录 / 删二进制 / 可选删 game root）。
+- `scripts/install.sh` 补齐 `version`/`path_file`/`path_line`/`completion_file` 记录。新增单测（install.conf、版本比较）。
+
+**结果 / 产出**
+- `OrzMCKit` PR #10 已合（`586cc605ba8c`，CI 绿）；父仓库 bump + `RELEASES.md` 刷新；`cli-surface.md` §10 同步。
+- 验证（`ssh air` 沙箱）：`update --check`（真实 GitHub）；完整 `update --force -v 0.0.6`（下载→校验→分离助手替换成功）；本地文件 magic 不符→`E_VERIFY`；`self-uninstall --yes --force --remove-root` 全清理且 rc 其余行保留。
+
+**下一步**
+- Swift `app`（跨面安装/打开/卸载）——已写好待接线；Python `plugin`（Hangar）/`app`。
 
 ### 2026-10-14 — pi（T2 Step 2：Swift `capabilities` + `fabric` 隐藏别名）
 
