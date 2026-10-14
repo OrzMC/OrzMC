@@ -65,7 +65,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `50ef96c` | `OrzPythonMC`；一致性适配器（PR #32/#33/#34）+ 下载中断续传（PR #36） |
 | `app` | `4a4c6b4` | `OrzMCApp`；有构建校验 CI |
-| `OrzMCKit` | `9bffcbc` | **Swift 引擎**（组织自有）；含 `ConformanceAdapter` |
+| `OrzMCKit` | `e075e1ad1584` | **Swift 引擎**（组织自有）；含 `ConformanceAdapter`；CLI 命令面已收敛（PR #2） |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
 > `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
@@ -136,6 +136,11 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 **新发现（待办）**
 - [ ] **Swift `Transfer` 无运行内重试**：`downloadSingle`/`downloadRanged` 在 body 中途断连时直接抛错（仅靠持久化 `.part` 重跑续传），与 Python 现行「运行内重试 + `Range` 续传」及 spec B2「有限次重试」不一致。GUI 无手动重跑，建议补运行内有界重试。
 
+**T2 统一 CLI 命令面（进行中）**
+- [x] **Swift 选项收敛**：`--debug→--verbose`、`--ms/--mx→--min-mem/--max-mem`、`--gui→--nogui`、`--force_upgrade→--force-upgrade`、`--jar-opts→--server-args`；去掉 `defaultCommand`（无子命令打印帮助）。
+- [ ] **Swift 补命令**：`version`/`list`/`remove`/`backup`/`update`/`self-uninstall`/`app`/`completion`；`fabric` 隐藏别名；全局 `--root-dir`/`--json`。
+- [ ] **Python 补命令/全局项**：全局 `--version`/`--root-dir`/`--json`；`--auth`；`plugin`/`app`/`completion`/`capabilities`；`--minmem/--maxmem` 别名；`add_completion=True`。
+
 **其他**
 - [ ] **Phase 4｜继续前端收敛**：把 `downloadClient`（下载编排）也抽到引擎 `Client`，CLI/GUI 共用（需进度 UI 抽象）。
 - [ ] **一致性｜继续扩样例**：`planClientDownload`、`server-lifecycle`（退出码）等；新增操作需三适配器同步实现。
@@ -147,6 +152,18 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（T2 起步：Swift CLI 选项收敛）
+
+**做了什么**
+- 对齐 `docs/spec/cli-surface.md` 收敛 Swift CLI：`--debug→--verbose`、`--ms→--min-mem(-m)`、`--mx→--max-mem(-x)`、`--gui→--nogui`（反向，默认 false=GUI 与 Python/spec 一致）、`--force_upgrade→--force-upgrade`、`--jar-opts→--server-args`。
+- 去掉 `CommandGroup.defaultCommand`：无子命令时打印帮助（不再隐式跑 `client`）。
+
+**结果 / 产出**
+- `OrzMCKit` PR #2 已合（`e075e1a`，CI test + conformance 绿）；父仓库 bump `760608e`；`RELEASES.md` 刷新。
+
+**下一步**
+- Swift 补 `version/list/remove/backup` 等命令与全局 `--root-dir/--json`；Python 补全局 `--version/--json` 与 `plugin/completion` 等。
 
 ### 2026-10-14 — pi（T1 完成：Swift 真实网络冒烟）
 
