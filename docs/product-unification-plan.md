@@ -313,3 +313,4 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-13 | 运行时：`JavaRuntime` 托管 JRE（B5）接入引擎（服务端/客户端/CLI/GUI），移除 `which java`；修 `OrzAppUpdater` 平台声明并发 0.0.3 | pi |
 | 2026-10-13 | 网络层统一：`OrzSwiftKit` 新增 `TransferKit`（B2，URLSession），**移除 Alamofire**（Swift 侧不再有三方 HTTP 客户端） | pi |
 | 2026-10-13 | `TransferKit` 新增**断点续传**：`.part` 持久化 + `Range` 续传（单流与 4 路分块均支持） | pi |
+| 2026-10-13 | `TransferKit` 新增**结构化进度 `TransferProgress`**（B8）：单流报 `bytes`、批量报 `count` | pi |
