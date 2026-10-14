@@ -1,0 +1,31 @@
+{
+  "specVersion": "0.1",
+  "id": "client-download/legacy-natives-osx",
+  "area": "client-download",
+  "description": "legacy natives：按平台取 classifier；无 downloads 的库回退 Maven 路径",
+  "given": {
+    "operation": "planClientDownload",
+    "version": "1.16.5",
+    "type": "vanilla",
+    "platform": { "os": "osx", "arch": "arm64" },
+    "root": "/tmp/orzmc-fixture",
+    "snapshot": "snapshots/versions/legacy-natives.json"
+  },
+  "expect": {
+    "count": 5,
+    "itemsContains": [
+      {
+        "url": "https://libraries.example/native-natives-osx.jar",
+        "path": "/tmp/orzmc-fixture/versions/1.16.5/client/libraries/org/example/native/1.0/native-1.0-natives-osx.jar",
+        "sha1": "0000000000000000000000000000000000000020",
+        "size": 20
+      },
+      {
+        "url": "https://libraries.minecraft.net/org/example/nomaven/2.0/nomaven-2.0.jar",
+        "path": "/tmp/orzmc-fixture/versions/1.16.5/client/libraries/org/example/nomaven/2.0/nomaven-2.0.jar",
+        "sha1": null,
+        "size": null
+      }
+    ]
+  }
+}

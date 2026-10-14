@@ -1,0 +1,8 @@
+{
+  "specVersion": "0.1",
+  "id": "download/concurrency-below-min",
+  "area": "download",
+  "description": "并发数下界：0 夹紧到 1",
+  "given": { "operation": "resolveConcurrency", "threads": 0 },
+  "expect": { "concurrency": 1 }
+}

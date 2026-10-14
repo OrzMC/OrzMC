@@ -1,0 +1,40 @@
+{
+  "specVersion": "0.1",
+  "id": "client-download/vanilla-1.20.4-windows-x86_64",
+  "area": "client-download",
+  "description": "vanilla 客户端下载清单（Windows）：仅 macOS 库被 rules 排除，notmac 亦被排除",
+  "given": {
+    "operation": "planClientDownload",
+    "version": "1.20.4",
+    "type": "vanilla",
+    "platform": { "os": "windows", "arch": "x86_64" },
+    "root": "/tmp/orzmc-fixture",
+    "snapshot": "snapshots/versions/1.20.4.json",
+    "assetIndex": "snapshots/assets/5.json"
+  },
+  "expect": {
+    "count": 5,
+    "itemsContains": [
+      {
+        "url": "https://libraries.example/always-1.0.jar",
+        "path": "/tmp/orzmc-fixture/versions/1.20.4/client/libraries/com/example/always/1.0/always-1.0.jar",
+        "sha1": "0000000000000000000000000000000000000010",
+        "size": 10
+      }
+    ],
+    "itemsNotContains": [
+      {
+        "url": "https://libraries.example/maconly-1.0.jar",
+        "path": "/tmp/orzmc-fixture/versions/1.20.4/client/libraries/com/example/maconly/1.0/maconly-1.0.jar",
+        "sha1": "0000000000000000000000000000000000000011",
+        "size": 11
+      },
+      {
+        "url": "https://libraries.example/notmac-1.0.jar",
+        "path": "/tmp/orzmc-fixture/versions/1.20.4/client/libraries/com/example/notmac/1.0/notmac-1.0.jar",
+        "sha1": "0000000000000000000000000000000000000012",
+        "size": 12
+      }
+    ]
+  }
+}

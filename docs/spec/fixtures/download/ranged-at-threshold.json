@@ -1,0 +1,11 @@
+{
+  "specVersion": "0.1",
+  "id": "download/ranged-at-threshold",
+  "area": "download",
+  "description": "恰为分块阈值（8MB）→ ranged（>= 边界）",
+  "given": {
+    "operation": "planDownloadConcurrency",
+    "sizeBytes": 8388608
+  },
+  "expect": { "mode": "ranged", "parts": 4 }
+}

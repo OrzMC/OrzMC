@@ -1,0 +1,26 @@
+{
+  "specVersion": "0.1",
+  "id": "server-launch/fabric-1.20.4-dedup",
+  "area": "server-launch",
+  "description": "fabric 启动：jvmOpts 前置；nogui/--forceUpgrade 与 userServerArgs 去重不重复",
+  "given": {
+    "operation": "planServerLaunch",
+    "root": "/tmp/orzmc",
+    "version": "1.20.4",
+    "type": "fabric",
+    "javaMajor": 17,
+    "options": {
+      "jvmOpts": ["-XX:+UseG1GC"],
+      "userServerArgs": ["nogui", "--forceUpgrade"],
+      "nogui": true,
+      "forceUpgrade": true
+    }
+  },
+  "expect": {
+    "executable": "/tmp/orzmc/java/17/bin/java",
+    "cwd": "/tmp/orzmc/versions/1.20.4/server/fabric",
+    "jarPath": "/tmp/orzmc/versions/1.20.4/server/fabric/fabric-server-launch.jar",
+    "jvmArgs": ["-XX:+UseG1GC", "-Xms512M", "-Xmx2G"],
+    "serverArgs": ["nogui", "--forceUpgrade"]
+  }
+}

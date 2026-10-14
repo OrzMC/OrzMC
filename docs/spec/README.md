@@ -37,7 +37,7 @@ OrzMC 的工具产品（见 [`../product-architecture.md`](../product-architectu
 | [`cli-surface.md`](cli-surface.md) | CLI 命令面契约（统一 Swift/Python 命令与参数） | 草案 |
 | [`install-update.md`](install-update.md) | 安装 / 自升级 / 跨面安装（GUI↔CLI、双渠道兜底、补全） | 草案 |
 | [`conformance.md`](conformance.md) | 一致性套件与黄金样例 | 草案 |
-| [`fixtures/`](fixtures/README.md) | 黄金样例（`given→expect`）+ 快照 + schema + 运行器说明 | 草案 · 已落地 34 例 |
+| [`fixtures/`](fixtures/README.md) | 黄金样例（`given→expect`）+ 快照 + schema + 运行器说明 | 草案 · 已落地 53 例 |
 
 ## 4. 实现映射（谁实现这份规范）
 

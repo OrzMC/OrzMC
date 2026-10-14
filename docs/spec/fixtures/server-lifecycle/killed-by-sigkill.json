@@ -1,0 +1,15 @@
+{
+  "specVersion": "0.1",
+  "id": "server-lifecycle/killed-by-sigkill",
+  "area": "server-lifecycle",
+  "description": "服务端被 SIGKILL 杀死：退出码归一为 128+9=137",
+  "given": {
+    "operation": "normalizeExit",
+    "returnCode": -9
+  },
+  "expect": {
+    "exitCode": 137,
+    "signaled": true,
+    "signal": 9
+  }
+}

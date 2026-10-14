@@ -1,0 +1,47 @@
+{
+  "id": "1.16.5",
+  "type": "release",
+  "mainClass": "net.minecraft.client.main.Main",
+  "javaVersion": { "majorVersion": 8 },
+  "assetIndex": {
+    "id": "1.16",
+    "sha1": "0000000000000000000000000000000000000016",
+    "size": 100,
+    "url": "https://piston-meta.mojang.com/asset-index.json"
+  },
+  "downloads": {
+    "client": {
+      "url": "https://piston-data.mojang.com/client.jar",
+      "sha1": "000000000000000000000000000000000000001c",
+      "size": 1000
+    }
+  },
+  "libraries": [
+    {
+      "name": "com.example:always:1.0",
+      "downloads": {
+        "artifact": {
+          "path": "com/example/always/1.0/always-1.0.jar",
+          "url": "https://libraries.example/always-1.0.jar",
+          "sha1": "0000000000000000000000000000000000000010",
+          "size": 10
+        }
+      }
+    },
+    {
+      "name": "org.example:native:1.0",
+      "natives": { "osx": "natives-osx", "windows": "natives-windows", "linux": "natives-linux" },
+      "downloads": {
+        "classifiers": {
+          "natives-osx": {
+            "path": "org/example/native/1.0/native-1.0-natives-osx.jar",
+            "url": "https://libraries.example/native-natives-osx.jar",
+            "sha1": "0000000000000000000000000000000000000020",
+            "size": 20
+          }
+        }
+      }
+    },
+    { "name": "org.example:nomaven:2.0" }
+  ]
+}

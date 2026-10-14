@@ -1,0 +1,22 @@
+{
+  "specVersion": "0.1",
+  "id": "layout/paper-1.20.4-osx-arm64",
+  "area": "layout",
+  "description": "paper 服务端在 macOS arm64 的规范路径 + object 路径（java 无 .exe）",
+  "given": {
+    "operation": "planLayout",
+    "root": "/tmp/orzmc",
+    "version": "1.20.4",
+    "type": "paper",
+    "javaMajor": 17,
+    "objectSha1": "0123456789abcdef0123456789abcdef01234567",
+    "platform": { "os": "osx", "arch": "arm64" }
+  },
+  "expect": {
+    "serverDir": "/tmp/orzmc/versions/1.20.4/server/paper",
+    "serverJarName": "paper-1.20.4.jar",
+    "serverJarPath": "/tmp/orzmc/versions/1.20.4/server/paper/paper-1.20.4.jar",
+    "javaExecutable": "/tmp/orzmc/java/17/bin/java",
+    "clientObjectPath": "/tmp/orzmc/versions/1.20.4/client/assets/objects/01/0123456789abcdef0123456789abcdef01234567"
+  }
+}

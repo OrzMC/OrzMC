@@ -24,6 +24,7 @@ RANGE_THRESHOLD = 8 * 1024 * 1024
 RANGE_PARTS = 4
 FUTURE_SKEW = 300
 DEFAULT_TTL = 86400
+MAVEN_BASE = "https://libraries.minecraft.net/"
 CLIENT_CAPABLE = ("vanilla", "fabric", "forge")
 SERVER_JAR = {"vanilla": "server.jar", "paper": "paper-{v}.jar",
               "forge": "forge-{v}.jar", "fabric": "fabric-server-launch.jar"}
@@ -131,6 +132,20 @@ def collect(entries, plat, features):
     return out
 
 
+def _maven_path(coords, classifier=None):
+    """构建库的 Maven 相对路径（无 ``downloads`` 时的回退）。"""
+    parts = coords.split(":")
+    group, artifact = parts[0], parts[1]
+    version = parts[2] if len(parts) > 2 else "unknown"
+    default_classifier = parts[3] if len(parts) > 3 else None
+    classifier = classifier or default_classifier
+    filename = f"{artifact}-{version}"
+    if classifier:
+        filename += f"-{classifier}"
+    filename += ".jar"
+    return f"{group.replace('.', '/')}/{artifact}/{version}/{filename}"
+
+
 def subst(arg, tokens):
     return re.sub(r"\$\{(\w+)\}", lambda m: tokens.get(m.group(1), m.group(0)), arg)
 
@@ -212,8 +227,10 @@ def op_required_java(req):
 
 # ---------------------------------------------------------------- verify
 def op_verify(req):
+    if (req.get("hashType") or "sha1") != "sha1":
+        return err("E_UNSUPPORTED_OP", f"仅支持 sha1, 收到 {req.get('hashType')}")
     data = (req.get("dataUtf8") or "").encode("utf-8")
-    digest = hashlib.new(req.get("hashType", "sha1"), data).hexdigest()
+    digest = hashlib.new("sha1", data).hexdigest()
     return ok({"valid": digest == (req.get("expectedSha1") or "").lower()})
 
 
@@ -261,10 +278,30 @@ def op_plan_client_download(req):
     for lib in snap.get("libraries", []):
         if not rules_allow(lib.get("rules"), plat, features):
             continue
-        art = (lib.get("downloads") or {}).get("artifact")
-        if art and art.get("url") and art.get("path"):
-            items.append({"url": art["url"], "path": f"{lay['clientLibrariesDir']}/{art['path']}",
-                          "sha1": art.get("sha1"), "size": art.get("size")})
+        coords = lib.get("name")
+        if not coords:
+            continue
+        downloads = lib.get("downloads") or {}
+        natives = lib.get("natives") or {}
+        if natives:  # legacy: 按平台取 classifier
+            classifier = natives.get(plat["os"])
+            if not classifier:
+                continue
+            entry = (downloads.get("classifiers") or {}).get(classifier)
+            if not entry:
+                path = _maven_path(coords, classifier)
+                entry = {"path": path, "url": MAVEN_BASE + path}
+        else:
+            entry = downloads.get("artifact")
+            if not entry:
+                path = _maven_path(coords)
+                entry = {"path": path, "url": MAVEN_BASE + path}
+        path = entry.get("path")
+        url = entry.get("url")
+        if not path or not url:
+            continue
+        items.append({"url": url, "path": f"{lay['clientLibrariesDir']}/{path}",
+                      "sha1": entry.get("sha1"), "size": entry.get("size")})
     return ok({"items": items, "count": len(items)})
 
 

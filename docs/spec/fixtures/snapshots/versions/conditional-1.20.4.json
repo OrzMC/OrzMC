@@ -1,0 +1,37 @@
+{
+  "id": "1.20.4",
+  "type": "release",
+  "mainClass": "net.minecraft.client.main.Main",
+  "javaVersion": { "majorVersion": 17 },
+  "assetIndex": { "id": "5" },
+  "downloads": {
+    "client": {
+      "url": "https://piston-data.mojang.com/client.jar",
+      "sha1": "000000000000000000000000000000000000000c",
+      "size": 1000
+    }
+  },
+  "libraries": [
+    {
+      "name": "com.example:always:1.0",
+      "downloads": {
+        "artifact": {
+          "path": "com/example/always/1.0/always-1.0.jar",
+          "url": "https://libraries.example/always-1.0.jar",
+          "sha1": "0000000000000000000000000000000000000010",
+          "size": 10
+        }
+      }
+    }
+  ],
+  "arguments": {
+    "jvm": ["-Djava.library.path=${natives_directory}", "-cp", "${classpath}"],
+    "game": [
+      "--username", "${auth_player_name}",
+      "--version", "${version_name}",
+      { "rules": [{ "action": "allow", "features": { "has_custom_resolution": true } }], "value": ["--width", "1280", "--height", "720"] },
+      { "rules": [{ "action": "allow", "os": { "name": "osx" } }], "value": ["--macOnlyForSure"] },
+      "--token", "${not_a_token}"
+    ]
+  }
+}

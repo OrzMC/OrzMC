@@ -1,0 +1,20 @@
+{
+  "specVersion": "0.1",
+  "id": "server-launch/forge-1.20.4",
+  "area": "server-launch",
+  "description": "forge 服务端启动计划（jar 名 forge-<v>.jar）",
+  "given": {
+    "operation": "planServerLaunch",
+    "root": "/tmp/orzmc",
+    "version": "1.20.4",
+    "type": "forge",
+    "javaMajor": 17,
+    "options": {}
+  },
+  "expect": {
+    "cwd": "/tmp/orzmc/versions/1.20.4/server/forge",
+    "jarPath": "/tmp/orzmc/versions/1.20.4/server/forge/forge-1.20.4.jar",
+    "jvmArgs": ["-Xms512M", "-Xmx2G"],
+    "serverArgs": []
+  }
+}

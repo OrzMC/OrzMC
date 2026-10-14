@@ -1,0 +1,24 @@
+{
+  "specVersion": "0.1",
+  "id": "progress/count-indefinite",
+  "area": "progress",
+  "description": "计数进度且总数为 null：indefinite=true",
+  "given": {
+    "operation": "normalizeProgress",
+    "input": {
+      "kind": "count",
+      "description": "下载依赖库",
+      "total": null,
+      "current": 3,
+      "phase": "download"
+    }
+  },
+  "expect": {
+    "kind": "count",
+    "description": "下载依赖库",
+    "total": null,
+    "current": 3,
+    "phase": "download",
+    "indefinite": true
+  }
+}

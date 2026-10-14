@@ -43,6 +43,8 @@ python3 scripts/conformance/run.py --adapter "<cmd>" --filter cache
 | `snapshots/versions/1.20.4.json` | 现代版（有 `arguments`、含 OS rules 库） |
 | `snapshots/versions/1.16.5.json` | 旧版（`minecraftArguments`，无 `arguments`） |
 | `snapshots/versions/no-java.json` | 无 `javaVersion`（测默认 8） |
+| `snapshots/versions/conditional-1.20.4.json` | 含 features/os 门控 `arguments` 与未知 token |
+| `snapshots/versions/legacy-natives.json` | legacy `natives` classifier + 无 `downloads` 的库（Maven 回退） |
 | `snapshots/assets/5.json` | 紧凑资源索引（`client-download` 用，2 个对象） |
 
 > 所有快照为**构造数据**，哈希/大小为占位值；样例离线运行、不打网络。
@@ -64,9 +66,9 @@ python3 scripts/conformance/run.py --adapter "<cmd>" --filter cache
 
 | 适配器 | 状态 |
 |:--|:--:|
-| 规范参考 `scripts/conformance/reference.py` | ☑ 34/34 |
-| Python `python/orzmc/tests/conformance/adapter.py` | ☑ 34/34 |
-| Swift `OrzMCKit` | ☑ 34/34 |
+| 规范参考 `scripts/conformance/reference.py` | ☑ 53/53 |
+| Python `python/orzmc/tests/conformance/adapter.py` | ☑ 53/53 |
+| Swift `OrzMCKit` | ☑ 53/53 |
 
 ## 待补（Phase 2 后续）
 

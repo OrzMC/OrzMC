@@ -1,0 +1,19 @@
+{
+  "specVersion": "0.1",
+  "id": "non-tty/provided-values",
+  "area": "non-tty",
+  "description": "非 TTY 且显式提供版本/用户名：原样采用，不阻塞",
+  "given": {
+    "operation": "nonTtyDefaults",
+    "snapshot": "snapshots/version_manifest.json",
+    "stdinTty": false,
+    "providedVersion": "1.16.5",
+    "providedUsername": "alice"
+  },
+  "expect": {
+    "version": "1.16.5",
+    "username": "alice",
+    "interactive": false,
+    "confirm": true
+  }
+}

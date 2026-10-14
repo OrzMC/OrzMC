@@ -1,0 +1,18 @@
+{
+  "specVersion": "0.1",
+  "id": "client-plan/features-default-off",
+  "area": "client-plan",
+  "description": "特性开关默认关闭：has_custom_resolution 门控参数被排除；osx 门控参数被包含；未知 token 保留",
+  "given": {
+    "operation": "planClientLaunch",
+    "version": "1.20.4",
+    "type": "vanilla",
+    "platform": { "os": "osx", "arch": "arm64" },
+    "root": "/tmp/orzmc-fixture",
+    "snapshot": "snapshots/versions/conditional-1.20.4.json"
+  },
+  "expect": {
+    "gameArgsNotContains": ["--width", "1280", "--height", "720"],
+    "gameArgsContains": ["--macOnlyForSure", "${not_a_token}"]
+  }
+}

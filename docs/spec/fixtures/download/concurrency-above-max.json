@@ -1,0 +1,8 @@
+{
+  "specVersion": "0.1",
+  "id": "download/concurrency-above-max",
+  "area": "download",
+  "description": "并发数上界：65 夹紧到 64",
+  "given": { "operation": "resolveConcurrency", "threads": 65 },
+  "expect": { "concurrency": 64 }
+}

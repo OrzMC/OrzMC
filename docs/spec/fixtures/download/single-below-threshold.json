@@ -1,0 +1,11 @@
+{
+  "specVersion": "0.1",
+  "id": "download/single-below-threshold",
+  "area": "download",
+  "description": "低于阈值 1 字节（8MB-1）→ single",
+  "given": {
+    "operation": "planDownloadConcurrency",
+    "sizeBytes": 8388607
+  },
+  "expect": { "mode": "single", "parts": 1 }
+}

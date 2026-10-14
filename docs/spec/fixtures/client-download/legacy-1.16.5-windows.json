@@ -1,0 +1,37 @@
+{
+  "specVersion": "0.1",
+  "id": "client-download/legacy-1.16.5-windows",
+  "area": "client-download",
+  "description": "legacy 客户端下载清单：客户端 jar / 资源索引 / 库（Windows）",
+  "given": {
+    "operation": "planClientDownload",
+    "version": "1.16.5",
+    "type": "vanilla",
+    "platform": { "os": "windows", "arch": "x86_64" },
+    "root": "/tmp/orzmc-fixture",
+    "snapshot": "snapshots/versions/1.16.5.json"
+  },
+  "expect": {
+    "count": 3,
+    "itemsContains": [
+      {
+        "url": "https://piston-data.mojang.com/client.jar",
+        "path": "/tmp/orzmc-fixture/versions/1.16.5/client/1.16.5.jar",
+        "sha1": "000000000000000000000000000000000000001c",
+        "size": 1000
+      },
+      {
+        "url": "https://piston-meta.mojang.com/asset-index.json",
+        "path": "/tmp/orzmc-fixture/versions/1.16.5/client/assets/indexes/1.16.json",
+        "sha1": "0000000000000000000000000000000000000016",
+        "size": 100
+      },
+      {
+        "url": "https://libraries.example/always-1.0.jar",
+        "path": "/tmp/orzmc-fixture/versions/1.16.5/client/libraries/com/example/always/1.0/always-1.0.jar",
+        "sha1": "0000000000000000000000000000000000000010",
+        "size": 10
+      }
+    ]
+  }
+}

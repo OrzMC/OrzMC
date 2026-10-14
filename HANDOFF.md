@@ -40,7 +40,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | 产品统一化 — Phase 0–3 完成；Phase 5 治理已上线；**T1 端到端完成**；**T2 命令面统一进行中** |
-| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **34/34**；Swift 侧 B1–B11 全部实现；**T2 命令面统一完成** + **Phase 4 前端收敛完成**（CLI/GUI 共用 `launchClient`/`downloadClient`）；**Swift `orzmc` CLI 已发 `v0.1.0`**（含全部新命令）；Transfer 运行内重试、错误码表/schema、退出码 130 均已落地 |
+| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **53/53**；Swift 侧 B1–B11 全部实现；**T2 命令面统一完成** + **Phase 4 前端收敛完成**（CLI/GUI 共用 `launchClient`/`downloadClient`）；**Swift `orzmc` CLI 已发 `v0.1.0`**（含全部新命令）；Transfer 运行内重试、错误码表/schema、退出码 130 均已落地 |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
 | **下一步** | 见第 4 章（均为增量、非阻塞） |
@@ -65,7 +65,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `dee5be7bfdea` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41）+ `plugin`/`app`（#42）+ `planClientDownload`（#44）+ 退出码归一/`normalizeExit`（#45） |
 | `app` | `3e4d92f6ea00` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
-| `OrzMCKit` | `c281a77d8dd8` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（34/34）；命令面 #2–#5、#7、#9–#11、#14–#15、#17；发版链路 `#6`；已发 `v0.0.6` / `v0.1.0` |
+| `OrzMCKit` | `c281a77d8dd8` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（53/53）；命令面 #2–#5、#7、#9–#11、#14–#15、#17；发版链路 `#6`；已发 `v0.0.6` / `v0.1.0` |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
 > `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
@@ -77,7 +77,7 @@ git submodule status
 git status --porcelain
 python3 scripts/verify/check.py            # 父仓库组合校验（CI 同款）
 python3 scripts/verify/check.py --remote   # 追加：子模块指针是否在远端（需网络）
-python3 scripts/conformance/run.py --list  # 列出一致性样例（当前 34）
+python3 scripts/conformance/run.py --list  # 列出一致性样例（当前 53）
 python3 scripts/release/composition.py     # 生成发版组合表（更新 RELEASES.md 用）
 ```
 
@@ -159,7 +159,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 **其他**
 - [x] **规范收尾**：`cli-surface.md` §6.1 补**错误码表**（E_USAGE/E_UNSUPPORTED/E_UNSUPPORTED_TYPE/E_VERSION_NOT_FOUND/E_NOT_FOUND/E_VERIFY/E_NETWORK/E_CANCELLED(130)/E_INTERNAL/E_RUNTIME）；§8.1 `capabilities` schema（已实现）/§8.2 `orzmc mcp` schema（已定稿，server 低优先级计划）；Python/Swift 用户取消退出码统一为 **130**。
 - [x] **Phase 4｜`downloadClient` 收敛**：`Downloader.download` 加 `onProgress`（`OrzSwiftKit#6`）；引擎新增 `Client.downloadClient(onProgress:)`（`OrzMCKit#14`）；CLI `Launcher.download()` 与 GUI `GUIClient.download()` 共用（`app#16`）。
-- [x] **一致性｜新增操作**：`planClientDownload`（客户端下载清单）与 `normalizeExit`（B7 退出码归一，暴露并修了 Python 服务端退出码未归一的分叉）；参考 + Python + Swift 三适配器 **34/34**。
+- [x] **一致性｜新增操作**：`planClientDownload`（客户端下载清单）与 `normalizeExit`（B7 退出码归一，暴露并修了 Python 服务端退出码未归一的分叉）；参考 + Python + Swift 三适配器 **53/53**。
 - [ ] **Python `--auth`**（**阻塞**）：两套实现的 `--auth` 目前均为 **stub**（Swift `auth()` 直接 `return false`；Python 库无认证，`auth_access_token` 固定 `"0"`）。真实现需 Microsoft/Xbox/Minecraft 设备码认证 + 令牌交换（安全敏感），需先定方案，不宜仓促落地。
 - [ ] **`orzmc mcp` server**（计划/低优先级）：schema 已写入 §8.2；server 实现未做。
 - [ ] **可选｜Python 侧反向对齐**：目前由一致性套件（31 例）保证行为一致，无新增分叉，暂不单独重构。
@@ -180,7 +180,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - Swift 适配器实现 `normalizeExit`（`OrzMCKit#17`）。
 
 **结果**
-- 参考 / Python / Swift 三适配器 **34/34**；父仓库 fixtures/reference 先合（`21a81e6`），子模块 PR 绿后 bump。
+- 参考 / Python / Swift 三适配器 **53/53**；父仓库 fixtures/reference 先合（`21a81e6`），子模块 PR 绿后 bump。
 
 ### 2026-10-14 — pi（一致性：新增 `planClientDownload` 样例，31→32）
 

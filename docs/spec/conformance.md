@@ -126,8 +126,8 @@ python3 scripts/conformance/run.py --adapter "python3 scripts/conformance/refere
 
 | 语言 | 位置 | 状态 |
 |:--|:--|:--:|
-| Python | `python/orzmc/tests/conformance/adapter.py` | ☑ 已接入（34/34） |
-| Swift | `OrzMCKit/Sources/ConformanceAdapter` | ☑ 已接入（34/34，OrzMCKit CI 内运行） |
+| Python | `python/orzmc/tests/conformance/adapter.py` | ☑ 已接入（53/53） |
+| Swift | `OrzMCKit/Sources/ConformanceAdapter` | ☑ 已接入（53/53，OrzMCKit CI 内运行） |
 
 ```bash
 # Python 适配器（在父仓库根执行）

@@ -1,0 +1,13 @@
+{
+  "specVersion": "0.1",
+  "id": "verify/sha256-unsupported",
+  "area": "verify",
+  "description": "verifyArtifact 仅支持 sha1；其它哈希算法显式 E_UNSUPPORTED_OP",
+  "given": {
+    "operation": "verifyArtifact",
+    "hashType": "sha256",
+    "dataUtf8": "hello",
+    "expectedSha1": "0000000000000000000000000000000000000000"
+  },
+  "expectError": { "code": "E_UNSUPPORTED_OP" }
+}

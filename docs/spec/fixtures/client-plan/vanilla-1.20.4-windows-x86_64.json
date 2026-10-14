@@ -1,0 +1,23 @@
+{
+  "specVersion": "0.1",
+  "id": "client-plan/vanilla-1.20.4-windows-x86_64",
+  "area": "client-plan",
+  "description": "vanilla 客户端在 Windows 的启动参数：osx 专属 JVM 参数被排除；classpath 排除 maconly/notmac",
+  "given": {
+    "operation": "planClientLaunch",
+    "version": "1.20.4",
+    "type": "vanilla",
+    "platform": { "os": "windows", "arch": "x86_64" },
+    "root": "/tmp/orzmc-fixture",
+    "snapshot": "snapshots/versions/1.20.4.json"
+  },
+  "expect": {
+    "executable": "/tmp/orzmc-fixture/java/17/bin/java.exe",
+    "jvmArgsNotContains": ["-XstartOnFirstThread"],
+    "classpathContains": ["/tmp/orzmc-fixture/versions/1.20.4/client/libraries/com/example/always/1.0/always-1.0.jar"],
+    "classpathNotContains": [
+      "/tmp/orzmc-fixture/versions/1.20.4/client/libraries/com/example/maconly/1.0/maconly-1.0.jar",
+      "/tmp/orzmc-fixture/versions/1.20.4/client/libraries/com/example/notmac/1.0/notmac-1.0.jar"
+    ]
+  }
+}
