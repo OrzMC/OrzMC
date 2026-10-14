@@ -1,0 +1,21 @@
+{
+  "specVersion": "0.1",
+  "id": "server-launch/vanilla-1.20.4",
+  "area": "server-launch",
+  "description": "vanilla 服务端启动计划（nogui 默认参数）",
+  "given": {
+    "operation": "planServerLaunch",
+    "root": "/tmp/orzmc",
+    "version": "1.20.4",
+    "type": "vanilla",
+    "javaMajor": 17,
+    "options": { "minMem": "512M", "maxMem": "2G", "nogui": true }
+  },
+  "expect": {
+    "executable": "/tmp/orzmc/java/17/bin/java",
+    "cwd": "/tmp/orzmc/versions/1.20.4/server/vanilla",
+    "jarPath": "/tmp/orzmc/versions/1.20.4/server/vanilla/server.jar",
+    "jvmArgs": ["-Xms512M", "-Xmx2G"],
+    "serverArgs": ["nogui"]
+  }
+}

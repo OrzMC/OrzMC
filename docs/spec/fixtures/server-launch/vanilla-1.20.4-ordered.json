@@ -1,0 +1,28 @@
+{
+  "specVersion": "0.1",
+  "id": "server-launch/vanilla-1.20.4-ordered",
+  "area": "server-launch",
+  "description": "服务端启动参数顺序：userJvm → -Xms/-Xmx；nogui → userServerArgs → --forceUpgrade",
+  "given": {
+    "operation": "planServerLaunch",
+    "root": "/tmp/orzmc",
+    "version": "1.20.4",
+    "type": "vanilla",
+    "javaMajor": 17,
+    "options": {
+      "minMem": "1G",
+      "maxMem": "4G",
+      "jvmOpts": ["-XX:+UseG1GC"],
+      "userServerArgs": ["--online-mode=false"],
+      "nogui": true,
+      "forceUpgrade": true
+    }
+  },
+  "expect": {
+    "executable": "/tmp/orzmc/java/17/bin/java",
+    "cwd": "/tmp/orzmc/versions/1.20.4/server/vanilla",
+    "jarPath": "/tmp/orzmc/versions/1.20.4/server/vanilla/server.jar",
+    "jvmArgs": ["-XX:+UseG1GC", "-Xms1G", "-Xmx4G"],
+    "serverArgs": ["nogui", "--online-mode=false", "--forceUpgrade"]
+  }
+}

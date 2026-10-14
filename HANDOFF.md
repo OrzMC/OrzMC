@@ -149,7 +149,7 @@ git diff --submodule
 - [x] **P3｜B7 接线**：`Server.start()`/`launchServer` 返回 `ManagedProcess`；CLI 前台等待并打印退出码；app `GUIServer` 同步（`3bba300`/`d4362bc`）。
 - [x] **P3｜B9 非 TTY**：CLI 不阻塞（显式版本命中即用/找不到报错；非 TTY 最新 release；用户名 `guest`）（`1bc336d`）。
 - [x] **P3｜B11 错误语义**：CLI 归一为用户可读信息、写 stderr、退出码 1（`82ff17c`）。
-- [ ] **P3｜planServerLaunch**：需先做跨实现服务端启动参数统一（Python `nogui`/顺序 vs Swift `-server`/`--nogui`/`--pidFile`）——较大设计，未开工。
+- [x] **P3｜planServerLaunch + 参数统一**：`GamePlan.planServerLaunch`（29 例）；`Server+Launch` 去掉 `-server`/`--pidFile`，对齐 Python 参数顺序（`52abfdc`/`OrzPythonMC#34`）。
 - [ ] **P3｜退役 `GameDir`**：把调用点（含 app）迁到 `GamePlan`。
 - [ ] **P3｜引擎③尾**：`GamePlan` 下载计划 / 进度；CLI/app 注迁到 `GamePlan`（退役 `GameDir`）。
 - [ ] **P2｜Swift 适配器**：按 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md) §7.1 顺序推进。
@@ -162,6 +162,22 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（planServerLaunch + 服务端参数统一）
+
+**做了什么**
+- 新增一致性操作 `planServerLaunch` + 两个 fixture（`server-launch/`）：参数顺序与回退规则。
+- **跨实现统一**服务端启动参数（以 Python `_build_server_command` 为准）：
+  `java <userJvm…> -Xms<min> -Xmx<max> -jar <jar> [nogui] <userServerArgs…> [--forceUpgrade]`。
+- Swift：新增 `ServerLaunchPlan`/`ServerLaunchOptions` + `GamePlan.planServerLaunch`；`Server+Launch` 改用该计划
+  （去掉 `-server`、`--pidFile`、`--demo`/`--help` 位置调整、`--nogui` → 裸 `nogui`）。
+- 三适配器实现（参考/Swift/Python）。
+
+**结果 / 产出**
+- 套件 **29/29**（参考本地自检；Python 本地 + 门禁绿）；`OrzMCKit` `52abfdc`（CI）；`OrzPythonMC#34` 已合（`55a4d62`）。
+
+**下一步**
+- 全量退役 `GameDir`（调用点 + app 迁到 `GamePlan`）。
 
 ### 2026-10-14 — pi（B9 非 TTY）
 

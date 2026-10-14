@@ -231,6 +231,32 @@ def op_cache(req):
 
 
 # ---------------------------------------------------------------- download
+def op_plan_server_launch(req):
+    gtype = req.get("type", "vanilla")
+    opts = req.get("options") or {}
+    major = req.get("javaMajor", 8)
+    lay = layout(req["root"], req["version"], gtype, java_major=major)
+
+    jvm = list(opts.get("jvmOpts") or [])
+    jvm += [f"-Xms{opts.get('minMem', '512M')}", f"-Xmx{opts.get('maxMem', '2G')}"]
+
+    user_server = opts.get("userServerArgs") or []
+    server_args: list[str] = []
+    if opts.get("nogui") and "nogui" not in user_server:
+        server_args.append("nogui")
+    server_args += user_server
+    if opts.get("forceUpgrade") and "--forceUpgrade" not in server_args:
+        server_args.append("--forceUpgrade")
+
+    return ok({
+        "executable": lay["javaExecutable"],
+        "cwd": lay["serverDir"],
+        "jarPath": lay["serverJarPath"],
+        "jvmArgs": jvm,
+        "serverArgs": server_args,
+    })
+
+
 def op_plan_server_deploy(req):
     gtype = req.get("type", "vanilla")
     if gtype != "vanilla":
@@ -299,6 +325,7 @@ OPS = {
     "requiredJava": op_required_java,
     "verifyArtifact": op_verify,
     "cacheDecision": op_cache,
+    "planServerLaunch": op_plan_server_launch,
     "planServerDeploy": op_plan_server_deploy,
     "planDownloadConcurrency": op_dl_concurrency,
     "resolveConcurrency": op_concurrency,
