@@ -40,7 +40,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | 产品统一化 — Phase 0–3 完成；Phase 5 治理已上线；**T1 端到端完成**；**T2 命令面统一进行中** |
-| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **31/31**；Swift 侧 B1–B11 全部实现；**T2 命令面统一完成**：Python 已补 `--json`/`--version`/`--root-dir`/`completion`/`capabilities`/`plugin`/`app`，Swift 已全部对齐（`list`/`remove`/`backup`/`version`/`completion`/`capabilities`/`update`/`self-uninstall`/`app` + `fabric` 隐藏别名 + 全局选项）；**D13：Swift `orzmc` CLI 发行化（发版链路 + 一键安装 + 首次 release `v0.0.6`）已落地** |
+| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **31/31**；Swift 侧 B1–B11 全部实现；**T2 命令面统一完成** + **Phase 4 前端收敛完成**（CLI/GUI 共用 `launchClient`/`downloadClient`）；**Swift `orzmc` CLI 已发 `v0.1.0`**（含全部新命令）；Transfer 运行内重试、错误码表/schema、退出码 130 均已落地 |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
 | **下一步** | 见第 4 章（均为增量、非阻塞） |
@@ -64,8 +64,8 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `11a423a7cceb` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41）+ `plugin`/`app`（#42） |
-| `app` | `4a4c6b4` | `OrzMCApp`；有构建校验 CI |
-| `OrzMCKit` | `33504ac6bc52` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`；命令面 #2–#5、#7、#9–#11；发版链路（release-please + `release.yml`）+ `scripts/install.sh` #6；已发 `v0.0.6` |
+| `app` | `3e4d92f6ea00` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
+| `OrzMCKit` | `741419d6d37e` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`；命令面 #2–#5、#7、#9–#11；发版链路 `#6`；Phase 4 `downloadClient` `#14`；**已发 `v0.0.6` / `v0.1.0`**（0.1.0 含全部新命令） |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
 > `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
@@ -158,7 +158,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 **其他**
 - [x] **规范收尾**：`cli-surface.md` §6.1 补**错误码表**（E_USAGE/E_UNSUPPORTED/E_UNSUPPORTED_TYPE/E_VERSION_NOT_FOUND/E_NOT_FOUND/E_VERIFY/E_NETWORK/E_CANCELLED(130)/E_INTERNAL/E_RUNTIME）；§8.1 `capabilities` schema（已实现）/§8.2 `orzmc mcp` schema（已定稿，server 低优先级计划）；Python/Swift 用户取消退出码统一为 **130**。
-- [ ] **Phase 4｜`downloadClient` 收敛**（评估后暂缓）：CLI 与 GUI 已各自可用（CLI `Downloader.download`、GUI `asyncSequence`），抽到引擎需引入进度 UI 抽象 + 改 app；收益偏“去重”，风险/改动大，排在 `app` 发行验证之后。
+- [x] **Phase 4｜`downloadClient` 收敛**：`Downloader.download` 加 `onProgress`（`OrzSwiftKit#6`）；引擎新增 `Client.downloadClient(onProgress:)`（`OrzMCKit#14`）；CLI `Launcher.download()` 与 GUI `GUIClient.download()` 共用（`app#16`）。
 - [ ] **一致性｜扩样例**（评估后暂缓）：`planClientDownload` 需先在 Python/Swift 把“客户端下载清单”从网络编排中抽成纯计划（`prepare_client`/`generateDownloadItemInfos` 重构），再补参考+三适配器；属较大重构，建议单独立项。
 - [ ] **Python `--auth`**（**阻塞**）：两套实现的 `--auth` 目前均为 **stub**（Swift `auth()` 直接 `return false`；Python 库无认证，`auth_access_token` 固定 `"0"`）。真实现需 Microsoft/Xbox/Minecraft 设备码认证 + 令牌交换（安全敏感），需先定方案，不宜仓促落地。
 - [ ] **`orzmc mcp` server**（计划/低优先级）：schema 已写入 §8.2；server 实现未做。
@@ -170,6 +170,17 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（发布 0.1.0 + Phase 4 前端收敛）
+
+**发布**
+- 合并 `OrzMCKit` release PR #8 → `v0.1.0`（含 `update`/`self-uninstall`/`app`/`completion`/`capabilities` 全部新命令）；`release.yml` 构建 `orzmc-macos-{arm64,x86_64}` + `SHA256SUMS`。
+
+**Phase 4（CLI/GUI 共用下载编排）**
+- `OrzSwiftKit#6`：`Downloader.download` 加可选 `onProgress`。
+- `OrzMCKit#14`：引擎 `Client.downloadClient(onProgress:)`；`Launcher.download()` 改用它；`Package.resolved` 跟进 `fd88d7d`。
+- `OrzMCApp#16`：`GUIClient.download()` 改用它（修了 `mutating self` 并发捕获编译错）。
+- 三仓均绿并合；父仓库 bump `OrzMCKit`/`app` + `RELEASES.md`。
 
 ### 2026-10-14 — pi（遗留项：Transfer 重试 / 错误码与 schema / 退出码 130）
 
