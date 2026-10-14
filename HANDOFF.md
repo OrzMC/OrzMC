@@ -163,6 +163,19 @@ git diff --submodule
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-14 — pi（Phase 4 前端收敛：共用 launchClient）
+
+**做了什么**
+- 引擎新增 `Client.launchClient()`：解析启动参数 → 托管 JRE（B5）→ 受管进程（B7），返回不等待。
+- CLI `Launcher` 与 app `GUIClient` 均改用该共用流程（各自处理前台等待 / 后台运行）。
+- 刷新 `RELEASES.md`（bump 后指针）。
+
+**结果 / 产出**
+- `OrzMCKit` `9bffcbc`（test + conformance 29/29 绿）；`app` `4a4c6b4`（构建 CI 绿）；父仓库 bump。
+
+**下一步**
+- 更多共用编排（如 `downloadClient`）可选；否则产品目标已达成。
+
 ### 2026-10-14 — pi（产品伞治理：发版组合 + 父仓库 CI）
 
 **做了什么**
