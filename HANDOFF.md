@@ -109,7 +109,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 | 仓库 | 当前 | 说明 |
 |---|---|---|
-| `OrzGeeker/OrzSwiftKit` | `main` | 基础设施：`CacheKit`/`RuntimeKit`/`TransferKit`/`JokerKits`(含 `ProcessRunner`)；CI 已接入；已关 `enforce_admins` |
+| `OrzGeeker/OrzSwiftKit` | `main`（`eca6beb`） | 基础设施：`CacheKit`/`RuntimeKit`/`TransferKit`/`JokerKits`(含 `ProcessRunner`)；CI 已接入（含 `network-smoke`）；已关 `enforce_admins` |
 | `OrzMC/MojangAPI` | `main` | 元数据；平台 macOS 13 / iOS 16（D12） |
 | `OrzMC/PaperMC` | `main` | Paper/Hangar |
 | `OrzGeeker/OrzAppUpdater` | tag `0.0.3` | 平台 macOS 13；被 app 以 tag 依赖 |
@@ -131,7 +131,10 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 **T1 端到端实跑（进行中，降最大风险）**
 - [x] **macOS 实跑**（Python `orzmc`）：真实下载 Java17 + 服务端 → 世界生成 → `stop` 优雅停止 → 退出码 0；顺带发现并修复「流式中途断连不重试」。
 - [x] **Windows 真机**：经 `scripts/win/e2e-server.ps1` 跑通同流程（1.20.4 vanilla：下载→启动→`Done (`→`stop`→退出码 0、无残留 java；root 236MB）。
-- [ ] **Swift 冒烟**：OrzMCKit CI 加 `workflow_dispatch` 真实小文件下载 + 哈希校验。
+- [x] **Swift 冒烟**：`OrzSwiftKit` 新增真实网络下载测试（`TransferNetworkSmokeTests`，`ORZMC_NETWORK_SMOKE=1` 触发）+ CI `network-smoke` job；单流与 2 路 Range 均通过。
+
+**新发现（待办）**
+- [ ] **Swift `Transfer` 无运行内重试**：`downloadSingle`/`downloadRanged` 在 body 中途断连时直接抛错（仅靠持久化 `.part` 重跑续传），与 Python 现行「运行内重试 + `Range` 续传」及 spec B2「有限次重试」不一致。GUI 无手动重跑，建议补运行内有界重试。
 
 **其他**
 - [ ] **Phase 4｜继续前端收敛**：把 `downloadClient`（下载编排）也抽到引擎 `Client`，CLI/GUI 共用（需进度 UI 抽象）。
@@ -144,6 +147,19 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（T1 完成：Swift 真实网络冒烟）
+
+**做了什么**
+- `OrzSwiftKit/TransferKit` 新增 `TransferNetworkSmokeTests`：用**内容寻址**的 Mojang 对象（URL 里的 sha1 即内容哈希）验证真实下载 + 哈希，覆盖单流与 2 路 `Range`；默认跳过（`ORZMC_NETWORK_SMOKE=1` 启用），常规 `swift test` 保持离线。
+- CI 新增 `network-smoke` job（`workflow_dispatch` 手动触发）。
+
+**结果 / 产出**
+- `OrzGeeker/OrzSwiftKit` PR #4 已合（`eca6beb`）；手动触发 CI → `build-test` + `network-smoke` 均绿（`singleStream…` / `ranged…` 真实通过）。
+- **T1 全部完成**：macOS ✅ + Windows ✅ + Swift 冒烟 ✅。
+
+**新发现（待办）**
+- Swift `Transfer` 在 body 中途断连时**无运行内重试**（仅靠持久化 `.part` 重跑续传），与 Python 及 spec B2 不一致；GUI 无手动重跑，建议补。
 
 ### 2026-10-14 — pi（T1 收尾：Windows 真机 E2E）
 
