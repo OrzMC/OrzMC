@@ -63,7 +63,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `50ef96c` | `OrzPythonMC`；一致性适配器（PR #32/#33/#34）+ 下载中断续传（PR #36） |
+| `python` | `b4c8dabcbee5` | `OrzPythonMC`；一致性适配器（PR #32/#33/#34）+ 下载中断续传（#36）+ CLI 全局（#38） |
 | `app` | `4a4c6b4` | `OrzMCApp`；有构建校验 CI |
 | `OrzMCKit` | `e075e1ad1584` | **Swift 引擎**（组织自有）；含 `ConformanceAdapter`；CLI 命令面已收敛（PR #2） |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
@@ -103,6 +103,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 | 本地工具链 | `~/Library/Developer/Toolchains/swift-6.0.3-RELEASE.xctoolchain`（Swift 6.0.3，已装） |
 | 本地 SDK | 仅 macOS 12/13（CLT）→ **`OrzMCKit` 整包无法本地编译**（OpenAPIKit 需 macOS 14 API） |
 | 验证途径 | `OrzMCKit` CI（`macos-15`：`swift build`+`swift test`+`conformance`）；不依赖 OpenAPIKit 的包（`OrzSwiftKit` 的 kit）可本地编译 |
+| **远程 Mac（`ssh air`）** | macOS 27 / Swift 6.4 / Xcode 27（arm64）——**可本地编译 OrzMCKit**（本机 SDK 太旧时的替代） |
 | 不可用 | `swift-latest`/6.5-dev 工具链需 macOS 15；`swiftly` 在本机崩溃 |
 
 ### 2.6 关键版本与外部依赖（非父仓库子模块，HEAD 制）
@@ -139,7 +140,9 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 **T2 统一 CLI 命令面（进行中）**
 - [x] **Swift 选项收敛**：`--debug→--verbose`、`--ms/--mx→--min-mem/--max-mem`、`--gui→--nogui`、`--force_upgrade→--force-upgrade`、`--jar-opts→--server-args`；去掉 `defaultCommand`（无子命令打印帮助）。
 - [ ] **Swift 补命令**：`version`/`list`/`remove`/`backup`/`update`/`self-uninstall`/`app`/`completion`；`fabric` 隐藏别名；全局 `--root-dir`/`--json`。
-- [ ] **Python 补命令/全局项**：全局 `--version`/`--root-dir`/`--json`；`--auth`；`plugin`/`app`/`completion`/`capabilities`；`--minmem/--maxmem` 别名；`add_completion=True`。
+- [x] **Python 全局项**：`--version`/`--root-dir` 全局；内存选项规范名 `--min-mem/--max-mem`（旧名别名）。
+- [ ] **Python `--json` 信封**（D9 AI 调用核心）+ `completion` + `plugin`/`capabilities`/`app`；全局 `--auth`（需库支持）。
+- [ ] **Swift 补命令**：`version`/`list`/`remove`/`backup`/`update`/`self-uninstall`/`app`/`completion`；`fabric` 隐藏别名；全局 `--root-dir`/`--json`（可在 `ssh air` 上编译验证）。
 
 **其他**
 - [ ] **Phase 4｜继续前端收敛**：把 `downloadClient`（下载编排）也抽到引擎 `Client`，CLI/GUI 共用（需进度 UI 抽象）。
@@ -152,6 +155,18 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（T2 续：Python 全局选项收敛）
+
+**做了什么**
+- Python CLI 对齐规范：全局 `--version`（工具版本；子命令 `-v/--version` 仍是游戏版本）；全局 `--root-dir`（子命令缺省回退）；内存选项规范名 `--min-mem/--max-mem`（旧名 `--minmem/--maxmem` 保留别名）。
+- 探得 **`ssh air`**：macOS 27 / Swift 6.4 / Xcode 27（arm64）——后续 Swift 侧可在 air 上本地编译验证。
+
+**结果 / 产出**
+- `OrzPythonMC` PR #38 已合（`b4c8dabcbee5`，6 平台 CI + quality 绿）；父仓库 bump `fd6da4c`；`RELEASES.md` 刷新。
+
+**下一步**
+- Python `--json` 信封（D9）；Swift 补命令（可在 air 上编译）。
 
 ### 2026-10-14 — pi（T2 起步：Swift CLI 选项收敛）
 
