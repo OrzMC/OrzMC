@@ -10,7 +10,7 @@
 | `OrzMCKit` | OrzMC/OrzMCKit | `main` | `9bffcbc2ed6a` |
 | `app` | OrzMC/OrzMCApp | `main` | `4a4c6b4e67bf` |
 | `deploy` | OrzMC/OrzMCDeploy | `main` | `e72ad9de9506` |
-| `plugin` | OrzMC/OrzMCPlugin | `main` | `bd908b86fc48` |
+| `plugin` | OrzMC/OrzMCPlugin | `main` | `5eadd6e5b4c8` |
 | `profile` | OrzMC/.github | `main` | `10fc4e1dbc87` |
 | `proxy` | OrzMC/OrzMCProxy | `main` | `3cc949cdb2e7` |
 | `python` | OrzMC/OrzPythonMC | `main` | `55a4d6251df5` |
