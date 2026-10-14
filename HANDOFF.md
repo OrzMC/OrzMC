@@ -146,7 +146,7 @@ git diff --submodule
 - [x] **P3｜B8 进度结构**：`TransferProgress{kind:count|bytes}`，单流字节/批量计数（`d6f4769`/`ab61ac6`）。
 - [x] **P3｜server-plan 样例**：`planServerDeploy`（27 例），Swift/参考/Python 三适配器均齐（`507d467`/`OrzPythonMC#33`）。
 - [x] **P3｜B7 进程原语**：`OrzSwiftKit` `ProcessRunner`/`ManagedProcess`（优雅停止→TERM→KILL、退出码归一、`onLine`）（`10b4095`）。
-- [ ] **P3｜B7 接线**：把引擎 `Server+Launch`/CLI/app 的生命周期切到 `ManagedProcess`（会改 `Server.start` 返回类型，级联 app）。
+- [x] **P3｜B7 接线**：`Server.start()`/`launchServer` 返回 `ManagedProcess`；CLI 前台等待并打印退出码；app `GUIServer` 同步（`3bba300`/`d4362bc`）。
 - [ ] **P3｜B9/planServerLaunch**：非 TTY 默认值；`planServerLaunch` 计划与样例。
 - [ ] **P3｜引擎③尾**：`GamePlan` 下载计划 / 进度；CLI/app 注迁到 `GamePlan`（退役 `GameDir`）。
 - [ ] **P2｜Swift 适配器**：按 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md) §7.1 顺序推进。
@@ -159,6 +159,19 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（B7 接线：引擎生命周期）
+
+**做了什么**
+- `Server` 协议 / `launchServer` / `Vanilla`/`Paper` 的 `start()` 返回 `ManagedProcess`（不再用 `Shell.run` 的裸 `Process`）。
+- CLI `ServerCommand` 改为**前台等待**服务端退出并打印归一化退出码；`--kill-all` 保留。
+- app `GUIServer` 同步返回 `ManagedProcess`（`GUI` 仍以 PID 记录运行实例）。
+
+**结果 / 产出**
+- `OrzMCKit` `3bba300`（test + conformance 27/27 绿）；`app` `d4362bc`（构建 CI 绿）；父仓库 bump `8b29013`。
+
+**下一步**
+- B9 非 TTY 默认值；`planServerLaunch` 样例；全量退役 `GameDir`。
 
 ### 2026-10-14 — pi（B7 进程原语）
 
