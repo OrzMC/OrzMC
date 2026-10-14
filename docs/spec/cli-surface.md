@@ -176,10 +176,29 @@ orzmc plugin [--search TEXT] [--list] [--output DIR] [--version VER] [--count N]
 | `error` | object\|null | ✅ | 失败时为 `{code, message}`，成功为 `null` |
 | `schemaVersion` | string | | 信封版本（**建议**，如 `"1"`） |
 
-- `error.code`：稳定字符串（如 `E_USAGE` / `E_NETWORK` / `E_VERIFY` / `E_UNSUPPORTED` / `E_CANCELLED`）；
-  完整错误码表 —— **计划（低优先级）**。
+- `error.code`：稳定字符串，见下方**错误码表**。
 - `--json` 隐含**非交互**：绝不等待输入（§7）。
 - 退出码仍按上方（`0`/`1`/`130`）—— AI 可同时看 `ok` 与退出码。
+
+#### 错误码表（已定稿）
+
+`error.code` 取以下稳定值（两套实现均应使用此表；未知情况归 `E_RUNTIME`）：
+
+| `code` | 退出码 | 含义 |
+|:--|:--:|:--|
+| `E_USAGE` | 1 | 参数 / 用法错误（缺必填、未知选项、非法值） |
+| `E_UNSUPPORTED` | 1 | 不支持的能力（类型 / 平台 / 渠道） |
+| `E_UNSUPPORTED_TYPE` | 1 | 具体类型不支持（如 forge 服务端） |
+| `E_VERSION_NOT_FOUND` | 1 | 指定的 Minecraft / 插件 / 应用版本不存在 |
+| `E_NOT_FOUND` | 1 | 目标不存在（已安装版本、应用、资源） |
+| `E_VERIFY` | 1 | 校验失败（下载产物 magic / sha256 / 哈希不符） |
+| `E_NETWORK` | 1 | 网络 / API 失败（含 GitHub 限流） |
+| `E_CANCELLED` | **130** | 用户取消（拒绝确认 / Ctrl-C） |
+| `E_INTERNAL` | 1 | 内部错误（不应发生） |
+| `E_RUNTIME` | 1 | 其它运行错误（默认） |
+
+> 实现可返回表中未列的扩展码（如 `E_NO_SERVER_DOWNLOAD`），但必须保持 `大写 E_*` 命名；
+> 调用方应以 `ok` / 退出码为主判据，`error.code` 作细分。`E_CANCELLED` **必须**退出 130。
 
 ---
 
@@ -205,7 +224,7 @@ CLI 需支持**被 AI 智能体调用**：确定性、非交互、可发现、�
 |:--|:--|
 | 非交互 | 非 TTY 不阻塞（§7）；AI 调用一律走此路径 |
 | 结构化输出 | 全局 `--json`，字段与 [`data-model.md`](data-model.md) 对齐 |
-| 能力发现 | `orzmc capabilities --json`：机器可读的命令 / 选项 / 退出码清单 —— **计划（低优先级）** |
+| 能力发现 | `orzmc capabilities --json`：机器可读的命令 / 选项 / 退出码清单（schema 见 §8.1） | ✅ 两套实现 |
 | 幂等/可重入 | 下载 / 安装类操作可安全重试，不产生半成品 |
 | 退出码 | 稳定且语义化（§6），AI 据此判断成败 |
 
@@ -217,8 +236,49 @@ CLI 需支持**被 AI 智能体调用**：确定性、非交互、可发现、�
    ——这是当前 AI 工具集成的事实标准；
 3. （可选）随 CLI 发布 agent skill / 使用说明文件，便于 AI 发现用法。
 
-> **优先级（已决）**：`--json` 信封**现在定稿**（§6.1）；`capabilities` 与 `orzmc mcp` 的 JSON schema
-> **先定为计划、优先级排在后面**，不阻塞 Phase 2。
+> **优先级（已决）**：`--json` 信封**现在定稿**（§6.1）；`capabilities` schema 见 §8.1；
+> `orzmc mcp` 的 schema 见 §8.2（**server 为计划、低优先级**，不阻塞）。
+
+### 8.1 `capabilities` schema（已实现）
+
+`orzmc capabilities --json` 的 `data`：
+
+```jsonc
+{
+  "tool": "orzmc",
+  "version": "2.4.1",
+  "exitCodes": [ { "code": 0, "meaning": "成功" }, /* … */ ],
+  "envelope": { "ok": "bool", "command": "string", "data": "object|null", "error": "{code,message}|null" },
+  "commands": [
+    {
+      "name": "client",
+      "help": "运行 Minecraft 客户端",
+      "options": [
+        { "names": ["-v", "--version"], "type": null, "required": false,
+          "flag": false, "default": null, "help": "游戏版本" }
+      ]
+    }
+  ]
+}
+```
+
+- `commands[].options[].names`：**长/短选项均列出**（短选项在前）；`argument` 类只有长名或位置名。
+- 未知字段用 `null`，不省略（便于消费者固定 schema）。
+- 两套实现对该 schema 保持一致；命令/选项随各自 CLI 自动生成（不手写）。
+
+### 8.2 `orzmc mcp` schema（计划）
+
+拟提供本地 **MCP server**（stdio JSON-RPC 2.0），将 `capabilities` 中的核心命令暴露为 tools：
+
+| MCP 方法 | 行为 |
+|:--|:--|
+| `initialize` | 返回 serverInfo `{name:"orzmc", version}` 与 `tools` 能力 |
+| `tools/list` | 每个规范命令一个 tool（名称同命令；`inputSchema` 由 `capabilities` 的 options 生成） |
+| `tools/call` | 内部转调对应命令的 `--json` 路径，返回信封作为 tool 结果 |
+
+- tool 名 = 规范命令名；参数名 = 选项长名（去掉 `--`）；`--json` 恒开启。
+- 非交互、不阻塞（同 §7）；错误以 MCP `isError` + 信封 `error` 返回。
+- **server 实现列为低优先级计划**（schema 先定稿）；两套实现可各自提供，行为对齐本表。
 
 ## 9. Shell 自动补全（用户要求）
 
