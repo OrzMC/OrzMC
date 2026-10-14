@@ -1,6 +1,6 @@
 # 安装 / 自升级 / 跨面安装契约（Install & Update Contract）
 
-> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-13
+> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-14
 > 支撑产品形态「一个 `orzmc`、CLI 与 GUI 两面、可互相安装/打开」（见 [`../product-architecture.md`](../product-architecture.md) §1.2）。
 > **基线**：复用 Python 现有安装体验（用户认可），并吸收 Swift 亮点。
 
@@ -192,9 +192,12 @@
 | 项 | Python | Swift | 规范 |
 |:--|:--|:--|:--|
 | 安装记录 | `install.conf`（完整） | App 安装器/`OrzAppUpdater`（部分） | 复用 Python 格式，Swift 对齐 |
-| 自升级 | 完整（延迟替换） | 无 CLI 自升级 | Swift 补 |
+| 自升级 | 完整（延迟替换） | 无 CLI 自升级 | Swift 补（发版链路已就绪） |
 | 补全 | 可生成但未开启 | 无 | 两者补 |
 | `app` 跨面 | 无 | 无 | 两者补 |
 | PATH 还原 | 完整 | 部分 | 对齐 |
+
+> 2026-10-14：Swift 侧已建**发版链路**（release-please + `release.yml` → `orzmc-macos-<arch>` + `SHA256SUMS` +
+> `scripts/install.sh`，见 `OrzMCKit#6`）；`update` / `self-uninstall` / `app` / `completion` 命令待实现。
 
 > 落地与勾选见 [`product-unification-plan.md`](../product-unification-plan.md) Phase 4。

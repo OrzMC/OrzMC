@@ -94,6 +94,7 @@ natives OS-arch 规则、Java 版本推导、Fabric/Forge/Paper provider、启�
 | D10 | Swift/SwiftPM 依赖一律用 `OrzMC/*` **规范路径**（禁重定向）；`OrzMCKit` 本地覆盖**仅供开发态、不提交** | 消除重定向误读，同时不破坏 app 独立构建 |
 | D11 | **外部 Swift 依赖版本策略：HEAD 制**——`OrzMCKit` 的 `MojangAPI`/`PaperMC`/`OrzSwiftKit` 改用 `branch: main` | 与 Q7 一致，支撑快速迭代 |
 | D12 | **`MojangAPI` 平台下限抬到 macOS 13 / iOS 16**（消费 `CacheKit`） | 统一缓存层跨包复用；预稳定期可接受 |
+| D13 | **Swift `orzmc` CLI 作为发行产品**：独立 release 线（`OrzMCKit` 的 release-please + tag `vX.Y.Z`），资产 `orzmc-macos-{arm64,x86_64}`，与 Python 同规范（install.conf / PATH / 补全 / `update` / `self-uninstall` / `app`）；版本身份暂用 OrzMCKit 版本线（是否与 Python 统一待定） | 兑现 D7「一个 `orzmc`」：两面都发行 |
 
 > 决策若被推翻，必须在本章追加「~~D#~~ 已推翻，原因…」并说明替代方案，不得直接删除。
 
@@ -325,3 +326,4 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-14 | 产品伞治理：`RELEASES.md`（发版组合）+ `scripts/verify/check.py`（登记表一致性 + 一致性自检）+ 父仓库 CI | pi |
 | 2026-10-14 | Phase 4 前端收敛：引擎抽出共用 `Client.launchClient()`（参数→托管 JRE→受管进程），CLI `Launcher` 与 app `GUIClient` 共用 | pi |
 | 2026-10-14 | 一致性扩到类型/自定义 root：新增 `layout/fabric-1.20.4-custom-root`、`layout/forge-1.20.4-windows`（**31 例**） | pi |
+| 2026-10-14 | **D13：Swift `orzmc` CLI 发行化** —— 发版基建（release-please + tag→macOS 二进制资产 + SHA256SUMS）+ 一键安装器 `scripts/install.sh` + README（`OrzMCKit#6`） | pi |

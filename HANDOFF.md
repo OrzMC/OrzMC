@@ -40,7 +40,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | 产品统一化 — Phase 0–3 完成；Phase 5 治理已上线；**T1 端到端完成**；**T2 命令面统一进行中** |
-| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **31/31**；Swift 侧 B1–B11 全部实现；T2：Python 已补全局 `--json`/`--version`/`--root-dir`/`completion`/`capabilities`，Swift 已收敛选项 + 补 `list`/`remove`/`backup`/`version` + 全局 `--version/--verbose/--root-dir/--json` |
+| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **31/31**；Swift 侧 B1–B11 全部实现；T2：Python 已补全局 `--json`/`--version`/`--root-dir`/`completion`/`capabilities`，Swift 已收敛选项 + 补 `list`/`remove`/`backup`/`version` + 全局 `--version/--verbose/--root-dir/--json`；**D13：Swift `orzmc` CLI 发行化（发版链路 + 一键安装）已落地** |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
 | **下一步** | 见第 4 章（均为增量、非阻塞） |
@@ -65,7 +65,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `b6886fbb8c95` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41） |
 | `app` | `4a4c6b4` | `OrzMCApp`；有构建校验 CI |
-| `OrzMCKit` | `31c706daf321` | **Swift 引擎**（组织自有）；含 `ConformanceAdapter`；CLI 命令面（选项收敛 #2、`list`/`remove` #3、`backup` #4、`version` + 全局 `--version/--verbose/--root-dir/--json` #5） |
+| `OrzMCKit` | `d5084868526e` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`；命令面 #2–#5；发版链路（release-please + `release.yml`）+ `scripts/install.sh` #6 |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
 > `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
@@ -128,8 +128,9 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 **待定（计划项，非阻塞）**：`--json` 错误码表、`capabilities`/`orzmc mcp` schema、Phase 4 前端进一步收敛。
 
 **待决策（需维护者拍板）**
-- **T2 Step 2 的发行前置**：Swift `orzmc` CLI 目前**没有发行/安装落点**——`OrzMCKit` 只有 CI（无 release 工作流），app 走 `release-app.yml` 且只用引擎 `Game`、不用该 CLI。因此 Swift 的 `update`/`self-uninstall`/`app` 属于「发行/安装」功能，**在决定 Swift CLI 是否作为发行物之前不实现**（无发行则 `update`/`self-uninstall` 无意义）。
-- **两套 CLI 的定位**：是否长期维持「Python CLI + Swift CLI」双前端；若维持，命令面应单一化（manifest + 生成/校验），不要手写两遍。详见第 5 章会话日志「ConsoleKit 调研 + 双 CLI 冗余评估」。
+- **版本身份**（D13 已定「Swift CLI 要发行」，此为其子问题）：Swift CLI 暂用 OrzMCKit 自己的版本线（当前 `0.0.6`，下一版由 release-please 决定）；是否与 Python `orzmc`（`2.4.x`）统一为**同一产品版本**？统一会牵动 release-please manifest 与既有 tag，需维护者确定后再改。
+- **命令面单一化**：D13 后两面都发行；是否把 `cli-surface.md` 升级为**机器可读 manifest**、两侧生成/校验（路线 A），以消除“手写两遍”的漂移成本。
+- **T2 Step 2 的剩余命令**：`update`/`self-uninstall`/`app` 现已解锁（发版链路就绪），但仍建议在同一 PR/同一契约下实现，避免与 Python 口径分叉。
 
 ## 4. 下一步（Next Actions，增量、非阻塞）
 
@@ -143,7 +144,8 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 **T2 统一 CLI 命令面（进行中）**
 - [x] **Swift 选项收敛**：`--debug→--verbose`、`--ms/--mx→--min-mem/--max-mem`、`--gui→--nogui`、`--force_upgrade→--force-upgrade`、`--jar-opts→--server-args`；去掉 `defaultCommand`（无子命令打印帮助）。
-- [x] **Swift 补命令**：`version`/`list`/`remove`/`backup` ✅；全局 `--version`/`--verbose`/`--root-dir`/`--json` ✅（在 `main` 预解析 argv；信封与 Python 对齐）；`update`/`self-uninstall`/`app`/`completion`、`fabric` 隐藏别名待办。
+- [ ] **Swift 补命令**：`completion`/`capabilities`、`fabric` 隐藏别名；`update`/`self-uninstall`/`app`（**发版链路已就绪，D13**，可按 `install-update.md` 契约实现）。
+- [x] **Swift CLI 发行化（D13）**：release-please + `release.yml`（tag→`orzmc-macos-{arm64,x86_64}` + SHA256SUMS）+ `scripts/install.sh`；README（#6）。
 - [x] **Python 全局项**：`--version`/`--root-dir` 全局；内存选项规范名 `--min-mem/--max-mem`（旧名别名）。
 - [x] **Python `--json` 信封**（D9 AI 调用核心）：全局 `--json`，`{ok,command,data,error}`，日志/进度转 stderr。
 - [x] **Python `completion`**：`orzmc completion <shell>` / `install`（typer `add_completion=True`）。
@@ -152,7 +154,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - [x] **Swift `list`/`remove`**：引擎 `installedVersions`/`removeInstalled` + CLI 命令（#3）。
 - [x] **Swift `backup`**：引擎 `GamePlan.backupWorld` + CLI 命令（#4）。
 - [x] **Swift `version` + 全局选项**：工具版本单一事实源 `Game/OrzMCVersion` + `version` 命令；全局 `--version`/`--verbose`/`--root-dir`/`--json`（ConsoleKit 之上预解析 argv）；`--json` 信封；`ClientInfo`/`ServerInfo` 贯通 `rootDir`；无子命令退出 0；服务端 `--type` 缺省 vanilla（#5）。
-- [ ] **Swift 补命令**：`update`/`self-uninstall`/`app`/`completion`；`fabric` 隐藏别名（可在 `ssh air` 上编译验证）。
+- [ ] **Swift 补命令**：`completion`/`capabilities`、`fabric` 隐藏别名；`update`/`self-uninstall`/`app`（发版链路已就绪）。
 
 **其他**
 - [ ] **Phase 4｜继续前端收敛**：把 `downloadClient`（下载编排）也抽到引擎 `Client`，CLI/GUI 共用（需进度 UI 抽象）。
@@ -165,6 +167,27 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（D13：Swift `orzmc` CLI 发行化 - 发版链路 + 一键安装）
+
+**背景**
+- 维护者拍板：**Swift `orzmc` CLI 是要发行的产品**（→ D13）。上一步的「不发行则不实现 `update/self-uninstall/app`」待决策解除。
+
+**做了什么**
+- `OrzMCKit` 新增发版基建（#6）：`release-please` 配置/工作流 + `release.yml`（tag `v*` → 护栏校验 tag==`OrzMCVersion.current` 且落在 `main` → `macos-15`/`macos-15-intel` 构建 `orzmc-macos-arm64`/`x86_64` → 断言架构+自报版本 → 全部到位后才发布 Release + `SHA256SUMS`）。
+- `OrzMCVersion` 加 `x-release-please-version` 标记；新增 `CHANGELOG.md`。
+- `scripts/install.sh`：macOS 用户级一键安装（SHA256 + Mach-O magic 校验 → `~/.local/bin` → PATH → 补全 → `install.conf`），免 sudo，契约对齐 `install-update.md`。README 补齐。
+- 父仓库：新增决策 **D13**；更新 `install-update.md` 现状；HANDOFF。
+
+**结果 / 产出**
+- `OrzMCKit` PR #6 已合（`d5084868526e`，CI `test` + `conformance`(31/31) 绿）；父仓库 bump + `RELEASES.md` 刷新。
+- 验证：`ssh air` `swift build`/`swift test` 绿；`swift build -c release --product orzmc` → `orzmc 0.0.6`（Mach-O arm64）；YAML/JSON 校验通过；`sh -n install.sh` 通过。
+
+**待确认**
+- **版本身份**：Swift CLI 暂用 OrzMCKit 版本线（`0.0.6`）；是否与 Python `orzmc`（`2.4.x`）统一为同一产品版本，需维护者定。
+
+**下一步**
+- Swift：`completion`/`capabilities` + `fabric` 隐藏别名；然后 `update`/`self-uninstall`/`app`（按 `install-update.md` 契约，与 `install.sh`/`install.conf` 一致）。
 
 ### 2026-10-14 — pi（调研：ConsoleKit 维护现状 + 双 CLI 冗余评估）
 
