@@ -36,7 +36,7 @@
 | `update` | 升级工具自身（非游戏版本） | ✅ | ❌ |
 | `self-uninstall` | 卸载工具自身 | ✅ | ❌ |
 | `app` | **跨面**：安装 / 打开 / 卸载 GUI 应用 | ❌ 新增 | ❌ 新增 |
-| `completion` | 生成 / 安装 Shell 补全 | ✅ 新增 | ❌ 新增 |
+| `completion` | 生成 / 安装 Shell 补全 | ✅ 新增 | ✅ 新增（bash/zsh） |
 | `version` | 打印工具版本 | ✅ | ✅ |
 
 > `fabric` 不设独立命令：统一用 `client/server -t fabric`（Python 现行做法）。
@@ -229,7 +229,7 @@ CLI 需支持**被 AI 智能体调用**：确定性、非交互、可发现、�
 | 安装器集成 | 安装 CLI 时**自动安装补全**（见 `install-update.md`） |
 | 支持 shell | `bash`、`zsh`、`fish`、`powershell` |
 
-- Python（typer）已开启补全(`add_completion=True`),并提供 `orzmc completion <shell>` / `orzmc completion install`;Swift（ConsoleKit）当前无补全,需补生成器或提供静态脚本。
+- Python（typer）已开启补全(`add_completion=True`),并提供 `orzmc completion <shell>` / `orzmc completion install`;Swift（ConsoleKit）已提供 `completion`(`bash`/`zsh` 原生;`fish`/`powershell` 显式不支持)。
 - 全局选项（`--root-dir/--verbose/--json`）需在所有子命令中可用（可能需在解析层提升）。
 
 ---
@@ -238,7 +238,7 @@ CLI 需支持**被 AI 智能体调用**：确定性、非交互、可发现、�
 
 **Swift CLI**
 1. 无子命令 → 打印帮助并退出 0（去掉默认 `client`）。✅
-2. 新增命令：`list` / `remove` / `backup` / `version` ✅；`update` / `self-uninstall` / `app` / `completion` 待办。
+2. 新增命令：`list` / `remove` / `backup` / `version` / `completion`（bash/zsh）✅；`update` / `self-uninstall` / `app` 待办。
 3. 选项改名：`--ms/--mx` → `--min-mem/--max-mem`；`--debug` → `--verbose`；`--force_upgrade` → `--force-upgrade`；
    `--jar-opts` → `--server-args`；`--gui` → `--nogui`（反向）。✅
 4. 全局 `--version` / `--verbose` / `--root-dir` / `--json` ✅（在 main 预解析 argv）。
