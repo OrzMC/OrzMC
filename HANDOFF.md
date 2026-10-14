@@ -147,7 +147,8 @@ git diff --submodule
 - [x] **P3｜server-plan 样例**：`planServerDeploy`（27 例），Swift/参考/Python 三适配器均齐（`507d467`/`OrzPythonMC#33`）。
 - [x] **P3｜B7 进程原语**：`OrzSwiftKit` `ProcessRunner`/`ManagedProcess`（优雅停止→TERM→KILL、退出码归一、`onLine`）（`10b4095`）。
 - [x] **P3｜B7 接线**：`Server.start()`/`launchServer` 返回 `ManagedProcess`；CLI 前台等待并打印退出码；app `GUIServer` 同步（`3bba300`/`d4362bc`）。
-- [ ] **P3｜B9/planServerLaunch**：非 TTY 默认值；`planServerLaunch` 计划与样例。
+- [x] **P3｜B9 非 TTY**：CLI 不阻塞（显式版本命中即用/找不到报错；非 TTY 最新 release；用户名 `guest`）（`1bc336d`）。
+- [ ] **P3｜planServerLaunch**：`planServerLaunch` 计划与样例（需跨实现统一启动参数）。
 - [ ] **P3｜引擎③尾**：`GamePlan` 下载计划 / 进度；CLI/app 注迁到 `GamePlan`（退役 `GameDir`）。
 - [ ] **P2｜Swift 适配器**：按 [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md) §7.1 顺序推进。
 - [x] **P2/3｜Q7 已决（B/HEAD 制）**：伞内引擎版本 = `OrzMCKit` `main` HEAD；`app` 改用 `branch = main`。
@@ -159,6 +160,22 @@ git diff --submodule
 ---
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（B9 非 TTY）
+
+**做了什么**
+- CLI 新增 `TerminalEnvironment.isInteractive`（`isatty(stdin)`）。
+- `chooseGameVersion`：显式 `--version` 命中即用、找不到直接报错（不再回退交互）；非 TTY 用**最新 release**。
+- 客户端：非 TTY 用户名默认 `guest`；非 TTY 不做交互式正版授权。
+
+**结果 / 产出**
+- `OrzMCKit` `1bc336d`（test + conformance 27/27 绿）；父仓库 bump `22e2bec`。
+
+**踩坑**
+- 自定义 `Terminal` 与 ConsoleKit 同名类型冲突 → 改名 `TerminalEnvironment`。
+
+**下一步**
+- `planServerLaunch` 样例；全量退役 `GameDir`。
 
 ### 2026-10-14 — pi（B7 接线：引擎生命周期）
 

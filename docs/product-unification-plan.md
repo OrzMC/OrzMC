@@ -317,3 +317,4 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-13 | 一致性扩到服务端：新增 `server-plan/`（`planServerDeploy`，27 例）；Swift/参考/Python 三适配器均实现（OrzMCKit `507d467`、`OrzPythonMC#33`） | pi |
 | 2026-10-14 | B7 进程原语：`OrzSwiftKit` 新增 `ProcessRunner`/`ManagedProcess`（优雅停止 → SIGTERM → SIGKILL、退出码归一、`onLine` 透传；含测试） | pi |
 | 2026-10-14 | B7 接线：引擎 `Server` 生命周期切到 `ManagedProcess`（CLI 前台等待 + 打印退出码；app `GUIServer` 返回 `ManagedProcess`） | pi |
+| 2026-10-14 | B9 非 TTY：CLI 不阻塞——显式版本命中即用/找不到报错、否则最新 release；用户名默认 `guest`；不做交互式授权 | pi |
