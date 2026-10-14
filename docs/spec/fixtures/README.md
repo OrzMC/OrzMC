@@ -1,6 +1,6 @@
 # 一致性样例（Fixtures）
 
-> **状态**：草案 `specVersion 0.1` ｜ 最后更新 2026-10-13
+> **状态**：草案 `specVersion 0.1` ｜ 最后更新 2026-10-14
 > 本目录是 [conformance.md](../conformance.md) 定义的**黄金样例**：`given → expect` 的纯计划断言。
 > 运行器见 [`scripts/conformance/`](../../../scripts/conformance/README.md)。
 
@@ -27,6 +27,7 @@ python3 scripts/conformance/run.py --adapter "<cmd>" --filter cache
 | `cache/` | `cacheDecision` | B1 缓存 |
 | `download/` | `planDownloadConcurrency` / `resolveConcurrency` | B2 并发 |
 | `client-plan/` | `planClientLaunch` | B6 客户端启动 |
+| `client-download/` | `planClientDownload` | data-model §9 / B2 下载清单 |
 | `non-tty/` | `nonTtyDefaults` | B9 非 TTY |
 | `progress/` | `normalizeProgress` | B8 进度 |
 | `error/` | `expectError`（如 `E_UNSUPPORTED_TYPE`） | B11 错误 |
@@ -41,6 +42,7 @@ python3 scripts/conformance/run.py --adapter "<cmd>" --filter cache
 | `snapshots/versions/1.20.4.json` | 现代版（有 `arguments`、含 OS rules 库） |
 | `snapshots/versions/1.16.5.json` | 旧版（`minecraftArguments`，无 `arguments`） |
 | `snapshots/versions/no-java.json` | 无 `javaVersion`（测默认 8） |
+| `snapshots/assets/5.json` | 紧凑资源索引（`client-download` 用，2 个对象） |
 
 > 所有快照为**构造数据**，哈希/大小为占位值；样例离线运行、不打网络。
 
@@ -61,12 +63,11 @@ python3 scripts/conformance/run.py --adapter "<cmd>" --filter cache
 
 | 适配器 | 状态 |
 |:--|:--:|
-| 规范参考 `scripts/conformance/reference.py` | ☑ 31/31 |
-| Python `python/orzmc/tests/conformance/adapter.py` | ☑ 31/31 |
-| Swift `OrzMCKit` | ☑ 31/31 |
+| 规范参考 `scripts/conformance/reference.py` | ☑ 32/32 |
+| Python `python/orzmc/tests/conformance/adapter.py` | ☑ 32/32 |
+| Swift `OrzMCKit` | ☑ 32/32 |
 
 ## 待补（Phase 2 后续）
 
-- `server-plan/`（`planServerDeploy`）与 `server-lifecycle/`（B7）样例：待实现适配器具备纯计划入口后补。
-- 服务端 Forge/Fabric 装载、natives 解压、asset 对象批量下载的样例。
-- Swift 适配器接入本套件。
+- 服务端 Forge/Fabric 装载、natives 解压的样例。
+- `server-lifecycle/`（B7 退出码归一）样例。

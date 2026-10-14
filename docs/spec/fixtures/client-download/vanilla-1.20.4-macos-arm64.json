@@ -1,0 +1,52 @@
+{
+  "specVersion": "0.1",
+  "id": "client-download/vanilla-1.20.4-macos-arm64",
+  "area": "client-download",
+  "description": "vanilla 客户端下载清单：客户端 jar / 资源索引 / 资源对象 / 库（macOS arm64；按 rules 过滤库）",
+  "given": {
+    "operation": "planClientDownload",
+    "version": "1.20.4",
+    "type": "vanilla",
+    "platform": { "os": "osx", "arch": "arm64" },
+    "root": "/tmp/orzmc-fixture",
+    "snapshot": "snapshots/versions/1.20.4.json",
+    "assetIndex": "snapshots/assets/5.json"
+  },
+  "expect": {
+    "count": 6,
+    "itemsContains": [
+      {
+        "url": "https://piston-data.mojang.com/client.jar",
+        "path": "/tmp/orzmc-fixture/versions/1.20.4/client/1.20.4.jar",
+        "sha1": "000000000000000000000000000000000000000c",
+        "size": 1000
+      },
+      {
+        "url": "https://piston-meta.mojang.com/asset-index.json",
+        "path": "/tmp/orzmc-fixture/versions/1.20.4/client/assets/indexes/5.json",
+        "sha1": "0000000000000000000000000000000000000005",
+        "size": 100
+      },
+      {
+        "url": "https://resources.download.minecraft.net/aa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "path": "/tmp/orzmc-fixture/versions/1.20.4/client/assets/objects/aa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sha1": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "size": 42
+      },
+      {
+        "url": "https://libraries.example/maconly-1.0.jar",
+        "path": "/tmp/orzmc-fixture/versions/1.20.4/client/libraries/com/example/maconly/1.0/maconly-1.0.jar",
+        "sha1": "0000000000000000000000000000000000000011",
+        "size": 11
+      }
+    ],
+    "itemsNotContains": [
+      {
+        "url": "https://libraries.example/notmac-1.0.jar",
+        "path": "/tmp/orzmc-fixture/versions/1.20.4/client/libraries/com/example/notmac/1.0/notmac-1.0.jar",
+        "sha1": "0000000000000000000000000000000000000012",
+        "size": 12
+      }
+    ]
+  }
+}

@@ -32,7 +32,7 @@ scripts/conformance/           # spec-owned 运行器（父仓库）
   reference.py                 # 规范参考适配器（纯计划语义）
 ```
 
-- `<area>` 对应契约域：`layout` / `version-manifest` / `client-plan` / `server-plan` /
+- `<area>` 对应契约域：`layout` / `version-manifest` / `client-plan` / `client-download` / `server-plan` /
   `download` / `verify` / `cache` / `java` / `progress` / `non-tty` / `error`。
 - `snapshots/` 是**钉住版本**的上游 JSON，保证 fixture 离线、可复现。
 
@@ -91,7 +91,7 @@ scripts/conformance/           # spec-owned 运行器（父仓库）
 |:--|:--|:--|
 | `planLayout` | root/version/type | 路径集合 |
 | `resolveVersion` | channel/version/snapshot | 版本条目 |
-| `planClientDownload` | version/loader/platform/snapshot | `DownloadItem[]` |
+| `planClientDownload` | version/loader/platform/snapshot(+assetIndex) | `DownloadItem[]`（`{url,path,sha1,size}`） |
 | `planServerDeploy` | version/type/snapshot | `ServerDeployPlan` |
 | `planClientLaunch` | version/platform/options/snapshot | `ClientLaunchPlan` |
 | `planServerLaunch` | version/type/options | `ServerLaunchPlan` |
@@ -99,7 +99,10 @@ scripts/conformance/           # spec-owned 运行器（父仓库）
 | `verifyArtifact` | bytes + sha1 | pass/fail |
 | `cacheDecision` | mtime/ttl/refresh/now | hit/miss/refresh/fallback |
 
-> Python 侧可用内部 API 暴露（测试接缝）；Swift 侧 `Game` 已有 `generateDownloadItemInfos()`，需补纯计划入口。
+> Python 侧可用内部 API 暴露（测试接缝）；Swift 侧 `Game` 已有 `generateDownloadItemInfos()`，已补纯计划入口
+> `GamePlan.planClientDownload`（含 legacy natives 选择与 rules 过滤）。
+> `planClientDownload` 已实现：fixture `client-download/vanilla-1.20.4-macos-arm64`（客户端 jar / 资源索引 /
+> 资源对象 / 库，含 `itemsContains`/`itemsNotContains` 与 `count`）。
 
 ---
 
@@ -122,8 +125,8 @@ python3 scripts/conformance/run.py --adapter "python3 scripts/conformance/refere
 
 | 语言 | 位置 | 状态 |
 |:--|:--|:--:|
-| Python | `python/orzmc/tests/conformance/adapter.py` | ☑ 已接入（31/31） |
-| Swift | `OrzMCKit/Sources/ConformanceAdapter` | ☑ 已接入（31/31，OrzMCKit CI 内运行） |
+| Python | `python/orzmc/tests/conformance/adapter.py` | ☑ 已接入（32/32） |
+| Swift | `OrzMCKit/Sources/ConformanceAdapter` | ☑ 已接入（32/32，OrzMCKit CI 内运行） |
 
 ```bash
 # Python 适配器（在父仓库根执行）

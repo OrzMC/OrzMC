@@ -1,0 +1,12 @@
+{
+  "objects": {
+    "minecraft/sounds/example.ogg": {
+      "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "size": 42
+    },
+    "minecraft/textures/example.png": {
+      "hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "size": 7
+    }
+  }
+}

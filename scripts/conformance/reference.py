@@ -231,6 +231,43 @@ def op_cache(req):
 
 
 # ---------------------------------------------------------------- download
+def op_plan_client_download(req):
+    gtype = req.get("type", "vanilla")
+    if gtype not in CLIENT_CAPABLE:
+        return err("E_UNSUPPORTED_TYPE", f"类型 {gtype} 不支持客户端")
+    snap = load(req["snapshot"])
+    plat = req["platform"]
+    features = (req.get("options") or {}).get("features") or {}
+    lay = layout(req["root"], req["version"])
+    items = []
+    client = (snap.get("downloads") or {}).get("client") or {}
+    if client.get("url"):
+        items.append({"url": client["url"], "path": lay["clientJarPath"],
+                      "sha1": client.get("sha1"), "size": client.get("size")})
+    index = snap.get("assetIndex") or {}
+    if index.get("url"):
+        items.append({"url": index["url"],
+                      "path": f"{lay['clientIndexesDir']}/{index.get('id', '')}.json",
+                      "sha1": index.get("sha1"), "size": index.get("size")})
+    if req.get("assetIndex"):
+        for meta in (load(req["assetIndex"]).get("objects") or {}).values():
+            h = meta.get("hash")
+            if h:
+                items.append({
+                    "url": f"https://resources.download.minecraft.net/{h[:2]}/{h}",
+                    "path": f"{lay['clientObjectsDir']}/{h[:2]}/{h}",
+                    "sha1": h, "size": meta.get("size"),
+                })
+    for lib in snap.get("libraries", []):
+        if not rules_allow(lib.get("rules"), plat, features):
+            continue
+        art = (lib.get("downloads") or {}).get("artifact")
+        if art and art.get("url") and art.get("path"):
+            items.append({"url": art["url"], "path": f"{lay['clientLibrariesDir']}/{art['path']}",
+                          "sha1": art.get("sha1"), "size": art.get("size")})
+    return ok({"items": items, "count": len(items)})
+
+
 def op_plan_server_launch(req):
     gtype = req.get("type", "vanilla")
     opts = req.get("options") or {}
@@ -322,6 +359,7 @@ def op_progress(req):
 OPS = {
     "planLayout": op_plan_layout,
     "planClientLaunch": op_client_launch,
+    "planClientDownload": op_plan_client_download,
     "requiredJava": op_required_java,
     "verifyArtifact": op_verify,
     "cacheDecision": op_cache,
