@@ -1,6 +1,6 @@
 # CLI 命令面契约（CLI Surface Contract）
 
-> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-13
+> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-14
 > 目标：Swift CLI（`OrzMCKit` 的 `orzmc`）与 Python CLI（`orzmc-app`）收敛为**同一个工具**——
 > 用户看到的命令、参数、输出、退出码一致。实现可不同，**命令面必须相同**。
 
@@ -37,7 +37,7 @@
 | `self-uninstall` | 卸载工具自身 | ✅ | ❌ |
 | `app` | **跨面**：安装 / 打开 / 卸载 GUI 应用 | ❌ 新增 | ❌ 新增 |
 | `completion` | 生成 / 安装 Shell 补全 | ✅ 新增 | ❌ 新增 |
-| `version` | 打印工具版本 | ✅ | ❌ |
+| `version` | 打印工具版本 | ✅ | ✅ |
 
 > `fabric` 不设独立命令：统一用 `client/server -t fabric`（Python 现行做法）。
 > Swift 的 `fabric` 命令保留为**隐藏别名**，内部转 `client/server -t fabric`。
@@ -48,10 +48,10 @@
 
 | 选项 | 说明 | 状态 |
 |:--|:--|:--|
-| `--verbose` | 输出调试日志 | **全局（已决）**；Swift 现 `--debug` 改名，`-d` 保留别名 |
-| `--root-dir <path>` | 游戏根目录（默认 `~/minecraft`） | **全局（已决）**；子命令仍接受 |
-| `--json` | 机器可读输出（见 §6 / §8） | **全局（已决）**；非 TTY/脚本/AI 场景使用 |
-| `--version` | 打印工具版本 | **全局（已决）**；与子命令 `-v`（游戏版本）靠位置区分 |
+| `--verbose` | 输出调试日志 | **全局（已决）**；Swift `--debug` 已改名，`-d` 保留别名（Swift ✅ / Python ✅） |
+| `--root-dir <path>` | 游戏根目录（默认 `~/minecraft`） | **全局（已决）**；子命令仍接受（Swift ✅ / Python ✅） |
+| `--json` | 机器可读输出（见 §6 / §8） | **全局（已决）**；非 TTY/脚本/AI 场景使用（Swift ✅ / Python ✅） |
+| `--version` | 打印工具版本 | **全局（已决）**；与子命令 `-v`（游戏版本）靠位置区分（Swift ✅ / Python ✅） |
 | `-h` / `--help` | 帮助 | 两者需补齐 |
 
 ---
@@ -237,14 +237,15 @@ CLI 需支持**被 AI 智能体调用**：确定性、非交互、可发现、�
 ## 10. 迁移清单（实现需做的改动）
 
 **Swift CLI**
-1. 无子命令 → 打印帮助（去掉默认 `client`）。
-2. 新增 `list` / `remove` / `backup` / `update` / `self-uninstall` / `version` / `app` / `completion`。
+1. 无子命令 → 打印帮助并退出 0（去掉默认 `client`）。✅
+2. 新增命令：`list` / `remove` / `backup` / `version` ✅；`update` / `self-uninstall` / `app` / `completion` 待办。
 3. 选项改名：`--ms/--mx` → `--min-mem/--max-mem`；`--debug` → `--verbose`；`--force_upgrade` → `--force-upgrade`；
-   `--jar-opts` → `--server-args`；`--gui` → `--nogui`（反向）。
-4. 保留 `fabric` 为隐藏别名。
+   `--jar-opts` → `--server-args`；`--gui` → `--nogui`（反向）。✅
+4. 全局 `--version` / `--verbose` / `--root-dir` / `--json` ✅（在 main 预解析 argv）。
+5. 保留 `fabric` 为隐藏别名。待办
 
 **Python CLI**
-1. 新增 `plugin` / `app` / `completion` / `capabilities`。—— `completion` ✅；`plugin`/`app`/`capabilities` 待办。
+1. 新增 `plugin` / `app` / `completion` / `capabilities`。—— `completion` ✅、`capabilities` ✅；`plugin`/`app` 待办。
 2. 全局 `--version` / `--verbose` / `--root-dir`（**已决**）✅。
 3. 新增全局 `--json` ✅ 与 `--auth`（正版授权，待办：需库支持）。
 4. 选项别名：`--minmem/--maxmem` 保留为 `--min-mem/--max-mem` 的别名 ✅。
