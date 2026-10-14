@@ -13,7 +13,7 @@
 | `plugin` | OrzMC/OrzMCPlugin | `main` | `5eadd6e5b4c8` |
 | `profile` | OrzMC/.github | `main` | `10fc4e1dbc87` |
 | `proxy` | OrzMC/OrzMCProxy | `main` | `3cc949cdb2e7` |
-| `python` | OrzMC/OrzPythonMC | `main` | `c49b1d2c28be` |
+| `python` | OrzMC/OrzPythonMC | `main` | `051857ad9b75` |
 | `site` | OrzMC/OrzMCSite | `main` | `436e4b96bea4` |
 | `tools/DeathChest` | OrzMC/death-chest | `main` | `71d257127c7e` |
 | `tools/EzShops` | OrzMC/EzShops | `main` | `7fc73f750f2f` |

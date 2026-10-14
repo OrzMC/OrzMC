@@ -63,7 +63,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `c49b1d2c28be` | `OrzPythonMC`；一致性适配器（#32/#33/#34）+ 下载中断续传（#36）+ 全局选项（#38）+ **`--json` 信封**（#39） |
+| `python` | `051857ad9b75` | `OrzPythonMC`；一致性适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40） |
 | `app` | `4a4c6b4` | `OrzMCApp`；有构建校验 CI |
 | `OrzMCKit` | `e075e1ad1584` | **Swift 引擎**（组织自有）；含 `ConformanceAdapter`；CLI 命令面已收敛（PR #2） |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
@@ -142,7 +142,8 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - [ ] **Swift 补命令**：`version`/`list`/`remove`/`backup`/`update`/`self-uninstall`/`app`/`completion`；`fabric` 隐藏别名；全局 `--root-dir`/`--json`。
 - [x] **Python 全局项**：`--version`/`--root-dir` 全局；内存选项规范名 `--min-mem/--max-mem`（旧名别名）。
 - [x] **Python `--json` 信封**（D9 AI 调用核心）：全局 `--json`，`{ok,command,data,error}`，日志/进度转 stderr。
-- [ ] **Python 其余**：`completion`/`plugin`/`capabilities`/`app`；全局 `--auth`（需库支持）。
+- [x] **Python `completion`**：`orzmc completion <shell>` / `install`（typer `add_completion=True`）。
+- [ ] **Python 其余**：`plugin`（Hangar，需实现 Hangar 客户端）/`capabilities`/`app`；全局 `--auth`（需库支持）。
 - [ ] **Swift 补命令**：`version`/`list`/`remove`/`backup`/`update`/`self-uninstall`/`app`/`completion`；`fabric` 隐藏别名；全局 `--root-dir`/`--json`（可在 `ssh air` 上编译验证）。
 
 **其他**
@@ -156,6 +157,18 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（T2 续：Python completion 命令）
+
+**做了什么**
+- Python CLI 对齐规范 §9：开启 typer 补全（`add_completion=True`，补全回调生效）；新增 `orzmc completion <bash|zsh|fish|powershell|pwsh>` 打印脚本、`orzmc completion install` 安装；`--json` 下输出信封。新增 3 个测试。
+- 更新 `docs/spec/cli-surface.md` 状态（`completion` Python ✅、§9/§10）。
+
+**结果 / 产出**
+- `OrzPythonMC` PR #40 已合（`051857ad9b75`，6 平台 CI + quality 绿）；父仓库 bump `aabe4e0`；`RELEASES.md` 刷新。
+
+**下一步**
+- Python `plugin`（Hangar）/`capabilities`/`app`；Swift 补命令（可在 `ssh air` 上编译）。
 
 ### 2026-10-14 — pi（T2 续：Python 全局 --json 信封）
 

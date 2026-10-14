@@ -36,7 +36,7 @@
 | `update` | 升级工具自身（非游戏版本） | ✅ | ❌ |
 | `self-uninstall` | 卸载工具自身 | ✅ | ❌ |
 | `app` | **跨面**：安装 / 打开 / 卸载 GUI 应用 | ❌ 新增 | ❌ 新增 |
-| `completion` | 生成 / 安装 Shell 补全 | ❌ 新增 | ❌ 新增 |
+| `completion` | 生成 / 安装 Shell 补全 | ✅ 新增 | ❌ 新增 |
 | `version` | 打印工具版本 | ✅ | ❌ |
 
 > `fabric` 不设独立命令：统一用 `client/server -t fabric`（Python 现行做法）。
@@ -229,8 +229,7 @@ CLI 需支持**被 AI 智能体调用**：确定性、非交互、可发现、�
 | 安装器集成 | 安装 CLI 时**自动安装补全**（见 `install-update.md`） |
 | 支持 shell | `bash`、`zsh`、`fish`、`powershell` |
 
-- Python（typer）可生成补全；**当前 `add_completion=False` 需开启**。
-- Swift（ConsoleKit）当前无补全，需补生成器或提供静态脚本。
+- Python（typer）已开启补全(`add_completion=True`),并提供 `orzmc completion <shell>` / `orzmc completion install`;Swift（ConsoleKit）当前无补全,需补生成器或提供静态脚本。
 - 全局选项（`--root-dir/--verbose/--json`）需在所有子命令中可用（可能需在解析层提升）。
 
 ---
@@ -245,10 +244,10 @@ CLI 需支持**被 AI 智能体调用**：确定性、非交互、可发现、�
 4. 保留 `fabric` 为隐藏别名。
 
 **Python CLI**
-1. 新增 `plugin` / `app` / `completion` / `capabilities`。
-2. 全局 `--version` / `--verbose` / `--root-dir`（**已决**）。
-3. 新增全局 `--json` 与 `--auth`（正版授权）。
-4. 选项别名：`--minmem/--maxmem` 保留为 `--min-mem/--max-mem` 的别名。
-5. 开启补全（`add_completion=True`）。
+1. 新增 `plugin` / `app` / `completion` / `capabilities`。—— `completion` ✅；`plugin`/`app`/`capabilities` 待办。
+2. 全局 `--version` / `--verbose` / `--root-dir`（**已决**）✅。
+3. 新增全局 `--json` ✅ 与 `--auth`（正版授权，待办：需库支持）。
+4. 选项别名：`--minmem/--maxmem` 保留为 `--min-mem/--max-mem` 的别名 ✅。
+5. 开启补全（`add_completion=True`）✅。
 
 > 收尾状态与勾选见 [`product-unification-plan.md`](../product-unification-plan.md) Phase 3/4。
