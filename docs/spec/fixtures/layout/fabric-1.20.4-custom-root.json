@@ -1,0 +1,24 @@
+{
+  "specVersion": "0.1",
+  "id": "layout/fabric-1.20.4-custom-root",
+  "area": "layout",
+  "description": "fabric 服务端在自定义 root 下的规范路径（fabric-server-launch.jar）",
+  "given": {
+    "operation": "planLayout",
+    "root": "/opt/mc",
+    "version": "1.20.4",
+    "type": "fabric",
+    "javaMajor": 17,
+    "platform": { "os": "linux", "arch": "x86_64" }
+  },
+  "expect": {
+    "versionDir": "/opt/mc/versions/1.20.4",
+    "clientDir": "/opt/mc/versions/1.20.4/client",
+    "serverDir": "/opt/mc/versions/1.20.4/server/fabric",
+    "serverJarName": "fabric-server-launch.jar",
+    "serverJarPath": "/opt/mc/versions/1.20.4/server/fabric/fabric-server-launch.jar",
+    "javaMajorDir": "/opt/mc/java/17",
+    "javaExecutable": "/opt/mc/java/17/bin/java",
+    "cacheDir": "/opt/mc/cache"
+  }
+}
