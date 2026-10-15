@@ -7,7 +7,7 @@
 
 | 子模块 | 仓库 | 分支 | 记录指针 |
 |---|---|---|---|
-| `OrzMCKit` | OrzMC/OrzMCKit | `main` | `c281a77d8dd8` |
+| `OrzMCKit` | OrzMC/OrzMCKit | `main` | `599616baa428` |
 | `app` | OrzMC/OrzMCApp | `main` | `3e4d92f6ea00` |
 | `deploy` | OrzMC/OrzMCDeploy | `main` | `e72ad9de9506` |
 | `plugin` | OrzMC/OrzMCPlugin | `main` | `5eadd6e5b4c8` |

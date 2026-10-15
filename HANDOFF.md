@@ -65,7 +65,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `dee5be7bfdea` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41）+ `plugin`/`app`（#42）+ `planClientDownload`（#44）+ 退出码归一/`normalizeExit`（#45） |
 | `app` | `3e4d92f6ea00` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
-| `OrzMCKit` | `c281a77d8dd8` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（53/53）；命令面 #2–#5、#7、#9–#11、#14–#15、#17；发版链路 `#6`；已发 `v0.0.6` / `v0.1.0` |
+| `OrzMCKit` | `599616baa428` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（53/53）；命令面 #2–#5、#7、#9–#11、#14–#15、#17–#18；发版链路 `#6`；已发 `v0.0.6` / `v0.1.0` |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
 > `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
@@ -170,6 +170,19 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-14 — pi（一致性做彻底：34→53 例 + 修正参考/引擎）
+
+**做了什么（覆盖矩阵 + 负向）**
+- 新增 19 个样例（`34→53`）：layout osx-arm64；server-launch paper/fabric(去重)/forge；server-plan paper 不支持；server-lifecycle SIGKILL；download 阈值边界/并发夹紧；client-download legacy-windows / windows / paper-不支持 / legacy-natives；client-plan features 默认关闭 + windows；non-tty 显式值；progress 计数无总数；verify sha256 不支持。
+- 新快照 `conditional-1.20.4`（features/os 门控 + 未知 token）与 `legacy-natives`。
+
+**修正（—“彻底”暴露的真问题）**
+- **参考 `verifyArtifact` 过宽**：此前用 `hashlib.new(hashType)` 接受任意算法，比两套实现（均 sha1-only）更宽 → 改为非 sha1 显式 `E_UNSUPPORTED_OP`。
+- **`planClientDownload` 缺 legacy 路径**：参考与 Swift 未处理 legacy `natives` classifier、也未做无 `downloads` 的 Maven 回退（Python 已有）→ 参考与 Swift 均补齐（`OrzMCKit#18`）。
+
+**结果**
+- 参考 / Python / Swift 三适配器 **53/53**；父仓库 fixtures/reference 先合（`37c7054`）。
 
 ### 2026-10-14 — pi（一致性：`server-lifecycle`/`normalizeExit`，32→34）
 
