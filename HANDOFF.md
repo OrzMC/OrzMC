@@ -39,8 +39,8 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 项 | 内容 |
 |---|---|
-| **主题** | 产品统一化 — Phase 0–5 完成；T1 端到端完成；**T2 命令面统一完成**；一致性 **73/73**（含 `auth/*` 20 例：参考/Python/Swift 三适配器）；**`--auth` 离线部分（契约+两端实现）完成**；**`orzmc mcp` server 两端实现完成**；剩余：`client_id`/真实 E2E |
-| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端：纯映射 + 令牌存储(0600 原子写) + 设备码编排 + CLI 接线已实现（未配 `client_id` 时 `E_AUTH_NOT_CONFIGURED`）；`orzmc mcp`：Python（`orzmc_app/cli/mcp.py`）+ Swift（`MCPServer`/`MCPCommand`）均实现，离线单测全绿；**改动均在本地工作区，未推送**；Swift 侧 B1–B11 全部实现；T2/Phase 4 完成；Swift `orzmc` CLI 已发 `v0.1.0` |
+| **主题** | 产品统一化 — Phase 0–5 完成；T1 端到端完成；**T2 命令面统一完成**；一致性 **76/76**（含 `auth/*` 20 例：参考/Python/Swift 三适配器）；**`--auth` 离线部分（契约+两端实现）完成**；**`orzmc mcp` server 两端实现完成**；剩余：`client_id`/真实 E2E、命令面 deviations 收敛 |
+| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端：纯映射 + 令牌存储(0600 原子写) + 设备码编排 + CLI 接线已实现（未配 `client_id` 时 `E_AUTH_NOT_CONFIGURED`）；`orzmc mcp`：Python（`orzmc_app/cli/mcp.py`）+ Swift（`MCPServer`/`MCPCommand`）均实现，离线单测全绿；**改动已推送并发布**（Python `2.5.0` / Swift `v0.2.0`）；Swift 侧 B1–B11 全部实现；T2/Phase 4 完成；Swift `orzmc` CLI 已发 `v0.1.0` → `v0.2.0` |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
 | **下一步** | 待办 A（`client_id`/真实 E2E，办卡+注册后，见 §4）；本地改动择机推送（注意合入顺序）；命令面：按 manifest `deviations` 逐条补齐引擎侧能力，再评估 `--strict` 接 CI 与 codegen |
@@ -52,7 +52,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 值 |
 |---|---|
 | 分支 | `main`（跟随远端；子模块指针以 `git ls-tree HEAD` / `RELEASES.md` 为准） |
-| 工作区 | `M plugin`（本地常检出 develop，**预期**）+ `M python` / `M OrzMCKit`（本地未提交的 `--auth` 改动，**勿 bump**）；见 2.2 |
+| 工作区 | `M plugin`（本地常检出 develop，**预期**）；`python` / `OrzMCKit` 已合并且与记录指针一致 |
 | 父仓库 CI | ✅ `.github/workflows/ci.yml` → `python3 scripts/verify/check.py` |
 | 已删除（历史） | `GEMINI.md`、`.cursor/rules/` |
 
@@ -63,9 +63,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `dee5be7bfdea` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41）+ `plugin`/`app`（#42）+ `planClientDownload`（#44）+ 退出码归一/`normalizeExit`（#45）；**本地未提交：`--auth` 全套（domain/core/infra/services + CLI + `auth/*` 适配器，76/76）+ `orzmc mcp` server（`cli/mcp.py`/`cli/introspect.py` + CLI 接线 + 14 单测）** |
+| `python` | `969cd05` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41）+ `plugin`/`app`（#42）+ `planClientDownload`（#44）+ 退出码归一/`normalizeExit`（#45）；**已合并发布 `2.5.0`**：`--auth` 离线链路 + `orzmc mcp` + `auth/*` 适配器 + 服务端 `--demo`/`--online-mode` |
 | `app` | `3e4d92f6ea00` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
-| `OrzMCKit` | `599616baa428` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**本地未提交：`Game/Auth/*` + `auth/*` 适配器 + `ClientCommand --auth` + `Client+Boot` 离线默认值修正 + `MCPServer`/`MCPCommand`（mcp，11 单测）+ conformance 扩（layout no-type / 版本源覆盖）**；命令面 #2–#5、#7、#9–#11、#14–#15、#17–#18；发版链路 `#6`；已发 `v0.0.6` / `v0.1.0` |
+| `OrzMCKit` | `e237d32` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已合并发布 `v0.2.0`**：`--auth` 离线链路 + `orzmc mcp` + 命令面收敛（`server --online-mode`/`--jvm-opts`/`--yes`、`remove --yes`、`self-uninstall --root-dir`）；命令面 #2–#5、#7、#9–#11、#14–#15、#17–#18；发版链路 `#6`；此前已发 `v0.0.6` / `v0.1.0` |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
 > `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
@@ -207,6 +207,19 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-15 — pi（A1 落地 + A2 发版：三仓合并 + Python 2.5.0 / Swift v0.2.0）
+
+**做了什么（全部已推送/发布）**
+- `OrzPythonMC`：PR #46（`--auth` 离线链路 + `orzmc mcp` + 服务端选项）→ squash 合并 `969cd05`；release PR #37 → 发布 **`2.5.0`**（PyPI `orzmc`/`orzmc-app` + 6 平台二进制）。
+- `OrzMCKit`：PR #19（`--auth` + `mcp` + 命令面收敛/一致性适配）→ 合并 `e237d32`；release PR #16 → 发布 **`v0.2.0`**（macOS arm64/x86_64 + `SHA256SUMS`）。
+- 父仓库：PR #14（`auth`/`cli-surface` 规范 + `cli-surface.json` + `surface.py` + `auth/*`/一致性 fixtures + bump `python`/`OrzMCKit` + `RELEASES.md`）→ 合并 `a855dde`。
+
+**顺序**：先子模块（CI 检父仓库**旧** fixtures 仍绿）→ 后父仓库（避免 Swift CI 在 `--strict` 下红灯窗口）。
+
+**已知（既有问题，非本次引入）**：`python3 scripts/verify/check.py --remote` 报 `tools/rust-thanos`、`tools/thanos`、`webmc` 的记录指针不在远端。
+
+**剩余**：待办 A（`client_id`/真实 E2E）；命令面 `deviations` 收敛（Swift 引擎能力 + Python `--kill-all`）；codegen（路线 A 第 3 步）。
 
 ### 2026-10-15 — pi（命令面收敛 Step 2：修一批 + deviations 机制）
 
