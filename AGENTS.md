@@ -178,7 +178,7 @@ git diff --submodule <路径>
 | `AGENTS.md` / `CLAUDE.md` | AI 协作指引（`AGENTS.md` 为源） | 只改 `AGENTS.md`；`CLAUDE.md` 是 Claude 桥接，不写内容 |
 | `CONTRIBUTING.md` | 人/机贡献指南 | 流程变化时同步 |
 | `docs/` | 伞级文档与进行中的方案 | 每份文档头部标「状态 / 最后更新」；索引进 `docs/README.md` |
-| `scripts/` | 服务器运维脚本（crontab/raspberrypi/rsync/ubuntu） | 生产脚本，改动需谨慎并说明 |
+| `scripts/` | 服务器运维脚本 + 校验/一致性工具 + 本地联调（`verify/`、`conformance/`、`release/`、`swift-dev.sh`） | 生产脚本改动需谨慎并说明 |
 | `images/` / `skins/` | README 图片 / 玩家皮肤 | 资源类，避免无谓重编码 |
 | `LICENSE` | 许可证 | **不要改**（子项目各自许可证见其仓库） |
 

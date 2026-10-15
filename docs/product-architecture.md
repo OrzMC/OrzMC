@@ -225,11 +225,13 @@ L3 产品伞 ──▶ 只做锁定与文档，不改任何实现代码
   | `OrzMC/OrzMCApp` | `OrzGeeker/OrzMCApp`（含 `SUFeedURL`） |
 
   外部仓库（`OrzGeeker/OrzSwiftKit`、`OrzGeeker/OrzAppUpdater`）保持原路径；若日后转组织，同步更新。
-- **本地覆盖远端（开发态）**：父仓库已把 `OrzMCKit` 以子模块检出到 `./OrzMCKit`。SwiftPM/Xcode 可用
-  **本地包**覆盖同名远端依赖：Xcode 以 *Add Local Package* 指向 `swift/lib/OrzMCKit/`（或 `.package(path: "../swift/lib/OrzMCKit")`），
-  从而用伞内本地引擎源开发。
+- **本地覆盖远端（开发态）**：父仓库已把 Swift 相关仓库以子模块检出到 `swift/lib/*`（引擎 `swift/lib/OrzMCKit`）。
+  可用 **SwiftPM 本地编辑**或 **Xcode 本地包**覆盖同名远端依赖，从而用伞内本地源码开发：
+  - SwiftPM（OrzMCKit 自身及其依赖）：`scripts/swift-dev.sh edit`（`unedit` 还原；见脚本头说明）；
+  - app（Xcode）：`scripts/swift-dev.sh xcode` 打印手动步骤（*Add Local Package* → `swift/lib/OrzMCKit`）。
 - ⚠️ **本地覆盖不提交**：`app` 的发布/文档 CI（`release-app.yml` / `publish-docs.yml`）只检出 app 仓库本身，
-  提交 `../OrzMCKit` 本地路径依赖会**打断独立构建**。开发时覆盖、验证后还原；正式版仍以规范路径的 SwiftPM 版本为准。
+  提交本地路径依赖（`project.pbxproj` / `Package.resolved`）会**打断独立构建**。开发时覆盖、验证后还原；
+  正式版仍以规范路径的 SwiftPM 版本为准。
 - **版本策略（Q7 已决：HEAD 制）**：伞内引擎版本 = `OrzMCKit` 的 `main` HEAD。父仓库子模块与 `app` 的
   SwiftPM 依赖（`branch = main`）都跟随 HEAD、保持同步，**不再依赖 tag**（为快速迭代）。
 - **依赖仓库均可直接改**：`OrzMC/*` 与 `OrzGeeker/*` 的 SwiftPM 依赖均属维护者自有；必要时可拉到本地修改，
