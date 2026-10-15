@@ -43,6 +43,7 @@
         { "name": "--force-download", "type": "boolean", "flag": true },
         { "name": "--online-mode", "short": "-o", "type": "boolean", "flag": true },
         { "name": "--demo", "type": "boolean", "flag": true },
+        { "name": "--print-jar-help", "type": "boolean", "flag": true, "help": "打印服务端 jar 的帮助信息(服务端加 --help)" },
         { "name": "--kill-all", "short": "-k", "type": "boolean", "flag": true },
         { "name": "--refresh", "type": "boolean", "flag": true },
         { "name": "--download-threads", "short": "-j", "type": "integer", "default": 16 },
@@ -93,6 +94,7 @@
       "options": [
         { "name": "--version", "short": "-v", "type": "string" },
         { "name": "--check", "type": "boolean", "flag": true },
+        { "name": "--channel", "type": "string", "enum": ["release", "beta"], "default": "release", "help": "更新渠道" },
         { "name": "--file", "type": "string" },
         { "name": "--yes", "type": "boolean", "flag": true },
         { "name": "--force", "type": "boolean", "flag": true }
@@ -132,20 +134,18 @@
   "deviations": {
     "note": "收敛 backlog：manifest 是**目标**命令面；此处列出各实现当前**已声明**的差异（validator 默认忽略，--strict 仅对未声明漂移失败）。实现跟进后应逐条移除。",
     "python": {
-      "note": "`--kill-all` 需要持久进程跟踪，Python 暂未实现。",
-      "options": { "server": { "missing": ["--kill-all"] } }
+      "note": "`server --kill-all` 需要持久进程跟踪；`update --channel` 的 beta 解析待实现（当前仅 release）。",
+      "options": { "server": { "missing": ["--kill-all"] }, "update": { "missing": ["--channel"] } }
     },
     "swift": {
-      "note": "客户端 fabric/forge 类型、用户 JVM 旗标、缓存刷新 / 下载并发、音乐提取、世界软链接 / 强制重下等能力尚未在 Swift 引擎落地；`server --jar-help`、`update --channel` 为 Swift 现有额外选项。",
+      "note": "客户端 fabric/forge 类型、用户 JVM 旗标、缓存刷新 / 下载并发、音乐提取、世界软链接 / 强制重下等能力尚未在 Swift 引擎落地。",
       "options": {
         "client": {
-          "missing": ["--type", "--jvm-opts", "--extract-music", "--refresh", "--download-threads"]
+          "missing": ["--type", "--extract-music", "--refresh", "--download-threads"]
         },
         "server": {
-          "missing": ["--symlink", "--force-download", "--refresh", "--download-threads"],
-          "extra": ["--jar-help"]
-        },
-        "update": { "extra": ["--channel"] }
+          "missing": ["--symlink", "--force-download", "--refresh", "--download-threads"]
+        }
       }
     }
   }

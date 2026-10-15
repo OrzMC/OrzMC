@@ -103,6 +103,7 @@ orzmc server [-v VER] [-t TYPE] [-m MIN] [-x MAX] [--nogui] [--yes]
 | `--force-download` | | false | 强制重下核心 | Python ✅；Swift 计划 |
 | `--online-mode` | `-o` | false | 正版验证（Swift 传入启动，Python 写入 `server.properties`） | 两套 ✅ |
 | `--demo` | | false | 演示模式 | 两套 ✅ |
+| `--print-jar-help` | `-j` | false | 打印服务端 jar 帮助信息（服务端加 `--help`） | 两套 ✅（原名 `--jar-help`，2026-10-15 改名） |
 | `--server-args` | | — | 服务端程序参数 | 两套 ✅ |
 | `--kill-all` | `-k` | — | 杀掉所有运行中的服务端 | Swift ✅；Python 计划（需进程跟踪） |
 
@@ -122,7 +123,7 @@ orzmc plugin [--search TEXT] [--list] [--output DIR] [--version VER] [--count N]
 | `list` | `--root-dir` | Python |
 | `remove` | `-v`（必填）、`--server`、`-t`（移除服务端时必填）、`--yes` | Python |
 | `backup` | `-v`（可推断）、`-t` | Python |
-| `update` | `-v/--version`（工具版本）、`--check`、`--file`、`--yes`、`--force` | Python |
+| `update` | `-v/--version`（工具版本）、`--check`、`--channel release\|beta`、`--file`、`--yes`、`--force` | Python |
 | `self-uninstall` | `--yes`、`--remove-root`、`--force` | Python |
 | `version` | — | Python |
 | `app` | `install\|open\|uninstall\|status`；`--channel release\|appstore`、`--version`、`--yes` | **新增（见 `install-update.md`）** |
@@ -332,11 +333,12 @@ stdout **只**输出 JSON-RPC 消息，日志 / 进度一律走 stderr。非交�
   选项的 `required` 不比较（ConsoleKit 无法表达，由运行时报错强制），仅位置参数比较。
 - **已声明差异（收敛 backlog）**：manifest 的 `deviations.<impl>` 列出各实现当前**已声明**的差异；
   validator 默认忽略、`--strict` 只对**未声明**漂移失败（已声明数在报告里提示）。当前：
-  `python` 1 处（`server --kill-all` 需持久进程跟踪）；`swift` 11 处（客户端 `fabric/forge` 类型、
-  用户 JVM 旗标、缓存刷新 / 下载并发、音乐提取、世界软链接 / 强制重下等能力尚未在引擎落地；
-  另有 Swift 便利选项 `server --jar-help`、`update --channel`）。
-- **本轮已收敛**：Python `server --demo` / `--online-mode`；Swift `server --online-mode`（Option→Flag）、
-  `server --jvm-opts`、`server --yes`、`remove --yes`、`self-uninstall --root-dir`。
+  `python` 2 处（`server --kill-all` 需持久进程跟踪；`update --channel` 的 beta 解析待实现）；
+  `swift` 9 处（客户端 `fabric/forge` 类型、用户 JVM 旗标、缓存刷新 / 下载并发、音乐提取；
+  服务端世界软链接 / 强制重下 / 缓存刷新 / 下载并发）。`server --print-jar-help`、`update --channel`
+  已进规范（Swift 已有；Python `--print-jar-help` 已实现）。
+- **本轮已收敛**：Python `server --demo` / `--online-mode` / `--print-jar-help`；Swift `server --online-mode`（Option→Flag）、
+  `server --jvm-opts`、`server --yes`、`remove --yes`、`self-uninstall --root-dir`；`--jar-help` 改名 `--print-jar-help`（两侧）。
 
 ## 9. Shell 自动补全（用户要求）
 
