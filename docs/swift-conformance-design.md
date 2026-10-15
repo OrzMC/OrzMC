@@ -77,8 +77,8 @@
 
 | 仓库 | 改动 | 破坏性 |
 |:--|:--|:--:|
-| `OrzMCKit/Game` | `GameDir` 对齐规范布局；`GameType` 扩到 4 值 + 能力矩阵；`parseBootArgs` 纯化 + 令牌统一；`ConformancePlan` 接缝 | **是**（layout/类型） |
-| `OrzMCKit/Fabric` | Fabric 归入 `GameType.fabric` 路径 | 是 |
+| `swift/lib/OrzMCKit/Game` | `GameDir` 对齐规范布局；`GameType` 扩到 4 值 + 能力矩阵；`parseBootArgs` 纯化 + 令牌统一；`ConformancePlan` 接缝 | **是**（layout/类型） |
+| `swift/lib/OrzMCKit/Fabric` | Fabric 归入 `GameType.fabric` 路径 | 是 |
 | `MojangAPI` | 缓存落盘 + TTL 常量 + 离线回退；从给定 JSON 构造 | 部分 |
 | `OrzSwiftKit` | `Platform.os` 映射 windows/osx/linux；下载并发/分块；Java 托管（或迁到 `Game`） | 部分 |
 | `PaperMC` | 暴露 Paper 纯计划（build → `DownloadItem`） | 否 |

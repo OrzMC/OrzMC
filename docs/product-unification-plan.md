@@ -53,7 +53,7 @@
 
 > 证据口径：仓库内实际文件与 `Package.swift` / `project.pbxproj` / `AGENTS.md` 中的声明。
 
-| 维度 | `python/` (OrzPythonMC) | `app/` (OrzMCApp) |
+| 维度 | `python/` (OrzPythonMC) | `swift/app/` (OrzMCApp) |
 |---|---|---|
 | 角色 | 引擎 + CLI + 安装器 + 自升级，全栈自持 | GUI 外壳；引擎**不在本仓库** |
 | 引擎位置 | 仓内 `orzmc/orzmc/core/`（`mojang.py` / `fabric.py` / `forge.py` / `client/*` / `server/*`） | 外部 **Swift 依赖链**：`OrzMC/OrzMCKit`（`Game` / `Fabric`，**并自带 `orzmc` 可执行 CLI**）→ `wangzhizhou/MojangAPI`、`wangzhizhou/PaperMC`（`DownloadAPI`/`HangarAPI`）、`OrzGeeker/OrzSwiftKit`（`JokerKits`/`Utils`）；app 仓内仅 `GUIClient: Game.Client`、`GUIServer: Game.Server` 适配器 |
@@ -192,7 +192,7 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 - **目标**：把「基础功能组件」做成可独立复用/组合的稳定 API。
 - **交付物**
   - python：维持库/应用双层（已达成），补齐公共 API 契约与文档；确保 6 阶段可单独调用。
-  - app/kit：延续本地 SwiftPM 模块化（`OrzMCFoundation/Launcher/Protocol/RemoteHosting/DesignSystem`），
+  - swift/app/kit：延续本地 SwiftPM 模块化（`OrzMCFoundation/Launcher/Protocol/RemoteHosting/DesignSystem`），
     冻结稳定协议（如 `RemoteServerHosting`），引擎 `Game` 的公共 API 语义化。
   - 一份「二次开发指南」：如何只用引擎、如何只用计划阶段、如何接入新前端。
 - **验收**：存在一个**最小示例**（Python 与 Swift 各一），仅依赖组件完成「解析→生成计划」而不启动游戏。
@@ -240,7 +240,7 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | Q1 | `OrzMCKit` 仓库是否可读/可改？（决定 Phase 1 能否核对 Swift 类型） | 解阻塞 Phase 1 | ✅ 已确认：可访问（`main`），已浅克隆核验；注意其引擎依赖 `MojangAPI`/`PaperMC`/`OrzSwiftKit` 在个人仓库 | ✅ |
 | Q2 | `orzmc-spec` 落点？ | 决定 Phase 1 落点 | ✅ 已决：**父仓库 `docs/spec/`**，成熟后再下沉独立仓库 | ✅ |
 | Q3 | `OrzMCKit` 如何定位？ | 治理与复用 | ✅ 已决：**Swift 可复用基础组件**（非 App 私有引擎），服务 Swift CLI 与 GUI | ✅ |
-| Q4 | app 仓库 `.gitmodules` 已空、且曾移除 OrzMCKit 子模块——是否要恢复登记以避免"引擎游离"？ | D5 具体做法 | ✅ 已决：**登记为父仓库子模块**（`OrzMCKit`，路径 `OrzMCKit/`，`main`，钉 `e302d4e`） | ✅ |
+| Q4 | app 仓库 `.gitmodules` 已空、且曾移除 OrzMCKit 子模块——是否要恢复登记以避免"引擎游离"？ | D5 具体做法 | ✅ 已决：**登记为父仓库子模块**（`OrzMCKit`，路径 `swift/lib/OrzMCKit/`，`main`，钉 `e302d4e`） | ✅ |
 | Q5 | spec 数据模型用 JSON Schema 还是「Markdown + JSON 样例」起步？ | Phase 1 工作量 | ✅ 已决：先 **Markdown + JSON 样例**（已落 `docs/spec/data-model.md`），稳定后再补 Schema | ✅ |
 | Q6 | conformance 是否要求 Swift 侧也进父仓库 CI（跨仓库触发）？ | Phase 2 复杂度 | ✅ 已决：**各实现仓库 CI 内跑**——OrzMCKit CI 检出父仓库 fixtures 后跑 `run.py --strict`；父仓库只做状态汇总 | ✅ |
 | Q7 | “伞内引擎版本”定为 tag（`0.0.6`）还是分支 HEAD？子模块钉 HEAD，app 的 `Package.resolved` 钉 tag，当前不一致 | Phase 2/3 对齐 | ✅ 已决：**HEAD 制（B）**——子模块与 app 都跟随 `OrzMCKit` 的 `main` HEAD（app 改用 `branch = main`），因需快速迭代 | ✅ |
@@ -271,13 +271,13 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 - `python/orzmc/orzmc/__init__.py`（公共 API 契约）
 
 **app 前端与引擎边界**
-- `app/README.md`、`app/OrzMC/Common/documentation.docc/Architecture.md`
-- `app/Package.swift`（本地 SwiftPM 模块划分）
-- `app/OrzMC/Launcher(MacOS)/Controller/{GUIClient,GUIServer}.swift`（引擎适配器，看 `Game`/`MojangAPI` 用法）
-- `app/OrzMC/Launcher(MacOS)/Model/{GameModel,GameCatalogService,GameLaunchService,JavaRuntimeService,SettingsModel}.swift`
-- `app/OrzMC.xcodeproj/project.pbxproj`（外部包：`OrzMC/OrzMCKit`、`OrzGeeker/OrzSwiftKit`、`OrzGeeker/OrzAppUpdater`、`wangzhizhou/ExarotonAPI`）
-- `app/Sources/OrzMCRemoteHosting/RemoteServerHosting.swift`（稳定协议示例）
-- `app/Package.resolved`
+- `swift/app/README.md`、`swift/app/OrzMC/Common/documentation.docc/Architecture.md`
+- `swift/app/Package.swift`（本地 SwiftPM 模块划分）
+- `swift/app/OrzMC/Launcher(MacOS)/Controller/{GUIClient,GUIServer}.swift`（引擎适配器，看 `Game`/`MojangAPI` 用法）
+- `swift/app/OrzMC/Launcher(MacOS)/Model/{GameModel,GameCatalogService,GameLaunchService,JavaRuntimeService,SettingsModel}.swift`
+- `swift/app/OrzMC.xcodeproj/project.pbxproj`（外部包：`OrzMC/OrzMCKit`、`OrzGeeker/OrzSwiftKit`、`OrzGeeker/OrzAppUpdater`、`wangzhizhou/ExarotonAPI`）
+- `swift/app/Sources/OrzMCRemoteHosting/RemoteServerHosting.swift`（稳定协议示例）
+- `swift/app/Package.resolved`
 
 **父仓库与先例**
 - `README.md`、`.gitmodules`

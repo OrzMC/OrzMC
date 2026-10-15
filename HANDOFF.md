@@ -63,9 +63,10 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `5fa45d5` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41）+ `plugin`/`app`（#42）+ `planClientDownload`（#44）+ 退出码归一/`normalizeExit`（#45）；**已合并发布 `2.5.0`**：`--auth` 离线链路 + `orzmc mcp` + `auth/*` 适配器 + 服务端 `--demo`/`--online-mode` |
-| `app` | `3e4d92f6ea00` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
-| `OrzMCKit` | `9cf5cf4` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已合并发布 `v0.2.0`**：`--auth` 离线链路 + `orzmc mcp` + 命令面收敛（`server --online-mode`/`--jvm-opts`/`--yes`、`remove --yes`、`self-uninstall --root-dir`）；命令面 #2–#5、#7、#9–#11、#14–#15、#17–#18；发版链路 `#6`；此前已发 `v0.0.6` / `v0.1.0` |
+| `python` | `5fa45d5` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41）+ `plugin`/`app`（#42）+ `planClientDownload`（#44）+ 退出码归一/`normalizeExit`（#45）；**已发布 `2.7.0`**：`--auth` 离线链路 + `orzmc mcp` + `auth/*` 适配器 + 服务端 `--demo`/`--online-mode` |
+| `swift/app` | `3e4d92f6ea00` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
+| `swift/lib/OrzMCKit` | `9cf5cf4` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已发布 `v0.4.0`**：`--auth` 离线链路 + `orzmc mcp` + 命令面收敛（`server --online-mode`/`--jvm-opts`/`--yes`、`remove --yes`、`self-uninstall --root-dir`）；命令面 #2–#5、#7、#9–#11、#14–#15、#17–#18；发版链路 `#6`；此前已发 `v0.0.6` / `v0.1.0` |
+| `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
 > `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
@@ -207,6 +208,14 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-15 — pi（结构：Swift 相关子模块收拢到 swift/）
+
+- 新目录约定：`swift/app`（GUI）+ `swift/lib/*`（引擎与 Swift 依赖）——按技术栈分组，与 `tools/` 同构。
+- 移动：`app` → `swift/app`；`OrzMCKit` → `swift/lib/OrzMCKit`。
+- 新增子模块：`swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}`（共 21 个子模块）。
+- 同步 `AGENTS.md` §1/§4/§7.1、`RELEASES.md`、`docs/**`、`HANDOFF.md` 路径引用；`check.py` 通过（21 一致）。
+- **注意**：`app`/`OrzMCKit` 仍以 SwiftPM 远端消费引擎；伞内子模块用于**锁定与本地检出**。开发态本地覆盖路径改为 `swift/lib/OrzMCKit`、`swift/lib/*`。这与 D11 HEAD 制有张力（伞内现在也钉组织自有/OrzGeeker 的 Swift 依赖版本），已在 §3 待决策记一笔。
 
 ### 2026-10-15 — pi（发版：Python 2.7.0 / Swift v0.4.0 + 锚点对齐）
 
@@ -1002,7 +1011,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 **做了什么**
 - `GameType` 扩到 `vanilla/fabric/forge/paper`，新增 `isClientCapable` / `isServerCapable` / `serverJarName`（对齐 spec §3）。
-- 新增 [`GamePlan.layout`](OrzMCKit/Sources/Game/Plan/GamePlan.swift)：**规范对齐的纯计划契约**（D-a strangler-fig），
+- 新增 [`GamePlan.layout`](swift/lib/OrzMCKit/Sources/Game/Plan/GamePlan.swift)：**规范对齐的纯计划契约**（D-a strangler-fig），
   对齐 `docs/spec/data-model.md` §1（`versions/<v>/{client,server/<type>}`、`java/<major>`、`cache/`、`backup/`，逻辑路径 `/`）。
 - 单测：能力矩阵 / `serverJarName` / 规范布局。
 
@@ -1103,7 +1112,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 **待决策**
 - **D-a** 先做非破坏的 `ConformancePlan` 骨架，还是先做破坏性的布局对齐（+app 级联）？
-- **D-b** Java 托管放 `OrzSwiftKit` 还是 `OrzMCKit/Game`？ **D-c** 统一缓存策略归属？
+- **D-b** Java 托管放 `OrzSwiftKit` 还是 `swift/lib/OrzMCKit/Game`？ **D-c** 统一缓存策略归属？
 
 ### 2026-10-13 — pi（Q7=B：引擎跟随 main HEAD）
 

@@ -271,7 +271,7 @@
 
 | 范围 | Python | Swift |
 |:--|:--|:--|
-| 纯映射 | `orzmc/core/auth.py` | `OrzMCKit/Sources/Game/Auth/AuthMapping.swift` |
+| 纯映射 | `orzmc/core/auth.py` | `swift/lib/OrzMCKit/Sources/Game/Auth/AuthMapping.swift` |
 | 数据形状 | `orzmc/domain/auth.py` | `Game/Auth/AuthModel.swift` |
 | 令牌存储 | `orzmc/infra/auth_store.py` | `Game/Auth/AuthStore.swift` |
 | 认证编排 | `orzmc/services/auth.py` | `Game/Auth/Authenticator.swift` |

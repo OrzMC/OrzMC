@@ -51,8 +51,8 @@
 | 子模块 | 一句话职责 | 文档入口 |
 |:--|:--|:--|
 | [`python`](../python) | `orzmc` CLI：客户端启动 / 服务端部署 | [README](../python/README.md) · [AGENTS](../python/AGENTS.md) |
-| [`app`](../app) | macOS/iOS 启动器（SwiftUI） | [README](../app/README.md) · [项目文档](https://orzmc.github.io/OrzMCApp/) |
-| [`OrzMCKit`](../OrzMCKit) | **Swift 引擎**（`Game`/`Fabric`）+ `orzmc` CLI | [README](../OrzMCKit/README.md) |
+| [`swift/app`](../swift/app) | macOS/iOS 启动器（SwiftUI） | [README](../swift/app/README.md) · [项目文档](https://orzmc.github.io/OrzMCApp/) |
+| [`swift/lib/OrzMCKit`](../swift/lib/OrzMCKit) | **Swift 引擎**（`Game`/`Fabric`）+ `orzmc` CLI | [README](../swift/lib/OrzMCKit/README.md) |
 | [`webmc`](../webmc) | 浏览器连服实验 | [目录](../webmc) |
 
 ### 网络与部署

@@ -10,9 +10,10 @@
 	path = python
 	url = https://github.com/OrzMC/OrzPythonMC.git
 	branch = main
-[submodule "app"]
-	path = app
+[submodule "swift/app"]
+	path = swift/app
 	url = https://github.com/OrzMC/OrzMCApp.git
+	branch = main
 [submodule "site"]
 	path = site
 	url = https://github.com/OrzMC/OrzMCSite.git
@@ -49,7 +50,27 @@
 	path = proxy
 	url = https://github.com/OrzMC/OrzMCProxy.git
 	branch = main
-[submodule "OrzMCKit"]
-	path = OrzMCKit
+[submodule "swift/lib/OrzMCKit"]
+	path = swift/lib/OrzMCKit
 	url = https://github.com/OrzMC/OrzMCKit.git
+	branch = main
+[submodule "swift/lib/MojangAPI"]
+	path = swift/lib/MojangAPI
+	url = https://github.com/OrzMC/MojangAPI.git
+	branch = main
+[submodule "swift/lib/PaperMC"]
+	path = swift/lib/PaperMC
+	url = https://github.com/OrzMC/PaperMC.git
+	branch = main
+[submodule "swift/lib/ExarotonAPI"]
+	path = swift/lib/ExarotonAPI
+	url = https://github.com/OrzMC/ExarotonAPI.git
+	branch = main
+[submodule "swift/lib/OrzSwiftKit"]
+	path = swift/lib/OrzSwiftKit
+	url = https://github.com/OrzGeeker/OrzSwiftKit.git
+	branch = main
+[submodule "swift/lib/OrzAppUpdater"]
+	path = swift/lib/OrzAppUpdater
+	url = https://github.com/OrzGeeker/OrzAppUpdater.git
 	branch = main
