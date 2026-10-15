@@ -110,16 +110,21 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 | 验证途径 | `OrzMCKit` CI（`macos-15`：`swift build`+`swift test`+`conformance`）；不依赖 OpenAPIKit 的包（`OrzSwiftKit` 的 kit）可本地编译 |
 | **远程 Mac（`ssh air`）** | macOS 27 / Swift 6.4 / Xcode 27（arm64）——**可本地编译 OrzMCKit**（本机 SDK 太旧时的替代）。Swift 验证两条路：`ssh air` 本地编译 / `OrzMCKit` **CI**（`conformance` job 检出父仓库 fixtures 跑 `--strict`，权威）。构建目录 air `~/orzmc-build/{OrzMCKit,parent,OrzSwiftKit}`（`parent` 下放了 fixtures+conformance 供适配器跑） |
 | Air 上的 SwiftLint 坑 | 单独构建 `OrzSwiftKit` 时，新解析的 SwiftLint 在 Swift 6.4 下编译失败（`MemberImportVisibility`）；但 `OrzMCKit` 的 `.build` 用钉住版本可正常构建 |
+| 本地联调 | `scripts/swift-dev.sh {sync,edit,status,unedit,xcode}` —— 把 `swift/lib/OrzMCKit` 的依赖本地覆盖到 `swift/lib/*`（开发态、不提交；app 的 Xcode 覆盖见 `xcode` 子命令） |
 | 不可用 | `swift-latest`/6.5-dev 工具链需 macOS 15；`swiftly` 在本机崩溃 |
 
-### 2.6 关键版本与外部依赖（非父仓库子模块，HEAD 制）
+### 2.6 Swift 依赖（现为 `swift/lib/*` 子模块）
 
-| 仓库 | 当前 | 说明 |
+> 2026-10-15 起这些仓库已作为父仓库子模块收拢到 `swift/lib/*`（路径/指针见 §2.2 与 `RELEASES.md`）。
+> 消费侧（`app`/`OrzMCKit`）仍以 SwiftPM `branch=main` 远端解析；开发态用 `scripts/swift-dev.sh` 本地覆盖。
+
+| 子模块 | 当前 | 说明 |
 |---|---|---|
-| `OrzGeeker/OrzSwiftKit` | `main`（`eca6beb`） | 基础设施：`CacheKit`/`RuntimeKit`/`TransferKit`/`JokerKits`(含 `ProcessRunner`)；CI 已接入（含 `network-smoke`）；已关 `enforce_admins` |
-| `OrzMC/MojangAPI` | `main` | 元数据；平台 macOS 13 / iOS 16（D12） |
-| `OrzMC/PaperMC` | `main` | Paper/Hangar |
-| `OrzGeeker/OrzAppUpdater` | tag `0.0.3` | 平台 macOS 13；被 app 以 tag 依赖 |
+| `swift/lib/OrzSwiftKit` | `main`（`fd88d7d`） | 基础设施：`CacheKit`/`RuntimeKit`/`TransferKit`/`JokerKits`(含 `ProcessRunner`)；CI 含 `network-smoke`；已关 `enforce_admins` |
+| `swift/lib/MojangAPI` | `main`（`bb8dbe8`） | 元数据；平台 macOS 13 / iOS 16（D12） |
+| `swift/lib/PaperMC` | `main`（`19ae5af`） | Paper/Hangar |
+| `swift/lib/ExarotonAPI` | `main`（`1eea571`，tag `0.0.9`） | Exaroton API 客户端 |
+| `swift/lib/OrzAppUpdater` | tag `0.0.3`（`b23e0c4`） | 平台 macOS 13；被 app 以 tag 依赖 |
 
 ## 3. 待决策 / 开放问题
 
@@ -208,6 +213,12 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-15 — pi（swift-dev 本地联调脚本 + app 清理）
+
+- 新增 `scripts/swift-dev.sh`：`sync`（子模块）/ `edit`（把 OrzMCKit 依赖本地覆盖到 `swift/lib/*`）/ `status` / `unedit` / `xcode`（打印 app 手动步骤）。开发态、不提交。
+- app 清理（OrzMCApp PR #17）：删除空 `.gitmodules`；本地 SwiftPM 包 `OrzMCKit` → `OrzMCAppKit`（消除与远端引擎同名冲突）。app 构建 CI 绿；父仓库 bump `swift/app`（PR #22）。
+- 文档：`AGENTS.md` §6、`docs/product-architecture.md` §7.1、本文件 §2.5/§2.6 同步。
 
 ### 2026-10-15 — pi（结构：Swift 相关子模块收拢到 swift/）
 
