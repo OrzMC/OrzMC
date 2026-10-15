@@ -7,13 +7,13 @@
 
 | 子模块 | 仓库 | 分支 | 记录指针 |
 |---|---|---|---|
-| `OrzMCKit` | OrzMC/OrzMCKit | `main` | `455b0199e654` |
+| `OrzMCKit` | OrzMC/OrzMCKit | `main` | `8f0160a452f6` |
 | `app` | OrzMC/OrzMCApp | `main` | `3e4d92f6ea00` |
 | `deploy` | OrzMC/OrzMCDeploy | `main` | `e72ad9de9506` |
 | `plugin` | OrzMC/OrzMCPlugin | `main` | `5eadd6e5b4c8` |
 | `profile` | OrzMC/.github | `main` | `10fc4e1dbc87` |
 | `proxy` | OrzMC/OrzMCProxy | `main` | `3cc949cdb2e7` |
-| `python` | OrzMC/OrzPythonMC | `main` | `f20f7ca83bd3` |
+| `python` | OrzMC/OrzPythonMC | `main` | `814722ffbd16` |
 | `site` | OrzMC/OrzMCSite | `main` | `436e4b96bea4` |
 | `tools/DeathChest` | OrzMC/death-chest | `main` | `71d257127c7e` |
 | `tools/EzShops` | OrzMC/EzShops | `main` | `7fc73f750f2f` |

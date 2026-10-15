@@ -134,17 +134,17 @@
   "deviations": {
     "note": "收敛 backlog：manifest 是**目标**命令面；此处列出各实现当前**已声明**的差异（validator 默认忽略，--strict 仅对未声明漂移失败）。实现跟进后应逐条移除。",
     "python": {
-      "note": "`server --kill-all` 需要持久进程跟踪；`update --channel` 的 beta 解析待实现（当前仅 release）。",
-      "options": { "server": { "missing": ["--kill-all"] }, "update": { "missing": ["--channel"] } }
+      "note": "`server --kill-all` 需要持久进程跟踪，Python 暂未实现。",
+      "options": { "server": { "missing": ["--kill-all"] } }
     },
     "swift": {
-      "note": "客户端 fabric/forge 类型、用户 JVM 旗标、缓存刷新 / 下载并发、音乐提取、世界软链接 / 强制重下等能力尚未在 Swift 引擎落地。",
+      "note": "客户端 fabric/forge 类型、音乐提取、下载并发等能力尚未在 Swift 引擎落地。",
       "options": {
         "client": {
-          "missing": ["--type", "--extract-music", "--refresh", "--download-threads"]
+          "missing": ["--type", "--extract-music", "--download-threads"]
         },
         "server": {
-          "missing": ["--symlink", "--force-download", "--refresh", "--download-threads"]
+          "missing": ["--download-threads"]
         }
       }
     }
