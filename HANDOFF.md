@@ -103,7 +103,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 | 本地工具链 | `~/Library/Developer/Toolchains/swift-6.0.3-RELEASE.xctoolchain`（Swift 6.0.3，已装） |
 | 本地 SDK | 仅 macOS 12/13（CLT）→ **`OrzMCKit` 整包无法本地编译**（OpenAPIKit 需 macOS 14 API） |
 | 验证途径 | `OrzMCKit` CI（`macos-15`：`swift build`+`swift test`+`conformance`）；不依赖 OpenAPIKit 的包（`OrzSwiftKit` 的 kit）可本地编译 |
-| **远程 Mac（`ssh air`）** | macOS 27 / Swift 6.4 / Xcode 27（arm64）——**可本地编译 OrzMCKit**（本机 SDK 太旧时的替代）。⚠️ **截至本交接：`ssh air` 返回 `Too many authentication failures`（机器锁屏）不可达**；Swift 验证回退到 `OrzMCKit` **CI**（`conformance` job 会检出父仓库 fixtures 跑 `--strict`，权威）。构建目录在 air `~/orzmc-build/{OrzMCKit,parent,OrzSwiftKit}` |
+| **远程 Mac（`ssh air`）** | macOS 27 / Swift 6.4 / Xcode 27（arm64）——**可本地编译 OrzMCKit**（本机 SDK 太旧时的替代）。Swift 验证两条路：`ssh air` 本地编译 / `OrzMCKit` **CI**（`conformance` job 检出父仓库 fixtures 跑 `--strict`，权威）。构建目录 air `~/orzmc-build/{OrzMCKit,parent,OrzSwiftKit}`（`parent` 下放了 fixtures+conformance 供适配器跑） |
 | Air 上的 SwiftLint 坑 | 单独构建 `OrzSwiftKit` 时，新解析的 SwiftLint 在 Swift 6.4 下编译失败（`MemberImportVisibility`）；但 `OrzMCKit` 的 `.build` 用钉住版本可正常构建 |
 | 不可用 | `swift-latest`/6.5-dev 工具链需 macOS 15；`swiftly` 在本机崩溃 |
 
@@ -202,7 +202,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 **下一会话起点（剩余项，详见第 4 章）**
 - **`--auth`**：先定 Microsoft 设备码方案 + 补 spec，再库层实现；两套 `--auth` 目前均为 stub。
 - **`orzmc mcp` server**：低优先级，schema 已定稿（§8.2）。
-- **环境提醒**：`ssh air` 当前不可达（锁屏 → `Too many authentication failures`）；Swift 验证走 CI。
+- **环境**：`ssh air` 在本会话尾部一度锁屏不可达（`Too many authentication failures`），**已恢复**；Swift 验证可用 air 或 CI。
 
 ### 2026-10-14 — pi（一致性做彻底：34→53 例 + 修正参考/引擎）
 
