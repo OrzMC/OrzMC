@@ -1,0 +1,22 @@
+{
+  "specVersion": "0.1",
+  "id": "auth/minecraft-login-request",
+  "area": "auth",
+  "description": "MC 登录请求：identityToken = XBL3.0 x=<uhs>;<xsts>",
+  "given": {
+    "operation": "authMinecraftLoginRequest",
+    "userHash": "UHASH",
+    "xstsToken": "XSTS.TOKEN"
+  },
+  "expect": {
+    "method": "POST",
+    "url": "https://api.minecraftservices.com/authentication/login_with_xbox",
+    "headers": {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    "body": {
+      "identityToken": "XBL3.0 x=UHASH;XSTS.TOKEN"
+    }
+  }
+}

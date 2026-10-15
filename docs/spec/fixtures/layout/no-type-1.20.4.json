@@ -1,0 +1,34 @@
+{
+  "specVersion": "0.1",
+  "id": "layout/no-type-1.20.4",
+  "area": "layout",
+  "description": "未给 type 时只产出客户端路径，省略全部 server 字段（与参考/Python 对齐）",
+  "given": {
+    "operation": "planLayout",
+    "root": "/tmp/orzmc",
+    "version": "1.20.4",
+    "javaMajor": 17,
+    "platform": {
+      "os": "linux",
+      "arch": "x86_64"
+    }
+  },
+  "expect": {
+    "root": "/tmp/orzmc",
+    "versionDir": "/tmp/orzmc/versions/1.20.4",
+    "clientDir": "/tmp/orzmc/versions/1.20.4/client",
+    "clientJarPath": "/tmp/orzmc/versions/1.20.4/client/1.20.4.jar",
+    "javaDir": "/tmp/orzmc/java",
+    "javaMajorDir": "/tmp/orzmc/java/17",
+    "javaExecutable": "/tmp/orzmc/java/17/bin/java",
+    "absent": [
+      "serverDir",
+      "serverJarName",
+      "serverJarPath",
+      "serverEulaPath",
+      "serverPropertiesPath",
+      "serverPluginsDir",
+      "serverWorldDir"
+    ]
+  }
+}

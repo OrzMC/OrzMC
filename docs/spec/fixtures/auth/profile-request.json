@@ -1,0 +1,17 @@
+{
+  "specVersion": "0.1",
+  "id": "auth/profile-request",
+  "area": "auth",
+  "description": "档案请求：Bearer 头",
+  "given": {
+    "operation": "authProfileRequest",
+    "accessToken": "MC.TOKEN"
+  },
+  "expect": {
+    "method": "GET",
+    "url": "https://api.minecraftservices.com/minecraft/profile",
+    "headers": {
+      "Authorization": "Bearer MC.TOKEN"
+    }
+  }
+}

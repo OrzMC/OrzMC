@@ -4,11 +4,12 @@
 检查项：
 1. `AGENTS.md` 子模块登记表 与 `.gitmodules` 的路径集合一致；
 2. 一致性套件用**规范参考适配器**自检全绿（离线）；
-3. `--remote`：各子模块记录指针确实存在于远端（需网络）。
+3. CLI 命令面 manifest（`docs/spec/cli-surface.json`）结构自检（离线）；
+4. `--remote`：各子模块记录指针确实存在于远端（需网络）。
 
 用法：
-  python3 scripts/verify/check.py            # 1 + 2
-  python3 scripts/verify/check.py --remote   # 追加 3
+  python3 scripts/verify/check.py            # 1 + 2 + 3
+  python3 scripts/verify/check.py --remote   # 追加 4
 """
 from __future__ import annotations
 
@@ -75,6 +76,22 @@ def check_reference() -> bool:
     return True
 
 
+def check_surface_manifest() -> bool:
+    script = REPO / "scripts" / "verify" / "surface.py"
+    proc = subprocess.run(
+        [sys.executable, str(script), "--self-check"],
+        capture_output=True, text=True,
+    )
+    out = (proc.stdout + proc.stderr).strip()
+    if proc.returncode != 0:
+        fail("CLI 命令面 manifest 自检失败")
+        print(out[-2000:])
+        return False
+    last = out.splitlines()[-1] if out else "surface manifest"
+    print(last if last.startswith("[ok]") else f"[ok] {last}")
+    return True
+
+
 def check_remote() -> bool:
     status = subprocess.run(
         ["git", "submodule", "status"],
@@ -109,7 +126,7 @@ def main() -> int:
     ap.add_argument("--remote", action="store_true", help="追加远端指针存在性检查（需网络）")
     args = ap.parse_args()
 
-    results = [check_registry(), check_reference()]
+    results = [check_registry(), check_reference(), check_surface_manifest()]
     if args.remote:
         results.append(check_remote())
     return 0 if all(results) else 1

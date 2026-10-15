@@ -1,6 +1,6 @@
 # 数据模型（Core Data Model）
 
-> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-13
+> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-15
 > 语言无关的数据形状定义；末节给出 Python ↔ Swift 字段对照。
 > 未定项以 **【待定】** 标注。
 
@@ -179,6 +179,17 @@
 | `classpath` | 库 + 客户端 jar + loader 附加库 |
 | `tokens` | `natives_directory` / `assets_root` / `assets_index_name` / `auth_player_name` / `version_name` / `game_directory` / `launcher_name` / `launcher_version` / `version_type` / `auth_uuid` / `auth_access_token` / `user_type` / `clientid` / `auth_xuid` / `path`(log config) |
 | `features` | `is_demo_user` / `has_custom_resolution` / `quick_play_*`（规则开关） |
+
+**认证 token 语义**（正版授权见 [`auth.md`](auth.md)；离线/已认证两态）：
+
+| token | 离线（默认） | 已认证（`--auth`） |
+|:--|:--|:--|
+| `auth_uuid` | 随机/占位 UUID（实现保证非空合法） | 档案 `uuid`，**带连字符**的规范形式 |
+| `auth_access_token` | `"0"` | MC `accessToken` |
+| `auth_player_name` | `guest` / `-u` | 档案 `name` |
+| `user_type` | `legacy` | `msa` |
+| `auth_xuid` | `""` | 当前留空（保留） |
+| `clientid` | `""` | `""`（保留） |
 
 **对照**：Python `domain/launch.py`（`jvm_args` / `game_args` / `memory_args`）↔ Swift `Client+Boot.parseBootArgs()`（内联 tokens）。
 

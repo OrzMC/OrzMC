@@ -1,0 +1,18 @@
+{
+  "specVersion": "0.1",
+  "id": "auth/device-code-request",
+  "area": "auth",
+  "description": "设备码请求：consumers 端点 + 缺省 scope",
+  "given": {
+    "operation": "authDeviceCodeRequest",
+    "clientId": "00000000-0000-0000-0000-000000000000"
+  },
+  "expect": {
+    "method": "POST",
+    "url": "https://login.microsoftonline.com/consumers/oauth2/v2.0/devicecode",
+    "form": {
+      "client_id": "00000000-0000-0000-0000-000000000000",
+      "scope": "XboxLive.signin offline_access"
+    }
+  }
+}

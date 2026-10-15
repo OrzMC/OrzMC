@@ -1,0 +1,27 @@
+{
+  "specVersion": "0.1",
+  "id": "auth/xbox-request",
+  "area": "auth",
+  "description": "Xbox Live RPS 请求：个人 MSA 用 d= 前缀",
+  "given": {
+    "operation": "authXboxRequest",
+    "msaAccessToken": "MSA.ACCESS"
+  },
+  "expect": {
+    "method": "POST",
+    "url": "https://user.auth.xboxlive.com/user/authenticate",
+    "headers": {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    "body": {
+      "Properties": {
+        "AuthMethod": "RPS",
+        "SiteName": "user.auth.xboxlive.com",
+        "RpsTicket": "d=MSA.ACCESS"
+      },
+      "RelyingParty": "http://auth.xboxlive.com",
+      "TokenType": "JWT"
+    }
+  }
+}

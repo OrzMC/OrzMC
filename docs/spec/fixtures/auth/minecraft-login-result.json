@@ -1,0 +1,18 @@
+{
+  "specVersion": "0.1",
+  "id": "auth/minecraft-login-result",
+  "area": "auth",
+  "description": "MC 登录响应：抽取 access_token 与 expires_in",
+  "given": {
+    "operation": "authMinecraftLoginResult",
+    "response": {
+      "access_token": "MC.TOKEN",
+      "expires_in": 86400,
+      "token_type": "Bearer"
+    }
+  },
+  "expect": {
+    "accessToken": "MC.TOKEN",
+    "expiresIn": 86400
+  }
+}

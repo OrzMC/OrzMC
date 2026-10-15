@@ -1,0 +1,30 @@
+{
+  "specVersion": "0.1",
+  "id": "client-download/mismatched-version-id",
+  "area": "client-download",
+  "description": "given.version 与 snapshot.id 不一致时以 given.version 为准（客户端 jar / 资源索引路径）",
+  "given": {
+    "operation": "planClientDownload",
+    "version": "1.20.5",
+    "type": "vanilla",
+    "platform": { "os": "osx", "arch": "arm64" },
+    "root": "/tmp/orzmc-fixture",
+    "snapshot": "snapshots/versions/1.20.4.json"
+  },
+  "expect": {
+    "itemsContains": [
+      {
+        "url": "https://piston-data.mojang.com/client.jar",
+        "path": "/tmp/orzmc-fixture/versions/1.20.5/client/1.20.5.jar",
+        "sha1": "000000000000000000000000000000000000000c",
+        "size": 1000
+      },
+      {
+        "url": "https://piston-meta.mojang.com/asset-index.json",
+        "path": "/tmp/orzmc-fixture/versions/1.20.5/client/assets/indexes/5.json",
+        "sha1": "0000000000000000000000000000000000000005",
+        "size": 100
+      }
+    ]
+  }
+}

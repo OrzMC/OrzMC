@@ -1,6 +1,6 @@
 # 一致性套件（Conformance Suite）
 
-> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-13
+> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-15
 > 用**黄金样例**把规范变成可断言对象：各语言实现跑同一批样例，**差异即红灯**。
 > 这是"规范不漂移"的唯一长期保障（决策 D4）。
 
@@ -33,7 +33,7 @@ scripts/conformance/           # spec-owned 运行器（父仓库）
 ```
 
 - `<area>` 对应契约域：`layout` / `version-manifest` / `client-plan` / `client-download` / `server-plan` / `server-launch` /
-  `server-lifecycle` / `download` / `verify` / `cache` / `java` / `progress` / `non-tty` / `error`。
+  `server-lifecycle` / `download` / `verify` / `cache` / `java` / `progress` / `non-tty` / `error` / `auth`。
 - `snapshots/` 是**钉住版本**的上游 JSON，保证 fixture 离线、可复现。
 
 ---
@@ -78,6 +78,7 @@ scripts/conformance/           # spec-owned 运行器（父仓库）
 
 - **子集断言**：`expect` 只声明关心的字段/集合，不要求逐字节全等（路径绝对前缀由 `given.root` 决定）。
 - `*Contains` / `*Order` / `*Count` 等后缀表示包含 / 顺序 / 计数断言。
+- `"absent": ["serverDir", ...]`：声明**必须不存在**的字段路径（dotted，可嵌套）；用于「无 `type` 时省略 server 字段」这类反向断言。
 - 时间戳、随机令牌（`auth_uuid` 等）**不参与**断言。
 - 数值容差：仅 `bytes` 类允许 ±0（不允许），计数类精确。
 
@@ -99,11 +100,16 @@ scripts/conformance/           # spec-owned 运行器（父仓库）
 | `requiredJava` | snapshot | `JavaRequirement` |
 | `verifyArtifact` | bytes + sha1 | pass/fail |
 | `cacheDecision` | mtime/ttl/refresh/now | hit/miss/refresh/fallback |
+| `authDeviceCodeRequest` … `authClassifyXstsError` | 见 [`auth.md`](auth.md) §9 | 认证链路的请求/响应纯映射（**不打网络**） |
 
 > Python 侧可用内部 API 暴露（测试接缝）；Swift 侧 `Game` 已有 `generateDownloadItemInfos()`，已补纯计划入口
 > `GamePlan.planClientDownload`（含 legacy natives 选择与 rules 过滤）。
 > `planClientDownload` 已实现：fixture `client-download/vanilla-1.20.4-macos-arm64`（客户端 jar / 资源索引 /
 > 资源对象 / 库，含 `itemsContains`/`itemsNotContains` 与 `count`）。
+>
+> **版本源（已决）**：`planClientLaunch` / `planClientDownload` 以显式 `given.version` 为准（路径 / jar 名 /
+> `--version` / 令牌），即使与 `snapshot.id` 不一致也以它为准（fixture `*/mismatched-version-id`）。
+> `planLayout` 的 `type` 可选：缺省时只产出客户端路径，省略全部 server 字段（fixture `layout/no-type-*`）。
 
 ---
 
@@ -126,8 +132,14 @@ python3 scripts/conformance/run.py --adapter "python3 scripts/conformance/refere
 
 | 语言 | 位置 | 状态 |
 |:--|:--|:--:|
-| Python | `python/orzmc/tests/conformance/adapter.py` | ☑ 已接入（53/53） |
-| Swift | `OrzMCKit/Sources/ConformanceAdapter` | ☑ 已接入（53/53，OrzMCKit CI 内运行） |
+| Python | `python/orzmc/tests/conformance/adapter.py` | ☑ 已接入（76/76） |
+| Swift | `OrzMCKit/Sources/ConformanceAdapter` | ☑ 已接入（76/76，OrzMCKit CI 内运行） |
+
+> **当前 76 例**：参考适配器 76/76；Python 适配器 76/76；Swift 适配器 76/76。
+> `auth/*`（20 例）为**离线优先**新增，三者均已实现；另含 `layout/no-type-*`（无 type 省略 server 字段）
+> 与 `client-plan|client-download/mismatched-version-id`（`given.version` 与 `snapshot.id` 不一致时以 `given.version` 为准）3 例。
+> ⚠️ **合入顺序**：Swift CI 会检出**父仓库 main** 并 `--strict`。Python/Swift 的 `auth/*` 适配器改动目前
+> **仅在本地**；在把它们合入子模块之前，**勿将 `auth/*` fixtures 合入父仓库 main**（否则子模块 CI 红灯）。
 
 ```bash
 # Python 适配器（在父仓库根执行）

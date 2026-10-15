@@ -100,7 +100,15 @@ def matches(exp, act, path=""):
         if not isinstance(act, dict):
             return [f"{path}: 期望 object，实际 {type(act).__name__}"]
         errs = []
+        # `absent`: 列出**必须不存在**的字段路径（dotted）。用于“无 type 时省略 server 字段”这类断言。
+        absent = exp.get("absent")
+        if absent is not None:
+            for key in (absent if isinstance(absent, list) else [absent]):
+                if resolve(act, key) is not MISSING:
+                    errs.append(f"{path}.{key}: 期望字段不存在".lstrip("."))
         for k, v in exp.items():
+            if k == "absent":
+                continue
             errs += match_key(k, v, act, f"{path}.{k}" if path else k)
         return errs
     if isinstance(exp, list):

@@ -1,0 +1,28 @@
+{
+  "specVersion": "0.1",
+  "id": "auth/xsts-request",
+  "area": "auth",
+  "description": "XSTS 授权请求：RETAIL + rp://api.minecraftservices.com/",
+  "given": {
+    "operation": "authXstsRequest",
+    "xblToken": "XBL.TOKEN"
+  },
+  "expect": {
+    "method": "POST",
+    "url": "https://xsts.auth.xboxlive.com/xsts/authorize",
+    "headers": {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    "body": {
+      "Properties": {
+        "SandboxId": "RETAIL",
+        "UserTokens": [
+          "XBL.TOKEN"
+        ]
+      },
+      "RelyingParty": "rp://api.minecraftservices.com/",
+      "TokenType": "JWT"
+    }
+  }
+}

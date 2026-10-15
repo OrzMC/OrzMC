@@ -26,6 +26,18 @@ FUTURE_SKEW = 300
 DEFAULT_TTL = 86400
 MAVEN_BASE = "https://libraries.minecraft.net/"
 CLIENT_CAPABLE = ("vanilla", "fabric", "forge")
+
+# ── auth（正版授权，见 docs/spec/auth.md）────────────────────────────────
+AUTHORITY = "https://login.microsoftonline.com/consumers/oauth2/v2.0"
+AUTH_SCOPE = "XboxLive.signin offline_access"
+XBL_URL = "https://user.auth.xboxlive.com/user/authenticate"
+XSTS_URL = "https://xsts.auth.xboxlive.com/xsts/authorize"
+MC_LOGIN_URL = "https://api.minecraftservices.com/authentication/login_with_xbox"
+MC_PROFILE_URL = "https://api.minecraftservices.com/minecraft/profile"
+XBL_RELYING_PARTY = "http://auth.xboxlive.com"
+XSTS_RELYING_PARTY = "rp://api.minecraftservices.com/"
+AUTH_SKEW_SECONDS = 60
+_JSON_HEADERS = {"Content-Type": "application/json", "Accept": "application/json"}
 SERVER_JAR = {"vanilla": "server.jar", "paper": "paper-{v}.jar",
               "forge": "forge-{v}.jar", "fabric": "fabric-server-launch.jar"}
 
@@ -363,6 +375,139 @@ def op_dl_concurrency(req):
     return ok({"mode": "single", "parts": 1})
 
 
+# ---------------------------------------------------------------- auth
+def _dashed_uuid(hex32):
+    h = (hex32 or "").replace("-", "").lower()
+    if len(h) != 32:
+        return hex32
+    return f"{h[0:8]}-{h[8:12]}-{h[12:16]}-{h[16:20]}-{h[20:32]}"
+
+
+def _xui_uhs(response):
+    xui = (response.get("DisplayClaims") or {}).get("xui") or [{}]
+    return (xui[0] or {}).get("uhs")
+
+
+def op_auth_device_code_request(req):
+    return ok({
+        "method": "POST",
+        "url": f"{AUTHORITY}/devicecode",
+        "form": {"client_id": req["clientId"], "scope": req.get("scope") or AUTH_SCOPE},
+    })
+
+
+def op_auth_device_code_result(req):
+    r = req["response"]
+    return ok({
+        "deviceCode": r.get("device_code"),
+        "userCode": r.get("user_code"),
+        "verificationUri": r.get("verification_uri"),
+        "expiresIn": r.get("expires_in"),
+        "interval": r.get("interval", 5),
+        "message": r.get("message"),
+    })
+
+
+def op_auth_xbox_request(req):
+    return ok({
+        "method": "POST",
+        "url": XBL_URL,
+        "headers": dict(_JSON_HEADERS),
+        "body": {
+            "Properties": {
+                "AuthMethod": "RPS",
+                "SiteName": "user.auth.xboxlive.com",
+                "RpsTicket": "d=" + req["msaAccessToken"],
+            },
+            "RelyingParty": XBL_RELYING_PARTY,
+            "TokenType": "JWT",
+        },
+    })
+
+
+def op_auth_xbox_result(req):
+    r = req["response"]
+    return ok({"token": r.get("Token"), "userHash": _xui_uhs(r)})
+
+
+def op_auth_xsts_request(req):
+    return ok({
+        "method": "POST",
+        "url": XSTS_URL,
+        "headers": dict(_JSON_HEADERS),
+        "body": {
+            "Properties": {"SandboxId": "RETAIL", "UserTokens": [req["xblToken"]]},
+            "RelyingParty": req.get("relyingParty") or XSTS_RELYING_PARTY,
+            "TokenType": "JWT",
+        },
+    })
+
+
+def op_auth_xsts_result(req):
+    r = req["response"]
+    return ok({"token": r.get("Token"), "userHash": _xui_uhs(r)})
+
+
+def op_auth_minecraft_login_request(req):
+    return ok({
+        "method": "POST",
+        "url": MC_LOGIN_URL,
+        "headers": dict(_JSON_HEADERS),
+        "body": {"identityToken": f"XBL3.0 x={req['userHash']};{req['xstsToken']}"},
+    })
+
+
+def op_auth_minecraft_login_result(req):
+    r = req["response"]
+    return ok({"accessToken": r.get("access_token"), "expiresIn": r.get("expires_in")})
+
+
+def op_auth_profile_request(req):
+    return ok({
+        "method": "GET",
+        "url": MC_PROFILE_URL,
+        "headers": {"Authorization": "Bearer " + req["accessToken"]},
+    })
+
+
+def op_auth_profile_result(req):
+    r = req["response"]
+    return ok({"uuid": _dashed_uuid(r.get("id", "")), "name": r.get("name")})
+
+
+def op_auth_token_state(req):
+    skew = req.get("skewSeconds", AUTH_SKEW_SECONDS)
+    remaining = req["expiresAt"] - req["now"]
+    if remaining <= 0:
+        state = "expired"
+    elif remaining <= skew:
+        state = "stale"
+    else:
+        state = "valid"
+    return ok({"state": state, "remainingSeconds": remaining})
+
+
+def op_auth_classify_token_error(req):
+    action, code = {
+        "authorization_pending": ("wait", None),
+        "slow_down": ("slowDown", None),
+        "expired_token": ("fail", "E_AUTH_EXPIRED"),
+        "access_denied": ("fail", "E_AUTH_DENIED"),
+        "authorization_declined": ("fail", "E_AUTH_DENIED"),
+    }.get(req.get("error"), ("fail", "E_AUTH"))
+    return ok({"action": action, "code": code})
+
+
+def op_auth_classify_xsts_error(req):
+    if req.get("status") == 200:
+        return ok({"code": None})
+    xerr = req.get("xerr")
+    if xerr is None:
+        return ok({"code": "E_AUTH"})
+    known = {2148916233, 2148916235, 2148916238}
+    return ok({"code": "E_AUTH_XBOX" if int(xerr) in known else "E_AUTH"})
+
+
 def op_concurrency(req):
     return ok({"concurrency": max(1, min(64, req["threads"]))})
 
@@ -413,6 +558,19 @@ OPS = {
     "planDownloadConcurrency": op_dl_concurrency,
     "resolveConcurrency": op_concurrency,
     "normalizeExit": op_normalize_exit,
+    "authDeviceCodeRequest": op_auth_device_code_request,
+    "authDeviceCodeResult": op_auth_device_code_result,
+    "authXboxRequest": op_auth_xbox_request,
+    "authXboxResult": op_auth_xbox_result,
+    "authXstsRequest": op_auth_xsts_request,
+    "authXstsResult": op_auth_xsts_result,
+    "authMinecraftLoginRequest": op_auth_minecraft_login_request,
+    "authMinecraftLoginResult": op_auth_minecraft_login_result,
+    "authProfileRequest": op_auth_profile_request,
+    "authProfileResult": op_auth_profile_result,
+    "authTokenState": op_auth_token_state,
+    "authClassifyTokenError": op_auth_classify_token_error,
+    "authClassifyXstsError": op_auth_classify_xsts_error,
     "resolveVersion": op_resolve_version,
     "nonTtyDefaults": op_non_tty,
     "normalizeProgress": op_progress,

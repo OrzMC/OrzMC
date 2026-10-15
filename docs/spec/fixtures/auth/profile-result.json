@@ -1,0 +1,17 @@
+{
+  "specVersion": "0.1",
+  "id": "auth/profile-result",
+  "area": "auth",
+  "description": "档案响应：32 位无连字符 id 规范化为带连字符 UUID",
+  "given": {
+    "operation": "authProfileResult",
+    "response": {
+      "id": "069a79f444e94726a5befca90e38aaf5",
+      "name": "Notch"
+    }
+  },
+  "expect": {
+    "uuid": "069a79f4-44e9-4726-a5be-fca90e38aaf5",
+    "name": "Notch"
+  }
+}

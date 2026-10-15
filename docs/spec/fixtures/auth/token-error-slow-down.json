@@ -1,0 +1,14 @@
+{
+  "specVersion": "0.1",
+  "id": "auth/token-error-slow-down",
+  "area": "auth",
+  "description": "轮询过快 → action=slowDown",
+  "given": {
+    "operation": "authClassifyTokenError",
+    "error": "slow_down"
+  },
+  "expect": {
+    "action": "slowDown",
+    "code": null
+  }
+}

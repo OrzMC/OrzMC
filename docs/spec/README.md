@@ -1,6 +1,6 @@
 # OrzMC 规范（`orzmc-spec` 雏形）
 
-> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-13
+> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-15
 > **落点**：父仓库 `docs/spec/`（决策 Q2：成熟稳定后再下沉独立仓库 `OrzMC/orzmc-spec`）。
 > **定位**：语言无关的**产品规范**——定义「一个 `orzmc` 产品」的核心数据、行为契约与产品面契约。
 
@@ -34,10 +34,11 @@ OrzMC 的工具产品（见 [`../product-architecture.md`](../product-architectu
 | [`README.md`](README.md) | 本文件：定位、原则、目录、贡献方式 | 草案 |
 | [`data-model.md`](data-model.md) | 核心数据模型 + 字段对照（Python ↔ Swift） | 草案 |
 | [`behavior.md`](behavior.md) | 行为契约 B1–B11（缓存/并发/校验/路径/Java/启动/进度/非 TTY/错误） | 草案 |
-| [`cli-surface.md`](cli-surface.md) | CLI 命令面契约（统一 Swift/Python 命令与参数） | 草案 |
+| [`cli-surface.md`](cli-surface.md) | CLI 命令面契约（统一 Swift/Python 命令与参数；含机器可读 manifest [`cli-surface.json`](cli-surface.json)） | 草案 |
+| [`auth.md`](auth.md) | 正版授权契约（Microsoft 设备码流程 / 令牌 / 错误码 / 安全） | 草案 · 离线优先 |
 | [`install-update.md`](install-update.md) | 安装 / 自升级 / 跨面安装（GUI↔CLI、双渠道兜底、补全） | 草案 |
 | [`conformance.md`](conformance.md) | 一致性套件与黄金样例 | 草案 |
-| [`fixtures/`](fixtures/README.md) | 黄金样例（`given→expect`）+ 快照 + schema + 运行器说明 | 草案 · 已落地 53 例 |
+| [`fixtures/`](fixtures/README.md) | 黄金样例（`given→expect`）+ 快照 + schema + 运行器说明 | 草案 · 已落地 76 例 |
 
 ## 4. 实现映射（谁实现这份规范）
 
@@ -45,7 +46,8 @@ OrzMC 的工具产品（见 [`../product-architecture.md`](../product-architectu
 |:--|:--|:--|
 | 数据模型 | `orzmc/domain/*`、`orzmc/core/*` | `OrzMCKit` `Game`/`Fabric` + `MojangAPI`/`PaperMC` |
 | 行为契约 | `orzmc/services/*`、`orzmc/infra/*` | `Game` + `OrzSwiftKit` |
-| CLI 面 | `orzmc-app`（typer） | `OrzMCKit` 的 `orzmc` 可执行 |
+| CLI 面 | `orzmc-app`（typer；`orzmc mcp` = stdio JSON-RPC，`cli/mcp.py`） | `OrzMCKit` 的 `orzmc` 可执行（`MCPServer`/`MCPCommand`） |
+| 正版授权 | `orzmc/core/auth.py`（离线已实现，`client_id` 待注册） | `OrzMCKit/Sources/Game/Auth/*`（离线已实现） |
 | GUI 面 | —（无） | `OrzMCApp`（SwiftUI） |
 | 安装/自升级 | `orzmc/services/selfinstall.py`、`selfupdate.py`、`docs/install.sh|ps1` | App 安装器 + `OrzAppUpdater`（待对齐） |
 
