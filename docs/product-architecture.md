@@ -199,15 +199,16 @@ L3 产品伞 ──▶ 只做锁定与文档，不改任何实现代码
 | L0 规范 `docs/spec/`（现行）/ 未来 `orzmc-spec` | 父仓库 `OrzMC/OrzMC` | 组织 |
 | Python 核心 + CLI | `OrzMC/OrzPythonMC` | 组织 |
 | Swift 可复用基础组件（`Game`/`Fabric`）+ `orzmc` CLI | `OrzMC/OrzMCKit` | 组织 |
-| Swift 引擎依赖 | `OrzMC/MojangAPI`、`OrzMC/PaperMC`（组织）、`OrzGeeker/OrzSwiftKit`（外部） | 组织 / 外部 |
+| Swift 引擎依赖 | `OrzMC/MojangAPI`、`OrzMC/PaperMC`、`OrzMC/ExarotonAPI`、`OrzGeeker/OrzSwiftKit`、`OrzGeeker/OrzAppUpdater` | 组织 / 外部（均维护者自有） |
 | GUI | `OrzMC/OrzMCApp` | 组织 |
 | 运行面 | 各 `OrzMC/*` 子模块 | 各自仓库 |
 | 产品伞 | 父仓库 `OrzMC/OrzMC` | 组织 |
 
 **近期治理动作（见计划 D5 / Q3 / Q4）**：
 1. ☑ 已把 `OrzMCKit` 登记为父仓库子模块（`08e6b76`，消除"编外引擎"）。
-2. 部分完成：`MojangAPI` / `PaperMC` 已迁入 `OrzMC` 组织；`OrzGeeker/OrzSwiftKit` 仍是外部仓库
-   （经 SwiftPM 依赖，**父仓库不锁**其版本）。
+2. 已把 Swift 相关仓库统一收拢到 `swift/`：`swift/app` + `swift/lib/{OrzMCKit,MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}`（均登记为父仓库子模块，伞内锁指针）；`OrzGeeker/*` 为维护者自有外部组织。
+   > ⚠️ 与 D11（外部 Swift 依赖 HEAD 制）有张力：伞内现在也钉组织自有 / OrzGeeker 的 Swift 依赖版本。
+   > 开发态用 **SwiftPM 本地覆盖**指向 `swift/lib/*`（不提交）；正式构建仍以远端引用为准。
 3. 明确各前端 CLI 的分工（Python `orzmc` vs Swift `orzmc`），避免用户认知混乱。
 
 ### 7.1 依赖引用规范（Swift / SwiftPM）
