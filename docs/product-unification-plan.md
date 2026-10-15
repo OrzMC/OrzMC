@@ -327,3 +327,7 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-14 | Phase 4 前端收敛：引擎抽出共用 `Client.launchClient()`（参数→托管 JRE→受管进程），CLI `Launcher` 与 app `GUIClient` 共用 | pi |
 | 2026-10-14 | 一致性扩到类型/自定义 root：新增 `layout/fabric-1.20.4-custom-root`、`layout/forge-1.20.4-windows`（**31 例**） | pi |
 | 2026-10-14 | **D13：Swift `orzmc` CLI 发行化** —— 发版基建（release-please + tag→macOS 二进制资产 + SHA256SUMS）+ 一键安装器 `scripts/install.sh` + README（`OrzMCKit#6`） | pi |
+| 2026-10-15 | 规范 `docs/spec/auth.md` 定稿（Microsoft 设备码流程 / 令牌 / 错误码）；两端离线实现 + `auth/*` 20 例 | pi |
+| 2026-10-15 | 规范 `cli-surface.md` §8.2 定稿（`orzmc mcp`，stdio JSON-RPC 2.0）；Python/Swift 两端 `orzmc mcp` 实现 | pi |
+| 2026-10-15 | 一致性再扩：运行器新增 `absent` 断言；`planLayout` 无 `type` 省略 server 字段；`planClientLaunch`/`planClientDownload` 版本源统一为显式 `given.version`（三适配器 **76/76**） | pi |
+| 2026-10-15 | 命令面单一化（路线 A）：`cli-surface.json` 机器可读 manifest + `scripts/verify/surface.py`（结构自检接 CI；`deviations` 收敛 backlog；`--strict` 只对未声明漂移失败）；Python/Swift 各收敛一批（server demo/online-mode、jvm-opts、remove --yes、self-uninstall --root-dir 等） | pi |

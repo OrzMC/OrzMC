@@ -30,9 +30,10 @@
 | [spec/data-model.md](spec/data-model.md) | 草案 | 核心数据模型（路径/版本/下载/Java/启动计划…）+ Python ↔ Swift 字段对照 | docs/spec/ |
 | [spec/behavior.md](spec/behavior.md) | 草案 | 行为契约 B1–B11（缓存/并发/校验/路径/Java/启动/进度/非 TTY/错误） | docs/spec/ |
 | [spec/cli-surface.md](spec/cli-surface.md) | 草案 | CLI 命令面契约：统一 Swift/Python 命令与参数、退出码、补全、迁移清单 | docs/spec/ |
+| [spec/auth.md](spec/auth.md) | 草案 | 正版授权契约：Microsoft 设备码流程、令牌持久化、非 TTY、错误码、安全要求 | docs/spec/ |
 | [spec/install-update.md](spec/install-update.md) | 草案 | 安装/自升级/跨面安装：无 sudo、Shell 自动识别、补全、GUI↔CLI 双渠道兜底 | docs/spec/ |
 | [spec/conformance.md](spec/conformance.md) | 草案 | 一致性套件与黄金样例：fixture 格式、断言规则、覆盖矩阵、CI 接线 | docs/spec/ |
-| [spec/fixtures/README.md](spec/fixtures/README.md) | 草案 | **黄金样例**（26 个 `given→expect`）+ 钉住快照 + 样例格式 schema | docs/spec/fixtures/ |
+| [spec/fixtures/README.md](spec/fixtures/README.md) | 草案 | **黄金样例**（73 个 `given→expect`）+ 钉住快照 + 样例格式 schema | docs/spec/fixtures/ |
 | [swift-conformance-design.md](swift-conformance-design.md) | 草案 | **Swift 引擎一致性设计**：能力地图、与规范差距、适配器设计、跨仓库改造清单与顺序 | docs/ |
 
 ---

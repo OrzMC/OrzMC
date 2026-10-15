@@ -1,0 +1,14 @@
+{
+  "specVersion": "0.1",
+  "id": "auth/token-error-expired",
+  "area": "auth",
+  "description": "设备码过期 → E_AUTH_EXPIRED",
+  "given": {
+    "operation": "authClassifyTokenError",
+    "error": "expired_token"
+  },
+  "expect": {
+    "action": "fail",
+    "code": "E_AUTH_EXPIRED"
+  }
+}

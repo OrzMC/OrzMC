@@ -1,0 +1,15 @@
+{
+  "specVersion": "0.1",
+  "id": "auth/token-state-stale",
+  "area": "auth",
+  "description": "令牌进入刷新窗口（剩余 <= 60s）→ stale",
+  "given": {
+    "operation": "authTokenState",
+    "expiresAt": 1000,
+    "now": 960
+  },
+  "expect": {
+    "state": "stale",
+    "remainingSeconds": 40
+  }
+}

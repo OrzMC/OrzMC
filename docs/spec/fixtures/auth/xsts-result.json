@@ -1,0 +1,23 @@
+{
+  "specVersion": "0.1",
+  "id": "auth/xsts-result",
+  "area": "auth",
+  "description": "XSTS 响应：抽取 Token 与 uhs",
+  "given": {
+    "operation": "authXstsResult",
+    "response": {
+      "Token": "XSTS.TOKEN",
+      "DisplayClaims": {
+        "xui": [
+          {
+            "uhs": "UHASH"
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "token": "XSTS.TOKEN",
+    "userHash": "UHASH"
+  }
+}

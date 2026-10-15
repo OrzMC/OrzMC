@@ -1,0 +1,31 @@
+{
+  "specVersion": "0.1",
+  "id": "client-plan/mismatched-version-id",
+  "area": "client-plan",
+  "description": "given.version 与 snapshot.id 不一致时以 given.version 为准（路径 / --version / jar 名）",
+  "given": {
+    "operation": "planClientLaunch",
+    "root": "/tmp/orzmc",
+    "version": "1.20.5",
+    "type": "vanilla",
+    "platform": {
+      "os": "osx",
+      "arch": "arm64"
+    },
+    "options": {
+      "username": "guest"
+    },
+    "snapshot": "snapshots/versions/1.20.4.json"
+  },
+  "expect": {
+    "mainClass": "net.minecraft.client.main.Main",
+    "executable": "/tmp/orzmc/java/17/bin/java",
+    "cwd": "/tmp/orzmc/versions/1.20.5/client",
+    "gameArgsContains": [
+      "1.20.5"
+    ],
+    "classpathContains": [
+      "/tmp/orzmc/versions/1.20.5/client/1.20.5.jar"
+    ]
+  }
+}

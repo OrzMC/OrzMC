@@ -1,6 +1,6 @@
 # CLI 命令面契约（CLI Surface Contract）
 
-> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-14
+> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-15
 > 目标：Swift CLI（`OrzMCKit` 的 `orzmc`）与 Python CLI（`orzmc-app`）收敛为**同一个工具**——
 > 用户看到的命令、参数、输出、退出码一致。实现可不同，**命令面必须相同**。
 
@@ -37,6 +37,8 @@
 | `self-uninstall` | 卸载工具自身 | ✅ | ❌ |
 | `app` | **跨面**：安装 / 打开 / 卸载 GUI 应用 | ✅ (macOS) | ✅ (macOS) |
 | `completion` | 生成 / 安装 Shell 补全 | ✅ 新增 | ✅ 新增（bash/zsh） |
+| `capabilities` | 机器可读的命令 / 选项 / 退出码清单（AI 能力发现） | ✅ 新增 | ✅ 新增 |
+| `mcp` | 本地 MCP server（stdio JSON-RPC，把命令暴露为 AI tools） | ✅ 新增 | ✅ 新增 |
 | `version` | 打印工具版本 | ✅ | ✅ |
 
 > `fabric` 不设独立命令：统一用 `client/server -t fabric`（Python 现行做法）。
@@ -77,7 +79,7 @@ orzmc client [-v VER] [-u USER] [-t TYPE] [-m MIN] [-x MAX]
 | `--extract-music` | | flag | false | 提取音乐后退出 |
 | `--refresh` | | flag | false | 忽略元数据缓存 |
 | `--download-threads` | `-j` | int | 16（1–64） | 下载并发 |
-| `--auth` | | flag | false | 正版授权；**规范纳入（已决）**（Swift 已有，Python 待补） |
+| `--auth` | | flag | false | 正版授权；**规范纳入（已决）**，契约见 [`auth.md`](auth.md)（Swift 已有 flag，Python 待补；两套实现链路均待实现） |
 
 > **命名收敛**：Python 现为 `--minmem/--maxmem`，Swift 现为 `--ms/-s`、`--mx/-x`。
 > 规范统一为 `--min-mem/-m`、`--max-mem/-x`；旧名保留为**弃用别名**。
@@ -93,16 +95,16 @@ orzmc server [-v VER] [-t TYPE] [-m MIN] [-x MAX] [--nogui] [--yes]
 
 | 选项 | 短 | 默认 | 说明 | 备注 |
 |:--|:--|:--|:--|:--|
-| `--type` | `-t` | `vanilla` | `vanilla\|paper\|fabric\|forge` | **默认 `vanilla`（已决）**；Swift 现默认 `paper`，需改 |
-| `--nogui` | | false | 无窗口模式 | Swift 现为 `--gui`（反向），需改名 |
-| `--yes` | | false | 跳过确认（自动接受 EULA） | Python ✅ |
-| `--force-upgrade` | | false | `--forceUpgrade` | Swift 现为 `--force_upgrade` |
-| `--symlink` | | false | 软链接备份世界 | Python ✅ |
-| `--force-download` | | false | 强制重下核心 | Python ✅ |
-| `--online-mode` | `-o` | false | 正版验证 | Swift ✅ |
-| `--demo` | | false | 演示模式 | Swift ✅ |
-| `--server-args` | | — | 服务端程序参数 | Swift 现为 `--jar-opts` |
-| `--kill-all` | `-k` | — | 杀掉所有运行中的服务端 | Swift ✅ |
+| `--type` | `-t` | `vanilla` | `vanilla\|paper\|fabric\|forge` | 两套 ✅ |
+| `--nogui` | | false | 无窗口模式 | 两套 ✅ |
+| `--yes` | | false | 跳过确认（自动接受 EULA） | 两套 ✅（Swift 默认自动接受 EULA，旗标为命令面兼容） |
+| `--force-upgrade` | | false | `--forceUpgrade` | 两套 ✅ |
+| `--symlink` | | false | 软链接备份世界 | Python ✅；Swift 计划（见 §8.3 deviations） |
+| `--force-download` | | false | 强制重下核心 | Python ✅；Swift 计划 |
+| `--online-mode` | `-o` | false | 正版验证（Swift 传入启动，Python 写入 `server.properties`） | 两套 ✅ |
+| `--demo` | | false | 演示模式 | 两套 ✅ |
+| `--server-args` | | — | 服务端程序参数 | 两套 ✅ |
+| `--kill-all` | `-k` | — | 杀掉所有运行中的服务端 | Swift ✅；Python 计划（需进程跟踪） |
 
 ### 4.3 `plugin`（吸收自 Swift）
 
@@ -125,6 +127,8 @@ orzmc plugin [--search TEXT] [--list] [--output DIR] [--version VER] [--count N]
 | `version` | — | Python |
 | `app` | `install\|open\|uninstall\|status`；`--channel release\|appstore`、`--version`、`--yes` | **新增（见 `install-update.md`）** |
 | `completion` | `bash\|zsh\|fish\|powershell`；`install` | **新增** |
+| `capabilities` | —（`--json` 输出命令 / 选项 / 退出码清单） | **新增（见 §8.1）** |
+| `mcp` | 无参数；stdio JSON-RPC server | **新增（见 §8.2）** |
 
 ---
 
@@ -179,6 +183,7 @@ orzmc plugin [--search TEXT] [--list] [--output DIR] [--version VER] [--count N]
 - `error.code`：稳定字符串，见下方**错误码表**。
 - `--json` 隐含**非交互**：绝不等待输入（§7）。
 - 退出码仍按上方（`0`/`1`/`130`）—— AI 可同时看 `ok` 与退出码。
+- `--auth` 的 `data` **不含任何令牌**（见 [`auth.md`](auth.md) §8）。
 
 #### 错误码表（已定稿）
 
@@ -193,6 +198,12 @@ orzmc plugin [--search TEXT] [--list] [--output DIR] [--version VER] [--count N]
 | `E_NOT_FOUND` | 1 | 目标不存在（已安装版本、应用、资源） |
 | `E_VERIFY` | 1 | 校验失败（下载产物 magic / sha256 / 哈希不符） |
 | `E_NETWORK` | 1 | 网络 / API 失败（含 GitHub 限流） |
+| `E_AUTH` | 1 | 认证失败（通用，见 [`auth.md`](auth.md) §7） |
+| `E_AUTH_NOT_CONFIGURED` | 1 | 未配置 `client_id`（离线/未注册阶段） |
+| `E_AUTH_DENIED` | 1 | 用户拒绝授权 |
+| `E_AUTH_EXPIRED` | 1 | 设备码过期 / refresh token 失效 |
+| `E_AUTH_XBOX` | 1 | Xbox Live / XSTS 拒绝（无账号 / 地区 / 未成年） |
+| `E_AUTH_NO_GAME` | 1 | 账号无 Minecraft 拥有权（profile 401） |
 | `E_CANCELLED` | **130** | 用户取消（拒绝确认 / Ctrl-C） |
 | `E_INTERNAL` | 1 | 内部错误（不应发生） |
 | `E_RUNTIME` | 1 | 其它运行错误（默认） |
@@ -266,19 +277,66 @@ CLI 需支持**被 AI 智能体调用**：确定性、非交互、可发现、�
 - 未知字段用 `null`，不省略（便于消费者固定 schema）。
 - 两套实现对该 schema 保持一致；命令/选项随各自 CLI 自动生成（不手写）。
 
-### 8.2 `orzmc mcp` schema（计划）
+### 8.2 `orzmc mcp`（Python ✅ / Swift ✅）
 
-拟提供本地 **MCP server**（stdio JSON-RPC 2.0），将 `capabilities` 中的核心命令暴露为 tools：
+`orzmc mcp` 在 **stdio** 上提供本地 **MCP server**，把 `capabilities` 中的核心命令暴露为 MCP tools，
+供 AI 智能体直接调用。
+
+**传输**：stdio，**换行分隔的 JSON-RPC 2.0**（每行恰好一条 UTF-8 JSON 消息，消息内不含裸换行）；
+stdout **只**输出 JSON-RPC 消息，日志 / 进度一律走 stderr。非交互、不阻塞（同 §7）。
 
 | MCP 方法 | 行为 |
 |:--|:--|
-| `initialize` | 返回 serverInfo `{name:"orzmc", version}` 与 `tools` 能力 |
-| `tools/list` | 每个规范命令一个 tool（名称同命令；`inputSchema` 由 `capabilities` 的 options 生成） |
-| `tools/call` | 内部转调对应命令的 `--json` 路径，返回信封作为 tool 结果 |
+| `initialize` | 返回 `protocolVersion`（回显客户端所报版本；缺省 `2025-06-18`）、`capabilities.tools`、`serverInfo {name:"orzmc", version}` |
+| `notifications/initialized` | 无 `id` 的通知，静默处理（不回复） |
+| `ping` | 返回空结果 `{}` |
+| `tools/list` | 每个规范命令一个 tool；名称 = 命令名；`inputSchema` 由 `capabilities` 的 options / arguments 生成 |
+| `tools/call` | 内部转调对应命令的 `--json` 路径，信封作为 tool 结果 |
 
-- tool 名 = 规范命令名；参数名 = 选项长名（去掉 `--`）；`--json` 恒开启。
-- 非交互、不阻塞（同 §7）；错误以 MCP `isError` + 信封 `error` 返回。
-- **server 实现列为低优先级计划**（schema 先定稿）；两套实现可各自提供，行为对齐本表。
+**tools**
+
+- tool 名 = 规范命令名；参数名 = 长选项去掉 `--` 前缀（位置参数用其名字，如 `app` 的 `action`）。
+- `--json` 恒开启；`inputSchema` 中 flag → `boolean`（仅 `true` 时追加该旗标），`int` → `integer`，其余 → `string`；
+  必填项（选项 / 位置参数）进 `required`。
+- **不暴露**元 / 自毁命令：`capabilities`、`completion`、`mcp`、`self-uninstall`。
+- 非交互：需要确认的命令（如 `remove`）在缺 `--yes` 时按 §7 返回取消（`E_CANCELLED`）。
+
+**结果与错误**
+
+- RPC 级错误用标准 JSON-RPC 错误码：`-32700` parse error、`-32600` invalid request、
+  `-32601` method not found、`-32602` invalid params（未知 tool / 参数、类型不符）。
+- 工具级失败**不**用 RPC 错误：`result.isError = !ok`，`result.content[0].text` 为 `--json` 信封
+  （含 `error.code`）；成功同理（`isError = false`）。
+
+- **实现状态**：Python（`orzmc_app/cli/mcp.py`，进程内转调）与 Swift（`MCPServer`/`MCPCommand`，子进程转调）均已实现，行为对齐本表。
+
+### 8.3 命令面 manifest 与校验器（路线 A 的第一步）
+
+[`cli-surface.json`](cli-surface.json) 是本章的**机器可读**形式（命令 / 选项 / 位置参数 / 全局选项）。
+它是后续 codegen 与漂移检测的单一事实源（路线 A：先**只读校验**，稳定后再谈两侧生成）。
+
+- **自检**（父仓库 CI，阻断）：`python3 scripts/verify/surface.py --self-check`
+  （已包含在 `scripts/verify/check.py`）。
+- **与实现对比**（只读、默认**不阻断**，仅报告漂移）：
+
+  ```bash
+  python3 scripts/verify/surface.py --implementation python \
+    --command "uv run --directory python orzmc --json capabilities"
+  python3 scripts/verify/surface.py --implementation swift --capabilities caps.json
+  ```
+
+  `--strict` 时发现差异退出 1（供命令面收敛完成后接入 CI）。
+
+- 对比语义（见 `scripts/verify/surface.py` 头部）：以 manifest 为规范；`aliases` 视为同一选项；
+  位置参数按**顺序**匹配（名字是实现细节）；实现多出的**全局选项**（如 `--root-dir`）不算漂移；
+  选项的 `required` 不比较（ConsoleKit 无法表达，由运行时报错强制），仅位置参数比较。
+- **已声明差异（收敛 backlog）**：manifest 的 `deviations.<impl>` 列出各实现当前**已声明**的差异；
+  validator 默认忽略、`--strict` 只对**未声明**漂移失败（已声明数在报告里提示）。当前：
+  `python` 1 处（`server --kill-all` 需持久进程跟踪）；`swift` 11 处（客户端 `fabric/forge` 类型、
+  用户 JVM 旗标、缓存刷新 / 下载并发、音乐提取、世界软链接 / 强制重下等能力尚未在引擎落地；
+  另有 Swift 便利选项 `server --jar-help`、`update --channel`）。
+- **本轮已收敛**：Python `server --demo` / `--online-mode`；Swift `server --online-mode`（Option→Flag）、
+  `server --jvm-opts`、`server --yes`、`remove --yes`、`self-uninstall --root-dir`。
 
 ## 9. Shell 自动补全（用户要求）
 
@@ -303,12 +361,14 @@ CLI 需支持**被 AI 智能体调用**：确定性、非交互、可发现、�
    `--jar-opts` → `--server-args`；`--gui` → `--nogui`（反向）。✅
 4. 全局 `--version` / `--verbose` / `--root-dir` / `--json` ✅（在 main 预解析 argv）。
 5. `fabric` 已保留为隐藏别名 ✅（可用，不列入帮助/补全/capabilities）。
+6. `mcp` 本地 MCP server（§8.2）✅。
 
 **Python CLI**
 1. 新增 `plugin` / `app` / `completion` / `capabilities`。—— 均 ✅（`app` macOS）。
 2. 全局 `--version` / `--verbose` / `--root-dir`（**已决**）✅。
-3. 新增全局 `--json` ✅ 与 `--auth`（正版授权，待办：需库支持）。
+3. 新增全局 `--json` ✅ 与 `--auth`（正版授权；契约见 [`auth.md`](auth.md)，离线链路已实现，仅 `client_id` 待注册）。
 4. 选项别名：`--minmem/--maxmem` 保留为 `--min-mem/--max-mem` 的别名 ✅。
 5. 开启补全（`add_completion=True`）✅。
+6. `mcp` 本地 MCP server（§8.2）✅。
 
 > 收尾状态与勾选见 [`product-unification-plan.md`](../product-unification-plan.md) Phase 3/4。

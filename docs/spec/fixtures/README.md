@@ -1,6 +1,6 @@
 # 一致性样例（Fixtures）
 
-> **状态**：草案 `specVersion 0.1` ｜ 最后更新 2026-10-14
+> **状态**：草案 `specVersion 0.1` ｜ 最后更新 2026-10-15
 > 本目录是 [conformance.md](../conformance.md) 定义的**黄金样例**：`given → expect` 的纯计划断言。
 > 运行器见 [`scripts/conformance/`](../../../scripts/conformance/README.md)。
 
@@ -34,6 +34,7 @@ python3 scripts/conformance/run.py --adapter "<cmd>" --filter cache
 | `server-plan/` | `planServerDeploy` | data-model §9 / B7 |
 | `server-launch/` | `planServerLaunch` | data-model §10 / B7 |
 | `server-lifecycle/` | `normalizeExit` | B7 退出码归一 |
+| `auth/` | `auth*`（见 [`auth.md`](../auth.md) §9） | 正版授权纯映射（设备码流程 / 令牌 / 错误） |
 
 ## 快照（离线输入）
 
@@ -52,7 +53,7 @@ python3 scripts/conformance/run.py --adapter "<cmd>" --filter cache
 ## 样例格式
 
 见 [`conformance.md` §3](../conformance.md) 与 [`schema/fixture.schema.json`](schema/fixture.schema.json)。
-断言支持**子集**：普通键递归子集、`*Contains` / `*NotContains` / `*Order` / `*Count` / `*Set`、点号路径（如 `tokens.assets_index_name`）。
+断言支持**子集**：普通键递归子集、`*Contains` / `*NotContains` / `*Order` / `*Count` / `*Set`、点号路径（如 `tokens.assets_index_name`）、以及 `"absent": [路径...]`（声明字段必须不存在）。
 失败用例用 `expectError.code` 断言。
 
 ## 新增样例
@@ -66,11 +67,12 @@ python3 scripts/conformance/run.py --adapter "<cmd>" --filter cache
 
 | 适配器 | 状态 |
 |:--|:--:|
-| 规范参考 `scripts/conformance/reference.py` | ☑ 53/53 |
-| Python `python/orzmc/tests/conformance/adapter.py` | ☑ 53/53 |
-| Swift `OrzMCKit` | ☑ 53/53 |
+| 规范参考 `scripts/conformance/reference.py` | ☑ 76/76 |
+| Python `python/orzmc/tests/conformance/adapter.py` | ☑ 76/76 |
+| Swift `OrzMCKit` | ☑ 76/76 |
 
 ## 待补（Phase 2 后续）
 
 - 服务端 Forge/Fabric 装载、natives 解压的样例。
 - `planClientDownload` 的更多平台/legacy（`natives` classifier）组合。
+- `auth/*`（正版授权）：两端纯映射已实现；真实登录 E2E 待 `client_id` 注册（见 [`auth.md`](../auth.md) §10）。

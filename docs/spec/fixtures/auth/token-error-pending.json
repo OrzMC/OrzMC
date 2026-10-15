@@ -1,0 +1,14 @@
+{
+  "specVersion": "0.1",
+  "id": "auth/token-error-pending",
+  "area": "auth",
+  "description": "轮询待授权 → action=wait",
+  "given": {
+    "operation": "authClassifyTokenError",
+    "error": "authorization_pending"
+  },
+  "expect": {
+    "action": "wait",
+    "code": null
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "specVersion": "0.1",
+  "id": "auth/xsts-error-child",
+  "area": "auth",
+  "description": "XSTS 2148916238：未成年账号 → E_AUTH_XBOX",
+  "given": {
+    "operation": "authClassifyXstsError",
+    "status": 401,
+    "xerr": 2148916238
+  },
+  "expect": {
+    "code": "E_AUTH_XBOX"
+  }
+}

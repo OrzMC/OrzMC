@@ -182,7 +182,7 @@
 | `plugin`：Hangar 搜索 / 下载服务端插件 | Swift `PluginCommand` | **纳入** CLI 命令面（见 `cli-surface.md` §4.3） |
 | 下载完成后 `open` 目标目录 | Swift `PluginCommand` | 建议纳入（`--open` 或默认提示），【待定】 |
 | 进度条 / 加载条 UI | Swift ConsoleKit | 纳入进度契约（见 `behavior.md`） |
-| 正版授权（`--auth`） | Swift `ClientCommand` | 【待定】是否纳入规范（涉及账户安全） |
+| 正版授权（`--auth`） | Swift `ClientCommand` | **纳入**：契约见 [`auth.md`](auth.md)（设备码流程 + 令牌持久化 + 安全要求；待实现） |
 | App 自更新（appcast） | Swift `OrzAppUpdater` | GUI 侧保留，口径与 CLI 对齐【待定】 |
 
 ---

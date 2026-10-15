@@ -1,0 +1,14 @@
+{
+  "specVersion": "0.1",
+  "id": "auth/token-error-denied",
+  "area": "auth",
+  "description": "用户拒绝授权 → E_AUTH_DENIED",
+  "given": {
+    "operation": "authClassifyTokenError",
+    "error": "access_denied"
+  },
+  "expect": {
+    "action": "fail",
+    "code": "E_AUTH_DENIED"
+  }
+}

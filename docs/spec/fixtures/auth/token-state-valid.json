@@ -1,0 +1,15 @@
+{
+  "specVersion": "0.1",
+  "id": "auth/token-state-valid",
+  "area": "auth",
+  "description": "令牌剩余超过 skew → valid",
+  "given": {
+    "operation": "authTokenState",
+    "expiresAt": 1000,
+    "now": 900
+  },
+  "expect": {
+    "state": "valid",
+    "remainingSeconds": 100
+  }
+}

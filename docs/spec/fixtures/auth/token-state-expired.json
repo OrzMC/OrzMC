@@ -1,0 +1,15 @@
+{
+  "specVersion": "0.1",
+  "id": "auth/token-state-expired",
+  "area": "auth",
+  "description": "令牌已到期 → expired",
+  "given": {
+    "operation": "authTokenState",
+    "expiresAt": 1000,
+    "now": 1000
+  },
+  "expect": {
+    "state": "expired",
+    "remainingSeconds": 0
+  }
+}

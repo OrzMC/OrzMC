@@ -1,0 +1,26 @@
+{
+  "specVersion": "0.1",
+  "id": "auth/device-code-result",
+  "area": "auth",
+  "description": "设备码响应：抽取 user_code / verification_uri / 轮询参数",
+  "given": {
+    "operation": "authDeviceCodeResult",
+    "response": {
+      "device_code": "DEV-CODE",
+      "user_code": "ABCD-EFGH",
+      "verification_uri": "https://microsoft.com/devicelogin",
+      "expires_in": 900,
+      "interval": 5,
+      "message": "请访问 …"
+    },
+    "clientId": "00000000-0000-0000-0000-000000000000"
+  },
+  "expect": {
+    "deviceCode": "DEV-CODE",
+    "userCode": "ABCD-EFGH",
+    "verificationUri": "https://microsoft.com/devicelogin",
+    "expiresIn": 900,
+    "interval": 5,
+    "message": "请访问 …"
+  }
+}

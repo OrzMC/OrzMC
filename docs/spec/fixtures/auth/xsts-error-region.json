@@ -1,0 +1,14 @@
+{
+  "specVersion": "0.1",
+  "id": "auth/xsts-error-region",
+  "area": "auth",
+  "description": "XSTS 2148916235：地区不可用 → E_AUTH_XBOX",
+  "given": {
+    "operation": "authClassifyXstsError",
+    "status": 401,
+    "xerr": 2148916235
+  },
+  "expect": {
+    "code": "E_AUTH_XBOX"
+  }
+}

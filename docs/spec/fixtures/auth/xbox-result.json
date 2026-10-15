@@ -1,0 +1,23 @@
+{
+  "specVersion": "0.1",
+  "id": "auth/xbox-result",
+  "area": "auth",
+  "description": "XBL 响应：抽取 Token 与 DisplayClaims.xui[0].uhs",
+  "given": {
+    "operation": "authXboxResult",
+    "response": {
+      "Token": "XBL.TOKEN",
+      "DisplayClaims": {
+        "xui": [
+          {
+            "uhs": "UHASH"
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "token": "XBL.TOKEN",
+    "userHash": "UHASH"
+  }
+}

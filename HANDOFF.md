@@ -39,11 +39,11 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 项 | 内容 |
 |---|---|
-| **主题** | 产品统一化 — Phase 0–5 完成；T1 端到端完成；**T2 命令面统一完成**；一致性 **53/53**；**下一会话剩余：`--auth`、`orzmc mcp` server** |
-| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **53/53**；Swift 侧 B1–B11 全部实现；**T2 命令面统一完成** + **Phase 4 前端收敛完成**（CLI/GUI 共用 `launchClient`/`downloadClient`）；**Swift `orzmc` CLI 已发 `v0.1.0`**（含全部新命令）；Transfer 运行内重试、错误码表/schema、退出码 130 均已落地 |
+| **主题** | 产品统一化 — Phase 0–5 完成；T1 端到端完成；**T2 命令面统一完成**；一致性 **73/73**（含 `auth/*` 20 例：参考/Python/Swift 三适配器）；**`--auth` 离线部分（契约+两端实现）完成**；**`orzmc mcp` server 两端实现完成**；剩余：`client_id`/真实 E2E |
+| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端：纯映射 + 令牌存储(0600 原子写) + 设备码编排 + CLI 接线已实现（未配 `client_id` 时 `E_AUTH_NOT_CONFIGURED`）；`orzmc mcp`：Python（`orzmc_app/cli/mcp.py`）+ Swift（`MCPServer`/`MCPCommand`）均实现，离线单测全绿；**改动均在本地工作区，未推送**；Swift 侧 B1–B11 全部实现；T2/Phase 4 完成；Swift `orzmc` CLI 已发 `v0.1.0` |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | 见第 4 章「剩余项（下一会话）」：`--auth`（需先定 Microsoft 认证方案）、`orzmc mcp` server |
+| **下一步** | 待办 A（`client_id`/真实 E2E，办卡+注册后，见 §4）；本地改动择机推送（注意合入顺序）；命令面：按 manifest `deviations` 逐条补齐引擎侧能力，再评估 `--strict` 接 CI 与 codegen |
 
 ## 2. 状态快照（Repo State）
 
@@ -52,7 +52,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 值 |
 |---|---|
 | 分支 | `main`（跟随远端；子模块指针以 `git ls-tree HEAD` / `RELEASES.md` 为准） |
-| 工作区 | 干净；仅 `M plugin`（**预期**，见 2.2） |
+| 工作区 | `M plugin`（本地常检出 develop，**预期**）+ `M python` / `M OrzMCKit`（本地未提交的 `--auth` 改动，**勿 bump**）；见 2.2 |
 | 父仓库 CI | ✅ `.github/workflows/ci.yml` → `python3 scripts/verify/check.py` |
 | 已删除（历史） | `GEMINI.md`、`.cursor/rules/` |
 
@@ -63,9 +63,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `dee5be7bfdea` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41）+ `plugin`/`app`（#42）+ `planClientDownload`（#44）+ 退出码归一/`normalizeExit`（#45） |
+| `python` | `dee5be7bfdea` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41）+ `plugin`/`app`（#42）+ `planClientDownload`（#44）+ 退出码归一/`normalizeExit`（#45）；**本地未提交：`--auth` 全套（domain/core/infra/services + CLI + `auth/*` 适配器，76/76）+ `orzmc mcp` server（`cli/mcp.py`/`cli/introspect.py` + CLI 接线 + 14 单测）** |
 | `app` | `3e4d92f6ea00` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
-| `OrzMCKit` | `599616baa428` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（53/53）；命令面 #2–#5、#7、#9–#11、#14–#15、#17–#18；发版链路 `#6`；已发 `v0.0.6` / `v0.1.0` |
+| `OrzMCKit` | `599616baa428` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**本地未提交：`Game/Auth/*` + `auth/*` 适配器 + `ClientCommand --auth` + `Client+Boot` 离线默认值修正 + `MCPServer`/`MCPCommand`（mcp，11 单测）+ conformance 扩（layout no-type / 版本源覆盖）**；命令面 #2–#5、#7、#9–#11、#14–#15、#17–#18；发版链路 `#6`；已发 `v0.0.6` / `v0.1.0` |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
 > `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
@@ -75,9 +75,13 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 ```bash
 git submodule status
 git status --porcelain
-python3 scripts/verify/check.py            # 父仓库组合校验（CI 同款）
+python3 scripts/verify/check.py            # 父仓库组合校验（CI 同款：登记表 + 参考自检 + manifest 结构）
 python3 scripts/verify/check.py --remote   # 追加：子模块指针是否在远端（需网络）
-python3 scripts/conformance/run.py --list  # 列出一致性样例（当前 53）
+python3 scripts/verify/surface.py --self-check   # 命令面 manifest 结构自检
+# 只读对比某实现的命令面漂移（--strict 时才退出 1）：
+python3 scripts/verify/surface.py --implementation python \
+  --command "uv run --directory python orzmc --json capabilities"
+python3 scripts/conformance/run.py --list  # 列出一致性样例（当前 76）
 python3 scripts/release/composition.py     # 生成发版组合表（更新 RELEASES.md 用）
 ```
 
@@ -129,14 +133,33 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 **待定（计划项，非阻塞）**：`capabilities` schema ✅（§8.1）；`orzmc mcp` schema ✅（§8.2，server 待实现）；`--json` 错误码表 ✅（§6.1）。
 
 **待决策（需维护者拍板，均非阻塞）**
-- **命令面单一化**：D13 后两面都发行；是否把 `cli-surface.md` 升级为**机器可读 manifest**、两侧生成/校验（路线 A），以消除“手写两遍”的漂移成本。
-- **`--auth` 的认证方案**：见第 4 章「剩余项」——需先定 Microsoft/Xbox 设备码流程与令牌存放策略。
+- **命令面单一化（已选路线 A）**：把 `cli-surface.md` 升级为**机器可读 manifest**（`cli-surface.json`）+ 两侧生成/校验，消除“手写两遍”的漂移成本。第一步（manifest + 只读校验器，已接父仓库 CI 自检）已落地；剩余：按 `cli-surface.md` §8.3 已知漂移清单收敛两侧，再谈 codegen。
+- **`--auth` 的认证方案（已定）**：Microsoft 设备码流程；令牌存**状态目录 `auth.json`（0600）**；非 TTY 允许设备码输出到 stderr + 有界轮询；scope `XboxLive.signin offline_access`；错误码 `E_AUTH*`。契约见 [`docs/spec/auth.md`](docs/spec/auth.md)。**唯一待办：注册 Azure 应用取得 `client_id`**（公开非密钥；无卡阶段可暂用 `ORZMC_AZURE_CLIENT_ID` 覆盖）。
 
 **已决（本阶段）**
 - 版本身份：**不统一** Python 与 Swift 的版本号——Swift 走 `OrzMCKit` 自己的 release 线（当前 `v0.1.0`），Python 走 `OrzPythonMC`（`2.4.x`）。
 
 ## 4. 下一步（Next Actions，增量、非阻塞）
 
+> **★ 下一会话起点（2026-10-15 交接）**：本地 `--auth` 离线部分（阶段 A/B/C，三适配器 73/73）与
+> **`orzmc mcp` server（两端）均已完成**。真实登录 E2E 等办卡/注册后再做（待办 A）；
+> 无阻塞时可选推进「命令面单一化」（§4 可选/治理）。
+>
+> **待办 A — 办卡 + 注册 Azure 后（`client_id` 依赖，阻塞真实 E2E）**
+> - [ ] A1. 注册 Azure 免费账号（个人 outlook 可行；全日制学生可用 Azure for Students **免卡**），创建**公共客户端**应用：
+>   Supported account types = `组织目录 + 个人账号`；Authentication → `Allow public client flows = Yes`；Redirect URI 留空；记下 **Application (client) ID**。
+> - [ ] A2. 把 `client_id` 写入两端内置默认值（Python `orzmc/core/auth.py`；Swift `Game/Auth/AuthMapping.swift` 或各自常量）；保留 `ORZMC_AZURE_CLIENT_ID` 覆盖。
+> - [ ] A3. 真实账号 E2E：`orzmc client --auth` 跑通「设备码 → 进入游戏」；确认账号有 Minecraft Java 版（否则 `/minecraft/profile` 401 → `E_AUTH_NO_GAME`）。
+> - [ ] A4. 真机验证：macOS（`ssh air` 沙箱 HOME）+ Windows（`ssh win`）各一遍；结论记入 §5。
+> - [ ] A5. 推送顺序：先推 `python` / `OrzMCKit`（其 CI 检旧 fixtures 仍绿）→ 再推父仓库 `auth/*` fixtures + `auth.md`（避开 Swift CI 红灯窗）。
+>
+> **待办 B — `orzmc mcp` server（不依赖 `client_id`）✅ 已完成（2026-10-15）**
+> - 规范：`cli-surface.md` §2/§4/§8.2/§10 已定稿（stdio 换行分隔 JSON-RPC 2.0；`initialize` / `tools/list` / `tools/call`；tool 排除集 `capabilities`/`completion`/`mcp`/`self-uninstall`；RPC 错误码）。
+> - [x] B1. 规范：`mcp` 纳入 §2 命令总览 + §4 契约，§8.2 由「计划」改为「Python ✅ / Swift ✅」。
+> - [x] B2. Python：`orzmc_app/cli/mcp.py`（JSON-RPC + `tools/*`）+ `cli/introspect.py`（`capabilities`/`mcp` 共用内省）+ `orzmc mcp` 子命令；`tools/list` 由 `capabilities` 生成，`tools/call` 用 `typer.testing.CliRunner` **进程内**转调 `--json` 路径；零新增依赖。
+> - [x] B3. 离线测试：`orzmc_app/tests/test_mcp.py`（14 例：`initialize`/`tools/list`/`tools/call` 成功与 `isError`/参数校验/帧与通知）；`ruff`/`mypy`/`pytest`（382 passed）/`uv build` 全绿。
+> - [x] B4. Swift：`MCPServer.swift`（可注入 runner；默认 `orzmc --json <cmd>` 子进程）+ `Commands/MCPCommand.swift` + `CommandGroup` 注册；`capabilities` 补 `schemaType`/`required` 并修正位置参数名（不再误加 `--`）。`ssh air`：`swift build` 绿、`swift test` **46 例**绿、真实 `orzmc mcp` 冒烟（initialize/tools list/call/parse error）通过、conformance **73/73**。
+>
 **T1 端到端实跑（进行中，降最大风险）**
 - [x] **macOS 实跑**（Python `orzmc`）：真实下载 Java17 + 服务端 → 世界生成 → `stop` 优雅停止 → 退出码 0；顺带发现并修复「流式中途断连不重试」。
 - [x] **Windows 真机**：经 `scripts/win/e2e-server.ps1` 跑通同流程（1.20.4 vanilla：下载→启动→`Done (`→`stop`→退出码 0、无残留 java；root 236MB）。
@@ -159,31 +182,160 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - [x] **Swift `version` + 全局选项**：工具版本单一事实源 `Game/OrzMCVersion` + `version` 命令；全局 `--version`/`--verbose`/`--root-dir`/`--json`（ConsoleKit 之上预解析 argv）；`--json` 信封；`ClientInfo`/`ServerInfo` 贯通 `rootDir`；无子命令退出 0；服务端 `--type` 缺省 vanilla（#5）。
 
 **其他**
-- [x] **规范收尾**：`cli-surface.md` §6.1 补**错误码表**（E_USAGE/E_UNSUPPORTED/E_UNSUPPORTED_TYPE/E_VERSION_NOT_FOUND/E_NOT_FOUND/E_VERIFY/E_NETWORK/E_CANCELLED(130)/E_INTERNAL/E_RUNTIME）；§8.1 `capabilities` schema（已实现）/§8.2 `orzmc mcp` schema（已定稿，server 低优先级计划）；Python/Swift 用户取消退出码统一为 **130**。
+- [x] **规范收尾**：`cli-surface.md` §6.1 补**错误码表**（E_USAGE/E_UNSUPPORTED/E_UNSUPPORTED_TYPE/E_VERSION_NOT_FOUND/E_NOT_FOUND/E_VERIFY/E_NETWORK/E_CANCELLED(130)/E_INTERNAL/E_RUNTIME）；§8.1 `capabilities` schema（已实现）/§8.2 `orzmc mcp` schema（已实现，两端）；Python/Swift 用户取消退出码统一为 **130**。
 - [x] **Phase 4｜`downloadClient` 收敛**：`Downloader.download` 加 `onProgress`（`OrzSwiftKit#6`）；引擎新增 `Client.downloadClient(onProgress:)`（`OrzMCKit#14`）；CLI `Launcher.download()` 与 GUI `GUIClient.download()` 共用（`app#16`）。
 - [x] **一致性｜新增操作**：`planClientDownload`（客户端下载清单）与 `normalizeExit`（B7 退出码归一，暴露并修了 Python 服务端退出码未归一的分叉）；参考 + Python + Swift 三适配器 **53/53**。
 **剩余项（下一会话，非阻塞）**
 
-- [ ] **`--auth`（正版授权）** —— 需先定方案再实现（**安全敏感，不要仓促**）。
-  - 现状：两套实现的 `--auth` 都是 **stub**——Swift `Sources/Game/Client/ClientProtocol/Client+Auth.swift` 的 `auth()` 直接 `return false`；Python 库无认证，`domain/launch.py` 里 `auth_access_token` 固定 `"0"`。
-  - 目标（spec `cli-surface.md` §4.1）：`orzmc client --auth` 走真实正版授权，得到 `accessToken`/`uuid`/`username`。
-  - 需定：**Microsoft OAuth 设备码流程**（`login.microsoftonline.com` → Xbox Live → XSTS → `api.minecraftservices.com/authentication/login_with_xbox` → `/minecraft/profile`）、令牌持久化位置与加密、非 TTY 行为（设备码打印 + 轮询）、`--json` 信封字段。
-  - 建议：先在 `docs/spec/` 补一份 `auth.md`（多实现共用契约），再在**库层**实现（Python `orzmc/core/auth.py`、Swift `OrzMCKit/Game`），CLI 只接线；用一致性样例锁**纯请求/响应映射**（不打真实网络）。
-- [ ] **`orzmc mcp` server**（低优先级）—— schema 已定稿（`cli-surface.md` §8.2：`initialize`/`tools/list`/`tools/call`，stdio JSON-RPC 2.0）。
-  - 实现：每端一个 `orzmc mcp` 子命令，`tools/list` 由 `capabilities` 生成，`tools/call` 内部转调 `--json` 路径。
-  - 可先只在 Python 落地（`orzmc_app/cli/mcp.py`），Swift 后跟；用离线 JSON-RPC 单测。
+- [ ] **`--auth`（正版授权）** —— **离线优先**（安全敏感；`client_id` 依赖项待维护者注册）。
+  - 现状：`--auth` 两端**离线链路已实现**（阶段 A/B/C ✅：契约 + 纯映射 + 令牌存储/设备码编排 + CLI 接线）；仅剩阶段 D（注册 `client_id` 后的真实 E2E）。
+  - **[x] 阶段 A（父仓库，已完成）**：`docs/spec/auth.md` 定稿（Microsoft 设备码流程 → XBL → XSTS → MC → profile；令牌模型/持久化/刷新；非 TTY/`--json`；错误码 `E_AUTH*`；安全红线）；`reference.py` 新增 **13 个 `auth*` 纯映射操作**；`docs/spec/fixtures/auth/` **20 例**（参考适配器 **73/73**）；同步 `cli-surface` / `data-model` / `install-update` / `conformance` / `fixtures README`。
+  - **[x] 阶段 B（Python，离线，已完成）**：`orzmc/domain/auth.py` + `orzmc/core/auth.py`（纯映射）+ `orzmc/infra/auth_store.py`（原子写 0600）+ `orzmc/services/auth.py`（设备码编排）+ `RuntimeOptions.auth_*` + 启动参数注入 + CLI `client --auth` + 适配器；`ruff`/`mypy`/`pytest` 绿，一致性 **73/73**（strict）。
+  - **[x] 阶段 C（Swift，离线，已完成）**：`Game/Auth/{AuthModel,AuthMapping,AuthStore,Authenticator}.swift` + `ConformanceAdapter` 的 `auth*`（**73/73**）+ `ClientCommand --auth` 接线 + 修 `Client+Boot` 离线默认值（`auth_access_token=0`/`user_type=legacy`/`auth_xuid=""`/`clientid=""`）；`ssh air`：`swift build` + 35 单测 + CLI 冒烟（`--json client --auth` → `E_AUTH_NOT_CONFIGURED`）全绿。
+  - **[ ] 阶段 D（`client_id` 依赖，待办卡+注册）**：维护者注册 Azure 公共客户端应用（组织目录 + 个人账号、Allow public client flows），提供 `client_id`；写入两套实现内置默认值；真实账号 E2E（需 Minecraft Java 拥有权）→ 记入本文件。当前 `client_id` 仅支持 `ORZMC_AZURE_CLIENT_ID` 覆盖。
+  - **⚠️ 合入顺序（避免子模块 CI 红灯）**：`auth/*` fixtures 已在父仓库工作区；**Swift CI 检出父仓库 main 并 `--strict`**。Python/Swift 的 `auth/*` 适配器改动**仅在本地**，所以**在子模块变更推送/合并前，勿把 `auth/*` 合入父仓库 main**。建议：先推子模块（其 CI 检旧 fixtures，绿）→ 再合父仓库 auth fixtures。
+- [x] **`orzmc mcp` server**（已完成，见上「待办 B」）—— schema `cli-surface.md` §8.2：`initialize`/`tools/list`/`tools/call`，stdio JSON-RPC 2.0；每端一个 `orzmc mcp` 子命令，`tools/list` 由 `capabilities` 生成，`tools/call` 转调 `--json` 路径。
 
 **可选 / 治理（非阻塞）**
-- [ ] **命令面单一化**（路线 A）：`cli-surface.md` → 机器可读 manifest，两侧生成/校验，消除“手写两遍”。
-- [ ] **一致性再扩（若要“彻底”）**：① `planLayout` 无 `type` 时参考/Python 省略 server 字段而 Swift 输出默认值（子集断言未触发）；② `planClientLaunch`/`planClientDownload` 的 `given.version != snapshot.id` 未覆盖（Swift 用 `version.id`，参考/Python 用 `given.version`）——可补样例并统一。
-- [ ] **Python 侧反向对齐**：目前由一致性套件（**53 例**）保证行为一致，无新增分叉。
-- [ ] **Windows 真机实测**：T1 已完成服务端 E2E；CLI 新增的 `plugin`/`app` 无 Windows 侧差异（`app` 仅 macOS）。
-- [ ] **治理｜外部依赖**：`OrzAppUpdater` tag `0.0.3`；`OrzSwiftKit`/`MojangAPI`/`PaperMC` 走 `main` HEAD（`OrzSwiftKit` 已到 `fd88d7d`）。
+- [~] **命令面单一化（路线 A）** —— 已落地：`docs/spec/cli-surface.json`（机器可读 manifest + `deviations` 收敛 backlog）+ `scripts/verify/surface.py`（结构自检接 `check.py`/父仓库 CI；对比默认只读，`--strict` 只对**未声明**漂移失败）。**本轮收敛**：Python `server --demo`/`--online-mode`；Swift `server --online-mode`（改旗标）/`--jvm-opts`/`--yes`、`remove --yes`、`self-uninstall --root-dir`。**两侧 `--strict` 已 0 未声明漂移**（已声明：Python 1、Swift 11）。**剩余**：按 `deviations` 逐条实现（客户端 fabric/forge、用户 JVM 旗标、缓存/并发、音乐提取、世界软链接/强制重下）→ 再谈两侧生成（codegen）。
+- [x] **一致性再扩（“彻底”）**：① `planLayout` 无 `type` 时省略 server 字段（新增 `layout/no-type-1.20.4`）；② `planClientLaunch`/`planClientDownload` 版本源统一为显式 `given.version`（新增 `*/mismatched-version-id`）。运行器新增 `absent` 断言；参考/Python/Swift 三适配器 **76/76**（Swift 适配器接缝覆盖 `id`、无 type 不产 server 字段）。
+- [x] **Python 侧反向对齐**：三适配器 **76/76** 全绿，无新增分叉。
+- [x] **Windows 真机实测**：T1 已完成服务端 E2E；CLI 新增的 `plugin`/`app`/`mcp` 无 Windows 侧差异（`app` 仅 macOS），未额外跑。
+- [x] **治理｜外部依赖**：已核（2026-10-15）：`OrzSwiftKit`@`fd88d7d`、`MojangAPI`@`bb8dbe8`、`PaperMC`@`19ae5af`（均 `main` HEAD）；`OrzAppUpdater` 最新 tag `0.0.3`（app 要求 `>=0.0.2`，CI 删 lock 重解析）。
 
 > 历史（本会话已完成）：Phase 0/1/2/3 全部、Phase 5 治理（`RELEASES.md`+`check.py`+父仓库 CI）、Phase 4 起步（`launchClient`）、
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-15 — pi（命令面收敛 Step 2：修一批 + deviations 机制）
+
+**做了什么**
+- **修实现（实际收敛）**：
+  - Python `server`：新增 `--demo`（服务端加 `--demo`）与 `--online-mode`/`-o`（写入 `server.properties`）；`RuntimeOptions` 加 `demo`/`online_mode`。
+  - Swift `server`：`--online-mode` 由带值 Option 改为 **Flag**；新增 `--jvm-opts`（映射 `ServerInfo.jvmArgs`，引擎早已支持）、`--yes`（命令面兼容，Swift 默认自动接受 EULA）。
+  - Swift `remove`：新增 `--yes`（TTY 确认可跳过；非交互维持原行为）；`self-uninstall`：新增 `--root-dir`（覆盖安装记录/默认根）。
+- **deviations 机制**：manifest 加 `deviations.<impl>`，validator 先剔除**已声明**差异——`--strict` 只对**未声明**漂移失败；自检新增「deviations.missing 必须引用真实选项」。
+- validator：选项 `required` 不比较（ConsoleKit 无法表达，由运行时报错强制），仅位置参数比较。
+
+**结果**
+- Python 漂移 3 → **1**（剩 `--kill-all`）；Swift 漂移 17 → **12**（其中 `remove --version required` 为校验语义问题，已由规则调整消除）。
+- 两侧 `surface.py --strict` 均 **0 未声明漂移**（已声明：Python 1、Swift 11）。
+- 门禁：Python `ruff`/`mypy`/`pytest`（382 passed）绿；`uv build` 绿；Swift（`ssh air`）`swift build` 绿、`swift test` **46 例**绿；一致性 76/76（参考/Python/Swift）。
+
+**下一步**：按 `deviations` 收敛引擎侧能力（Swift 客户端 fabric/forge、JVM 旗标、缓存/并发、音乐提取、世界软链接/强制重下；Python `--kill-all`），再评估 codegen。
+
+### 2026-10-15 — pi（命令面单一化 路线 A 第一步：manifest + 只读校验器）
+
+**背景**：维护者确认按推荐执行——先落机器可读 manifest + 只读校验器，不阻断，跑顺后再谈 codegen。
+
+**产出**
+- 新增 `docs/spec/cli-surface.json`：13 个命令 + 全局选项的机器可读 manifest（选项长名/短名/别名/类型/flag/required/enum/default/位置参数）。
+- 新增 `scripts/verify/surface.py`：
+  - `--self-check`：manifest 结构自检（纯 stdlib，已接入 `scripts/verify/check.py` → 父仓库 CI，**阻断**）；
+  - `--implementation <name> --command/--capabilities`：与实现 `capabilities --json` **只读对比**，列出缺命令/多命令/缺选项/多选项/类型·flag·required 不一致；默认退出 0，`--strict` 才退出 1。
+  - 语义：`aliases` 同一选项；位置参数按顺序匹配（名字不比较）；实现多出的全局选项不算漂移。
+- `cli-surface.md` 新增 **§8.3**（manifest + 校验器 + 当前已知漂移清单）。
+
+**发现的漂移（将成为收敛清单）**
+- Python（3）：`server` 缺 `--online-mode`/`--demo`/`--kill-all`。
+- Swift（17）：`client` 缺 `--type`/`--jvm-opts`/`--extract-music`/`--refresh`/`--download-threads`；
+  `server` 缺 `--jvm-opts`/`--yes`/`--symlink`/`--force-download`/`--refresh`/`--download-threads`，
+  `--online-mode` 实现为带值 option 而非 flag；`remove` 缺 `--yes`（且 `--version` 未标 required）；
+  `self-uninstall` 缺 `--root-dir`；规范外多出 `server --jar-help`、`update --channel`。
+
+**状态 / 下一步**
+- 自检已进父仓库 CI（`check.py` 第三项）；实现对比**未接 CI**（只读、手动跑）。
+- 下一步：按 §8.3 清单收敛一/两侧命令面，再评估 `--strict` 接入与 codegen。
+
+### 2026-10-15 — pi（清理非卡依赖待办：一致性再扩 ①/② + 依赖核验）
+
+**背景**：维护者要求处理 §4 中**不依赖 `client_id`/办卡**的待办项。
+
+**一致性再扩（父仓库 + Swift 适配器）**
+- 运行器 `run.py` 新增**反向断言** `"absent": [dotted-path, ...]`（字段必须不存在）；`conformance.md` §4 与 `fixtures/README.md` 同步。
+- ① `planLayout` 无 `type`：新增 `layout/no-type-1.20.4`（断言 server 字段不存在）；参考/Python 本就省略，**Swift 适配器 `opPlanLayout` 改为仅在 `given.type` 存在时输出 server 字段**。
+- ② 版本源统一为**显式 `given.version`**：新增 `client-plan/mismatched-version-id` 与 `client-download/mismatched-version-id`（`given.version=1.20.5`，snapshot `id=1.20.4`）；参考/Python 本就以 `given.version` 为准，**Swift 适配器新增 `decodeVersionPlan(_:)`，在解码后覆盖 `id`**（引擎仍以 `VersionPlan.id` 为准，接缝处对齐）。`conformance.md` §5 记录该决策。
+- 结果：参考 / Python / Swift 三适配器 **76/76**（strict；Swift 在 `ssh air` 上重编并跑）。
+
+**其余非卡待办（核验完成）**
+- **Python 侧反向对齐**：三适配器 76/76 全绿，无新增分叉。
+- **Windows 真机实测**：T1 已完成；`plugin`/`app`/`mcp` 无 Windows 侧差异（`app` 仅 macOS）。
+- **治理｜外部依赖**：`OrzSwiftKit`@`fd88d7d`、`MojangAPI`@`bb8dbe8`、`PaperMC`@`19ae5af`（`main` HEAD）；`OrzAppUpdater` 最新 tag `0.0.3`。
+
+**未处理（需维护者拍板）**
+- **命令面单一化（路线 A）**：`cli-surface.md` → 机器可读 manifest + 两侧生成/校验。属架构决策（且需先处置现有命令面差异，如 Swift `client` 无 `--type`），本轮未动手，待路线确认。
+
+### 2026-10-15 — pi（`orzmc mcp` server：规范 + Python/Swift 两端 + 离线测试）
+
+**背景**：维护者确认推进 §4 待办 B，并要求 Swift 同会话完成。
+
+**B1 规范（父仓库）**
+- `cli-surface.md`：§2 命令总览新增 `capabilities`/`mcp`；§4 新增 `mcp` 契约；§8.2 由「计划」改写为**定稿**（stdio **换行分隔** JSON-RPC 2.0；`initialize`/`ping`/`tools/list`/`tools/call`；tool 排除集、位置参数、`protocolVersion`、标准错误码 `-32700/-32600/-32601/-32602`；工具失败走 `isError` + 信封）；§10 勾选。
+
+**B2/B3 Python（`OrzPythonMC`，全部离线、零新增依赖）**
+- 新增 `orzmc_app/cli/introspect.py`：把 `capabilities` 内省抽为 `command_specs(app)`，供 `capabilities` 与 `mcp` 共用（去重、防漂移）。
+- 新增 `orzmc_app/cli/mcp.py`：手写 JSON-RPC（`handle_message`/`serve` 可注入 stdin/stdout）；`tools/list` 由 `capabilities` 生成，`tools/call` 用 `typer.testing.CliRunner` **进程内**转调 `--json`，信封作为 `content[].text` + `isError`；参数→argv、类型校验、未知 tool/参数报 `-32602`。
+- `cli/app.py`：`capabilities` 改用 `introspect`；新增 `orzmc mcp` 子命令（延迟 import 断开循环）。
+- 新增 `orzmc_app/tests/test_mcp.py`（14 例）；`ruff`/`format`/`mypy` 绿；`pytest` **382 passed**；`uv build --all-packages` 绿；真实冒烟：stdout 仅 JSON-RPC、stderr 空。
+
+**B4 Swift（`OrzMCKit`，`ssh air`）**
+- 新增 `Sources/OrzMC/MCPServer.swift`（`MCPRunning` 可注入；默认 `SubprocessMCPRunner` 拉起 `orzmc --json <cmd>`；stdio 循环、`initialize`/`ping`/`tools/list`/`tools/call`、解析容错、`isError`）。
+- 新增 `Commands/MCPCommand.swift` + `CommandGroup` 注册（`Feature.mcp`）。
+- `Capabilities.swift`：`SignatureValueSpec` 补 `schemaType`/`required`；**修正位置参数名**（`Argument` 不再误加 `--`，`app action` 归位为位置参数）。
+- 新增 `Tests/OrzMCTests/MCPTests.swift`（11 例，注入假 runner，全离线）。
+- 验证：`swift build` 绿；`swift test` **46 例**绿；真实 `orzmc mcp` 子进程冒烟（`list`/`app status` 信封、parse error）通过；conformance **73/73**（air，strict）。
+
+**状态 / 下一步**
+- 所有改动**仅本地工作区**（父仓库 + `python` + `OrzMCKit`），未提交/未推送。
+- 剩：待办 A（`client_id`/真实 E2E，需办卡+注册 Azure）；可选：命令面单一化（机器可读 manifest）。
+
+### 2026-10-15 — pi（`--auth` 离线优先：阶段 B/C 实现 + 三适配器 73/73）
+
+**背景**：维护者决定**全部保留本地、不推送**，先把不依赖 `client_id` 的离线部分做完。
+
+**阶段 B（Python 库 + CLI，全部离线）**
+- 新增 `orzmc/domain/auth.py`（数据形状）、`orzmc/core/auth.py`（13 个纯映射：请求构造/响应解析/错误分类）、`orzmc/infra/auth_store.py`（`<状态目录>/auth.json`，原子写 + `0600`）、`orzmc/services/auth.py`（`Authenticator`：缓存→刷新→设备码轮询/错误分类，HTTP 可注入）。
+- `RuntimeOptions.auth_uuid/auth_access_token/auth_user_type` + `domain/launch.py` 启动参数注入（已认证：uuid/token/`user_type=msa`；离线仍 `0`/随机/`legacy`）。
+- CLI `orzmc client --auth`：读 `ORZMC_AZURE_CLIENT_ID`（缺失→`E_AUTH_NOT_CONFIGURED`）；非 TTY/`--json` 设备码写 **stderr**；`--json` 信封含 `authenticated/uuid/expiresAt/source`，**不含 token**。
+- `infra/http.py` 新增 `request()`（不在 4xx/5xx 抛错，供 auth 自判状态）；`infra/fs.py` 新增 `write_text_atomic`；`default_state_dir` 下沉到 `infra/fs.py`（selfinstall 重导出）。
+- 适配器 `auth*` + `orzmc/tests/test_auth.py` + CLI 测试。**`ruff`/`mypy`/`pytest` 全绿**；Python 适配器一致性 **73/73**（strict）。
+
+**阶段 C（Swift `OrzMCKit`，全部离线）**
+- 新增 `Game/Auth/{AuthModel,AuthMapping,AuthStore,Authenticator}.swift`（纯映射 + 原子写 0600 + 设备码编排 + `authenticate(...)` 入口）。
+- `ConformanceAdapter` 新增 `auth*` 分发；`ClientCommand --auth` 接线（缺 `client_id`→`E_AUTH_NOT_CONFIGURED`，设备码写 stderr，`--json` 含 `authenticated/uuid/expiresAt/source`）；`AuthError` 接入 `ErrorPresentation`。
+- **修 `Client+Boot` 离线默认值**：`auth_access_token=0`（原随机 UUID）、`user_type=legacy`（原 `mojang`）、`auth_xuid=""`、`clientid=""`；`Client+Auth.auth()` 标明 legacy 已废弃。
+- `ssh air`（macOS 27 / Swift 6.4）：`swift build` 绿、`swift test` **35 单测**绿、适配器一致性 **73/73**（strict）、CLI 冒烟 `--json client --auth` → `E_AUTH_NOT_CONFIGURED`（exit 1）、`capabilities` 含 `-a/--auth`。
+
+**状态 / 下一步**
+- 所有改动**仅本地工作区**（父仓库 + `python` + `OrzMCKit`），未提交/未推送。
+- **待办（`client_id` 依赖）**：维护者注册 Azure 公共客户端应用（组织目录 + 个人账号、Allow public client flows）→ 内置 `client_id` → 真实账号 E2E（需 Minecraft Java 拥有权）。
+- **合入顺序**：先推子模块（其 CI 检旧 fixtures，绿）→ 再合父仓库 `auth/*` fixtures（否则父仓库 main 的 Swift CI 在子模块改动合入前会红灯）。
+
+### 2026-10-15 — pi（`--auth` 离线优先：契约 + 纯映射一致性 + Phase A）
+
+**背景与决策（维护者确认）**
+- 维护者目前**无卡** → 全球版 Azure 免费账户走不通（强制卡验证，且不收预付卡）；**Azure for Students 可无卡**（需学生邮箱）。
+- 决策：**离线优先**——先把不依赖 `client_id` 的部分做完全；待维护者办卡注册 Azure 免费账号 + 应用后，再做 `client_id` 依赖项与真实 E2E。
+
+**做了什么（阶段 A，父仓库，可在参考适配器下自检）**
+- 新增规范 [`docs/spec/auth.md`](docs/spec/auth.md)：Microsoft **设备码流程**（`consumers` 端点 → Xbox Live RPS → XSTS → `login_with_xbox` → `/minecraft/profile`）；请求/响应映射；令牌模型 + 状态目录 `auth.json`（0600）；刷新与失效；TTY/非 TTY/`--json` 行为；错误码 `E_AUTH*`；安全红线。
+- `scripts/conformance/reference.py` 新增 **13 个 `auth*` 纯映射操作**（`authDeviceCodeRequest` … `authClassifyXstsError`）。
+- 新增 **20 个黄金样例** `docs/spec/fixtures/auth/*`（设备码/ XBL / XSTS / MC 登录 / profile / 令牌状态 / 令牌与 XSTS 错误分类）。
+- 同步：`cli-surface.md`（新增 `E_AUTH*` 错误码、`--auth` 语义、`--json` data 不含令牌）、`data-model.md` §8（离线/已认证 token 语义）、`install-update.md`（`--auth` 由【待定】改已决）、`conformance.md` / `fixtures/README.md`（加入 `auth` 域）、`docs/spec/README.md`。
+
+**验证**
+- `python3 scripts/conformance/run.py --adapter "python3 scripts/conformance/reference.py"` → **PASS=73 FAIL=0 SKIP=0**（原 53 + `auth/*` 20）。
+- `python3 scripts/verify/check.py` → 登记表一致（16）+ 参考自检 73/73。
+
+**⚠️ 合入顺序（重要）**
+- `auth/*` fixtures 将使**未实现该操作的适配器**在 `--strict` 下失败；而 **`OrzMCKit` CI 会检出父仓库 main 并 `--strict`**。
+- 因此：**在 Python/Swift 适配器实现并合并前，不要把 `auth/*` 合入父仓库 main**；建议先子模块分支实现适配器（其 CI 检旧 fixtures 仍绿），再合父仓库 auth fixtures。
+
+**下一步**
+- 阶段 B：Python `orzmc/core/auth.py` + `auth_store.py` + CLI `--auth` + 适配器；假 HTTP 单测。
+- 阶段 C：Swift `Game/Auth/*` + 适配器 + CLI 接线 + 修 `Client+Boot` 离线默认值。
+- 阶段 D（待办）：注册 Azure 应用 → 内置 `client_id` → 真实 E2E。
 
 ### 2026-10-14/15 — pi（阶段收尾 + 交接）
 
