@@ -63,9 +63,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `719f06c` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41）+ `plugin`/`app`（#42）+ `planClientDownload`（#44）+ 退出码归一/`normalizeExit`（#45）；**已发布 `2.7.0`**：`--auth` 离线链路 + `orzmc mcp` + `auth/*` 适配器 + 服务端 `--demo`/`--online-mode` |
+| `python` | `ef09e0b` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41）+ `plugin`/`app`（#42）+ `planClientDownload`（#44）+ 退出码归一/`normalizeExit`（#45）；**已发布 `2.8.0`**；**内置 client_id**：`--auth` 离线链路 + `orzmc mcp` + `auth/*` 适配器 + 服务端 `--demo`/`--online-mode` |
 | `swift/app` | `46eb619` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
-| `swift/lib/OrzMCKit` | `a613d82` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已发布 `v0.4.0`**：`--auth` 离线链路 + `orzmc mcp` + 命令面收敛（`server --online-mode`/`--jvm-opts`/`--yes`、`remove --yes`、`self-uninstall --root-dir`）；命令面 #2–#5、#7、#9–#11、#14–#15、#17–#18；发版链路 `#6`；此前已发 `v0.0.6` / `v0.1.0` |
+| `swift/lib/OrzMCKit` | `08d9c0e` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已发布 `v0.5.0`**；**内置 client_id**：`--auth` 离线链路 + `orzmc mcp` + 命令面收敛（`server --online-mode`/`--jvm-opts`/`--yes`、`remove --yes`、`self-uninstall --root-dir`）；命令面 #2–#5、#7、#9–#11、#14–#15、#17–#18；发版链路 `#6`；此前已发 `v0.0.6` / `v0.1.0` |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
@@ -151,13 +151,13 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > **`orzmc mcp` server（两端）均已完成**。真实登录 E2E 等办卡/注册后再做（待办 A）；
 > 无阻塞时可选推进「命令面单一化」（§4 可选/治理）。
 >
-> **待办 A — 办卡 + 注册 Azure 后（`client_id` 依赖，阻塞真实 E2E）**
-> - [ ] A1. 注册 Azure 免费账号（个人 outlook 可行；全日制学生可用 Azure for Students **免卡**），创建**公共客户端**应用：
->   Supported account types = `组织目录 + 个人账号`；Authentication → `Allow public client flows = Yes`；Redirect URI 留空；记下 **Application (client) ID**。
-> - [ ] A2. 把 `client_id` 写入两端内置默认值（Python `orzmc/core/auth.py`；Swift `Game/Auth/AuthMapping.swift` 或各自常量）；保留 `ORZMC_AZURE_CLIENT_ID` 覆盖。
-> - [ ] A3. 真实账号 E2E：`orzmc client --auth` 跑通「设备码 → 进入游戏」；确认账号有 Minecraft Java 版（否则 `/minecraft/profile` 401 → `E_AUTH_NO_GAME`）。
-> - [ ] A4. 真机验证：macOS（`ssh air` 沙箱 HOME）+ Windows（`ssh win`）各一遍；结论记入 §5。
-> - [ ] A5. 推送顺序：先推 `python` / `OrzMCKit`（其 CI 检旧 fixtures 仍绿）→ 再推父仓库 `auth/*` fixtures + `auth.md`（避开 Swift CI 红灯窗）。
+> **待办 A — 正版授权 `client_id`（2026-10-15 进展）**
+> - [x] A1. 注册 Azure 公共客户端应用（`组织目录 + 个人账号`，`Allow public client flows = Yes`）→ `client_id = 1a3e628b-c9a5-4a7f-b7b7-562e22b9787e`。
+> - [x] A2. 内置两端：Python `orzmc/core/auth.py` `DEFAULT_CLIENT_ID` / Swift `Game/Auth/AuthConfig.swift` `defaultClientId`（保留 `ORZMC_AZURE_CLIENT_ID` 覆盖）；已合并（python #54 / OrzMCKit #27）。
+> - [x] A3a. **真实 MSA→XBL→XSTS 验证通过**（设备码 → MSA 令牌 → Xbox Live RPS → XSTS 均 200；Xbox 档案可读）。
+> - [ ] ⚠️ A3b. **阻塞：Mojang Game Service API 审核** —— `login_with_xbox` 返 `403 Invalid app registration`；`aka.ms/AppRegInfo` → Minecraft 帮助《**New: Java Edition Game Service API Review or Application Process**》：**Azure 应用须经 Mojang 审核/申请通过**才能用该 API。需维护者走该申请（外部流程，非代码）。
+> - [ ] A4. 审核通过后：真实账号 E2E（到 `profile`；需账号有 Minecraft Java 版）+ 真机（`ssh air` / `ssh win`）→ 记入 §5。
+> - [x] A5. 推送已完成（python/OrzMCKit 先，父仓库 auth fixtures 随后；见 §5）。
 >
 > **待办 B — `orzmc mcp` server（不依赖 `client_id`）✅ 已完成（2026-10-15）**
 > - 规范：`cli-surface.md` §2/§4/§8.2/§10 已定稿（stdio 换行分隔 JSON-RPC 2.0；`initialize` / `tools/list` / `tools/call`；tool 排除集 `capabilities`/`completion`/`mcp`/`self-uninstall`；RPC 错误码）。
@@ -213,6 +213,14 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-15 — pi（正版授权：内置 client_id + 真实 MSA/XBL/XSTS 验证；Mojang API 审核为唯一阻塞）
+
+- 内置 `client_id`（`1a3e628b-c9a5-4a7f-b7b7-562e22b9787e`）：Python `DEFAULT_CLIENT_ID` / Swift `AuthConfig.defaultClientId`（PR #54 / #27 已合）。
+- 真实 E2E（本机、走我们的服务代码）：设备码 → MSA 令牌 → Xbox Live RPS → XSTS **全部 200**；`profile.xboxlive.com` 可读 Gamertag。
+- **阻塞**：Mojang `login_with_xbox` → `403 Invalid app registration`；`aka.ms/AppRegInfo` → Minecraft 帮助《New: Java Edition Game Service API Review or Application Process》→ 需 **Mojang 审核/申请通过**后方可使用 Game Service API（外部流程）。
+- 排障佐证：正确 RP → 403「Invalid app registration」，错误 RP → 401；MSA/XBL/XSTS 均成功 → 不是 client_id/端点/映射问题，而是应用授权门。
+- 附带修复：内置 client_id 后，原「缺 client_id」CLI 用例会走**真实设备码轮询**致 CI 挂起 → 改为 monkeypatch `resolve_client_id` 返回空（不联网）；`quality` 由 20min 超时恢复 21s 通过。
 
 ### 2026-10-15 — pi（引擎项：extract-music / download-threads / kill-all）
 

@@ -281,10 +281,12 @@
 令牌存储/设备码编排/CLI `--auth` 已接线（未配置 `client_id` 时返回 `E_AUTH_NOT_CONFIGURED`）。
 改动已**合并并发布**（Python `2.5.0` / Swift `v0.2.0`）。
 
-**待办（`client_id` 依赖项，等维护者注册 Azure 应用后）**：
+**进度（2026-10-15）**：
 
-- [ ] 注册 Azure 公共客户端应用（`Supported account types = 组织目录 + 个人账号`，`Allow public client flows = Yes`），取得 `client_id`；
-- [ ] 把 `client_id` 写入两套实现的内置默认值（当前仅支持 `ORZMC_AZURE_CLIENT_ID` 覆盖）；
-- [ ] 真实账号 E2E（需账号拥有 Minecraft Java 版），记录到 `HANDOFF.md`。
+- [x] 注册 Azure 公共客户端应用（`组织目录 + 个人账号`，`Allow public client flows = Yes`），取得 `client_id`；内置到两套实现（Python `orzmc/core/auth.py` 的 `DEFAULT_CLIENT_ID`、Swift `Game/Auth/AuthConfig.swift` 的 `defaultClientId`），保留 `ORZMC_AZURE_CLIENT_ID` 覆盖。
+- [x] 真实 MSA → XBL → XSTS 验证通过（设备码 → MSA 令牌 → Xbox Live RPS → XSTS 均 200；Xbox 档案可读）。
+- [ ] ⚠️ **Mojang Game Service API 审核（外部流程，当前唯一阻塞）**：`login_with_xbox` 返回 `403 Invalid app registration`；`aka.ms/AppRegInfo` 指向 Minecraft 帮助《**New: Java Edition Game Service API Review or Application Process**》——**Azure 应用需经 Mojang 审核/申请通过**后方可使用该 API。
+- [ ] 审核通过后：真实账号 E2E（到 `profile`；需账号拥有 Minecraft Java 版），记录到 `HANDOFF.md`。
 
 > **`client_id` 是公开值**（公共客户端无 secret），可随代码提交；但它是应用身份，不要复用第三方值。
+> **重要**：`login_with_xbox` 的 `403 Invalid app registration` **不是** client_id / 端点 / 映射的错误——MSA/XBL/XSTS 均已成功；它表示该应用尚未获得 Game Service API 的使用授权。
