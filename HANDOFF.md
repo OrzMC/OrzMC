@@ -1002,7 +1002,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 **做了什么**
 - `GameType` 扩到 `vanilla/fabric/forge/paper`，新增 `isClientCapable` / `isServerCapable` / `serverJarName`（对齐 spec §3）。
-- 新增 [`GamePlan.layout`](OrzMCKit/Sources/Game/Plan/GamePlan.swift)：**规范对齐的纯计划契约**（D-a strangler-fig），
+- 新增 [`GamePlan.layout`](swift/lib/OrzMCKit/Sources/Game/Plan/GamePlan.swift)：**规范对齐的纯计划契约**（D-a strangler-fig），
   对齐 `docs/spec/data-model.md` §1（`versions/<v>/{client,server/<type>}`、`java/<major>`、`cache/`、`backup/`，逻辑路径 `/`）。
 - 单测：能力矩阵 / `serverJarName` / 规范布局。
 
@@ -1103,7 +1103,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 **待决策**
 - **D-a** 先做非破坏的 `ConformancePlan` 骨架，还是先做破坏性的布局对齐（+app 级联）？
-- **D-b** Java 托管放 `OrzSwiftKit` 还是 `OrzMCKit/Game`？ **D-c** 统一缓存策略归属？
+- **D-b** Java 托管放 `OrzSwiftKit` 还是 `swift/lib/OrzMCKit/Game`？ **D-c** 统一缓存策略归属？
 
 ### 2026-10-13 — pi（Q7=B：引擎跟随 main HEAD）
 

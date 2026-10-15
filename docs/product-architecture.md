@@ -225,7 +225,7 @@ L3 产品伞 ──▶ 只做锁定与文档，不改任何实现代码
 
   外部仓库（`OrzGeeker/OrzSwiftKit`、`OrzGeeker/OrzAppUpdater`）保持原路径；若日后转组织，同步更新。
 - **本地覆盖远端（开发态）**：父仓库已把 `OrzMCKit` 以子模块检出到 `./OrzMCKit`。SwiftPM/Xcode 可用
-  **本地包**覆盖同名远端依赖：Xcode 以 *Add Local Package* 指向 `OrzMCKit/`（或 `.package(path: "../OrzMCKit")`），
+  **本地包**覆盖同名远端依赖：Xcode 以 *Add Local Package* 指向 `swift/lib/OrzMCKit/`（或 `.package(path: "../swift/lib/OrzMCKit")`），
   从而用伞内本地引擎源开发。
 - ⚠️ **本地覆盖不提交**：`app` 的发布/文档 CI（`release-app.yml` / `publish-docs.yml`）只检出 app 仓库本身，
   提交 `../OrzMCKit` 本地路径依赖会**打断独立构建**。开发时覆盖、验证后还原；正式版仍以规范路径的 SwiftPM 版本为准。

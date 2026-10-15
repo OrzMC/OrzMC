@@ -47,7 +47,7 @@ OrzMC 的工具产品（见 [`../product-architecture.md`](../product-architectu
 | 数据模型 | `orzmc/domain/*`、`orzmc/core/*` | `OrzMCKit` `Game`/`Fabric` + `MojangAPI`/`PaperMC` |
 | 行为契约 | `orzmc/services/*`、`orzmc/infra/*` | `Game` + `OrzSwiftKit` |
 | CLI 面 | `orzmc-app`（typer；`orzmc mcp` = stdio JSON-RPC，`cli/mcp.py`） | `OrzMCKit` 的 `orzmc` 可执行（`MCPServer`/`MCPCommand`） |
-| 正版授权 | `orzmc/core/auth.py`（离线已实现，`client_id` 待注册） | `OrzMCKit/Sources/Game/Auth/*`（离线已实现） |
+| 正版授权 | `orzmc/core/auth.py`（离线已实现，`client_id` 待注册） | `swift/lib/OrzMCKit/Sources/Game/Auth/*`（离线已实现） |
 | GUI 面 | —（无） | `OrzMCApp`（SwiftUI） |
 | 安装/自升级 | `orzmc/services/selfinstall.py`、`selfupdate.py`、`docs/install.sh|ps1` | App 安装器 + `OrzAppUpdater`（待对齐） |
 

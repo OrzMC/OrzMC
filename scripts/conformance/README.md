@@ -66,6 +66,6 @@ python3 scripts/conformance/run.py --adapter "<cmd>" --strict
 | 语言 | 建议位置（在各自仓库内） | 适配器形态 |
 |:--|:--|:--|
 | Python | `orzmc/tests/conformance/adapter.py` | 复用 `domain/*`、`infra/cache.py` 等内部 API |
-| Swift | `OrzMCKit/Sources/ConformanceAdapter`（或 Tests） | 复用 `Game`/`MojangAPI` 的**纯计划**入口 |
+| Swift | `swift/lib/OrzMCKit/Sources/ConformanceAdapter`（或 Tests） | 复用 `Game`/`MojangAPI` 的**纯计划**入口 |
 
 > 各实现运行器时通过 `--adapter "<该仓库内的命令>"` 指向自己的适配器，实现代码不落在父仓库。

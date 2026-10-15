@@ -133,7 +133,7 @@ python3 scripts/conformance/run.py --adapter "python3 scripts/conformance/refere
 | 语言 | 位置 | 状态 |
 |:--|:--|:--:|
 | Python | `python/orzmc/tests/conformance/adapter.py` | ☑ 已接入（76/76） |
-| Swift | `OrzMCKit/Sources/ConformanceAdapter` | ☑ 已接入（76/76，OrzMCKit CI 内运行） |
+| Swift | `swift/lib/OrzMCKit/Sources/ConformanceAdapter` | ☑ 已接入（76/76，OrzMCKit CI 内运行） |
 
 > **当前 76 例**：参考适配器 76/76；Python 适配器 76/76；Swift 适配器 76/76。
 > `auth/*`（20 例）为**离线优先**新增，三者均已实现；另含 `layout/no-type-*`（无 type 省略 server 字段）

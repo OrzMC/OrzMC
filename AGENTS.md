@@ -17,7 +17,7 @@
 
 **聚合型 monorepo / 产品伞**，本身几乎不含业务代码：
 
-- 通过 **Git 子模块（submodule）** 汇集 16 个独立仓库（插件 / CLI / App / Swift 引擎 / 部署 / 中转 / 官网 / 工具集 / 组织主页）。
+- 通过 **Git 子模块（submodule）** 汇集 21 个独立仓库（插件 / CLI / Swift（`swift/app` + `swift/lib/*`）/ 部署 / 中转 / 官网 / 工具集 / 组织主页）。
 - 父仓库的职责只有三件事：
   1. **锁定版本**：记录各子模块的 commit 指针，对同一套产品定义一个可复现的组合。
   2. **承载伞级内容**：`README.md`、`docs/`、`scripts/`、`images/`、`skins/`、`LICENSE`。
@@ -110,8 +110,13 @@ git commit -m "docs: ..."
 |---|---|---|---|:--|:--|
 | `plugin` | `OrzMC/OrzMCPlugin` | `main`（开发用 `develop`） | 自研 | PaperMC 核心插件（白名单/机器人/权限/维护） | ✅ |
 | `python` | `OrzMC/OrzPythonMC` | `main` | 自研 | `orzmc` CLI：客户端启动 / 服务端部署 | ✅ |
-| `app` | `OrzMC/OrzMCApp` | `main` | 自研 | macOS/iOS 启动器（SwiftUI，引擎在外部 `OrzMCKit`） | — |
-| `OrzMCKit` | `OrzMC/OrzMCKit` | `main` | 自研 | Swift 引擎（`Game`/`Fabric`）+ `orzmc` CLI | — |
+| `swift/app` | `OrzMC/OrzMCApp` | `main` | 自研 | macOS/iOS 启动器（SwiftUI；引擎见 `swift/lib/OrzMCKit`） | — |
+| `swift/lib/OrzMCKit` | `OrzMC/OrzMCKit` | `main` | 自研 | Swift 引擎（`Game`/`Fabric`）+ `orzmc` CLI | — |
+| `swift/lib/MojangAPI` | `OrzMC/MojangAPI` | `main` | 自研 | Mojang 元数据（清单 / version JSON / assets） | — |
+| `swift/lib/PaperMC` | `OrzMC/PaperMC` | `main` | 自研 | Paper 下载 / Hangar API | — |
+| `swift/lib/ExarotonAPI` | `OrzMC/ExarotonAPI` | `main` | 自研 | Exaroton API 客户端 | — |
+| `swift/lib/OrzSwiftKit` | `OrzGeeker/OrzSwiftKit` | `main` | 自研 | Swift 基础设施（`JokerKits`/`CacheKit`/`RuntimeKit`/`TransferKit`；外部组织 OrzGeeker，维护者自有） | — |
+| `swift/lib/OrzAppUpdater` | `OrzGeeker/OrzAppUpdater` | `main` | 自研 | app 自升级（Sparkle 封装；外部组织 OrzGeeker，维护者自有） | — |
 | `deploy` | `OrzMC/OrzMCDeploy` | `main` | 自研 | Docker Compose 部署（MCSManager/EasyBot/MariaDB/Gatus） | ✅ |
 | `proxy` | `OrzMC/OrzMCProxy` | `main` | 自研 | FRP 跨运营商中转方案 | — |
 | `site` | `OrzMC/OrzMCSite` | `main` | 自研 | Hugo 官方网站（GitHub Pages） | ✅ |
@@ -194,7 +199,7 @@ git diff --submodule <路径>
 
 ### 7.1 依赖仓库协作（自有仓库可直接改）
 
-- 父仓库聚合的 16 个子模块，以及各模块的 SwiftPM 依赖（`OrzMC/MojangAPI`、`OrzMC/PaperMC`、
+- 父仓库聚合的 21 个子模块，以及各模块的 SwiftPM 依赖（`OrzMC/MojangAPI`、`OrzMC/PaperMC`、
   `OrzMC/ExarotonAPI`、`OrzGeeker/OrzSwiftKit`、`OrzGeeker/OrzAppUpdater` 等）**均属维护者自有**。
 - **必要时可直接把依赖仓库拉到本地修改**（clone → 改 → 各自仓库提交/PR → 上层 bump 指针），
   目标始终是**全局最优**：让各模块**能力划分清晰、彼此配合完成功能**，而不是局部将就或重复实现。
