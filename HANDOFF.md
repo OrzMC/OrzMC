@@ -63,9 +63,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `969cd05` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41）+ `plugin`/`app`（#42）+ `planClientDownload`（#44）+ 退出码归一/`normalizeExit`（#45）；**已合并发布 `2.5.0`**：`--auth` 离线链路 + `orzmc mcp` + `auth/*` 适配器 + 服务端 `--demo`/`--online-mode` |
+| `python` | `cfcda47` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41）+ `plugin`/`app`（#42）+ `planClientDownload`（#44）+ 退出码归一/`normalizeExit`（#45）；**已合并发布 `2.5.0`**：`--auth` 离线链路 + `orzmc mcp` + `auth/*` 适配器 + 服务端 `--demo`/`--online-mode` |
 | `app` | `3e4d92f6ea00` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
-| `OrzMCKit` | `e237d32` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已合并发布 `v0.2.0`**：`--auth` 离线链路 + `orzmc mcp` + 命令面收敛（`server --online-mode`/`--jvm-opts`/`--yes`、`remove --yes`、`self-uninstall --root-dir`）；命令面 #2–#5、#7、#9–#11、#14–#15、#17–#18；发版链路 `#6`；此前已发 `v0.0.6` / `v0.1.0` |
+| `OrzMCKit` | `0df2feb` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已合并发布 `v0.2.0`**：`--auth` 离线链路 + `orzmc mcp` + 命令面收敛（`server --online-mode`/`--jvm-opts`/`--yes`、`remove --yes`、`self-uninstall --root-dir`）；命令面 #2–#5、#7、#9–#11、#14–#15、#17–#18；发版链路 `#6`；此前已发 `v0.0.6` / `v0.1.0` |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
 > `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
@@ -207,6 +207,21 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-15 — pi（B4 进规范 + 参数改名 + 引擎下沉 jvm-opts）
+
+**做了什么**
+- **B4 进规范**（父仓库）：`server --print-jar-help`（由 Swift `--jar-help` 改名，名称反映功能）、`update --channel release|beta` 写入 `cli-surface.json` / `cli-surface.md`；`deviations` 相应收敛（Swift 额外项清除）。
+- **两侧实现**：
+  - Python（PR #47）：`server --print-jar-help`（服务端加 `--help`）+ 补 `demo`/`online_mode`/`print_jar_help` 单测（386 passed）。
+  - Swift（PR #20）：`server --print-jar-help` 改名；客户端新增 `--jvm-opts`（`ClientInfo.jvmArgs` → `parseBootArgs` 追加 JVM 旗标）。
+- 子模块 bump + `RELEASES.md` 刷新（`python cfcda47` / `OrzMCKit 0df2feb`）。
+
+**状态**
+- `surface.py --strict`：Python 0 未声明（声明 2：`server --kill-all`、`update --channel` beta）；Swift 0 未声明（声明 8：client 4 + server 4）。
+
+**剩余**
+- 引擎下沉待办：Swift `client --type`(fabric/forge)、`--extract-music`、`--refresh`、`--download-threads`；server `--symlink`、`--force-download`、`--refresh`、`--download-threads`；Python `server --kill-all`、`update --channel`。
 
 ### 2026-10-15 — pi（A1 落地 + A2 发版：三仓合并 + Python 2.5.0 / Swift v0.2.0）
 
