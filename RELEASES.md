@@ -7,14 +7,19 @@
 
 | 子模块 | 仓库 | 分支 | 记录指针 |
 |---|---|---|---|
-| `OrzMCKit` | OrzMC/OrzMCKit | `main` | `9cf5cf4229f7` |
-| `app` | OrzMC/OrzMCApp | `main` | `3e4d92f6ea00` |
 | `deploy` | OrzMC/OrzMCDeploy | `main` | `e72ad9de9506` |
 | `plugin` | OrzMC/OrzMCPlugin | `main` | `5eadd6e5b4c8` |
 | `profile` | OrzMC/.github | `main` | `10fc4e1dbc87` |
 | `proxy` | OrzMC/OrzMCProxy | `main` | `3cc949cdb2e7` |
 | `python` | OrzMC/OrzPythonMC | `main` | `5fa45d51f2ad` |
 | `site` | OrzMC/OrzMCSite | `main` | `436e4b96bea4` |
+| `swift/app` | OrzMC/OrzMCApp | `main` | `3e4d92f6ea00` |
+| `swift/lib/ExarotonAPI` | OrzMC/ExarotonAPI | `main` | `1eea5719e44f` |
+| `swift/lib/MojangAPI` | OrzMC/MojangAPI | `main` | `bb8dbe8f821b` |
+| `swift/lib/OrzAppUpdater` | OrzGeeker/OrzAppUpdater | `main` | `b23e0c414d78` |
+| `swift/lib/OrzMCKit` | OrzMC/OrzMCKit | `main` | `9cf5cf4229f7` |
+| `swift/lib/OrzSwiftKit` | OrzGeeker/OrzSwiftKit | `main` | `fd88d7de1ec0` |
+| `swift/lib/PaperMC` | OrzMC/PaperMC | `main` | `19ae5af4452d` |
 | `tools/DeathChest` | OrzMC/death-chest | `main` | `71d257127c7e` |
 | `tools/EzShops` | OrzMC/EzShops | `main` | `7fc73f750f2f` |
 | `tools/GetMeHome` | OrzMC/GetMeHome | `main` | `fdbe86df0ab0` |
@@ -24,4 +29,4 @@
 | `tools/thanos` | aternosorg/thanos | `main` | `56772da33595` |
 | `webmc` | OrzMC/OrzWebMC | `main` | `e9a585ebcac3` |
 
-> 说明：`OrzMCKit` 为 Swift 引擎；其余子模块指针与 `git ls-tree HEAD` 一致，不受本地检出分支影响。
+> 说明：Swift 相关子模块收拢在 `swift/`（`swift/app` + `swift/lib/*`，后者含引擎 `OrzMCKit` 与 Swift 依赖）；其余子模块指针与 `git ls-tree HEAD` 一致，不受本地检出分支影响。
