@@ -5,7 +5,7 @@
 > `login_with_xbox`（`aka.ms/AppRegInfo` → <https://help.minecraft.net/hc/en-us/articles/16254801392141-Java-Edition-Game-Service-API-Review-or-Application-Process>）。
 > 未获批时 `login_with_xbox` 返回 `403 Invalid app registration`（详见 [`spec/auth.md`](spec/auth.md) §10 与 [`../HANDOFF.md`](../HANDOFF.md) §4 待办 A）。
 >
-> ⚠️ 本文件含**联系邮箱**（`824219521@qq.com`）；仓库为公开仓库，如需可改为占位符。
+> ⚠️ 本文件含**两个邮箱**（Azure 账号 `wangzhizhou2014@outlook.com`、联系 `824219521@qq.com`）；仓库为公开仓库，如需可改为占位符。
 
 ---
 
@@ -19,6 +19,7 @@
 | Source code | https://github.com/OrzMC/OrzMC |
 | License | Apache-2.0 (open source) |
 | Contact email | `824219521@qq.com` |
+| Azure account (app owner) | `wangzhizhou2014@outlook.com` |
 | Purpose | Third-party Minecraft: Java Edition launcher & server-management CLI/GUI |
 | Commercial | No — free, open-source, non-commercial |
 | Requested scopes | `XboxLive.signin offline_access` |
@@ -64,6 +65,8 @@
 | 项 | 值 |
 |---|---|
 | Azure client_id | `1a3e628b-c9a5-4a7f-b7b7-562e22b9787e` |
+| Azure 账号（应用所有者） | `wangzhizhou2014@outlook.com` |
+| 联系邮箱 | `824219521@qq.com` |
 | 提交日期 | `[待填]` |
 | 工单号 / 回执 | `[待填]` |
 | 结果 | `[待填]`（通过后重跑真实 E2E，见 `HANDOFF.md` §4 待办 A4） |
