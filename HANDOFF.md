@@ -138,8 +138,8 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 | 子模块 | 当前 | 说明 |
 |---|---|---|
-| `swift/lib/OrzSwiftKit` | `main`（`2fe29e5`） | 基础设施：`CacheKit`/`RuntimeKit`/`TransferKit`/`JokerKits`(含 `ProcessRunner`)；CI 含 `network-smoke`；**#8 修复 `ArchiveExtractor`（`.tmp` 临时名按魔数回退）**；**#9 去掉 build-tool SwiftLint 插件（不再拖 `swift-syntax`，下游冷编 ~7.5×）** |
-| `swift/lib/MojangAPI` | `main`（`32af446`） | 元数据；平台 macOS 13 / iOS 16（D12）；**版本 JSON 可选磁盘缓存（原始字节，`configurePackageCache`）**；**CI 已加 SwiftPM 缓存 + 修重复触发** |
+| `swift/lib/OrzSwiftKit` | `main`（`d71cc57`） | 基础设施：`CacheKit`/`RuntimeKit`/`TransferKit`/`JokerKits`(含 `ProcessRunner`)；CI 含 `network-smoke`；**#8 修复 `ArchiveExtractor`（`.tmp` 临时名按魔数回退）**；**#10 lint 插件改用 SwiftLint 预编译二进制（插件回归：本地/CI 每次构建自动 lint，但不再编译 swift-syntax）** |
+| `swift/lib/MojangAPI` | `main`（`0f11294`） | 元数据；平台 macOS 13 / iOS 16（D12）；**版本 JSON 可选磁盘缓存（原始字节，`configurePackageCache`）**；**CI 加缓存 + 修重复触发；联网用例门控 `ORZMC_NETWORK_SMOKE`（离线确定性）** |
 | `swift/lib/PaperMC` | `main`（`19ae5af`） | Paper/Hangar |
 | `swift/lib/ExarotonAPI` | `main`（`1eea571`，tag `0.0.9`） | Exaroton API 客户端 |
 | `swift/lib/OrzAppUpdater` | tag `0.0.3`（`b23e0c4`） | 平台 macOS 13；被 app 以 tag 依赖 |
@@ -242,7 +242,10 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
   - **缓存配额修正（`ci/cache-scope`）**：GitHub 缓存按分支计费（10GiB/仓），PR 分支各存一份 3GiB 会互相驱逐（实测 OrzMCKit 4 份 12.13GiB）。改为 `actions/cache/restore` + **仅 main 未命中时 `actions/cache/save`**，且 test/conformance 共用同一 debug key → 每仓 **1 份 ~3GiB**。
   - 实测 warm（缓存命中）：MojangAPI 9.2→**4.1min**、OrzMCKit 8.3→**3.5min**、app 10.1→**4.9min**（首次 run 因写缓存偏慢）。
 - **受阻**：Release 的 x86_64 交叉编译（`swift build --arch x86_64`）被 `swift-openapi-generator` 构建插件挡下（按 `ARCHS` 校验、`VALID_ARCHS` 仅 arm64），故仍用 Intel runner，靠缓存提速。**真正的下一步是 E：把 SwiftLint 从 release 编译路径移走**（去 swift-syntax）。
-- **E 已完成（OrzSwiftKit #9，`2fe29e5`）**：移除挂在每个 target 上的 `OrzSwiftLintBuildToolPlugin`（保留依赖供按需 `swift package plugin swiftlint fix`）。实测冷编 **554s→74s（~7.5×）**、`.build` 从 ~3GiB 瘦到几百 MB；下游 PR CI：MojangAPI **2m19s**、OrzMCKit test/conformance **~2m20s**、app **3m42s**（均冷编，对照改前 8–11min）。下游 `Package.resolved` 与父仓库指针均已跟进。
+- **lint「两全」（最终方案）**：先（OrzSwiftKit #9）摘掉 build-tool 插件以去编译开销，但发现本地不再自动 lint（问题后置到 CI）→ 不理想。
+  最终：`OrzSwiftLint 0.0.8`（`OrzGeeker/OrzSwiftLint`）改用 SwiftLint 官方**预编译** `SwiftLintBinary.artifactbundle.zip`（binaryTarget），`OrzSwiftKit #10` **把插件重新挂回** → **本地/CI 每次构建都自动 lint**，且**零 swift-syntax 编译**。
+  air 实测：本包冷建 ~50s、`MojangAPI` 冷建 43s、`.build` ~0.7–1.7GiB（原源码方案 ~2.5–3GiB）、日志 0 次 swift-syntax 编译；OrzSwiftKit CI 183s。
+- **顺带**：MojangAPI 把打线上 API 的用例（`manifest/versions/getUserInfo`）门控到 `ORZMC_NETWORK_SMOKE=1`（曾 3 次因 HTTP 421 把 CI 跑红），并加手动 `network-smoke` job → CI 只跑离线确定性套件。
 - **成本**：全流程**零花费**（仓库均 public；只用标准 `macos-15`/`macos-15-intel`/`macos-26`/`ubuntu` runner，未用计费的 `-large`/`-xlarge`；缓存 ≤10GB 免费额度）。已在各 `ci.yml`/`release.yml` 加护栏注释防误用。
 - 父仓库分别 bump `swift/lib/MojangAPI` / `swift/lib/OrzMCKit` / `swift/app` 指针；同步 `RELEASES.md` / 本文件。
 
