@@ -246,7 +246,7 @@ L3 产品伞 ──▶ 只做锁定与文档，不改任何实现代码
 | 维度 | Python | Swift | 处理方向 |
 |---|---|---|---|
 | 根目录布局 | `~/minecraft/versions/<v>/{client,server/<type>}`、`java/<major>`、`cache/`、`backup/` | `~/minecraft/manifest/<v>/client/<type>/...` | spec 定义唯一规范布局；**一次性对齐、不做迁移**（旧目录提示删除重建） |
-| 支持的客户端类型 | vanilla / fabric / forge | vanilla / fabric | 在 spec 声明能力矩阵，未支持者显式 SKIP |
+| 支持的客户端类型 | vanilla / fabric / forge | vanilla / fabric / forge | 在 spec 声明能力矩阵，未支持者显式 SKIP |
 | 支持的服务器类型 | vanilla / paper / fabric / forge | vanilla / paper | 同上 |
 | Java 运行时 | 应用托管 JRE 到 `java/<major>/` | 依赖系统/外部 Java（`OracleJava`） | spec 定义 Java 需求与获取策略 |
 | 进度模型 | 计数任务 / 字节任务双协议 | 进度回调（`progressHandler`） | spec 定义归一化进度事件 |

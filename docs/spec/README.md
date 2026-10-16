@@ -57,7 +57,7 @@ OrzMC 的工具产品（见 [`../product-architecture.md`](../product-architectu
 
 - **根目录布局**：Python `versions/<v>/...` vs Swift `manifest/<v>/...` —— 规范选定唯一布局。
 - **类型支持**：Python 客户端 `vanilla/fabric/forge`、服务端 `vanilla/paper/fabric/forge`；
-  Swift 客户端 `vanilla/fabric`、服务端 `vanilla/paper`。
+  Swift 客户端 `vanilla/fabric/forge`（Forge 仅现代 ForgeBootstrap，1.20.4+/49.x；旧版显式报错）、服务端 `vanilla/paper`。
 - **Java 获取**：Python 托管 JRE 到 `java/<major>/`；Swift 依赖外部 Java。
 - **进度模型 / 缓存策略**：两边不同，规范统一。
 

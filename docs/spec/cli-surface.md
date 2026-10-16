@@ -333,14 +333,23 @@ stdout **只**输出 JSON-RPC 消息，日志 / 进度一律走 stderr。非交�
   选项的 `required` 不比较（ConsoleKit 无法表达，由运行时报错强制），仅位置参数比较。
 - **已声明差异（收敛 backlog）**：manifest 的 `deviations.<impl>` 列出各实现当前**已声明**的差异；
   validator 默认忽略、`--strict` 只对**未声明**漂移失败（已声明数在报告里提示）。当前：
-  `python` **0 处（完全一致）**；`swift` **0 处（完全一致）**——客户端 `--type` 已落地（`vanilla`/`fabric`；`forge` 命令面已接受，引擎侧待实现，运行时报 `E_UNSUPPORTED_TYPE`）。
+  `python` **0 处（完全一致）**；`swift` **0 处（完全一致）**——客户端 `--type` 已落地（`vanilla`/`fabric`/`forge`；fabric 走 fabric-meta、forge 走官方安装器）。
+  Swift 侧 `--strict` 已接入 `OrzMCKit` CI 的 `conformance` job（构建 `orzmc` 导出真实 `capabilities` 后对比）。
 - **已收敛（累计）**：Python `server --demo`/`--online-mode`/`--print-jar-help`/`update --channel`/`--kill-all`；
   Swift `server --online-mode`/`--jvm-opts`/`--yes`/`--refresh`/`--symlink`/`--force-download`/`--download-threads`、
   client `--jvm-opts`/`--refresh`/`--extract-music`/`--download-threads`、`remove --yes`、`self-uninstall --root-dir`；
   `--jar-help` 改名 `--print-jar-help`（两侧）。
 - **本轮已收敛**：Python `server --demo` / `--online-mode` / `--print-jar-help` / `update --channel` / `--kill-all`；Swift `server --online-mode`（Option→Flag）、
-  `server --jvm-opts`/`--yes`/`--refresh`/`--symlink`/`--force-download`/`--download-threads`、`client --jvm-opts`/`--refresh`/`--extract-music`/`--download-threads`/`--type`（fabric，fabric-meta 解析）、
+  `server --jvm-opts`/`--yes`/`--refresh`/`--symlink`/`--force-download`/`--download-threads`、`client --jvm-opts`/`--refresh`/`--extract-music`/`--download-threads`/`--type`（fabric+forge）、
   `remove --yes`、`self-uninstall --root-dir`；`--jar-help` 改名 `--print-jar-help`（两侧）。
+- **codegen 评估（路线 A 第 3 步，2026-10-16）**：结论——**暂不做代码生成**，保留「manifest + 两侧 `--strict` 校验」为单一事实源的落地方式。理由：
+  1. 两套实现宿主不同（Python `typer` / Swift `ConsoleKit`），生成代码需同时贴合两套框架的类型系统与帮助/补全机制，
+     生成器自身会成为第三套「元实现」；
+  2. 命令面已收敛为 **0 漂移**，`--strict` 已进 CI（两侧），漂移在合入前即被拦下，codegen 的主要收益
+     （消除重复定义）已大幅贬值，而复杂度/耦合显著；
+  3. 契约的权威信息是**行为**（`docs/spec/*.md` + conformance fixtures），manifest 只覆盖命令面这一薄层。
+  **重估触发条件**：命令/选项数显著增长（如 >30 或大量按平台分叉），或两侧出现反复的手工同步成本；
+  届时可先「只用 manifest 生成 `capabilities` 静态描述」，而非整命令生成。
 
 ## 9. Shell 自动补全（用户要求）
 
