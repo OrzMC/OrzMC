@@ -44,3 +44,13 @@
 - [docs/product-unification-plan.md](docs/product-unification-plan.md) —— 客户端/服务端工具统一化推进计划
 
 ![logo](images/server_member.jpg)
+
+---
+
+## 免责声明 / Disclaimer
+
+> **NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.**
+>
+> OrzMC 是**独立的社区开源项目**，对本项目及其发行物负责，与 Mojang / Microsoft **无隶属、赞助或背书关系**。
+> **联系**：824219521@qq.com
+> “Minecraft”名称、品牌与素材的一切权利归 Mojang / Microsoft 所有。
