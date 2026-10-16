@@ -60,16 +60,18 @@ def md_block(c: dict[str, str]) -> str:
 
 
 def html_block(c: dict[str, str]) -> str:
+    contact = c.get("contact_url", f"https://github.com/{c['owner']}")
     return (
         f"<!-- {BEGIN} ({GENERATED_NOTE}) -->\n"
-        '<div class="f7 white-40 tc lh-copy pa2">\n'
-        f"  {c['disclaimer_en']}\n"
-        "  <br>\n"
-        f"  {c['disclaimer_zh']}\n"
-        "  <br>\n"
-        f"  联系：<a class=\"white-40 underline\" href=\"mailto:{c['contact_email']}\">{c['contact_email']}</a>\n"
-        f"  · <a class=\"white-40 underline\" href=\"{c['privacy_url']}\">隐私政策</a>\n"
-        "</div>\n"
+        '<div class="site-footer__compliance">\n'
+        f'  <p class="site-footer__line">{c["disclaimer_en"]}</p>\n'
+        f'  <p class="site-footer__line">{c["disclaimer_zh"]}</p>\n'
+        '  <p class="site-footer__links">\n'
+        f'    <a href="{c["privacy_url"]}">隐私政策</a>\n'
+        '    <span class="site-footer__sep" aria-hidden="true">·</span>\n'
+        f'    <a href="{contact}" target="_blank" rel="noopener noreferrer">GitHub 组织</a>\n'
+        '  </p>\n'
+        '</div>\n'
         f"<!-- {END} -->"
     )
 
@@ -129,9 +131,14 @@ def disclaimer_line() -> str:
 
 def site_privacy(c: dict[str, str]) -> str:
     body = CANON_PRIVACY.read_text(encoding="utf-8").strip()
+    # 页面主标题由布局按 frontmatter title 渲染；去掉正文首行 H1，避免同页双 <h1>。
+    if body.startswith("# "):
+        nl = body.find("\n")
+        body = body[nl + 1 :].lstrip("\n") if nl >= 0 else ""
     return (
         "---\n"
         'title: "隐私政策"\n'
+        "toc: true\n"
         f"# 本页由 scripts/sync_compliance.py 从 docs/compliance/privacy.md 生成，请勿直接编辑。\n"
         "---\n\n"
         f"{body}\n"
