@@ -1,5 +1,6 @@
 .DS_Store
-scripts/qqbot/napcat.sh/orzmc
+scripts/qqbot/napcat.sh
+/orzmc
 /orzmc.exe
 .orzmc-update.log
 .orzmc-update.log.tmp
