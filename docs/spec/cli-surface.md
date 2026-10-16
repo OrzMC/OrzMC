@@ -334,7 +334,7 @@ stdout **只**输出 JSON-RPC 消息，日志 / 进度一律走 stderr。非交�
 - **已声明差异（收敛 backlog）**：manifest 的 `deviations.<impl>` 列出各实现当前**已声明**的差异；
   validator 默认忽略、`--strict` 只对**未声明**漂移失败（已声明数在报告里提示）。当前：
   `python` **0 处（完全一致）**；`swift` **0 处（完全一致）**——客户端 `--type` 已落地（`vanilla`/`fabric`/`forge`；fabric 走 fabric-meta、forge 走官方安装器）。
-  Swift 侧 `--strict` 已接入 `OrzMCKit` CI 的 `conformance` job（构建 `orzmc` 导出真实 `capabilities` 后对比）。
+  **两侧 `--strict` 均已进 CI**：Python 在 `OrzPythonMC` 的 `quality` job、Swift 在 `OrzMCKit` 的 `conformance` job（均检出父仓库 manifest 后用真实 `capabilities` 对比）。
 - **已收敛（累计）**：Python `server --demo`/`--online-mode`/`--print-jar-help`/`update --channel`/`--kill-all`；
   Swift `server --online-mode`/`--jvm-opts`/`--yes`/`--refresh`/`--symlink`/`--force-download`/`--download-threads`、
   client `--jvm-opts`/`--refresh`/`--extract-music`/`--download-threads`、`remove --yes`、`self-uninstall --root-dir`；
