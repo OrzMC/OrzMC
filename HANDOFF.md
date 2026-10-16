@@ -155,7 +155,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > - [x] A1. 注册 Azure 公共客户端应用（`组织目录 + 个人账号`，`Allow public client flows = Yes`）→ `client_id = 1a3e628b-c9a5-4a7f-b7b7-562e22b9787e`。
 > - [x] A2. 内置两端：Python `orzmc/core/auth.py` `DEFAULT_CLIENT_ID` / Swift `Game/Auth/AuthConfig.swift` `defaultClientId`（保留 `ORZMC_AZURE_CLIENT_ID` 覆盖）；已合并（python #54 / OrzMCKit #27）。
 > - [x] A3a. **真实 MSA→XBL→XSTS 验证通过**（设备码 → MSA 令牌 → Xbox Live RPS → XSTS 均 200；Xbox 档案可读）。
-> - [ ] ⚠️ A3b. **阻塞：Mojang Game Service API 审核** —— `login_with_xbox` 返 `403 Invalid app registration`；`aka.ms/AppRegInfo` → Minecraft 帮助《**New: Java Edition Game Service API Review or Application Process**》：**Azure 应用须经 Mojang 审核/申请通过**才能用该 API。需维护者走该申请（外部流程，非代码）。
+> - [ ] ⚠️ A3b. **阻塞：Mojang Game Service API 审核** —— `login_with_xbox` 返 `403 Invalid app registration`；`aka.ms/AppRegInfo` → Minecraft 帮助《**New: Java Edition Game Service API Review or Application Process**》：**Azure 应用须经 Mojang 审核/申请通过**才能用该 API。申请材料已起草：[`docs/auth-application.md`](docs/auth-application.md)（联系邮箱 `824219521@qq.com`）；需维护者提交并回填工单号（外部流程，非代码）。
 > - [ ] A4. 审核通过后：真实账号 E2E（到 `profile`；需账号有 Minecraft Java 版）+ 真机（`ssh air` / `ssh win`）→ 记入 §5。
 > - [x] A5. 推送已完成（python/OrzMCKit 先，父仓库 auth fixtures 随后；见 §5）。
 >
