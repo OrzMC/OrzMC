@@ -80,7 +80,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `b4f1408` | `OrzPythonMC`；适配器 + 下载续传 + 全局选项 + `--json` + `completion` + `capabilities` + `plugin`/`app` + `planClientDownload` + 退出码归一；**已发布 `2.9.0`**；**内置 client_id**：`--auth` 离线链路 + `orzmc mcp` + `auth/*` 适配器 + 服务端 `--demo`/`--online-mode`；**`quality` job 追加 CLI 命令面 `--strict` 校验**；**README/落地页对齐 2.9.0 命令面** |
+| `python` | `e2bf959` | `OrzPythonMC`；适配器 + 下载续传 + 全局选项 + `--json` + `completion` + `capabilities` + `plugin`/`app` + `planClientDownload` + 退出码归一；**已发布 `2.9.0`**；**内置 client_id**：`--auth` 离线链路 + `orzmc mcp` + `auth/*` 适配器 + 服务端 `--demo`/`--online-mode`；**`quality` job 追加 CLI 命令面 `--strict` 校验**；**README/落地页对齐 2.9.0 命令面**；**修复 `orzmc update` 裸名 `argv[0]` 误把 CWD 同名文件当目标（`running_binary()` + 验收步骤 5b）** |
 | `swift/app` | `efbb665` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
 | `swift/lib/OrzMCKit` | `c42f677` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已发布 `v0.9.1`**；**内置 client_id** + `orzmc mcp` + **`client --type` vanilla/fabric（fabric-meta）/forge（官方安装器）** + 命令面全量收敛 + `--strict` 进 CI；**Mojang 元数据缓存指向 `<root>/cache`（与 Python/app 共享）**；**CI SwiftPM 缓存 + OrzSwiftKit 预编译 SwiftLint（lint 插件回归）**；此前已发 `v0.1.0`…`v0.9.0` |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
@@ -231,6 +231,14 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-17 — pi（修复 `orzmc update` 无法升级：裸名 argv[0] 解析）
+
+- **症状（用户报）**：本机 `orzmc update` 执行后没升级，`orzmc version` 仍是旧版。
+- **根因**：CLI 用 `Path(sys.argv[0]).resolve()` 定位自身二进制。经 PATH 以裸名 `orzmc` 调用时 `sys.argv[0]` 就是 `orzmc`（不是路径），会按**当前目录**解析 → 升级/创建了 `./orzmc`，安装的二进制没动；同时 `install.conf` 仍被改写，下次运行还以为“已是最新”。实测：在含同名文件的目录里裸名运行，CWD 的占位文件被换成 16MB 新二进制，安装目录里的仍是旧版。
+- **修复（OrzPythonMC #60 / #62，`e2bf959`）**：新增库公共 API `running_binary()`（含分隔符则直接用；frozen 用 `sys.executable`；否则 PATH 查找并**丢弃落在 CWD 的命中**；再退回解释器）；CLI `update`/`self-uninstall` 改用它；`_record` 仅在安装记录指向的二进制与本次目标一致时才改写（升级拷贝不再污染全局记录）；验收 harness 加步骤 5b（六平台）。Windows 上 `shutil.which` 会**先搜 CWD**，故 frozen 分支必须用 `sys.executable`（main CI 的 windows installer 两例复现过）。
+- **验证**：`ruff`/`mypy`/`pytest`（395）全绿；重建 PyInstaller 二进制实测修复；`scripts/accept_selfupdate.py` **24/24**；main CI 六平台 `installer` 全绿。
+- **待办（需确认）**：release-please 已开 **#61 → 2.9.1**。用户机器当前是 2.9.0（含此 bug，裸名调用），需发 2.9.1 后用户用**绝对路径**再跑一次 `~/.local/bin/orzmc update`（或用一键安装器）才会拿到修复。
 
 ### 2026-10-16 — pi（CI/迭代提速：SwiftPM 缓存 + 修重复触发）
 
