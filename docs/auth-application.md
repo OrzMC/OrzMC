@@ -70,9 +70,9 @@
 | Directory (tenant) ID | `ceed58ed-fbc2-40e5-b556-8c8903c24462` |
 | Azure 账号（应用所有者） | `wangzhizhou2014@outlook.com` |
 | 联系邮箱 | `824219521@qq.com` |
-| 提交日期 | `[待填]` |
-| 工单号 / 回执 | `[待填]` |
-| 结果 | `[待填]`（通过后重跑真实 E2E，见 `HANDOFF.md` §4 待办 A4） |
+| 提交日期 | 2026-10-16 |
+| 提交回执（Microsoft Forms 提交 ID） | `v4j5cvGGr0GRqy180BHbR-ajEQ1td1ROpz00KtS8Gd5UNVpPTkVLNFVROVQxNkdRMEtXVjNQQjdXVC4u` |
+| 结果 | 待审核（人工审核；回执/结果通常发到联系邮箱） |
 
 ## 8. 合规核对（对照 [Minecraft Usage Guidelines](https://www.minecraft.net/usage-guidelines)）
 
@@ -86,8 +86,8 @@
 **需补齐 / 注意（提交时建议一并说明，或先修）**
 1. **必须显著展示官方免责声明**（Guidelines 明确要求）：
    `NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT`
-   应出现在：仓库 README、官网（页脚/关于）、App（关于/描述）、GitHub Release 描述、PyPI 描述、CLI `--help`/`--version` 页脚。**当前缺失。**
-2. **责任主体 + 联系渠道**（不能用聊天/论坛链接）：发布者 `OrzMC`，联系邮箱 `824219521@qq.com`，随免责声明一起展示。
+   **已补**：仓库 `README.md`（父仓库 + python + OrzMCKit + app）、官网页脚（`site` 的 `site-footer.html`）、App 设置页（`SettingsView` 的 Disclaimer 区块）。
+2. **责任主体 + 联系渠道**（不能用聊天/论坛链接）：发布者 `OrzMC`，联系邮箱 `824219521@qq.com`——**已随免责声明一同展示**。
 3. **品牌素材**：确认 Logo / App 图标（`images/orzmc.png`、`profile/assets/OrzMC.png`、App icon）**均为自创**，不含 Mojang 素材。
 4. **服务器正版验证默认**：Guidelines 要求“服务器访问仅授予正版玩家”。当前默认 `online-mode=false`（Python 未配置时写 false；Swift Paper `--online-mode=false`）。**建议改为默认 `online-mode=true`**（或至少不在引导里默认离线）——属产品决策。
 
