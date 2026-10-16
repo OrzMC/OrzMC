@@ -82,7 +82,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `b4f1408` | `OrzPythonMC`；适配器 + 下载续传 + 全局选项 + `--json` + `completion` + `capabilities` + `plugin`/`app` + `planClientDownload` + 退出码归一；**已发布 `2.9.0`**；**内置 client_id**：`--auth` 离线链路 + `orzmc mcp` + `auth/*` 适配器 + 服务端 `--demo`/`--online-mode`；**`quality` job 追加 CLI 命令面 `--strict` 校验**；**README/落地页对齐 2.9.0 命令面** |
 | `swift/app` | `efbb665` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
-| `swift/lib/OrzMCKit` | `8662410` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已发布 `v0.9.0`**；**内置 client_id** + `orzmc mcp` + **`client --type` vanilla/fabric（fabric-meta）/forge（官方安装器）** + 命令面全量收敛 + `--strict` 进 CI；**Mojang 元数据缓存指向 `<root>/cache`（与 Python/app 共享）**；此前已发 `v0.1.0`…`v0.8.0` |
+| `swift/lib/OrzMCKit` | `398cec8` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已发布 `v0.9.0`**；**内置 client_id** + `orzmc mcp` + **`client --type` vanilla/fabric（fabric-meta）/forge（官方安装器）** + 命令面全量收敛 + `--strict` 进 CI；**Mojang 元数据缓存指向 `<root>/cache`（与 Python/app 共享）**；**CI 已加 SwiftPM 缓存（warm ~3.5min）**；此前已发 `v0.1.0`…`v0.8.0` |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
@@ -139,7 +139,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 | 子模块 | 当前 | 说明 |
 |---|---|---|
 | `swift/lib/OrzSwiftKit` | `main`（`9b69dba`） | 基础设施：`CacheKit`/`RuntimeKit`/`TransferKit`/`JokerKits`(含 `ProcessRunner`)；CI 含 `network-smoke`；**#8 修复 `ArchiveExtractor`（`.tmp` 临时名按魔数回退）——此前阻塞托管 JRE 解压** |
-| `swift/lib/MojangAPI` | `main`（`fe72c69`） | 元数据；平台 macOS 13 / iOS 16（D12）；**版本 JSON 可选磁盘缓存（原始字节，`configurePackageCache`）** |
+| `swift/lib/MojangAPI` | `main`（`32af446`） | 元数据；平台 macOS 13 / iOS 16（D12）；**版本 JSON 可选磁盘缓存（原始字节，`configurePackageCache`）**；**CI 已加 SwiftPM 缓存 + 修重复触发** |
 | `swift/lib/PaperMC` | `main`（`19ae5af`） | Paper/Hangar |
 | `swift/lib/ExarotonAPI` | `main`（`1eea571`，tag `0.0.9`） | Exaroton API 客户端 |
 | `swift/lib/OrzAppUpdater` | tag `0.0.3`（`b23e0c4`） | 平台 macOS 13；被 app 以 tag 依赖 |
@@ -231,6 +231,17 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-16 — pi（CI/迭代提速：SwiftPM 缓存 + 修重复触发）
+
+- **诊断**：一次跨三仓改动 CI 墙钟 ~130min。根因：Swift 侧无缓存（每轮冷编整棵依赖图）+ `OrzSwiftLint` 构建插件把 `swift-syntax` 拖进每次编译（MojangAPI 引入 CacheKit 后 2.8→9.4min 即为实证）+ MojangAPI `push`+`pull_request` 双跑 + Intel release 冷编 58min。
+- **已落地**：
+  - OrzMCKit（`398cec8`）：CI `test`/`conformance` + Release `build` 加 `actions/cache`（`.build`+SwiftPM 克隆，~3GiB/job）。
+  - MojangAPI（`32af446`）：加缓存 + `on.push.branches:[main]`（PR 不再双跑）。
+  - app（`96f93e2`）：加 DerivedData/SwiftPM 滚动缓存（run_id key + 前缀 restore-keys）。
+  - 实测 warm（缓存命中）：MojangAPI 9.2→**4.1min**、OrzMCKit 8.3→**3.5min**、app 10.1→**4.9min**（首次 run 因写缓存偏慢）。
+- **受阻**：Release 的 x86_64 交叉编译（`swift build --arch x86_64`）被 `swift-openapi-generator` 构建插件挡下（按 `ARCHS` 校验、`VALID_ARCHS` 仅 arm64），故仍用 Intel runner，靠缓存提速。**真正的下一步是 E：把 SwiftLint 从 release 编译路径移走**（去 swift-syntax）。
+- 父仓库分别 bump `swift/lib/MojangAPI` / `swift/lib/OrzMCKit` / `swift/app` 指针；同步 `RELEASES.md` / 本文件。
 
 ### 2026-10-16 — pi（三端共享 Mojang 元数据缓存 + 布局文档对齐）
 
