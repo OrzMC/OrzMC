@@ -13,7 +13,8 @@
 
 | Field | Value |
 |---|---|
-| Application / Project name | `orzmc` (OrzMC) |
+| Application name (Azure app display name) | `OrzMC` |
+| CLI / command / product name | `orzmc` (OrzMC) |
 | Azure Application (client) ID | `1a3e628b-c9a5-4a7f-b7b7-562e22b9787e` |
 | Website | https://orzmc.jokerhub.cn |
 | Source code | https://github.com/OrzMC/OrzMC |
