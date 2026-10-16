@@ -232,6 +232,13 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-16 — pi（官网页脚 UI + 组织级隐私政策）
+
+- **页脚合规块重设计**：加顶部分隔线，免责声明与「隐私政策 · GitHub 组织」链接分行，链接 hover/focus 下划线，小字对比度提升（原 `white-40` → 0.5 / 链接 0.72）；**不再暴露个人邮箱**，改链 GitHub 组织主页。
+- **隐私政策改为组织视角**：适用范围（官网 / 开源软件 / GitHub 协作）、软件本地数据与 `--auth` 令牌、官网第三方（不蒜子统计、`api.mcstatus.io`、`mc-heads.net`）、第三方清单、数据安全与保留、你的权利、儿童、变更、联系（GitHub）；修复同页双 `<h1>`、补 TOC。
+- **单一事实源同步**：父仓库 `docs/compliance/`（新增 `contact_url`、重写 `privacy.md`）+ `scripts/sync_compliance.py`（重写 `html_block`、`site_privacy` 去正文 H1/加 `toc`）→ 生成 `site/content/privacy.md` + 页脚块；`site` PR #4（`79ba16a`），父仓库 bump `site` 指针。
+- 验证：`hugo -e production --minify --gc` 构建通过；`scripts/check_content.py` 通过；隐私页 `<h1>` 计数 = 1；页脚/隐私页不再含邮箱。
+
 ### 2026-10-16 — pi（Swift `client --type forge` + 修复托管 JRE 解压 + `--strict` 进 CI + codegen 评估 + 发版 v0.8.0）
 
 - **OrzSwiftKit（PR #8，`9b69dba`）**：修复 `ArchiveExtractor` 仅按扩展名分派——`URLSession.download` 的临时文件名为 `.tmp`，导致托管 JRE 下载后解压抛 `unsupportedExtension`（`JavaRuntime.ensure` 首次下载必然失败，是 forge/launch 的**既有阻塞 bug**）。改为扩展名优先、缺失时读魔数（gzip/zip）；离线单测模拟 `.tmp`。
