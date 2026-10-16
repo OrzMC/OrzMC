@@ -82,7 +82,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `b4f1408` | `OrzPythonMC`；适配器 + 下载续传 + 全局选项 + `--json` + `completion` + `capabilities` + `plugin`/`app` + `planClientDownload` + 退出码归一；**已发布 `2.9.0`**；**内置 client_id**：`--auth` 离线链路 + `orzmc mcp` + `auth/*` 适配器 + 服务端 `--demo`/`--online-mode`；**`quality` job 追加 CLI 命令面 `--strict` 校验**；**README/落地页对齐 2.9.0 命令面** |
 | `swift/app` | `efbb665` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
-| `swift/lib/OrzMCKit` | `398cec8` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已发布 `v0.9.0`**；**内置 client_id** + `orzmc mcp` + **`client --type` vanilla/fabric（fabric-meta）/forge（官方安装器）** + 命令面全量收敛 + `--strict` 进 CI；**Mojang 元数据缓存指向 `<root>/cache`（与 Python/app 共享）**；**CI 已加 SwiftPM 缓存（warm ~3.5min）**；此前已发 `v0.1.0`…`v0.8.0` |
+| `swift/lib/OrzMCKit` | `c42f677` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已发布 `v0.9.1`**；**内置 client_id** + `orzmc mcp` + **`client --type` vanilla/fabric（fabric-meta）/forge（官方安装器）** + 命令面全量收敛 + `--strict` 进 CI；**Mojang 元数据缓存指向 `<root>/cache`（与 Python/app 共享）**；**CI SwiftPM 缓存 + OrzSwiftKit 预编译 SwiftLint（lint 插件回归）**；此前已发 `v0.1.0`…`v0.9.0` |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
@@ -246,6 +246,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
   最终：`OrzSwiftLint 0.0.8`（`OrzGeeker/OrzSwiftLint`）改用 SwiftLint 官方**预编译** `SwiftLintBinary.artifactbundle.zip`（binaryTarget），`OrzSwiftKit #10` **把插件重新挂回** → **本地/CI 每次构建都自动 lint**，且**零 swift-syntax 编译**。
   air 实测：本包冷建 ~50s、`MojangAPI` 冷建 43s、`.build` ~0.7–1.7GiB（原源码方案 ~2.5–3GiB）、日志 0 次 swift-syntax 编译；OrzSwiftKit CI 183s。
 - **顺带**：MojangAPI 把打线上 API 的用例（`manifest/versions/getUserInfo`）门控到 `ORZMC_NETWORK_SMOKE=1`（曾 3 次因 HTTP 421 把 CI 跑红），并加手动 `network-smoke` job → CI 只跑离线确定性套件。
+- **Release 提速（验证）**：发 `v0.9.1`（`c42f677`）时 Release job 也带了缓存，且无 swift-syntax：arm64 ~**4m17s**、Intel ~**13m02s**（原 58m27s，~4.5×）。
 - **成本**：全流程**零花费**（仓库均 public；只用标准 `macos-15`/`macos-15-intel`/`macos-26`/`ubuntu` runner，未用计费的 `-large`/`-xlarge`；缓存 ≤10GB 免费额度）。已在各 `ci.yml`/`release.yml` 加护栏注释防误用。
 - 父仓库分别 bump `swift/lib/MojangAPI` / `swift/lib/OrzMCKit` / `swift/app` 指针；同步 `RELEASES.md` / 本文件。
 

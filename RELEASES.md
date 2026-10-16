@@ -17,7 +17,7 @@
 | `swift/lib/ExarotonAPI` | OrzMC/ExarotonAPI | `main` | `1eea5719e44f` |
 | `swift/lib/MojangAPI` | OrzMC/MojangAPI | `main` | `0f11294ed7e0` |
 | `swift/lib/OrzAppUpdater` | OrzGeeker/OrzAppUpdater | `main` | `b23e0c414d78` |
-| `swift/lib/OrzMCKit` | OrzMC/OrzMCKit | `main` | `f98384799ae2` |
+| `swift/lib/OrzMCKit` | OrzMC/OrzMCKit | `main` | `c42f6771c383` |
 | `swift/lib/OrzSwiftKit` | OrzGeeker/OrzSwiftKit | `main` | `d71cc57dedd4` |
 | `swift/lib/PaperMC` | OrzMC/PaperMC | `main` | `19ae5af4452d` |
 | `tools/DeathChest` | OrzMC/death-chest | `main` | `71d257127c7e` |
