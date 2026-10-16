@@ -57,7 +57,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | 产品统一化 — Phase 0–5 完成；T1 端到端完成；**T2 命令面统一完成且两侧 0 偏差**（Swift `client --type` vanilla/fabric/forge 全落地）；一致性 **76/76**（三适配器）；**`--auth` 离线部分完成**；**`orzmc mcp` 两端完成**；剩余：**`client_id`/真实 E2E（等 Mojang 审核）**、codegen（已评估：暂不做） |
-| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端离线链路就绪（未配 `client_id` 时 `E_AUTH_NOT_CONFIGURED`）；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差且 `--strict` 已进 CI**；**最近发布**：Python `2.9.0` / Swift **`v0.8.0`**（fabric+forge 客户端） |
+| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端链路就绪（内置公共 `client_id`，`ORZMC_AZURE_CLIENT_ID` 可覆盖）；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差且 `--strict` 已进 CI**；**元数据缓存（清单/版本 JSON）已统一到 `<root>/cache`，三端共享**；**最近发布**：Python `2.9.0` / Swift **`v0.9.0`**（fabric+forge + 缓存共享） |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
 | **下一步** | 待办 A（`client_id`/真实 E2E，等 Mojang 审核，见 §4）；其余均已完成（命令面 0 漂移 + `--strict` 进 CI；codegen 已评估暂不做） |
@@ -82,7 +82,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `b4f1408` | `OrzPythonMC`；适配器 + 下载续传 + 全局选项 + `--json` + `completion` + `capabilities` + `plugin`/`app` + `planClientDownload` + 退出码归一；**已发布 `2.9.0`**；**内置 client_id**：`--auth` 离线链路 + `orzmc mcp` + `auth/*` 适配器 + 服务端 `--demo`/`--online-mode`；**`quality` job 追加 CLI 命令面 `--strict` 校验**；**README/落地页对齐 2.9.0 命令面** |
 | `swift/app` | `efbb665` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
-| `swift/lib/OrzMCKit` | `ea38889` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已发布 `v0.8.0`**；**内置 client_id** + `orzmc mcp` + **`client --type` vanilla/fabric（fabric-meta）/forge（官方安装器）** + 命令面全量收敛 + `--strict` 进 CI；此前已发 `v0.1.0`…`v0.7.0` |
+| `swift/lib/OrzMCKit` | `8662410` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已发布 `v0.9.0`**；**内置 client_id** + `orzmc mcp` + **`client --type` vanilla/fabric（fabric-meta）/forge（官方安装器）** + 命令面全量收敛 + `--strict` 进 CI；**Mojang 元数据缓存指向 `<root>/cache`（与 Python/app 共享）**；此前已发 `v0.1.0`…`v0.8.0` |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
@@ -139,7 +139,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 | 子模块 | 当前 | 说明 |
 |---|---|---|
 | `swift/lib/OrzSwiftKit` | `main`（`9b69dba`） | 基础设施：`CacheKit`/`RuntimeKit`/`TransferKit`/`JokerKits`(含 `ProcessRunner`)；CI 含 `network-smoke`；**#8 修复 `ArchiveExtractor`（`.tmp` 临时名按魔数回退）——此前阻塞托管 JRE 解压** |
-| `swift/lib/MojangAPI` | `main`（`bb8dbe8`） | 元数据；平台 macOS 13 / iOS 16（D12） |
+| `swift/lib/MojangAPI` | `main`（`fe72c69`） | 元数据；平台 macOS 13 / iOS 16（D12）；**版本 JSON 可选磁盘缓存（原始字节，`configurePackageCache`）** |
 | `swift/lib/PaperMC` | `main`（`19ae5af`） | Paper/Hangar |
 | `swift/lib/ExarotonAPI` | `main`（`1eea571`，tag `0.0.9`） | Exaroton API 客户端 |
 | `swift/lib/OrzAppUpdater` | tag `0.0.3`（`b23e0c4`） | 平台 macOS 13；被 app 以 tag 依赖 |
@@ -231,6 +231,16 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-16 — pi（三端共享 Mojang 元数据缓存 + 布局文档对齐）
+
+- **问题**：`docs/spec/data-model.md §1` 对照表过时（指向已退役 `GameDir.swift`）；Swift 的清单/版本 JSON 落在 `~/Library/Caches/MojangAPI`，版本 JSON 更是只走内存 —— 与 Python `<root>/cache` 不共享。
+- **MojangAPI #1（`fe72c69`）**：`configurePackageCache(directory:)` + `packageCacheDirectory`；版本 JSON 以**原始 Mojang 字节**落 `<dir>/versions/<id>.json`（逐字节保留是刻意的：Python 按清单 sha1 校验缓存，重编码会哈希不符而被丢弃）；读缓存校验 sha1；未配置时行为不变（仅内存）。
+- **OrzMCKit #36（`v0.9.0`，`8662410`）**：`Game/MojangCache.configure(root:)`，在客户端下载/启动、Vanilla/Paper 服务端、`JavaRuntime`、`GameUtils`、CLI `chooseGameVersion` 等入口配置为 `<root>/cache`；`Package.resolved` 跟进 MojangAPI。
+- **app #20（`42a06eb`）**：`GameCatalogService` 同样按 `GamePlan.defaultRoot` 配置。
+- **验证（air，Swift 6.4）**：`swift build` 绿；`swift test` 55 例；`ORZMC_NETWORK_SMOKE=1` 新增冒烟确认 `<root>/cache/version_manifest.json` + `<root>/cache/versions/1.20.4.json` 落盘且版本 JSON 的 sha1 与清单 URL 一致；conformance **76/76**；三仓 CI 绿；`v0.9.0` 发版。
+- **文档**：`docs/spec/data-model.md §1` 对照改为「两侧已一致」，并补「元数据缓存位置（与 Python 共享）」说明。
+- **父仓库**：分别 bump `swift/lib/MojangAPI` / `swift/lib/OrzMCKit` / `swift/app` 指针；同步 `RELEASES.md` / 本文件。
 
 ### 2026-10-16 — pi（文档一致性普查：python 文档 + 两处 GitHub Pages）
 
