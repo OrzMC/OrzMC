@@ -92,6 +92,19 @@ def check_surface_manifest() -> bool:
     return True
 
 
+def check_compliance() -> bool:
+    script = REPO / "scripts" / "sync_compliance.py"
+    proc = subprocess.run([sys.executable, str(script), "--check"], capture_output=True, text=True)
+    out = (proc.stdout + proc.stderr).strip()
+    if proc.returncode != 0:
+        fail("合规文案漂移（运行 python3 scripts/sync_compliance.py 同步）")
+        print(out[-2000:])
+        return False
+    last = out.splitlines()[-1] if out else "compliance"
+    print(last if last.startswith("[ok]") else f"[ok] {last}")
+    return True
+
+
 def check_remote() -> bool:
     status = subprocess.run(
         ["git", "submodule", "status"],
@@ -126,7 +139,7 @@ def main() -> int:
     ap.add_argument("--remote", action="store_true", help="追加远端指针存在性检查（需网络）")
     args = ap.parse_args()
 
-    results = [check_registry(), check_reference(), check_surface_manifest()]
+    results = [check_registry(), check_reference(), check_surface_manifest(), check_compliance()]
     if args.remote:
         results.append(check_remote())
     return 0 if all(results) else 1
