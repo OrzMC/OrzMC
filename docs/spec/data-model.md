@@ -62,15 +62,27 @@
 | `downloadTmpDir` | `<cacheDir>/download_tmp` |
 | `backupDir` | `<root>/backup` |
 
-**对照**
+**对照（2026-10-16 核对：两侧已一致）**
 
-| 规范 | Python（`domain/paths.py`） | Swift（`Game/GameDir.swift`） |
-|:--|:--|:--|
-| `versions/<v>/client` | ✅ 现行为准 | ⚠️ 现为 `manifest/<v>/client/<type>`，需对齐 |
-| `java/<major>` | ✅ | ⚠️ 无托管 Java 路径 |
+| 规范 | Python（`domain/paths.py`） | Swift（`Game/Plan/GamePlan.swift`） | Swift app |
+|:--|:--|:--|:--|
+| `versions/<v>/client` | ✅ | ✅（`GamePlan.layout`） | ✅（复用 `Game` 引擎，`GUIClient: Client`） |
+| `versions/<v>/server/<type>` | ✅ | ✅ | ✅ |
+| `java/<major>` | ✅ | ✅（`javaMajorDir` / `javaExecutable`） | ✅ |
+| `cache/*`、`backup/*` | ✅ | ✅ | ✅ |
 
-> **布局对齐策略（已决）**：**不做迁移**。先把 Swift 一次性对齐到规范布局，此后一律按规范执行；
-> 检测到旧布局（`manifest/<v>/`）时**提示用户删除旧目录重建**，不自动搬迁。
+`layout` 域由一致性套件覆盖（`planLayout`；参考 / Python / Swift 三适配器 76/76）。
+
+> **布局对齐（已完成）**：Swift 已对齐到规范布局；旧 `Game/GameDir.swift` 与 `manifest/<v>/...` 均已退役。
+> 运行期差异只余「工具私有状态」（如 Python `run/*.pid`、`server/<type>/build/`；Swift `client/log_configs/`），
+> 不影响上表共享目录的互操作性。
+
+> **元数据缓存位置（与 Python 共享）**：版本清单 `<root>/cache/version_manifest.json`、
+> 版本 JSON `<root>/cache/versions/<v>.json`（**原始 Mojang 字节**，便于两端按 sha1 互读）、
+> Fabric / Forge 附加件 `<root>/cache/meta/*`。Python 原生如此；Swift 经 `Game` 的
+> `MojangCache.configure(root:)`（→ `MojangAPI.configureCache` / `configurePackageCache`）对齐，
+> 未调用时 `MojangAPI` 退回自身默认目录 `~/Library/Caches/MojangAPI`（不影响正确性，仅不共享）。
+> `auth.json` 属**状态目录**而非游戏根：`${XDG_STATE_HOME:-~/.local/state}/orzmc/auth.json`。
 
 ---
 
