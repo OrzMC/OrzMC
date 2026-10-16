@@ -26,6 +26,23 @@ git submodule status                   # 子模块指针是否符合预期
 python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致 + 一致性参考自检）
 ```
 
+
+## 0.1 接力提示词（新会话直接复制这段）
+
+> 读 `AGENTS.md` 与 `HANDOFF.md`，从 §4「待办 A / 剩余项」继续。
+>
+> **当前状态（2026-10-16）**
+> - **正版授权**：Azure `client_id` 已内置两端；`login_with_xbox` 卡在 Mojang 的 **Game Service API 审核**（已提交，见 `docs/auth-application.md` §7 的提交 ID）→ **等审核**，通过后跑 `uv run --directory python python scripts/accept_auth.py`（+ air/win 真机）。
+> - **合规**：免责声明/隐私政策/CLI 声明已落地，**单一来源** `docs/compliance/`（`compliance.json` + `privacy.md`），由 `scripts/sync_compliance.py` 生成到各引用；`check.py` 校验漂移。**改文案只改 `docs/compliance/` 再跑一次脚本。**
+> - **命令面**：Python 0 偏差；**Swift 仅剩 `client --type`（fabric/forge）**。
+>
+> **请按顺序**
+> 1. `python3 scripts/verify/check.py`（登记表 + 一致性 76/76 + manifest + 合规漂移）确认基线绿；`git submodule status` 21 个齐全。
+> 2. **若 Mojang 有回信**：按其要求处理；通过后立刻跑真实 E2E（上文脚本）+ `ssh air`/`ssh win` 真机，更新 `docs/spec/auth.md` 与 `HANDOFF.md`（§4 A4、§5）。
+> 3. **否则**推进 `client --type fabric`（先 fabric；forge 单列，属新引擎能力），走 `OrzMCKit` PR + `ssh air` 验证 + 发版，并同步 `cli-surface.json` 的 `deviations`。
+>
+> 铁律：代码改子模块、父仓库只 bump；不用 `git add -A`；一次提交只 bump 一个子模块。
+
 然后按顺序读：
 
 1. [`AGENTS.md`](AGENTS.md) —— 规则（三条铁律、子模块登记表、协作流程；**§5 含「禁止 git add -A」**）
@@ -64,7 +81,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `edf4292` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41）+ `plugin`/`app`（#42）+ `planClientDownload`（#44）+ 退出码归一/`normalizeExit`（#45）；**已发布 `2.8.0`**；**内置 client_id**：`--auth` 离线链路 + `orzmc mcp` + `auth/*` 适配器 + 服务端 `--demo`/`--online-mode` |
-| `swift/app` | `46eb619` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
+| `swift/app` | `efbb665` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
 | `swift/lib/OrzMCKit` | `0013a89` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已发布 `v0.5.0`**；**内置 client_id**：`--auth` 离线链路 + `orzmc mcp` + 命令面收敛（`server --online-mode`/`--jvm-opts`/`--yes`、`remove --yes`、`self-uninstall --root-dir`）；命令面 #2–#5、#7、#9–#11、#14–#15、#17–#18；发版链路 `#6`；此前已发 `v0.0.6` / `v0.1.0` |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
@@ -78,6 +95,7 @@ git submodule status
 git status --porcelain
 python3 scripts/verify/check.py            # 父仓库组合校验（CI 同款：登记表 + 参考自检 + manifest 结构）
 python3 scripts/verify/check.py --remote   # 追加：子模块指针是否在远端（需网络）
+python3 scripts/sync_compliance.py --check      # 合规文案漂移校验（单一来源 docs/compliance/）
 python3 scripts/verify/surface.py --self-check   # 命令面 manifest 结构自检
 # 只读对比某实现的命令面漂移（--strict 时才退出 1）：
 python3 scripts/verify/surface.py --implementation python \
@@ -213,6 +231,14 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-16 — pi（合规单一来源 + 免责声明/隐私政策/CLI 声明 + 提交 Mojang 申请）
+
+- **单一来源**：新增 `docs/compliance/{compliance.json,privacy.md}` + `scripts/sync_compliance.py`（`--write`/`--check`），把免责声明/责任主体/联系方式渲染到 8 处引用（README×4、官网页脚、Swift `Game/Compliance.swift`、Python `orzmc/_compliance.py`、官网 `content/privacy.md`）；`check.py` 增加漂移校验（子模块未检出时自动跳过）。
+- **落地**：官网页脚免责声明 + **隐私政策页**；App 设置页 Disclaimer（改用 `Game/Compliance`，含隐私链接）；Python/Swift `version`/`--version` 页脚声明。
+- **提交 Mojang Game Service API 申请**（2026-10-16，New AppID for Approval）：材料 `docs/auth-application.md`（表单逐字段 + Justification + 合规核对）；提交 ID `v4j5cvGGr0GRqy180BHbR-...`。真实 E2E 阻塞于审核。
+- **新增** `python/scripts/accept_auth.py`（审核后真实账号验收；只打状态不打印令牌）。
+- 涉及 PR：python #57 / OrzMCKit #30 / app #19 / site #3 / 父仓库 #36、#37（均已合）。
 
 ### 2026-10-15 — pi（发版：Python 2.9.0 / Swift v0.6.0，含内置 client_id）
 
