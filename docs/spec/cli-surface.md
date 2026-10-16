@@ -333,13 +333,13 @@ stdout **只**输出 JSON-RPC 消息，日志 / 进度一律走 stderr。非交�
   选项的 `required` 不比较（ConsoleKit 无法表达，由运行时报错强制），仅位置参数比较。
 - **已声明差异（收敛 backlog）**：manifest 的 `deviations.<impl>` 列出各实现当前**已声明**的差异；
   validator 默认忽略、`--strict` 只对**未声明**漂移失败（已声明数在报告里提示）。当前：
-  `python` **0 处（完全一致）**；`swift` 1 处（客户端 `--type`——fabric/forge 需要 fabric-meta 解析 / Forge 客户端）。
+  `python` **0 处（完全一致）**；`swift` **0 处（完全一致）**——客户端 `--type` 已落地（`vanilla`/`fabric`；`forge` 命令面已接受，引擎侧待实现，运行时报 `E_UNSUPPORTED_TYPE`）。
 - **已收敛（累计）**：Python `server --demo`/`--online-mode`/`--print-jar-help`/`update --channel`/`--kill-all`；
   Swift `server --online-mode`/`--jvm-opts`/`--yes`/`--refresh`/`--symlink`/`--force-download`/`--download-threads`、
   client `--jvm-opts`/`--refresh`/`--extract-music`/`--download-threads`、`remove --yes`、`self-uninstall --root-dir`；
   `--jar-help` 改名 `--print-jar-help`（两侧）。
 - **本轮已收敛**：Python `server --demo` / `--online-mode` / `--print-jar-help` / `update --channel` / `--kill-all`；Swift `server --online-mode`（Option→Flag）、
-  `server --jvm-opts`/`--yes`/`--refresh`/`--symlink`/`--force-download`/`--download-threads`、`client --jvm-opts`/`--refresh`/`--extract-music`/`--download-threads`、
+  `server --jvm-opts`/`--yes`/`--refresh`/`--symlink`/`--force-download`/`--download-threads`、`client --jvm-opts`/`--refresh`/`--extract-music`/`--download-threads`/`--type`（fabric，fabric-meta 解析）、
   `remove --yes`、`self-uninstall --root-dir`；`--jar-help` 改名 `--print-jar-help`（两侧）。
 
 ## 9. Shell 自动补全（用户要求）

@@ -132,14 +132,6 @@
     { "name": "version", "help": "打印工具版本", "options": [] }
   ],
   "deviations": {
-    "note": "收敛 backlog：manifest 是**目标**命令面；此处列出各实现当前**已声明**的差异（validator 默认忽略，--strict 仅对未声明漂移失败）。实现跟进后应逐条移除。",
-    "swift": {
-      "note": "客户端 fabric/forge 类型（fabric-meta 解析 / Forge 客户端）尚未在 Swift 引擎落地。",
-      "options": {
-        "client": {
-          "missing": ["--type"]
-        }
-      }
-    }
+    "note": "收敛 backlog：manifest 是**目标**命令面；此处列出各实现当前**已声明**的差异（validator 默认忽略，--strict 仅对未声明漂移失败）。实现跟进后应逐条移除。当前 python/swift 两侧均无 CLI 选项漂移。运行期能力差异（如 Swift `client --type forge` 未在引擎落地，会报 E_UNSUPPORTED_TYPE）不属于命令面 manifest 范围，见 docs/spec/README.md §5。"
   }
 }
