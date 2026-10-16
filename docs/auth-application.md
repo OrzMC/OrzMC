@@ -16,6 +16,7 @@
 | Application name (Azure app display name) | `OrzMC` |
 | CLI / command / product name | `orzmc` (OrzMC) |
 | Azure Application (client) ID | `1a3e628b-c9a5-4a7f-b7b7-562e22b9787e` |
+| Directory (tenant) ID | `ceed58ed-fbc2-40e5-b556-8c8903c24462` |
 | Website | https://orzmc.jokerhub.cn |
 | Source code | https://github.com/OrzMC/OrzMC |
 | License | Apache-2.0 (open source) |
@@ -66,8 +67,26 @@
 | 项 | 值 |
 |---|---|
 | Azure client_id | `1a3e628b-c9a5-4a7f-b7b7-562e22b9787e` |
+| Directory (tenant) ID | `ceed58ed-fbc2-40e5-b556-8c8903c24462` |
 | Azure 账号（应用所有者） | `wangzhizhou2014@outlook.com` |
 | 联系邮箱 | `824219521@qq.com` |
 | 提交日期 | `[待填]` |
 | 工单号 / 回执 | `[待填]` |
 | 结果 | `[待填]`（通过后重跑真实 E2E，见 `HANDOFF.md` §4 待办 A4） |
+
+## 8. 合规核对（对照 [Minecraft Usage Guidelines](https://www.minecraft.net/usage-guidelines)）
+
+**已符合**
+- **命名**：产品/应用名 `OrzMC` / `orzmc` 不含 “Minecraft”，也未把 “Minecraft” 作为主导名；描述中仅作**描述性**引用（“for Minecraft: Java Edition”）。
+- **非商业**：免费、开源（Apache-2.0）、无广告、无内购；不售卖 Minecraft 或账号。
+- **不重分发游戏文件**：运行期从 Mojang 官方 CDN 下载客户端/服务端核心；仓库与 Release 资产**不含** Mojang 游戏文件（assets / textures / sounds / client jar）。
+- **不改动官方对话 / EULA 提示**；无外挂/作弊；无恶意代码；无 NFT / play-to-earn。
+- **不冒充官方**：应用名与域名 `orzmc.jokerhub.cn` 均不显官方；授权走 Microsoft 官方设备码流程；令牌只存本地。
+
+**需补齐 / 注意（提交时建议一并说明，或先修）**
+1. **必须显著展示官方免责声明**（Guidelines 明确要求）：
+   `NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT`
+   应出现在：仓库 README、官网（页脚/关于）、App（关于/描述）、GitHub Release 描述、PyPI 描述、CLI `--help`/`--version` 页脚。**当前缺失。**
+2. **责任主体 + 联系渠道**（不能用聊天/论坛链接）：发布者 `OrzMC`，联系邮箱 `824219521@qq.com`，随免责声明一起展示。
+3. **品牌素材**：确认 Logo / App 图标（`images/orzmc.png`、`profile/assets/OrzMC.png`、App icon）**均为自创**，不含 Mojang 素材。
+4. **服务器正版验证默认**：Guidelines 要求“服务器访问仅授予正版玩家”。当前默认 `online-mode=false`（Python 未配置时写 false；Swift Paper `--online-mode=false`）。**建议改为默认 `online-mode=true`**（或至少不在引导里默认离线）——属产品决策。
