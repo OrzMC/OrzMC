@@ -80,7 +80,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `2fc43be` | `OrzPythonMC`；适配器 + 下载续传 + 全局选项 + `--json` + `completion` + `capabilities` + `plugin`/`app` + `planClientDownload` + 退出码归一；**已发布 `2.9.0`**；**内置 client_id**：`--auth` 离线链路 + `orzmc mcp` + `auth/*` 适配器 + 服务端 `--demo`/`--online-mode`；**`quality` job 追加 CLI 命令面 `--strict` 校验** |
+| `python` | `b4f1408` | `OrzPythonMC`；适配器 + 下载续传 + 全局选项 + `--json` + `completion` + `capabilities` + `plugin`/`app` + `planClientDownload` + 退出码归一；**已发布 `2.9.0`**；**内置 client_id**：`--auth` 离线链路 + `orzmc mcp` + `auth/*` 适配器 + 服务端 `--demo`/`--online-mode`；**`quality` job 追加 CLI 命令面 `--strict` 校验**；**README/落地页对齐 2.9.0 命令面** |
 | `swift/app` | `efbb665` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
 | `swift/lib/OrzMCKit` | `ea38889` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已发布 `v0.8.0`**；**内置 client_id** + `orzmc mcp` + **`client --type` vanilla/fabric（fabric-meta）/forge（官方安装器）** + 命令面全量收敛 + `--strict` 进 CI；此前已发 `v0.1.0`…`v0.7.0` |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
@@ -231,6 +231,14 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-16 — pi（文档一致性普查：python 文档 + 两处 GitHub Pages）
+
+- **python 文档**：`README.md` 命令行清单补齐 `capabilities`/`completion`/`mcp`/`plugin`/`app` 与 `client --auth`、`server --demo`/`--print-jar-help`/`--online-mode`/`--kill-all`、`update --channel`、全局 `--json`/`--root-dir`；新增「正版登录」要点。`AGENTS.md` 修正 `client_id` 说明（现为 `resolve_client_id()` 三级解析，内置 `DEFAULT_CLIENT_ID` 开箱即用）。PR #59（`b4f1408`）。
+- **python Pages（`docs/index.html`）**：快速开始补 forge 客户端与 `--auth` 示例；特性区新增「正版登录」卡片（同 PR #59）。
+- **组织官网 GitHub Pages（`site`）**：`content/client.md` 参数表补 `--auth`/`-j`/`--refresh`、数据管理补 `orzmc update`。PR #5（`a9307fb`）。
+- **报告未改**：`orzmc client --auth` 的 help 文本仍写「需 `ORZMC_AZURE_CLIENT_ID`」（`orzmc_app/cli/app.py:195`），与内置 client_id 不符 —— 属实现文案、需发版生效，建议单独 `fix(cli)`。
+- 父仓库分别 bump `python`/`site` 指针；`check.py` 绿（未触碰合规块）。
 
 ### 2026-10-16 — pi（官网页脚 UI + 组织级隐私政策）
 
