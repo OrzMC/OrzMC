@@ -90,3 +90,34 @@
 2. **责任主体 + 联系渠道**（不能用聊天/论坛链接）：发布者 `OrzMC`，联系邮箱 `824219521@qq.com`，随免责声明一起展示。
 3. **品牌素材**：确认 Logo / App 图标（`images/orzmc.png`、`profile/assets/OrzMC.png`、App icon）**均为自创**，不含 Mojang 素材。
 4. **服务器正版验证默认**：Guidelines 要求“服务器访问仅授予正版玩家”。当前默认 `online-mode=false`（Python 未配置时写 false；Swift Paper `--online-mode=false`）。**建议改为默认 `online-mode=true`**（或至少不在引导里默认离线）——属产品决策。
+
+## 9. 表单逐字段（按实际表单填写）
+
+| # | 字段 | 填写值 |
+|---|---|---|
+| 1 | 阅读并同意 EULA + Usage Guidelines | ☑ 勾选 |
+| 2 | Contact Information → Azure Portal Email | `wangzhizhou2014@outlook.com` |
+| 2 | Contact Information → Personal Email | `824219521@qq.com` |
+| 3 | What type of request is this? | **New AppID for Approval** |
+| 4 | Application Name | `OrzMC` |
+| 5 | Application (Client) ID | `1a3e628b-c9a5-4a7f-b7b7-562e22b9787e` |
+| 6 | Tenant (Directory) ID | `ceed58ed-fbc2-40e5-b556-8c8903c24462` |
+| 7 | Associated website or domain | `https://orzmc.jokerhub.cn` |
+| 8 | Justification | 见下方英文段落 |
+| 9 | Any other information | 见下方英文段落 |
+
+### 8. Justification（英文，直接粘贴）
+
+> OrzMC is an **open-source (Apache-2.0), non-commercial** launcher and server-management tool for **Minecraft: Java Edition**. It is distributed free of charge on GitHub and PyPI, with **no ads, no in-app purchases, and no monetization**, and it does not sell or transfer Minecraft accounts. It ships as a cross-platform `orzmc` CLI plus a macOS/iOS app.
+>
+> We are requesting approval to use the **Minecraft Java Edition Game Service API for user sign-in only**. Our tools implement the standard Microsoft **device-code** flow (scope `XboxLive.signin offline_access`) → Xbox Live (RPS) → XSTS → `login_with_xbox` → `/minecraft/profile`, so users can launch the game under their **own legitimate Microsoft account** (“online mode”). Authentication is **opt-in**; the tool works offline by default for local single-player and never uses the API to grant online access to non-owners.
+>
+> We do **not** collect usernames/passwords, we operate **no authentication backend**, and all tokens are stored **only on the user’s device** (file mode `0600`) and never transmitted to our servers. We **do not redistribute Minecraft or any game files** — files are downloaded at runtime from Mojang’s official CDN — and we do **not** modify or hide Minecraft’s EULA or dialogs. We comply with the Minecraft EULA and Usage Guidelines and will display the required “**NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT**” disclaimer and our contact email on our website, app, and repository.
+>
+> Contact: **824219521@qq.com**. Azure portal account: **wangzhizhou2014@outlook.com**. The app is registered in tenant `ceed58ed-fbc2-40e5-b556-8c8903c24462`.
+
+### 9. Any other information（英文，直接粘贴）
+
+> The project is fully **open source** and auditable: https://github.com/OrzMC (CLI: https://github.com/OrzMC/OrzPythonMC and https://github.com/OrzMC/OrzMCKit; app: https://github.com/OrzMC/OrzMCApp; website: https://orzmc.jokerhub.cn).
+>
+> We have already run the full authentication chain end-to-end: Microsoft device code → MSA token → Xbox Live (RPS) → XSTS all succeed; `login_with_xbox` currently returns `403 Invalid app registration`, which is exactly why we are submitting this request. We are happy to provide any further information and will add the required disclaimer and contact details prominently upon approval.
