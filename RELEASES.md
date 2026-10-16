@@ -11,8 +11,8 @@
 | `plugin` | OrzMC/OrzMCPlugin | `main` | `5eadd6e5b4c8` |
 | `profile` | OrzMC/.github | `main` | `10fc4e1dbc87` |
 | `proxy` | OrzMC/OrzMCProxy | `main` | `3cc949cdb2e7` |
-| `python` | OrzMC/OrzPythonMC | `main` | `2fc43bec83d0` |
-| `site` | OrzMC/OrzMCSite | `main` | `79ba16a4921f` |
+| `python` | OrzMC/OrzPythonMC | `main` | `b4f14087d25a` |
+| `site` | OrzMC/OrzMCSite | `main` | `a9307fb010c3` |
 | `swift/app` | OrzMC/OrzMCApp | `main` | `efbb665b3622` |
 | `swift/lib/ExarotonAPI` | OrzMC/ExarotonAPI | `main` | `1eea5719e44f` |
 | `swift/lib/MojangAPI` | OrzMC/MojangAPI | `main` | `bb8dbe8f821b` |
