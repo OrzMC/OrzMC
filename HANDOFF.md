@@ -238,7 +238,8 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - **已落地**：
   - OrzMCKit（`398cec8`）：CI `test`/`conformance` + Release `build` 加 `actions/cache`（`.build`+SwiftPM 克隆，~3GiB/job）。
   - MojangAPI（`32af446`）：加缓存 + `on.push.branches:[main]`（PR 不再双跑）。
-  - app（`96f93e2`）：加 DerivedData/SwiftPM 滚动缓存（run_id key + 前缀 restore-keys）。
+  - app（`96f93e2`/`1a163c3`）：加 DerivedData/SwiftPM 缓存。
+  - **缓存配额修正（`ci/cache-scope`）**：GitHub 缓存按分支计费（10GiB/仓），PR 分支各存一份 3GiB 会互相驱逐（实测 OrzMCKit 4 份 12.13GiB）。改为 `actions/cache/restore` + **仅 main 未命中时 `actions/cache/save`**，且 test/conformance 共用同一 debug key → 每仓 **1 份 ~3GiB**。
   - 实测 warm（缓存命中）：MojangAPI 9.2→**4.1min**、OrzMCKit 8.3→**3.5min**、app 10.1→**4.9min**（首次 run 因写缓存偏慢）。
 - **受阻**：Release 的 x86_64 交叉编译（`swift build --arch x86_64`）被 `swift-openapi-generator` 构建插件挡下（按 `ARCHS` 校验、`VALID_ARCHS` 仅 arm64），故仍用 Intel runner，靠缓存提速。**真正的下一步是 E：把 SwiftLint 从 release 编译路径移走**（去 swift-syntax）。
 - 父仓库分别 bump `swift/lib/MojangAPI` / `swift/lib/OrzMCKit` / `swift/app` 指针；同步 `RELEASES.md` / 本文件。
