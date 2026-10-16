@@ -240,6 +240,8 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - **验证**：`ruff`/`mypy`/`pytest`（395）全绿；重建 PyInstaller 二进制实测修复；`scripts/accept_selfupdate.py` **24/24**；main CI 六平台 `installer` 全绿。
 - **待办（需确认）**：release-please 已开 **#61 → 2.9.1**。用户机器当前是 2.9.0（含此 bug，裸名调用），需发 2.9.1 后用户用**绝对路径**再跑一次 `~/.local/bin/orzmc update`（或用一键安装器）才会拿到修复。
 - **已发布 `2.9.1`（`0a8a797`）**：合并 #61 → Release 六平台二进制 + PyPI 全部成功；用户机器已用绝对路径升级到 **2.9.1**（`orzmc version` = 2.9.1，`install.conf` 一致），裸名 `orzmc update` 已验证正常；顺手清理了 bug 期间产生的拷贝（`~/OrzMC/orzmc`、`~/Downloads/orzmc`）与 `.orzmc-update.log`。
+- **`air` 也命中同一 bug（已修）**：其安装的 `~/.local/bin/orzmc` 是 **2.4.1**（Sep 21）；在 `~` 下裸名 `orzmc update` 把 2.9.1 写进了 `~/orzmc`、安装的没动（`install.conf` 被改成 v2.9.1）。已用**绝对路径** `~/.local/bin/orzmc update` 升到 **2.9.1** 并清理 `~/orzmc` + `~/.orzmc-update.log`；裸名复测正常。→ **2.9.1 之前所有已发布二进制都带此 bug**，旧机器需用绝对路径（或一键安装器）过河。
+- **Windows 验证机（`win`）正常**：安装的 `…\Programs\orzmc\orzmc.exe` = **2.9.1**，无残留 `orzmc.exe`。
 
 ### 2026-10-16 — pi（CI/迭代提速：SwiftPM 缓存 + 修重复触发）
 
