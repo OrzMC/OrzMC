@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-10-15 by pi
+> **最后更新**：2026-10-16 by pi
 
 ---
 
@@ -34,12 +34,12 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 > **当前状态（2026-10-16）**
 > - **正版授权**：Azure `client_id` 已内置两端；`login_with_xbox` 卡在 Mojang 的 **Game Service API 审核**（已提交，见 `docs/auth-application.md` §7 的提交 ID）→ **等审核**，通过后跑 `uv run --directory python python scripts/accept_auth.py`（+ air/win 真机）。
 > - **合规**：免责声明/隐私政策/CLI 声明已落地，**单一来源** `docs/compliance/`（`compliance.json` + `privacy.md`），由 `scripts/sync_compliance.py` 生成到各引用；`check.py` 校验漂移。**改文案只改 `docs/compliance/` 再跑一次脚本。**
-> - **命令面**：Python 0 偏差；**Swift 仅剩 `client --type`（fabric/forge）**。
+> - **命令面**：**两侧 0 偏差**（Python 完全一致；Swift `client --type fabric` 已落地并随 `v0.7.0` 发布；`forge` 命令面接受、引擎待落地）。
 >
 > **请按顺序**
 > 1. `python3 scripts/verify/check.py`（登记表 + 一致性 76/76 + manifest + 合规漂移）确认基线绿；`git submodule status` 21 个齐全。
 > 2. **若 Mojang 有回信**：按其要求处理；通过后立刻跑真实 E2E（上文脚本）+ `ssh air`/`ssh win` 真机，更新 `docs/spec/auth.md` 与 `HANDOFF.md`（§4 A4、§5）。
-> 3. **否则**推进 `client --type fabric`（先 fabric；forge 单列，属新引擎能力），走 `OrzMCKit` PR + `ssh air` 验证 + 发版，并同步 `cli-surface.json` 的 `deviations`。
+> 3. **否则**推进 `client --type forge`（Forge installer + patched jar，属新引擎能力；fabric 已完成，见 `v0.7.0`），走 `OrzMCKit` PR + `ssh air` 验证 + 发版。
 >
 > 铁律：代码改子模块、父仓库只 bump；不用 `git add -A`；一次提交只 bump 一个子模块。
 
@@ -56,11 +56,11 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 项 | 内容 |
 |---|---|
-| **主题** | 产品统一化 — Phase 0–5 完成；T1 端到端完成；**T2 命令面统一完成**；一致性 **76/76**（含 `auth/*` 20 例：参考/Python/Swift 三适配器）；**`--auth` 离线部分（契约+两端实现）完成**；**`orzmc mcp` server 两端实现完成**；剩余：`client_id`/真实 E2E、命令面 deviations 收敛 |
-| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端：纯映射 + 令牌存储(0600 原子写) + 设备码编排 + CLI 接线已实现（未配 `client_id` 时 `E_AUTH_NOT_CONFIGURED`）；`orzmc mcp`：Python（`orzmc_app/cli/mcp.py`）+ Swift（`MCPServer`/`MCPCommand`）均实现，离线单测全绿；**改动已推送并发布**（Python `2.7.0` / Swift `v0.4.0`）；Swift 侧 B1–B11 全部实现；T2/Phase 4 完成；Swift `orzmc` CLI 已发 `v0.1.0` → `v0.2.0` |
+| **主题** | 产品统一化 — Phase 0–5 完成；T1 端到端完成；**T2 命令面统一完成且两侧 0 偏差**（Swift `client --type fabric` 已落地）；一致性 **76/76**（三适配器）；**`--auth` 离线部分完成**；**`orzmc mcp` 两端完成**；剩余：`client_id`/真实 E2E、Swift `client --type forge`（新引擎能力） |
+| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端离线链路就绪（未配 `client_id` 时 `E_AUTH_NOT_CONFIGURED`）；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差**；**最近发布**：Python `2.9.0` / Swift **`v0.7.0`**（fabric 客户端） |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | 待办 A（`client_id`/真实 E2E，办卡+注册后，见 §4）；本地改动择机推送（注意合入顺序）；命令面：按 manifest `deviations` 逐条补齐引擎侧能力，再评估 `--strict` 接 CI 与 codegen |
+| **下一步** | 待办 A（`client_id`/真实 E2E，等 Mojang 审核，见 §4）；Swift `client --type forge`（Forge installer + patched jar）；评估 `surface.py --strict` 接 CI 与 codegen |
 
 ## 2. 状态快照（Repo State）
 
@@ -82,7 +82,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `edf4292` | `OrzPythonMC`；适配器（#32-34）+ 下载续传（#36）+ 全局选项（#38）+ `--json`（#39）+ `completion`（#40）+ `capabilities`（#41）+ `plugin`/`app`（#42）+ `planClientDownload`（#44）+ 退出码归一/`normalizeExit`（#45）；**已发布 `2.8.0`**；**内置 client_id**：`--auth` 离线链路 + `orzmc mcp` + `auth/*` 适配器 + 服务端 `--demo`/`--online-mode` |
 | `swift/app` | `efbb665` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
-| `swift/lib/OrzMCKit` | `0013a89` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已发布 `v0.5.0`**；**内置 client_id**：`--auth` 离线链路 + `orzmc mcp` + 命令面收敛（`server --online-mode`/`--jvm-opts`/`--yes`、`remove --yes`、`self-uninstall --root-dir`）；命令面 #2–#5、#7、#9–#11、#14–#15、#17–#18；发版链路 `#6`；此前已发 `v0.0.6` / `v0.1.0` |
+| `swift/lib/OrzMCKit` | `0ebf8b9` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已发布 `v0.7.0`**；**内置 client_id**：`--auth` 离线链路 + `orzmc mcp` + **`client --type fabric`（fabric-meta 解析）** + 命令面全量收敛；此前已发 `v0.1.0`…`v0.6.0` |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
@@ -221,7 +221,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - [x] **`orzmc mcp` server**（已完成，见上「待办 B」）—— schema `cli-surface.md` §8.2：`initialize`/`tools/list`/`tools/call`，stdio JSON-RPC 2.0；每端一个 `orzmc mcp` 子命令，`tools/list` 由 `capabilities` 生成，`tools/call` 转调 `--json` 路径。
 
 **可选 / 治理（非阻塞）**
-- [~] **命令面单一化（路线 A）** —— 已落地：`docs/spec/cli-surface.json`（机器可读 manifest + `deviations` 收敛 backlog）+ `scripts/verify/surface.py`（结构自检接 `check.py`/父仓库 CI；对比默认只读，`--strict` 只对**未声明**漂移失败）。**本轮收敛**：Python `server --demo`/`--online-mode`；Swift `server --online-mode`（改旗标）/`--jvm-opts`/`--yes`、`remove --yes`、`self-uninstall --root-dir`。**两侧 `--strict` 已 0 未声明漂移**（已声明：Python 1、Swift 11）。**剩余**：按 `deviations` 逐条实现（客户端 fabric/forge、用户 JVM 旗标、缓存/并发、音乐提取、世界软链接/强制重下）→ 再谈两侧生成（codegen）。
+- [~] **命令面单一化（路线 A）** —— 已落地：`docs/spec/cli-surface.json`（机器可读 manifest + `deviations` 收敛 backlog）+ `scripts/verify/surface.py`（结构自检接 `check.py`/父仓库 CI；对比默认只读，`--strict` 只对**未声明**漂移失败）。**两侧 `--strict` 均 0 未声明、0 已声明漂移**（Python/Swift 完全一致）。**已收敛**：Python 全量；Swift `server --online-mode`/`--jvm-opts`/`--yes`/`--refresh`/`--symlink`/`--force-download`/`--download-threads`、`client --jvm-opts`/`--refresh`/`--extract-music`/`--download-threads`/`--type`（fabric）、`remove --yes`、`self-uninstall --root-dir`；`--jar-help` 改名 `--print-jar-help`（两侧）。**剩余**：Swift `client --type forge`（新引擎能力）→ 再评估两侧生成（codegen）与 `--strict` 接 CI。
 - [x] **一致性再扩（“彻底”）**：① `planLayout` 无 `type` 时省略 server 字段（新增 `layout/no-type-1.20.4`）；② `planClientLaunch`/`planClientDownload` 版本源统一为显式 `given.version`（新增 `*/mismatched-version-id`）。运行器新增 `absent` 断言；参考/Python/Swift 三适配器 **76/76**（Swift 适配器接缝覆盖 `id`、无 type 不产 server 字段）。
 - [x] **Python 侧反向对齐**：三适配器 **76/76** 全绿，无新增分叉。
 - [x] **Windows 真机实测**：T1 已完成服务端 E2E；CLI 新增的 `plugin`/`app`/`mcp` 无 Windows 侧差异（`app` 仅 macOS），未额外跑。
@@ -231,6 +231,14 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-16 — pi（Swift `client --type fabric` + 命令面两侧 0 偏差 + 发版 v0.7.0）
+
+- **OrzMCKit（PR #31 → 发布 `v0.7.0`）**：客户端 `--type/-t`（`vanilla|fabric`；`forge` 命令面接受、引擎待落地，运行时报 `E_UNSUPPORTED_TYPE`）。新增 `FabricMeta.resolve`（fabric-meta 最新稳定 loader → loader profile JSON，经统一 `MetadataCache`（`<root>/cache`，TTL 24h、`--refresh` 绕过）缓存）+ `ProfileAddon`/`FabricModel.profileAddon` 映射（`FabricModel.Library` 补 `sha1`/`size`/Maven `path`）；Fabric 库落地客户端 `libraries/`（classpath 递归扫描自动包含），启动主类换 `KnotClient` 并追加 loader `arguments.jvm`/`arguments.game`；新增纯计划 `GamePlan.planProfileAddonDownload`；`--json` 信封含 `type`。
+- **命令面收敛**：air 上 `orzmc --json capabilities` + `surface.py --strict` → **Swift 0 处差异**；`cli-surface.json` 移除 Swift `client --type` deviation，**两侧均 0 漂移**（Python 早已 0）。
+- **验证**：air `swift build` 绿、`swift test` **49 例**（+2；含 `ORZMC_NETWORK_SMOKE=1` **真实 fabric-meta 解析**）、conformance **76/76**（strict）；OrzMCKit CI（test + conformance）绿；发布 `v0.7.0`（macOS arm64/x86_64 + SHA256SUMS）。
+- **父仓库**：bump `swift/lib/OrzMCKit` → `0ebf8b9`（发布提交）；同步 `RELEASES.md` / `docs/spec/cli-surface.{json,md}` / 本文件。
+- **剩余**：Swift `client --type forge`（Forge installer + patched jar，新引擎能力）；`--auth` 真实 E2E（等 Mojang 审核）。
 
 ### 2026-10-16 — pi（合规单一来源 + 免责声明/隐私政策/CLI 声明 + 提交 Mojang 申请）
 

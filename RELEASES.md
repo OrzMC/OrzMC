@@ -3,7 +3,7 @@
 > 父仓库是产品组合的锚点：本文件记录 `main` 上一次基准组合的各子模块**记录指针**（gitlink）。
 > 更新：`python3 scripts/release/composition.py` 生成表格后粘贴至此；校验：`python3 scripts/verify/check.py`。
 
-## 基准组合（2026-10-15）
+## 基准组合（2026-10-16）
 
 | 子模块 | 仓库 | 分支 | 记录指针 |
 |---|---|---|---|
@@ -17,7 +17,7 @@
 | `swift/lib/ExarotonAPI` | OrzMC/ExarotonAPI | `main` | `1eea5719e44f` |
 | `swift/lib/MojangAPI` | OrzMC/MojangAPI | `main` | `bb8dbe8f821b` |
 | `swift/lib/OrzAppUpdater` | OrzGeeker/OrzAppUpdater | `main` | `b23e0c414d78` |
-| `swift/lib/OrzMCKit` | OrzMC/OrzMCKit | `main` | `42d6b806011e` |
+| `swift/lib/OrzMCKit` | OrzMC/OrzMCKit | `main` | `0ebf8b945a95` |
 | `swift/lib/OrzSwiftKit` | OrzGeeker/OrzSwiftKit | `main` | `163053f7a9f8` |
 | `swift/lib/PaperMC` | OrzMC/PaperMC | `main` | `19ae5af4452d` |
 | `tools/DeathChest` | OrzMC/death-chest | `main` | `71d257127c7e` |
