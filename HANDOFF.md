@@ -232,6 +232,17 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-17 — pi（清理个人仓库旧链接 / 文档不一致）
+
+- **背景**：子模块中不在 `OrzMC` 的只有 3 个（`OrzGeeker/OrzSwiftKit`、`OrzGeeker/OrzAppUpdater`、`aternosorg/thanos`）+ 非子模块依赖 `OrzGeeker/OrzSwiftLint`。用户决定：`OrzAppUpdater` 也是通用 App 自升级组件，与 `OrzSwiftKit`/`OrzSwiftLint` 一样**不迁移**（通用基础设施留在 OrzGeeker）；`thanos` 是第三方上游，不迁移。
+- **修复的旧链接**（违反 `product-architecture.md §7.1`「禁用会重定向的旧路径」）：
+  - `MojangAPI`（#7，`b4f0dd6`）：README Package 示例/SPI 徽章 + `openapi.yaml` 的 Repo 链接；
+  - `PaperMC`（#4，`44ef06d`）、`ExarotonAPI`（#2，`4f5c1a2`）：README 里的 Package/clone/SPI/blob 链接；
+  - 旧 SPI 路径实测 **404**，`OrzMC/*` 为 **200**（所以这不是纯措辞问题）。
+- **文档措辞**：`product-unification-plan.md` / `product-architecture.md` 把「部分依赖在个人仓库（`wangzhizhou/*`）」改为现状：引擎依赖（MojangAPI/PaperMC/ExarotonAPI）均已在 `OrzMC`，仅通用组件在 `OrzGeeker`。
+- **profile**（`OrzMC/.github` #2，`bb6b4ac`）：`thanos` 由“上游 fork”改为“直接引用上游，未 fork”（组织内确无 `OrzMC/thanos`）。
+- 保留不动：作者署名注释、`PaperMC/LICENSE` 的 Copyright、`plugin` 里对 `wangzhizhou/pi`（上游工具 fork）的引用，以及 `product-architecture.md §7.1` 的「旧路径」映射表（它就是规则本身）。
+
 ### 2026-10-17 — pi（CLI 卸载命令 self-uninstall → uninstall，规范先行）
 
 - **诉求**：`self-uninstall` 不符合 CLI 卸载命名习惯，改为 `uninstall`；**先改规范再改实现**。
