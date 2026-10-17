@@ -232,6 +232,17 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-17 — pi（发版：OrzPythonMC 2.11.0 / OrzMCKit 0.11.1）
+
+- **发版**：release-please PR python #68（2.11.0）、kit #48（0.11.0）与 kit #51（0.11.1）均用 `--admin` 合并（bot PR 触发不了检查）。
+- **产物**：python 6 平台二进制 + PyPI（`orzmc` / `orzmc-app` = 2.11.0，已核对 PyPI JSON）；kit `orzmc-macos-{arm64,x86_64}` + `SHA256SUMS`。
+- **真机验收**：
+  - 本机重新用 `python/docs/install.sh` 装 2.11.0 → `--version`、`install.conf`（`v2.11.0` / `macos-x86_64`）、`capabilities` 的 enum 均对；
+  - 下载 kit 0.11.0/0.11.1 的 x86_64 二进制实测：`--version`、`completion fish`、enum 正常。
+- **发版后修复（0.11.1）**：`server --type` 帮助仍写 `vanilla/paper`，与 0.11.0 新增的 fabric/forge 矛盾 → #50，随后 0.11.1 patch（`851f322`）已含修复（实测 0.11.1 二进制文本为 `vanilla/paper/fabric/forge`）。
+  > 注：0.11.0 与 0.11.1 资产**字节数恰好相同**，但 SHA256 不同——不要用 size 当身份。
+- **教训**：发版后必须抽一个**发布二进制**跑一遍关键 help/enum，不要只看 CI 绿；本次就是这样抓到帮助文本过期的。
+
 ### 2026-10-17 — pi（收尾 B8/B10：进度结构化 + 版本选择器）
 
 上一轮剩下两条 ⚠️ 是 Swift 侧行为契约差异，本轮全部清掉：
