@@ -47,7 +47,8 @@
 | 可执行体 | `${XDG_BIN_HOME:-$HOME/.local/bin}/orzmc` | 安装器 / `update` | **同一路径只能有一个**（F1） | [`install-update.md`](install-update.md) §2 |
 | 前端私有状态 | 前端自有位置（如 GUI 的 `UserDefaults`、窗口/缓存设置） | 该前端 | 独占 | F7 |
 
-> 机器可读版本见 [`fixtures/state/paths.json`](fixtures/state/paths.json)（供将来的 `state.paths` conformance 用例比对）。
+> 机器可读版本见 [`state-paths.json`](state-paths.json)（规范级快照，**不是** conformance 用例；
+> 将来 `state.paths` 用例应以它为预期值）。
 
 ## 3. 共存规则（条款）
 
@@ -131,7 +132,7 @@
 **待补（按优先级）**
 
 1. **`state.paths` conformance 用例**：两侧上报实际使用的状态目录 / 记录文件 / 认证文件 / 默认游戏根 /
-   补全路径，与 [`fixtures/state/paths.json`](fixtures/state/paths.json) 比对 → 防路径漂移。
+   补全路径，与 [`state-paths.json`](state-paths.json) 比对 → 防路径漂移。
 2. **`surface` 字段**：[`install-update.md`](install-update.md) §3 已声明 `surface = cli|gui`，
    但**两侧安装器都还没写**（Python `install.sh`、Swift `InstallManifest` 均缺）。这是"哪份前端装的"
    的唯一标记，补上后 F1/F2 的身份判断就不必靠猜。

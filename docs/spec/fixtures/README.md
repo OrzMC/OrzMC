@@ -39,6 +39,9 @@ python3 scripts/conformance/run.py --adapter "<cmd>" --filter cache
 
 ## 快照（离线输入）
 
+> 注：多前端共享落点的声明性快照**不在本目录**，而在 [`../state-paths.json`](../state-paths.json)——
+> 本目录下每个 `*.json`（除 `snapshots/` `schema/`）都会被当成一个用例，必须含 `specVersion/id/area/given`。
+
 | 文件 | 内容 |
 |:--|:--|
 | `snapshots/version_manifest.json` | 精简 `version_manifest_v2`（含 release/snapshot） |

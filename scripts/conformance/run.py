@@ -203,7 +203,7 @@ def main():
     if args.list:
         for p in files:
             fx = json.loads(p.read_text())
-            print(f"{fx['id']:<48} {fx['given'].get('operation')}")
+            print(f"{fx.get('id') or str(p.relative_to(FIXTURES)):<48} {fx.get('given', {}).get('operation')}")
         print(f"\n共 {len(files)} 个样例")
         return 0
     if not args.adapter:
@@ -216,10 +216,11 @@ def main():
         status, msg = run_one(cmd, p)
         counts[status] += 1
         fx = json.loads(p.read_text())
+        fid = fx.get("id") or str(p.relative_to(FIXTURES))
         mark = {"PASS": "✓", "FAIL": "✗", "SKIP": "·"}[status]
-        print(f"{mark} {status:<4} {fx['id']:<48} {msg}")
+        print(f"{mark} {status:<4} {fid:<48} {msg}")
         if status == "FAIL":
-            failures.append((fx["id"], msg))
+            failures.append((fid, msg))
 
     print(f"\nPASS={counts['PASS']} FAIL={counts['FAIL']} SKIP={counts['SKIP']}")
     if failures:
