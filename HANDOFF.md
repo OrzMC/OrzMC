@@ -60,7 +60,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端**离线**链路就绪，但 **Game Service API 审核被拒 → 真实登录不可用**；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差且 `--strict` 已进 CI**（含 enum 比对）；**元数据缓存已统一到 `<root>/cache`**；**最近发布**：Python `2.11.0` / Swift **`v0.11.1`** |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | ⓪ **合并两个 CLI 契约 0.2 分支**：`python` 的 `fix/cli-completion-acceptance` 与 `swift/lib/OrzMCKit` 的 `feat/cli-contract-0-2`（Swift 侧已按 §10.1 全部对齐并新增 CLI 验收 harness）→ 合并后各自 bump 指针。① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**已定：暂停，等 Mojang 第 2 次申请邮件回复**（不提前做，避免返工）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**（无提交编号；两周无回信按未通过处理，不再投第 3 次）；③ 认证路线（A. authlib-injector / B. BYO / C. 降级）**等回信后再拍板**，不提前动工 |
+| **下一步** | ⓪ ~~合并两个 CLI 契约 0.2 分支并 bump 指针~~ **已完成**（2026-10-20）；下一步**合并两个 release PR**：Python #70 → 2.12.0、Swift #55 → 0.13.0（合并即发版）。① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**已定：暂停，等 Mojang 第 2 次申请邮件回复**（不提前做，避免返工）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**；③ 认证路线（A. authlib-injector / B. BYO / C. 降级）**等回信后再拍板**，不提前动工 |
 
 ## 2. 状态快照（Repo State）
 
@@ -69,7 +69,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 值 |
 |---|---|
 | 分支 | `main`（跟随远端；子模块指针以 `git ls-tree HEAD` / `RELEASES.md` 为准） |
-| 工作区 | `M plugin`（本地常检出 develop，**预期**）；`M python`：分支 `fix/cli-completion-acceptance` 有 **未合并** 提交；`M swift/lib/OrzMCKit`：分支 `feat/cli-contract-0-2` 有 **未合并** 提交（CLI 契约 0.2，见 §5 2026-10-20）→ 两者都**预期，合入后再各自 bump 指针** |
+| 工作区 | 干净（`python` / `swift/lib/OrzMCKit` 的 CLI 契约 0.2 已合并并 bump）；仅 `M plugin`（本地常检出 develop，**预期**） |
 | 父仓库 CI | ✅ `.github/workflows/ci.yml` → `python3 scripts/verify/check.py` |
 | 已删除（历史） | `GEMINI.md`、`.cursor/rules/` |
 
@@ -313,7 +313,13 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
   3. Swift `remove` 把「缺 `--yes`」判在「目标是否存在」之前 → 不存在时报 `E_CANCELLED` 而非
      `E_NOT_FOUND`；改为先判存在性（与 Python 一致）。
   4. Windows 上 `frozen/completion-install-does-not-crash` 断言退出 0，但按 F6 应 `E_UNSUPPORTED` —— 用例改按平台断言。
-- 待办：**合并两个 PR → bump 两个子模块指针**；发版时按 PR 正文里的「升级须知」写进 CHANGELOG / Release notes。
+- **已合并并 bump**：`OrzPythonMC#71`（squash → `65f24a5`）、`OrzMCKit#56`（squash → `e96de48`）；
+  父仓库两次独立 `chore(submodule)` 提交（`f272e46` / `29d21b1`），父仓库 CI ✓，Pages 已重新部署 ✓。
+- **Release PR 已就绪（等人工按「合并」）**：Python **#70 → 2.12.0**、Swift **#55 → 0.13.0**；
+  两边的 `### ⚠️ 升级须知` 已手工写进 release PR 的 `CHANGELOG.md`（补全命令改道、非交互需 `--yes`、
+  错误改 stderr、用法错误退 1），CI 全绿（含 `quality` / `cli-acceptance`）。
+- **发版后**：合并 release PR 即打 tag 并触发 `release.yml`（6 平台二进制 + PyPI / 六平台资产），
+  再把升级须知同步到 GitHub Release notes。
 
 - **注意**:Swift 侧本地无法编译（本机只有 CommandLineTools，包要 Swift 6），改动以 `OrzMCKit` CI
   （macos-15，含 `cli-acceptance`）为准 —— 现已全绿。
