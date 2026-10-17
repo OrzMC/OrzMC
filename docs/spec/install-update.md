@@ -28,6 +28,9 @@
 | 游戏根目录 | `~/minecraft`（`--root-dir` 可改） | `%USERPROFILE%\minecraft` |
 
 > 规范默认二进制目录 = `${XDG_BIN_HOME:-$HOME/.local/bin}`（Python 现行），**不使用** `/usr/local/bin`。
+>
+> ⚠️ 这些位置是**所有前端共享的唯一落点**（Python CLI / Swift CLI / GUI / MCP）：
+> 共存、写入权与隔离手段见 [`frontends.md`](frontends.md) §2–§4。
 
 ---
 
@@ -46,7 +49,7 @@
 | `path_file` | | 被修改的 shell 配置文件 |
 | `path_line` | | 写入的 PATH 行（卸载按其精确匹配删除） |
 | `root_dir` | ✅ | 游戏根目录 |
-| `surface` | | `cli` / `gui`（**新增**，用于跨面识别） |
+| `surface` | | `cli` / `gui`（**新增**，用于跨面识别；**两侧安装器尚未写入**，见 [`frontends.md`](frontends.md) §7） |
 | `completion_file` | | 补全脚本路径（**新增**，卸载时一并清理） |
 
 - **PS 5.1 写 BOM** → 读取一律 `utf-8-sig`（沿用 Python 约定）。

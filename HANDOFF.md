@@ -239,6 +239,26 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-17 — pi（新增规范 `spec/frontends.md`：多前端、单数据）
+
+- **起因**：确认“同一台机器同时装 Python CLI 与 Swift CLI + App 会不会冲突”。实测结论：
+  两侧**刻意共用同一套落点**（`${XDG_STATE_HOME:-~/.local/state}/orzmc/{install.conf,auth.json}`、
+  `${XDG_BIN_HOME:-~/.local/bin}/orzmc`、`~/minecraft`、补全文件）；冲突主要集中在
+  **同名二进制占位**、**共享记录导致 uninstall 连带拆除**、**同一 profile 运行时争抢**，而非格式不兼容。
+- **维护者定位（已写入规范）**：这不是缺陷，而是设计预想——**不同实现就是同一套数据的不同“前端”，
+  规范与数据唯一、前端可以有多个，规范驱动**。
+- **产出**：
+  - 新增 [`docs/spec/frontends.md`](docs/spec/frontends.md)：模型图、数据归属表（位置/写入者/并发语义）、
+    共存规则 **F0–F9**、隔离矩阵、**新前端接入清单**、反模式、现状与待补。
+  - 新增 [`docs/spec/fixtures/state/paths.json`](docs/spec/fixtures/state/paths.json)：共享落点机器可读快照
+    （供将来的 `state.paths` conformance 用例）。
+  - 交叉引用：`spec/README.md`（§1/§2/§3）、`docs/README.md` 索引、`product-architecture.md` §1.2
+    标题改为“一个 `orzmc`，多个前端，一套数据”、`install-update.md` §2/§3、`auth.md` §5、`fixtures/README.md`。
+- **顺手抓到一个真实漂移**：`install-update.md` §3 早已声明 `install.conf` 的 `surface = cli|gui` 字段，
+  但**两侧安装器都没写**（Python `install.sh`、Swift `InstallManifest` 均缺）——已标“尚未写入”，列为待补项 2。
+- **待补**（frontends.md §7）：① `state.paths` conformance 用例（需两侧适配器各加一个 op）；
+  ② `surface` 字段落地；③ `auth.json` 跨进程刷新锁。
+
 ### 2026-10-17 — pi（第 2 次 AppID 申请已提交：launcher-only）
 
 - 维护者已在 `aka.ms/mce-reviewappid` 按新材料提交（launcher-only）。

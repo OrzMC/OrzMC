@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "specVersion": "0.1",
+  "note": "多前端共享数据的唯一落点（规范见 docs/spec/frontends.md §2）。所有实现必须使用这些位置；测试用 env 覆盖属于「同一规范的另一套数据实例」（frontends.md F9）。",
+  "unix": {
+    "stateDir": "${XDG_STATE_HOME:-$HOME/.local/state}/orzmc",
+    "installRecord": "<stateDir>/install.conf",
+    "installRecordFallback": "<binaryDir>/.orzmc-manifest",
+    "authSession": "<stateDir>/auth.json",
+    "binary": "${XDG_BIN_HOME:-$HOME/.local/bin}/orzmc",
+    "gameRoot": "$HOME/minecraft",
+    "completion": {
+      "bash": "$HOME/.local/share/bash-completion/completions/orzmc",
+      "zsh": "$HOME/.zsh/completions/_orzmc",
+      "fish": "$HOME/.config/fish/completions/orzmc.fish"
+    }
+  },
+  "windows": {
+    "stateDir": "%LOCALAPPDATA%\\orzmc",
+    "installRecord": "<stateDir>\\install.conf",
+    "installRecordFallback": "<binaryDir>\\.orzmc-manifest",
+    "authSession": "<stateDir>\\auth.json",
+    "binary": "%LOCALAPPDATA%\\Programs\\orzmc\\orzmc.exe",
+    "gameRoot": "%USERPROFILE%\\minecraft"
+  },
+  "installRecordFields": [
+    "tool",
+    "schema",
+    "version",
+    "platform",
+    "install_dir",
+    "binary",
+    "source",
+    "path_file",
+    "path_line",
+    "root_dir",
+    "surface",
+    "completion_file"
+  ],
+  "installRecordSurfaceValues": ["cli", "gui"],
+  "isolationEnv": {
+    "XDG_STATE_HOME": "状态目录（install.conf / auth.json）",
+    "ORZMC_BIN": "二进制安装目录",
+    "--root-dir": "游戏根目录"
+  }
+}

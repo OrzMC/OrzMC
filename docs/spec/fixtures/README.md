@@ -35,6 +35,7 @@ python3 scripts/conformance/run.py --adapter "<cmd>" --filter cache
 | `server-launch/` | `planServerLaunch` | data-model §10 / B7 |
 | `server-lifecycle/` | `normalizeExit` | B7 退出码归一 |
 | `auth/` | `auth*`（见 [`auth.md`](../auth.md) §9） | 正版授权纯映射（设备码流程 / 令牌 / 错误） |
+| `state/` | —（待补 `state.paths`） | 多前端共享落点（见 [`frontends.md`](../frontends.md) §2）：仅供将来用例比对，当前为声明性快照 |
 
 ## 快照（离线输入）
 

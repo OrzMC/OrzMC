@@ -33,6 +33,7 @@
 | [spec/auth.md](spec/auth.md) | 草案 | 正版授权契约：Microsoft 设备码流程、令牌持久化、非 TTY、错误码、安全要求 | docs/spec/ |
 | [auth-application.md](auth-application.md) | 待提交 | **Game Service API 申请材料**（Mojang 审核）：表单短答、项目描述、数据/合规说明、跟踪 | docs/ |
 | [spec/install-update.md](spec/install-update.md) | 草案 | 安装/自升级/跨面安装：无 sudo、Shell 自动识别、补全、GUI↔CLI 双渠道兜底 | docs/spec/ |
+| [spec/frontends.md](spec/frontends.md) | 草案 | **多前端与共享数据契约**：规范/数据唯一、数据归属、共存规则 F1–F9、隔离手段、新前端接入 | docs/spec/ |
 | [spec/conformance.md](spec/conformance.md) | 草案 | 一致性套件与黄金样例：fixture 格式、断言规则、覆盖矩阵、CI 接线 | docs/spec/ |
 | [spec/fixtures/README.md](spec/fixtures/README.md) | 草案 | **黄金样例**（76 个 `given→expect`）+ 钉住快照 + 样例格式 schema | docs/spec/fixtures/ |
 | [swift-conformance-design.md](swift-conformance-design.md) | 草案 | **Swift 引擎一致性设计**：能力地图、与规范差距、适配器设计、跨仓库改造清单与顺序 | docs/ |

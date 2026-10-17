@@ -161,6 +161,9 @@
 | 日志 | 任何日志 / 错误信息 / `--json` **禁止**出现 token（见 §8） |
 
 > 不把令牌放在游戏根目录（`--root-dir`），避免随世界/备份/分享外泄。
+>
+> ⚠️ `auth.json` 是**所有前端共享的唯一会话**（Python CLI / Swift CLI / GUI / MCP）：schema 必须互相可读，
+> 但**同一时刻应只有一个前端刷新令牌**（后写者覆盖先写者）——见 [`frontends.md`](frontends.md) F4。
 
 ---
 

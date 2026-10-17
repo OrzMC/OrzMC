@@ -17,12 +17,17 @@ OrzMC 的工具产品（见 [`../product-architecture.md`](../product-architectu
 - **产品面契约**：CLI 命令面、GUI 与 CLI 的互相安装/打开接口。
 - **一致性样例**：黄金样例（golden fixtures），供各实现跨语言验证。
 
-> 规范的**唯一目的**：让不同语言、不同平台的实现**行为一致**，且可被独立验证。
+> **规范的唯一目的**：让不同语言、不同平台的实现**行为一致**，且可被独立验证。
+>
+> **形态模型**：规范唯一、**数据唯一**、前端多个——CLI（Python / Swift）、GUI、`orzmc mcp`、agent 与脚本
+> 都是同一套数据的不同**前端**，共存与写入权规则见 [`frontends.md`](frontends.md)。
 
 ## 2. 原则
 
 1. **规范不依赖实现**，实现必须可映射到规范；不把某语言的实现当成标准。
 2. **语言无关**：以 Markdown + JSON 样例表达；稳定后再补 JSON Schema。
+   **一种数据、多种前端**：实现（无论语言/形态）只允许作为**前端**读写同一套契约数据，不得长出自有格式
+   （见 [`frontends.md`](frontends.md) F0）。
 3. **可验证**：每个契约都有对应的一致性样例，实现跑样例即可证伪。
 4. **最小**：只规范化"核心逻辑"；各产品面的差异化交互不进规范。
 5. **版本化**：`specVersion` 独立演进，破坏性变更升 major。
@@ -37,6 +42,7 @@ OrzMC 的工具产品（见 [`../product-architecture.md`](../product-architectu
 | [`cli-surface.md`](cli-surface.md) | CLI 命令面契约（统一 Swift/Python 命令与参数；含机器可读 manifest [`cli-surface.json`](cli-surface.json)） | 草案 |
 | [`auth.md`](auth.md) | 正版授权契约（Microsoft 设备码流程 / 令牌 / 错误码 / 安全） | 草案 · 离线优先 |
 | [`install-update.md`](install-update.md) | 安装 / 自升级 / 跨面安装（GUI↔CLI、双渠道兜底、补全） | 草案 |
+| [`frontends.md`](frontends.md) | **多前端与共享数据契约**：数据归属、共存规则 F1–F9、隔离手段、新前端接入清单 | 草案 |
 | [`conformance.md`](conformance.md) | 一致性套件与黄金样例 | 草案 |
 | [`fixtures/`](fixtures/README.md) | 黄金样例（`given→expect`）+ 快照 + schema + 运行器说明 | 草案 · 已落地 76 例 |
 
