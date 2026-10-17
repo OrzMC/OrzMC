@@ -148,3 +148,21 @@
 | 游戏根 | `~/minecraft` | 同 | ✅ |
 | 补全安装路径 | bash/zsh/fish（+ powershell 仅生成） | bash/zsh/fish | ✅（powershell 交互差异） |
 | 自升级渠道 | `OrzMC/OrzPythonMC` | `OrzMC/OrzMCKit` | ✅ 设计如此（两个发布通道，F3） |
+
+### 7.1 GUI 前端（`OrzMCApp`）接入现状
+
+GUI 是同一个 `Game` 引擎的**第三个前端**（不走命令面，因此不参与 `cli-surface` /
+conformance 比对）；它**不持有自己的下载/版本/认证格式**。
+
+| 能力 | 状态 | 说明 |
+|:--|:--|:--|
+| 客户端下载 / 启动 | ✅ 共用引擎 | `GUIClient: Game.Client` → `downloadClient` / `launchClient` |
+| 服务端 deploy（vanilla/paper/fabric/forge） | ✅ 共用引擎 | `GUIServer` 只做类型分发 → `Game/Server/Deploy/*` |
+| 进度 | ✅ 共用引擎 | `Game.LaunchProgress`（count/bytes、不定长），与 CLI 同一语义（B8） |
+| Java 运行时 | ✅ 共用引擎 | 只读 `<root>/java/<major>`（托管 JRE），不探系统 JDK |
+| 认证（`auth.json`） | ⏳ 未接线 | 引擎 `Game/Auth/*` 就绪；真实登录被 Mojang 审核阻塞（见 `auth.md` §10） |
+| `install.conf` 的 `surface = gui` | ⏳ 未落地 | 依赖上面的待补项 2 先改规范 |
+| 反向「安装/打开 `orzmc` CLI」 | ⏳ 未落地 | D7「互相安装/打开」目前只有 CLI → GUI 一半（`orzmc app`） |
+
+> 发布通道：GUI 走 Developer ID + notarize + appcast（Sparkle），与前两个 CLI 通道并列，
+> 因此 `update` 的 F3 护栏对它不适用（它不替换 PATH 上的 `orzmc`）。

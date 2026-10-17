@@ -60,7 +60,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端**离线**链路就绪，但 **Game Service API 审核被拒 → 真实登录不可用**；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差且 `--strict` 已进 CI**（含 enum 比对）；**元数据缓存已统一到 `<root>/cache`**；**最近发布**：Python `2.11.0` / Swift **`v0.11.1`** |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | ① **第 2 次申请已于 2026-10-17 提交，等邮件结果**（无提交编号；两周无回信按未通过处理，不再投第 3 次）；② 并行推进 **authlib-injector / Yggdrasil**（不依赖白名单的正版联机主路） |
+| **下一步** | ① **App Phase A 已提交 PR，等合并**（引擎 OrzMCKit #52 先、GUI OrzMCApp #25 后）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**（无提交编号；两周无回信按未通过处理，不再投第 3 次）；③ 并行推进 **authlib-injector / Yggdrasil**（不依赖白名单的正版联机主路） |
 
 ## 2. 状态快照（Repo State）
 
@@ -218,6 +218,10 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - [x] **一致性｜新增操作**：`planClientDownload`（客户端下载清单）与 `normalizeExit`（B7 退出码归一，暴露并修了 Python 服务端退出码未归一的分叉）；参考 + Python + Swift 三适配器 **53/53**。
 **剩余项（下一会话，非阻塞）**
 
+- [ ] **App Phase B/C（适配后续）** —— Phase A（服务端四类型/结构化进度/托管 JRE）已进 PR。剩余：
+  ① `install.conf` 的 `surface = cli|gui`（**先改规范** `install-update.md` §3）；
+  ② GUI 反向「安装/打开 `orzmc` CLI」入口（D7 的另一半）；
+  ③ GUI 认证 UI —— **等 authlib-injector / BYO 决策**，现在做会返工。见 `spec/frontends.md` §7.1。
 - [ ] **`--auth`（正版授权）** —— **离线优先**（安全敏感；`client_id` 依赖项待维护者注册）。
   - 现状：`--auth` 两端**离线链路已实现**（阶段 A/B/C ✅：契约 + 纯映射 + 令牌存储/设备码编排 + CLI 接线）；仅剩阶段 D（注册 `client_id` 后的真实 E2E）。
   - **[x] 阶段 A（父仓库，已完成）**：`docs/spec/auth.md` 定稿（Microsoft 设备码流程 → XBL → XSTS → MC → profile；令牌模型/持久化/刷新；非 TTY/`--json`；错误码 `E_AUTH*`；安全红线）；`reference.py` 新增 **13 个 `auth*` 纯映射操作**；`docs/spec/fixtures/auth/` **20 例**（参考适配器 **73/73**）；同步 `cli-surface` / `data-model` / `install-update` / `conformance` / `fixtures README`。
@@ -238,6 +242,39 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-17 — pi（App Phase A：GUI 收回成纯适配器）
+
+**起因**：CLI 侧基本收敛完了，问「macOS App 是否需要先改造适配」。核对结论：共核已完成大半
+（`GUIClient`/`GUIServer`/`GamePlan`/托管 JRE），但 GUI 仍有三处「自成一套」——服务端只支持
+vanilla/paper、进度只有一个 `Double`、Java 状态读系统 JDK 并引导手动装。Phase A 只做这三件事。
+
+**引擎（OrzMCKit #52，分支 `feat/gui-progress-observer`）**
+- 新增 `Game.LaunchProgress`（kind/completed/total/label/fraction/isComplete），由 `TransferProgress` 映射；
+  前端不必依赖 `TransferKit`，也不必假装有控制台。
+- `ProgressReporter(observer:)`、`Client.downloadClient(onProgress:onEvent:)`、`ServerInfo.onProgress`
+  把同一条进度并行发给前端；CLI 不传 → 行为不变。
+- Vanilla/Paper/Fabric/Forge 部署进度全部接观察者；`ForgeMeta.downloadInstaller(onEvent:)`。
+- **Paper 服务端改流式落盘**（临时件 → 原子替换），此前整包 `Data` 堆内存。
+
+**GUI（OrzMCApp #25，分支 `feat/phase-a-engine-adapters`）**
+- `GUIServer` 206 → 22 行，只做类型分发；删掉自写 Paper/Vanilla 下载（无续传/校验/重试）与
+  「fabric/forge 暂未接入」缺口。`SettingsModel.ServerSoftware` 增 Fabric/Forge，详情页按四种核心统一渲染。
+- `LaunchProgressHandler: Double → Game.LaunchProgress`；`GameModel` 保存阶段标题/已完成/总量/单位，
+  **不定长时不画假 0%**（旋转指示器 + 阶段文案）。
+- `JavaRuntimeService` 只扫 `<root>/java/<major>`（`JavaRuntime.managedExecutable`），状态语义
+  `valid` / `missing`（启动自动安装）；**删除侧栏手动 Download/Install JDK**（与 B5 托管冲突）。
+
+**验证（air）**：引擎 `swift build` 绿、`swift test` **86 tests/22 suites**、conformance **76/76**、
+`surface.py --strict` 0 差异；GUI `xcodebuild build` 绿（对引擎 feat 分支，air 上临时把 pbxproj 的
+`branch = main` 指向 feat 分支，未提交）、`swift test` 4 suites 绿；真实 smoke：
+`orzmc server --type paper` → 下载 100% → Paper 启动成功（已清理）。
+
+**⚠️ 合并顺序**：**先 #52（引擎）再 #25（GUI）**。GUI 用 HEAD 制解析 `main`，引擎未合并时 GUI CI 必红。
+
+**剩余（Phase B/C，未做）**：① `install.conf` 的 `surface = cli|gui`（需先改 `install-update.md` §3）；
+② GUI 反向「安装/打开 CLI」入口（D7 的另一半）；③ GUI 认证 UI —— **等 authlib-injector / BYO 决策**，
+现在做会返工。
 
 ### 2026-10-17 — pi（新增规范 `spec/frontends.md`：多前端、单数据）
 

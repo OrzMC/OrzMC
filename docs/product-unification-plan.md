@@ -334,3 +334,4 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 2026-10-15 | 规范 `cli-surface.md` §8.2 定稿（`orzmc mcp`，stdio JSON-RPC 2.0）；Python/Swift 两端 `orzmc mcp` 实现 | pi |
 | 2026-10-15 | 一致性再扩：运行器新增 `absent` 断言；`planLayout` 无 `type` 省略 server 字段；`planClientLaunch`/`planClientDownload` 版本源统一为显式 `given.version`（三适配器 **76/76**） | pi |
 | 2026-10-15 | 命令面单一化（路线 A）：`cli-surface.json` 机器可读 manifest + `scripts/verify/surface.py`（结构自检接 CI；`deviations` 收敛 backlog；`--strict` 只对未声明漂移失败）；Python/Swift 各收敛一批（server demo/online-mode、jvm-opts、remove --yes、self-uninstall --root-dir 等） | pi |
+| 2026-10-17 | app Phase A：GUI 收回成纯适配器——服务端四类型走 `Game/Server/Deploy/*`、进度改 `Game.LaunchProgress`（B8 语义）、Java 只认托管 JRE `java/<major>`（删除系统 JDK 探测与手动下载） | pi |
