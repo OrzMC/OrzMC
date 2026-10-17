@@ -143,7 +143,7 @@ orzmc completion install        # 按 $SHELL 落盘安装(幂等)
 | 项 | 契约 |
 |:--|:--|
 | 脚本生成 | `completion <shell>` 把脚本写 **stdout**；`--json` → `data = {mode:"script", shell, script}`。`shell` **回显请求值**（`pwsh` 不折叠成 `powershell`） |
-| shell 判定 | `install` **只读环境变量**：`$SHELL` 的 basename（去 `.exe`、小写）；Windows 无 `$SHELL` 视为 `powershell`。**禁止做进程探测**（冻结二进制/沙箱里不可靠，见 §10 备注） |
+| shell 判定 | `install` **只读环境变量**：`$SHELL` 的 basename（去 `.exe`、小写）；Windows 无 `$SHELL` 视为 `powershell`（按**平台**判定，**不得**用 `$PSModulePath` 猜平台 —— 装了 pwsh 的 Linux/macOS 也有它，CI 上真踩过）。**禁止做进程探测**（冻结二进制/沙箱里不可靠，见 §10 备注） |
 | 判定失败 | `E_USAGE`，消息里给出可执行退路：`orzmc completion <shell>`（手动落盘） |
 | 落点 | 固定路径见 [`frontends.md`](frontends.md) F6 / [`state-paths.json`](state-paths.json)；`powershell`/`pwsh` **不落盘**（只生成脚本） |
 | `powershell`/`pwsh` 的 `install` | `E_UNSUPPORTED`（不是「成功但没装」），消息要说明改用 `completion <shell>` 手动加入 `$PROFILE` |
