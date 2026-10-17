@@ -232,6 +232,18 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-17 — pi（一份规格约束两套实现：补齐缺口 + 校验可发现）
+
+用户问「CLI 改造完成了吗 / 满足一份规格约束两种实现吗」。实跑核对后发现：**命令面 0 漂移、conformance 76×3 全绿、两侧 CI 已接**，但有 4 个功能层缺口，且 `surface.py` **不比 enum**，所以“声明了没实现”会静默漏掉。本轮全做：
+
+1. **校验器纳入 enum 比对**（父仓库 `8511b12`）：`surface.py` 对 manifest 的 `option.enum` 与实现 `capabilities` 上报值做集合比对，缺值/多值均为漂移；未上报视为 unknown（只提示）。`cli-surface.json` 新增 `deviations.{python,swift}`，已声明 `app --channel appstore`（App Store 未上架）。
+2. **Python 上报枚举**（#67 `74578c1`）：`introspect.ENUM_VALUES` → capabilities `enum`；MCP `inputSchema` 透传。
+3. **Swift 补齐服务端 fabric/forge**（#46 `04df994`）：`FabricServer`（先落 vanilla `server.jar`，再跑 fabric-installer 生成 launcher）、`ForgeServer`（promotions → 官方安装器 → shim+`libraries/` 或旧版 universal）；`GamePlan.Layout.serverBuildDir`、`ServerInfo.refresh`、`ServerCommand` 四类型接线。
+4. **Swift 补齐补全 + 上报枚举 + 升级护栏**（#47 `9f91bee`）：`completion fish/powershell/pwsh`（与 `capabilityList()` 同源渲染）、`capabilityEnums`、MCP schema enum；`update` 对齐 Python 三个坑（安装记录护栏 / `.orzmc-update.log` / staging 失败清理）。
+
+**验证**：air `swift test` 70 tests/18 suites；conformance 76/76；`surface.py --strict` Python/Swift 均 **0 处未声明差异**（各 1 处已声明）；`check.py` 全绿。
+**文档**：`behavior.md` 按代码刷新 B1–B11（Swift 仅余 B8 运行时进度、B10 snapshot 渠道/搜索）；`product-unification-plan.md` 进度表更新；`spec/README.md` §5 改为「已对齐/仍待统一」。
+
 ### 2026-10-17 — pi（清理个人仓库旧链接 / 文档不一致）
 
 - **背景**：子模块中不在 `OrzMC` 的只有 3 个（`OrzGeeker/OrzSwiftKit`、`OrzGeeker/OrzAppUpdater`、`aternosorg/thanos`）+ 非子模块依赖 `OrzGeeker/OrzSwiftLint`。用户决定：`OrzAppUpdater` 也是通用 App 自升级组件，与 `OrzSwiftKit`/`OrzSwiftLint` 一样**不迁移**（通用基础设施留在 OrzGeeker）；`thanos` 是第三方上游，不迁移。

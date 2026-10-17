@@ -49,17 +49,18 @@ OrzMC 的工具产品（见 [`../product-architecture.md`](../product-architectu
 | CLI 面 | `orzmc-app`（typer；`orzmc mcp` = stdio JSON-RPC，`cli/mcp.py`） | `OrzMCKit` 的 `orzmc` 可执行（`MCPServer`/`MCPCommand`） |
 | 正版授权 | `orzmc/core/auth.py`（离线已实现，`client_id` 待注册） | `swift/lib/OrzMCKit/Sources/Game/Auth/*`（离线已实现） |
 | GUI 面 | —（无） | `OrzMCApp`（SwiftUI） |
-| 安装/自升级 | `orzmc/services/selfinstall.py`、`selfupdate.py`、`docs/install.sh|ps1` | App 安装器 + `OrzAppUpdater`（待对齐） |
+| 安装/自升级 | `orzmc/services/selfinstall.py`、`selfupdate.py`、`docs/install.sh|ps1` | App 安装器 + `OrzAppUpdater`；CLI 自升级 `SelfUpdate`（已对齐 §6：staging / 分离助手 + `.orzmc-update.log` / 安装记录护栏） |
 
 ## 5. 已知差异（规范要统一的靶子）
 
-见 [`../product-architecture.md`](../product-architecture.md) 第 8 章。首当其冲：
+见 [`../product-architecture.md`](../product-architecture.md) 第 8 章。
 
-- **根目录布局**：Python `versions/<v>/...` vs Swift `manifest/<v>/...` —— 规范选定唯一布局。
-- **类型支持**：Python 客户端 `vanilla/fabric/forge`、服务端 `vanilla/paper/fabric/forge`；
-  Swift 客户端 `vanilla/fabric/forge`（Forge 仅现代 ForgeBootstrap，1.20.4+/49.x；旧版显式报错）、服务端 `vanilla/paper`。
-- **Java 获取**：Python 托管 JRE 到 `java/<major>/`；Swift 依赖外部 Java。
-- **进度模型 / 缓存策略**：两边不同，规范统一。
+- **根目录布局**：**已统一**——两侧均为 `versions/<v>/{client,server/<type>}/…`（`GamePlan.Layout` ↔ `PathLayout`，`layout/*` 6 例通过）。
+- **类型支持**：**已对齐**——客户端两侧 `vanilla/fabric/forge`（Swift 的 Forge 仅现代 ForgeBootstrap 1.20.4+/49.x，旧版显式报错）；
+  服务端两侧 `vanilla/paper/fabric/forge`（Swift 于 0.11.0 补齐 fabric/forge：fabric-installer / 官方安装器，含 shim+`libraries/` 与旧版 universal 两种产物布局）。
+- **Java 获取**：**已对齐**——两侧都托管到 `java/<major>/`（Swift `Game/Java/JavaRuntime` 经 `RuntimeKit` 装 Adoptium JRE）。
+- **缓存策略**：**已对齐**——Swift `CacheKit.MetadataCache` 与 Python `infra/cache.py` 同 TTL/refresh/离线回退契约（B1）。
+- **仍待统一**：进度运行时结构（Swift 仍是单一 fraction，B8）、版本选择器的 snapshot 渠道/搜索（Swift 仅 release，B10）。
 
 ## 6. 如何贡献 / 修改规范
 
