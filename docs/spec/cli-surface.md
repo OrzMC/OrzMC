@@ -1,6 +1,6 @@
 # CLI 命令面契约（CLI Surface Contract）
 
-> **状态**：草案 `specVersion 0.2` ｜ **最后更新**：2026-10-20
+> **状态**：草案 `specVersion 0.2` ｜ **最后更新**：2026-10-18
 > `0.2`：补全契约定稿（`completion install` 的 shell 判定 / 落点 / 错误码 / `data.hint`）、
 > 解析错误退出码归一、错误一律 stderr、`-h` 与 `--help` 等价、明确禁止框架自带补全安装选项。
 > 目标：Swift CLI（`OrzMCKit` 的 `orzmc`）与 Python CLI（`orzmc-app`）收敛为**同一个工具**——
@@ -429,7 +429,7 @@ stdout **只**输出 JSON-RPC 消息，日志 / 进度一律走 stderr。非交�
 5. 开启补全（`add_completion=True`）✅。
 6. `mcp` 本地 MCP server（§8.2）✅。
 
-### 10.1 2026-10-20 契约增补（`specVersion 0.2`）的落实清单
+### 10.1 2026-10-18 契约增补（`specVersion 0.2`）的落实清单
 
 | 项 | Python | Swift |
 |:--|:--:|:--:|

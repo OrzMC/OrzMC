@@ -60,7 +60,7 @@
 
 **F2 记录共享、卸载一致**：`install.conf` 是**唯一的安装事实**。任一前端的 `uninstall` 都必须按它执行：
 移除二进制、删除记录、清理补全文件、按 `path_line` 精确删除 PATH 行、可选删游戏根。
-（`completion_file` 已落地：P ✅ 2026-10-20 起由 `completion install` 登记、`uninstall` 删除；S ✅ 早已实现。）
+（`completion_file` 已落地：P ✅ 2026-10-18 起由 `completion install` 登记、`uninstall` 删除；S ✅ 早已实现。）
 由于这会**连带拆掉另一份前端**，`uninstall` 必须保留二次确认（`--yes`）与危险目录护栏。
 
 **F3 更新不越界**：`update` 只替换**自己正在运行的那份二进制**，且只有在
@@ -92,7 +92,7 @@
 | 登记 | 落盘后把路径写进 `install.conf` 的 `completion_file`（F2） |
 | 失败 | 判定不出 shell → `E_USAGE` 并提示 `orzmc completion <shell>`；写盘失败 → 明确报错（不静默） |
 
-- 现状：`P` ✅（`orzmc_app/cli/completions.py`，2026-10-20）；`S` ✅（`OrzMC/CompletionCommand.swift` 已对齐：落点/幂等/rc 边界/`completion_file`/`data.hint`/`E_USAGE`；安装器另自动调用一次）。
+- 现状：`P` ✅（`orzmc_app/cli/completions.py`，2026-10-18）；`S` ✅（`OrzMC/CompletionCommand.swift` 已对齐：落点/幂等/rc 边界/`completion_file`/`data.hint`/`E_USAGE`；安装器另自动调用一次）。
 
 **F7 私有状态不污染共享层**：前端专有的持久化（GUI 窗口状态、同步/缓存偏好等）放在前端自有位置，
 **不得**写进状态目录的契约文件、也不得写进游戏根的契约布局。

@@ -3,7 +3,7 @@
 > 父仓库是产品组合的锚点：本文件记录 `main` 上一次基准组合的各子模块**记录指针**（gitlink）。
 > 更新：`python3 scripts/release/composition.py` 生成表格后粘贴至此；校验：`python3 scripts/verify/check.py`。
 
-## 基准组合（2026-10-16）
+## 基准组合（2026-10-18）
 
 | 子模块 | 仓库 | 分支 | 记录指针 |
 |---|---|---|---|
@@ -11,13 +11,13 @@
 | `plugin` | OrzMC/OrzMCPlugin | `main` | `5eadd6e5b4c8` |
 | `profile` | OrzMC/.github | `main` | `bb6b4ac4c66c` |
 | `proxy` | OrzMC/OrzMCProxy | `main` | `3cc949cdb2e7` |
-| `python` | OrzMC/OrzPythonMC | `main` | `6e0f7e4b0000` |
+| `python` | OrzMC/OrzPythonMC | `main` | `65f24a5b17a7` |
 | `site` | OrzMC/OrzMCSite | `main` | `88e14b1d178b` |
-| `swift/app` | OrzMC/OrzMCApp | `main` | `eba6fd5521df` |
+| `swift/app` | OrzMC/OrzMCApp | `main` | `50b08a64c6c3` |
 | `swift/lib/ExarotonAPI` | OrzMC/ExarotonAPI | `main` | `4f5c1a28985d` |
 | `swift/lib/MojangAPI` | OrzMC/MojangAPI | `main` | `b4f0dd6c651b` |
 | `swift/lib/OrzAppUpdater` | OrzGeeker/OrzAppUpdater | `main` | `b23e0c414d78` |
-| `swift/lib/OrzMCKit` | OrzMC/OrzMCKit | `main` | `851f32200000` |
+| `swift/lib/OrzMCKit` | OrzMC/OrzMCKit | `main` | `e96de486ff0b` |
 | `swift/lib/OrzSwiftKit` | OrzGeeker/OrzSwiftKit | `main` | `01dc67535939` |
 | `swift/lib/PaperMC` | OrzMC/PaperMC | `main` | `44ef06df0ca2` |
 | `tools/DeathChest` | OrzMC/death-chest | `main` | `71d257127c7e` |

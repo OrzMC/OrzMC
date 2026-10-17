@@ -1,6 +1,6 @@
 # 安装 / 自升级 / 跨面安装契约（Install & Update Contract）
 
-> **状态**：草案 `specVersion 0.3` ｜ **最后更新**：2026-10-20
+> **状态**：草案 `specVersion 0.3` ｜ **最后更新**：2026-10-18
 > 支撑产品形态「一个 `orzmc`、CLI 与 GUI 两面、可互相安装/打开」（见 [`../product-architecture.md`](../product-architecture.md) §1.2）。
 > **基线**：复用 Python 现有安装体验（用户认可），并吸收 Swift 亮点。
 
@@ -114,7 +114,7 @@
 | 安装器写 `completion_file` | ✅（Unix） | ✅ |
 | 安装器 e2e 覆盖 | ✅（`scripts/accept_selfupdate.py` 3b 步骤） | —（安装器脚本由 release 流程跑） |
 
-> 现状说明（2026-10-20 补齐）：
+> 现状说明（2026-10-18 补齐）：
 > - **Unix 两侧**都自动装补全并登记 `completion_file`；`--no-modify-rc` / `ORZMC_NO_RC=1`
 >   会**一并跳过补全**（该开关承诺不碰 shell 配置，而补全可能补一行 rc）。
 > - **Windows**：`install.ps1` 解析 `-no-completion`，但按 `frontends.md` F6

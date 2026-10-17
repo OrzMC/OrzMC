@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-10-20 by pi
+> **最后更新**：2026-10-18 by pi
 
 ---
 
@@ -60,7 +60,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端**离线**链路就绪，但 **Game Service API 审核被拒 → 真实登录不可用**；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差且 `--strict` 已进 CI**（含 enum 比对）；**元数据缓存已统一到 `<root>/cache`**；**最近发布**：Python `2.11.0` / Swift **`v0.11.1`** |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | ⓪ ~~合并两个 CLI 契约 0.2 分支并 bump 指针~~ **已完成**（2026-10-20）；下一步**合并两个 release PR**：Python #70 → 2.12.0、Swift #55 → 0.13.0（合并即发版）。① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**已定：暂停，等 Mojang 第 2 次申请邮件回复**（不提前做，避免返工）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**；③ 认证路线（A. authlib-injector / B. BYO / C. 降级）**等回信后再拍板**，不提前动工 |
+| **下一步** | ⓪ ~~合并分支 / 发版~~ **已完成**（2026-10-18）：Python **2.12.0** 与 Swift **0.13.0** 均已发布（Release 资产 + PyPI / 升级须知已进 Release notes）；用**已发布**的 `orzmc-macos-x86_64` 复跑 CLI 验收 24/24。① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**已定：暂停，等 Mojang 第 2 次申请邮件回复**（不提前做，避免返工）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**；③ 认证路线（A. authlib-injector / B. BYO / C. 降级）**等回信后再拍板**，不提前动工 |
 
 ## 2. 状态快照（Repo State）
 
@@ -245,7 +245,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
-### 2026-10-20 — pi（CLI 契约 0.2：冻结二进制补全崩溃 + CLI 自动化验收；Python 分支待合）
+### 2026-10-18 — pi（CLI 契约 0.2：冻结二进制补全崩溃 + CLI 自动化验收；已发 Python 2.12.0 / Swift 0.13.0）
 
 **触发**：用户实测发布版 `orzmc --install-completion` / `--show-completion` 崩在
 `RuntimeError: Shell detection not implemented for 'posix'`。
@@ -302,7 +302,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
   + 记录 `completion_file` + 卸载清理」（Unix），Windows 按 F6 不落盘；`accept_selfupdate.py`
   新增 3b) 步骤覆盖这条链路（HOME 也关进沙箱）。Windows 真机 PS 5.1 上验证过 install.ps1 的解析/安装记录。
 
-**PR 与 CI（2026-10-20）**
+**PR 与 CI（2026-10-18）**
 - Python **#71** <https://github.com/OrzMC/OrzPythonMC/pull/71>；Swift **#56** <https://github.com/OrzMC/OrzMCKit/pull/56>。
 - 两端都已全绿：Python `quality` + 6×`test`，另用 `gh workflow run ci.yml -f full=true`
   跑了 **6×`binary`（冻结二进制 CLI 验收）+ 6×`installer`**；Swift `test` / `conformance` / **`cli-acceptance`**。
@@ -318,8 +318,15 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - **Release PR 已就绪（等人工按「合并」）**：Python **#70 → 2.12.0**、Swift **#55 → 0.13.0**；
   两边的 `### ⚠️ 升级须知` 已手工写进 release PR 的 `CHANGELOG.md`（补全命令改道、非交互需 `--yes`、
   错误改 stderr、用法错误退 1），CI 全绿（含 `quality` / `cli-acceptance`）。
-- **发版后**：合并 release PR 即打 tag 并触发 `release.yml`（6 平台二进制 + PyPI / 六平台资产），
-  再把升级须知同步到 GitHub Release notes。
+- **已发版（2026-10-18）**：Python **v2.12.0**（Release 6 平台资产齐、`orzmc` / `orzmc-app` 双双上 PyPI 2.12.0、
+  Pages 已重部署）与 Swift **v0.13.0**（`orzmc-macos-{arm64,x86_64}` + `SHA256SUMS`）。
+  两边的「升级须知」已补进 **GitHub Release notes**（release-please 生成 notes 时用的是 PR 创建时的快照，
+  手工改 CHANGELOG 不会自动带进 notes —— 合并后必须 `gh release edit --notes-file` 再同步一次）。
+- **发版后验证**：直接下载 **已发布** 的 `orzmc-macos-x86_64`（v2.12.0）跑 `scripts/accept_cli.py --cli …`
+  → **24/24 通过**（含曾经必崩的 `completion install` / `--show-completion`），确认用户拿到的产物是修好的。
+- **流程教训（已记进 CONTRIBUTING）**：release-please 会 force-push 自己的分支，手工写进 release PR 的
+  CHANGELOG 段落可能在它下一次更新时被覆盖 → 「升级须知」在**合并前最后一刻**加，或合并后用
+  `gh release edit` 补到 Release notes（本次就是后者）。
 
 - **注意**:Swift 侧本地无法编译（本机只有 CommandLineTools，包要 Swift 6），改动以 `OrzMCKit` CI
   （macos-15，含 `cli-acceptance`）为准 —— 现已全绿。
