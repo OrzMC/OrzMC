@@ -1,6 +1,6 @@
 # 行为契约（Behavior Contracts）
 
-> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-13
+> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-17（现状列已按代码重新核验）
 > 定义实现必须一致的**行为**（而非数据形状）。每条契约都应有对应一致性样例（见 [`conformance.md`](conformance.md)）。
 > 标注：`P`=Python 现状、`S`=Swift 现状；✅ 已符合 / ⚠️ 需对齐 / ❌ 缺失。
 
@@ -16,7 +16,7 @@
 | 失败回退 | 拉取失败 → 回退磁盘上（可能过期的）旧副本并 warn；完全无缓存才报错 |
 | 时钟容忍 | `-_FUTURE_SKEW(300s) <= now - mtime < ttl`（容忍小幅未来时间戳） |
 
-- 现状：`P` ✅（`infra/cache.py`）；`S` ❌（无统一缓存层）→ 需补。
+- 现状：`P` ✅（`infra/cache.py`）；`S` ✅（`OrzSwiftKit/CacheKit` 的 `MetadataCache`：同一 TTL/refresh/离线回退契约，`Mojang+Cache` 注入目录与策略）。
 - 样例：过期/未过期/刷新/离线回退/未来时间戳 5 组。
 
 ## B2 下载并发
@@ -53,7 +53,7 @@
 | 建目录 | 统一在 service 层 `ensure_dir` |
 | 布局 | 由 [`data-model.md`](data-model.md) §1 `RootLayout` 唯一规定 |
 
-- 现状：`P` ✅（`domain/paths.py`）；`S` ⚠️（`GameDir` 布局不同，需迁移）。
+- 现状：`P` ✅（`domain/paths.py`）；`S` ✅（`GamePlan.Layout`：`<root>/versions/<v>/client/…`，与 §1 一致；`layout/*` 6 例通过）。
 - 样例：给定版本/类型 → 期望路径集合（见 conformance 布局样例）。
 
 ## B5 Java 运行时
@@ -65,7 +65,7 @@
 | 启动 | 用 `java/<major>/bin/java` |
 | 运行时 | JRE 即可满足所有类型 |
 
-- 现状：`P` ✅（`domain/java.py` + `services/java.py`）；`S` ⚠️（只判断系统 Java，不托管）→ 需补。
+- 现状：`P` ✅（`domain/java.py` + `services/java.py`）；`S` ✅（`Game/Java/JavaRuntime.swift` 托管到 `java/<major>`，经 `RuntimeKit` 装 Adoptium JRE 并拍平，不依赖系统 java）。
 
 ## B6 客户端启动
 
@@ -77,7 +77,7 @@
 | 平台差异 | macOS 需 `-XstartOnFirstThread`（由 rules 决定） |
 | 类路径 | 库 + 客户端 jar + loader 附加库；分隔符按平台（`;` / `:`） |
 
-- 现状：`P` ✅（`domain/launch.py`）；`S` ⚠️（`Client+Boot` 内联，行为大体一致但需规范化）。
+- 现状：`P` ✅（`domain/launch.py`）；`S` ✅（`GamePlan.planClientLaunch` / `ClientLaunchPlan`，`client-plan/*` 5 例通过）。
 - 样例：同 version JSON → 期望 `LaunchPlan`。
 
 ## B7 服务端生命周期
@@ -89,7 +89,7 @@
 | 孤儿 | **不遗留孤儿进程** |
 | 退出码 | Ctrl-C 取消 → `130` |
 
-- 现状：`P` ✅（`ProcessRunner.run_stream`）；`S` ⚠️（`Shell.stopAll` + pid 文件）。
+- 现状：`P` ✅（`ProcessRunner.run_stream`）；`S` ✅（`Server+Launch`：优雅 `stop` → `SIGTERM` → `SIGKILL`；`E_CANCELLED` 归一为退出码 `130`）。
 - 样例：启动→stop→退出码；启动→SIGINT→130。
 
 ## B8 进度事件
@@ -100,7 +100,10 @@
 | 不定长 | `total=null` 时渲染不定长进度（`status`） |
 | 归属 | 进度由**调用线程**独占喂给 sink（多线程只做原子累加） |
 
-- 现状：`P` ✅（`ProgressSink.start / start_bytes`）；`S` ⚠️（`progressHandler(Double)`，需结构化）。
+> ⚠️ **Swift 仍未完全对齐**：运行时进度仍是**单一 fraction `Double`**（`Downloader` 的 `progressBar.updateProgress(fraction)` / `onProgress(Double)`），
+> `normalizeProgress` 模型只存在于一致性适配器，CLI 尚未按 `count`/`bytes` 两类渲染。
+
+- 现状：`P` ✅（`ProgressSink.start / start_bytes`）；`S` ⚠️（模型已定义、运行时未结构化）。
 
 ## B9 非 TTY 行为
 
@@ -111,7 +114,7 @@
 | 用户名缺省 | `guest` |
 | 确认项 | 用默认值（`--yes` 明确跳过） |
 
-- 现状：`P` ✅；`S` ⚠️（交互为主，需补非 TTY 分支）。
+- 现状：`P` ✅；`S` ✅（`TerminalEnvironment.isInteractive` 探测；`--json` 或非 TTY → 最新 release + 用户名 `guest`，不阻塞）。
 
 ## B10 版本解析与渠道
 
@@ -121,7 +124,10 @@
 | 最新版 | `latest.release` |
 | 版本选择器 | TTY：键盘导航 + 搜索 + 切渠道；非 TTY：最新 release |
 
-- 现状：`P` ✅；`S` ⚠️（有选择器但行为需对齐）。
+> ⚠️ **Swift 部分对齐**：非 TTY 已取最新 release；但 CLI 选择器只列 `release` 渠道，
+> 无 `snapshot` 渠道切换与搜索（`version-resolve` plan 操作本身支持两者，已在 conformance 覆盖）。
+
+- 现状：`P` ✅；`S` ⚠️（渠道切换/搜索未接）。
 
 ## B11 错误语义
 
@@ -131,7 +137,7 @@
 | 去向 | 错误写 stderr；退出码 `1` |
 | 不静默 | 任何降级（如缓存回退、类型不支持）都要有明确提示 |
 
-- 现状：`P` ✅；`S` ⚠️。
+- 现状：`P` ✅；`S` ✅（`ErrorPresentation` 归一为用户可读信息，错误走 stderr、退出码 `1`；`error/*` 通过）。
 
 ---
 
@@ -139,16 +145,18 @@
 
 | 契约 | Python | Swift | 一致性样例（见 conformance） |
 |:--|:--:|:--:|:--|
-| B1 缓存 | ✅ | ❌ | `cache/*` |
+| B1 缓存 | ✅ | ✅ | `cache/*` |
 | B2 并发/分块 | ✅ | ⚠️ | `download/*` |
 | B3 校验 | ✅ | ✅ | `verify/*` |
-| B4 路径 | ✅ | ⚠️ | `layout/*` |
-| B5 Java | ✅ | ⚠️ | `java/*` |
-| B6 客户端启动 | ✅ | ⚠️ | `client-plan/*` |
-| B7 服务端生命周期 | ✅ | ⚠️ | `server-lifecycle/*` |
+| B4 路径 | ✅ | ✅ | `layout/*` |
+| B5 Java | ✅ | ✅ | `java/*` |
+| B6 客户端启动 | ✅ | ✅ | `client-plan/*` |
+| B7 服务端生命周期 | ✅ | ✅ | `server-lifecycle/*` |
 | B8 进度 | ✅ | ⚠️ | `progress/*` |
-| B9 非 TTY | ✅ | ⚠️ | `non-tty/*` |
+| B9 非 TTY | ✅ | ✅ | `non-tty/*` |
 | B10 版本解析 | ✅ | ⚠️ | `version-resolve/*` |
-| B11 错误语义 | ✅ | ⚠️ | `error/*` |
+| B11 错误语义 | ✅ | ✅ | `error/*` |
 
 > 说明：`⚠️` 不等于错误，而是"行为需按契约固化并被样例覆盖"。
+> **2026-10-17 复核结论**：Swift 侧 B1–B7/B9/B11 已落地（此前标 ❌/⚠️ 的条目源于 2026-10-13 快照，已过期）；
+> 仅 **B8（运行时进度结构）**、**B10（snapshot 渠道切换与搜索）** 仍需对齐。

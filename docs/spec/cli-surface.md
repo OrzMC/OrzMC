@@ -331,9 +331,14 @@ stdout **只**输出 JSON-RPC 消息，日志 / 进度一律走 stderr。非交�
 - 对比语义（见 `scripts/verify/surface.py` 头部）：以 manifest 为规范；`aliases` 视为同一选项；
   位置参数按**顺序**匹配（名字是实现细节）；实现多出的**全局选项**（如 `--root-dir`）不算漂移；
   选项的 `required` 不比较（ConsoleKit 无法表达，由运行时报错强制），仅位置参数比较。
+- **枚举值也进比对（2026-10-17）**：实现须在 `capabilities` 的每个选项里上报 `enum`（实际支持值）；
+  双方都上报时比较集合，**缺值/多值都算漂移**；实现未上报视为 unknown（只提示 `未上报枚举`，不阻塞）。
+  这能抓到“manifest 声明了、实现没真支持”的档位（补全 shell、服务端类型这类）。
 - **已声明差异（收敛 backlog）**：manifest 的 `deviations.<impl>` 列出各实现当前**已声明**的差异；
   validator 默认忽略、`--strict` 只对**未声明**漂移失败（已声明数在报告里提示）。当前：
-  `python` **0 处（完全一致）**；`swift` **0 处（完全一致）**——客户端 `--type` 已落地（`vanilla`/`fabric`/`forge`；fabric 走 fabric-meta、forge 走官方安装器）。
+  `python` **0 处（完全一致）**；`swift` **0 处（完全一致）**——客户端 `--type` 已落地（`vanilla`/`fabric`/`forge`；fabric 走 fabric-meta、forge 走官方安装器）；
+  服务端 `--type` 两侧均已支持 `vanilla`/`paper`/`fabric`/`forge`（Swift 于 0.11.0 补齐 fabric/forge），补全均为 `bash`/`zsh`/`fish`/`powershell`/`pwsh`+`install`。
+  仅 `app --channel` 的 `appstore` 未实现（App Store 未上架，两侧显式 `E_UNSUPPORTED`）——已在 `deviations.{python,swift}` 声明。
   **两侧 `--strict` 均已进 CI**：Python 在 `OrzPythonMC` 的 `quality` job、Swift 在 `OrzMCKit` 的 `conformance` job（均检出父仓库 manifest 后用真实 `capabilities` 对比）。
 - **已收敛（累计）**：Python `server --demo`/`--online-mode`/`--print-jar-help`/`update --channel`/`--kill-all`；
   Swift `server --online-mode`/`--jvm-opts`/`--yes`/`--refresh`/`--symlink`/`--force-download`/`--download-threads`、

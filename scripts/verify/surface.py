@@ -15,6 +15,8 @@
 - 以 manifest 命令 `options[].name`（选项 `--x`、位置参数裸名）为规范；`aliases` 视为同一选项。
 - 实现侧 `capabilities` 的选项名/别名与之任一相交即视为命中。
 - `required` / `flag` / 已知 `type` 不一致即漂移；实现未提供 `type`（null）则跳过类型比较。
+- `enum`：双方都上报时比较集合差异（缺值/多值均为漂移）；实现未上报则跳过（视为 unknown）。
+  这是为了抓“声明了但没真实现”的档位（如补全 shell、服务端类型），否则只看选项名会漏掉。
 - 实现侧多出的选项若命中 `globalOptions`（如 `--root-dir`）不算漂移（全局选项可在各命令暴露）。
 """
 from __future__ import annotations
@@ -107,6 +109,7 @@ def manifest_option(entry: dict[str, Any]) -> dict[str, Any]:
         "flag": bool(entry.get("flag")),
         "required": bool(entry.get("required")),
         "argument": bool(entry.get("argument")),
+        "enum": [str(value) for value in entry.get("enum") or []],
     }
 
 
@@ -115,6 +118,7 @@ def impl_option(entry: dict[str, Any]) -> dict[str, Any]:
     long = next((n for n in names if n.startswith("--")), None)
     argument = entry.get("kind") == "argument" or long is None
     name = long if long else (names[0] if names else "")
+    declared_enum = entry.get("enum")
     return {
         "name": name,
         "keys": {key_of(n) for n in names} | {key_of(name)},
@@ -122,6 +126,7 @@ def impl_option(entry: dict[str, Any]) -> dict[str, Any]:
         "flag": bool(entry.get("flag")),
         "required": bool(entry.get("required")),
         "argument": argument,
+        "enum": [str(value) for value in declared_enum] if isinstance(declared_enum, list) else None,
     }
 
 
@@ -173,7 +178,9 @@ def compare(manifest: dict[str, Any], capabilities: list[dict[str, Any]], implem
         "missingCommands": sorted(set(expected_commands) - set(actual_commands)),
         "extraCommands": sorted(set(actual_commands) - set(expected_commands)),
         "commands": [],
+        "unreportedEnums": [],
     }
+    unreported: list[dict[str, Any]] = report["unreportedEnums"]
     for name in sorted(set(expected_commands) & set(actual_commands)):
         expected = [manifest_option(o) for o in expected_commands[name].get("options", [])]
         actual = [impl_option(o) for o in actual_commands[name].get("options", [])]
@@ -191,6 +198,24 @@ def compare(manifest: dict[str, Any], capabilities: list[dict[str, Any]], implem
                 mismatches.append({"option": want["name"], "kind": "required", "expected": want["required"], "actual": got["required"]})
             if want["type"] and got["type"] and want["type"] != got["type"]:
                 mismatches.append({"option": want["name"], "kind": "type", "expected": want["type"], "actual": got["type"]})
+            # 枚举值：双方都上报时才比较（未上报 = unknown，保持向后兼容）。
+            if want["enum"] and got["enum"] is not None:
+                missing_values = [v for v in want["enum"] if v not in got["enum"]]
+                extra_values = [v for v in got["enum"] if v not in want["enum"]]
+                if missing_values or extra_values:
+                    mismatches.append(
+                        {
+                            "option": want["name"],
+                            "kind": "enum",
+                            "expected": want["enum"],
+                            "actual": got["enum"],
+                            "missing": missing_values,
+                            "extra": extra_values,
+                        }
+                    )
+            elif want["enum"]:
+                # 规范声明了枚举但实现未上报：只提示，不算漂移（避免阻塞渐进收紧）。
+                unreported.append({"command": name, "option": want["name"]})
         if missing or extra or mismatches:
             report["commands"].append(
                 {
@@ -262,6 +287,7 @@ def apply_deviations(report: dict[str, Any], deviations: dict[str, Any]) -> tupl
         "missingCommands": missing_commands,
         "extraCommands": extra_commands,
         "commands": commands,
+        "unreportedEnums": report.get("unreportedEnums", []),
     }
     return unexpected, declared
 
@@ -286,6 +312,11 @@ def print_report(report: dict[str, Any]) -> None:
             )
     if total == 0:
         print("  ✓ 完全一致")
+    unreported = report.get("unreportedEnums") or []
+    if unreported:
+        shown = ", ".join(f"{item['command']}.{item['option']}" for item in unreported[:8])
+        more = "" if len(unreported) <= 8 else f" 等 {len(unreported)} 项"
+        print(f"  · 未上报枚举({len(unreported)}): {shown}{more}")
 
 
 # ---------------------------------------------------------------- manifest 自检

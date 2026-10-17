@@ -158,21 +158,21 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
   - [`spec/conformance.md`](spec/conformance.md)：黄金样例格式与一致性套件契约。
 - **验收**：python `orzmc/domain/*` 与 Swift `Game`/`MojangAPI` 的公共字段都能**无损映射**到该模型（`data-model.md` 字段对照总表）。
 - **依赖**：Phase 0；`OrzMCKit` 类型已核验（Q1 已决）。
-- **产出物状态**：☑ `docs/spec/` 建立 ☑ 数据模型 ☑ 字段对照表 ☐ 字段映射验证（待 Phase 2 样例跑通）
+- **产出物状态**：☑ `docs/spec/` 建立 ☑ 数据模型 ☑ 字段对照表 ☑ 字段映射验证（76 例样例跑通）
 
 ### Phase 2 — 黄金样例 + 跨语言 conformance 套件
 
 - **目标**：把「计划表」变成可断言的对象，防实现漂移。
 - **交付物**
   - `docs/spec/fixtures/`：钉住快照（`version_manifest.json` / `versions/*.json`）——已落地。
-  - `docs/spec/fixtures/<area>/`：`given→expect` 黄金样例（**31 例**：layout / version-resolve / java / verify / cache / download / client-plan / server-plan / server-launch / non-tty / progress / error）。
+  - `docs/spec/fixtures/<area>/`：`given→expect` 黄金样例（**76 例**：layout / version-resolve / java / verify / cache / download / client-plan / client-download / server-plan / server-launch / server-lifecycle / non-tty / progress / error / auth）。
   - `scripts/conformance/`：语言无关**运行器** `run.py` + **规范参考适配器** `reference.py`（子集 / Contains / Order / Count / Set 断言、点号路径、错误码）。
   - `python`：适配器断言 plan == 期望（复用 `orzmc` 内部 API）。
   - `kit`：适配器断言 `Game` 纯计划 == 期望。
-  - 剩余：`server-plan/` / `server-lifecycle/` 样例；把两个真实适配器接入。
-- **验收**：参考适配器自检全绿（31/31）；两个真实适配器在 CI 跑 fixtures 全绿；**故意改坏一处能被红灯抓到**（负向用例）。
+  - 已接入：两个真实适配器（Python、Swift）均已跑通全部 fixtures。
+- **验收**：参考适配器自检全绿（76/76）；两个真实适配器在 CI 跑 fixtures 全绿；**故意改坏一处能被红灯抓到**（负向用例）。
 - **依赖**：Phase 1。
-- **产出物状态**：☑ fixtures ☑ 期望输出 ☑ 运行器/参考适配器 ☑ Python 适配器 ☐ Swift 适配器 ☐ CI 接线
+- **产出物状态**：☑ fixtures ☑ 期望输出 ☑ 运行器/参考适配器 ☑ Python 适配器 ☑ Swift 适配器 ☑ CI 接线
 
 ### Phase 3 — 引擎对齐与收敛
 
@@ -185,7 +185,7 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
   - 差异清单 + 逐条决策（谁改、为什么）。
 - **验收**：Phase 2 全部矩阵绿；行为契约中每条都至少有一个跨语言用例。
 - **依赖**：Phase 2。
-- **产出物状态**：☐ 行为契约 ☐ Python 接缝 ☐ Swift 接缝 ☐ 差异清单清零
+- **产出物状态**：☑ 行为契约 ☑ Python 接缝 ☑ Swift 接缝 ☐ 差异清单清零（余 B8 运行时进度、B10 snapshot 渠道/搜索）
 
 ### Phase 4 — 前端组件化（方便二次开发）
 
@@ -208,7 +208,7 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
   - `site` 上统一产品介绍页（可选）
 - **验收**：任意一次发版，`RELEASES.md` 能说明"本轮产品 = 哪些子件版本"。
 - **依赖**：Phase 1 起即可并行（内容型）。
-- **产出物状态**：☐ RELEASES.md ☐ 文档索引 ☐ 官网产品页
+- **产出物状态**：☑ RELEASES.md ☑ 文档索引 ☐ 官网产品页
 
 ---
 
@@ -222,14 +222,17 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | Phase 1 | `docs/spec/` 规范建立 | ☑ 已完成 |
 | Phase 1 | 数据模型 + 字段对照表 | ☑ 已完成（`data-model.md`） |
 | Phase 1 | CLI/安装/行为/一致性契约 | ☑ 已完成（`cli-surface.md`/`install-update.md`/`behavior.md`/`conformance.md`） |
-| Phase 1 | 字段映射验证（样例跑通） | ☐ 待 Phase 2 |
-| Phase 2 | fixtures + 运行器/参考适配器 | ☑ 已完成（31/31 自检绿） |
-| Phase 2 | Python 适配器接入 | ☑ 已完成（31/31，PR #32/#33） |
-| Phase 2 | Swift 适配器接入 | ☑ 已完成（26/26，OrzMCKit CI） |
-| Phase 2 | CI 接线 | ☐ 未开始 |
-| Phase 3 | 差异清零 + 行为契约 | ☐ 未开始 |
+| Phase 1 | 字段映射验证（样例跑通） | ☑ 已完成（76/76） |
+| Phase 2 | fixtures + 运行器/参考适配器 | ☑ 已完成（76/76 自检绿） |
+| Phase 2 | Python 适配器接入 | ☑ 已完成（76/76） |
+| Phase 2 | Swift 适配器接入 | ☑ 已完成（76/76，OrzMCKit CI） |
+| Phase 2 | CI 接线 | ☑ 已完成（两侧 `--strict`：conformance + surface） |
+| Phase 3 | 差异清零 + 行为契约 | ⚠️ 进行中（契约已落；余 B8/B10） |
 | Phase 4 | 双语言最小示例 | ☐ 未开始 |
-| Phase 5 | RELEASES.md | ☐ 未开始 |
+| Phase 5 | RELEASES.md | ☑ 已完成 |
+
+> **2026-10-17 复核**：上表按实跑结果刷新（`check.py` / `surface.py` 两侧 0 漂移 / conformance 76×3 / 两侧 CI 已接）。
+> 命令面与引擎语义的「一份规范约束两套实现」已可执行校验；剩余未闭环项见 §7 待办与 `behavior.md` B8/B10。
 
 ---
 
