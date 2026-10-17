@@ -54,7 +54,10 @@ def md_block(c: dict[str, str]) -> str:
         f"> **{c['disclaimer_en']}**\n"
         ">\n"
         f"> {c['disclaimer_zh']}\n"
-        f"> 联系：{c['contact_email']} ｜ {c['trademark_zh']}\n"
+        ">\n"
+        f"> {c['trademark_zh']}\n"
+        ">\n"
+        f"> 联系：[GitHub 组织]({c['contact_url']}) ｜ 隐私政策：{c['privacy_url']}\n"
         f"<!-- {END} -->"
     )
 
@@ -80,7 +83,7 @@ def swift_file(c: dict[str, str]) -> str:
     d = json.dumps(c["disclaimer_en"], ensure_ascii=False)
     dz = json.dumps(c["disclaimer_zh"], ensure_ascii=False)
     tz = json.dumps(c["trademark_zh"], ensure_ascii=False)
-    email = json.dumps(c["contact_email"], ensure_ascii=False)
+    contact = json.dumps(c["contact_url"], ensure_ascii=False)
     privacy = json.dumps(c["privacy_url"], ensure_ascii=False)
     website = json.dumps(c["website"], ensure_ascii=False)
     return f"""// 本文件由 scripts/sync_compliance.py 生成；请改父仓库 docs/compliance/compliance.json 后重新生成。
@@ -91,12 +94,14 @@ public enum Compliance {{
     public static let disclaimer = {d}
     public static let disclaimerZh = {dz}
     public static let trademarkZh = {tz}
-    public static let contactEmail = {email}
+    public static let contactURL = {contact}
     public static let privacyURL = {privacy}
     public static let website = {website}
 
-    /// 一行式声明（CLI 页脚）。
-    public static var line: String {{ "\\(disclaimer) \\(disclaimerZh) 联系：\\(contactEmail)" }}
+    /// 免责声明文本（英文 / 中文 / 商标各占一行；CLI 页脚与 `--json` 同源）。
+    public static var text: String {{
+        [disclaimer, disclaimerZh, trademarkZh].joined(separator: "\\n")
+    }}
 }}
 """
 
@@ -105,7 +110,7 @@ def python_file(c: dict[str, str]) -> str:
     d = json.dumps(c["disclaimer_en"], ensure_ascii=False)
     dz = json.dumps(c["disclaimer_zh"], ensure_ascii=False)
     tz = json.dumps(c["trademark_zh"], ensure_ascii=False)
-    email = json.dumps(c["contact_email"], ensure_ascii=False)
+    contact = json.dumps(c["contact_url"], ensure_ascii=False)
     privacy = json.dumps(c["privacy_url"], ensure_ascii=False)
     website = json.dumps(c["website"], ensure_ascii=False)
     return f'''"""Minecraft Usage Guidelines 声明与联系方式（单一事实源）。
@@ -118,14 +123,18 @@ from __future__ import annotations
 DISCLAIMER_EN = {d}
 DISCLAIMER_ZH = {dz}
 TRADEMARK_ZH = {tz}
-CONTACT_EMAIL = {email}
+CONTACT_URL = {contact}
 PRIVACY_URL = {privacy}
 WEBSITE = {website}
 
 
-def disclaimer_line() -> str:
-    """一行式声明（CLI 页脚）。"""
-    return f"{{DISCLAIMER_EN}} {{DISCLAIMER_ZH}} 联系：{{CONTACT_EMAIL}}"
+def disclaimer_text() -> str:
+    """免责声明文本（英文 / 中文 / 商标各占一行；CLI 页脚与 ``--json`` 同源）。"""
+    return "\\n".join((DISCLAIMER_EN, DISCLAIMER_ZH, TRADEMARK_ZH))
+
+
+# 兼容旧名: 2.9.x 之前导出 ``disclaimer_line``,返回同一段文本
+disclaimer_line = disclaimer_text
 '''
 
 

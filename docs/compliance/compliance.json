@@ -1,7 +1,6 @@
 {
   "_comment": "单一事实源：所有免责声明 / 合规文案。改这里后运行 `python3 scripts/sync_compliance.py` 同步到各引用处；`python3 scripts/verify/check.py` 会校验是否漂移。",
   "owner": "OrzMC",
-  "contact_email": "824219521@qq.com",
   "website": "https://orzmc.jokerhub.cn",
   "privacy_url": "https://orzmc.jokerhub.cn/privacy/",
   "contact_url": "https://github.com/OrzMC",
