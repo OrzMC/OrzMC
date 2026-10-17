@@ -185,7 +185,7 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
   - 差异清单 + 逐条决策（谁改、为什么）。
 - **验收**：Phase 2 全部矩阵绿；行为契约中每条都至少有一个跨语言用例。
 - **依赖**：Phase 2。
-- **产出物状态**：☑ 行为契约 ☑ Python 接缝 ☑ Swift 接缝 ☐ 差异清单清零（余 B8 运行时进度、B10 snapshot 渠道/搜索）
+- **产出物状态**：☑ 行为契约 ☑ Python 接缝 ☑ Swift 接缝 ☑ 差异清单清零（B1–B11 两侧全部对齐）
 
 ### Phase 4 — 前端组件化（方便二次开发）
 
@@ -227,7 +227,7 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | Phase 2 | Python 适配器接入 | ☑ 已完成（76/76） |
 | Phase 2 | Swift 适配器接入 | ☑ 已完成（76/76，OrzMCKit CI） |
 | Phase 2 | CI 接线 | ☑ 已完成（两侧 `--strict`：conformance + surface） |
-| Phase 3 | 差异清零 + 行为契约 | ⚠️ 进行中（契约已落；余 B8/B10） |
+| Phase 3 | 差异清零 + 行为契约 | ☑ 已完成（B1–B11 两侧对齐） |
 | Phase 4 | 双语言最小示例 | ☐ 未开始 |
 | Phase 5 | RELEASES.md | ☑ 已完成 |
 

@@ -60,7 +60,8 @@ OrzMC 的工具产品（见 [`../product-architecture.md`](../product-architectu
   服务端两侧 `vanilla/paper/fabric/forge`（Swift 于 0.11.0 补齐 fabric/forge：fabric-installer / 官方安装器，含 shim+`libraries/` 与旧版 universal 两种产物布局）。
 - **Java 获取**：**已对齐**——两侧都托管到 `java/<major>/`（Swift `Game/Java/JavaRuntime` 经 `RuntimeKit` 装 Adoptium JRE）。
 - **缓存策略**：**已对齐**——Swift `CacheKit.MetadataCache` 与 Python `infra/cache.py` 同 TTL/refresh/离线回退契约（B1）。
-- **仍待统一**：进度运行时结构（Swift 仍是单一 fraction，B8）、版本选择器的 snapshot 渠道/搜索（Swift 仅 release，B10）。
+- **进度与选择器**：**已对齐**——Swift `ProgressReporter` 区分 count/bytes、不定长走状态行（B8）；版本选择器支持 release/snapshot、搜索与分页导航（B10）。
+- **仍待统一**：无（B1–B11 两侧均已对齐；仅交互形态不同，不属契约）。
 
 ## 6. 如何贡献 / 修改规范
 

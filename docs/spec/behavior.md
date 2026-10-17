@@ -100,10 +100,8 @@
 | 不定长 | `total=null` 时渲染不定长进度（`status`） |
 | 归属 | 进度由**调用线程**独占喂给 sink（多线程只做原子累加） |
 
-> ⚠️ **Swift 仍未完全对齐**：运行时进度仍是**单一 fraction `Double`**（`Downloader` 的 `progressBar.updateProgress(fraction)` / `onProgress(Double)`），
-> `normalizeProgress` 模型只存在于一致性适配器，CLI 尚未按 `count`/`bytes` 两类渲染。
-
-- 现状：`P` ✅（`ProgressSink.start / start_bytes`）；`S` ⚠️（模型已定义、运行时未结构化）。
+- 现状：`P` ✅（`ProgressSink.start / start_bytes / status`）；`S` ✅（`TransferKit.TransferProgress` → `Downloader.onEvent` → `Game/Progress/ProgressReporter`：count/bytes 分开，`total == nil` 只输出一行状态、不画 0%）。
+  > 交互差异（非契约）：Python 用 rich 的不定长脉冲条，Swift 输出一行状态；两边都满足「不静默、不假装 0%」。
 
 ## B9 非 TTY 行为
 
@@ -124,10 +122,8 @@
 | 最新版 | `latest.release` |
 | 版本选择器 | TTY：键盘导航 + 搜索 + 切渠道；非 TTY：最新 release |
 
-> ⚠️ **Swift 部分对齐**：非 TTY 已取最新 release；但 CLI 选择器只列 `release` 渠道，
-> 无 `snapshot` 渠道切换与搜索（`version-resolve` plan 操作本身支持两者，已在 conformance 覆盖）。
-
-- 现状：`P` ✅；`S` ⚠️（渠道切换/搜索未接）。
+- 现状：`P` ✅（prompt_toolkit 全屏选择器）；`S` ✅（`VersionPickerState` + `runVersionPicker`：release/snapshot 切换、子串搜索、分页、序号选择；非 TTY 仍是最新 release；显式 `-v` 同时查 release/snapshot）。
+  > 交互差异（非契约）：Python 方向键全屏 TUI，Swift 行式导航（`n`/`p`/`t`/`x` + 序号）；契约要求的「导航 / 搜索 / 切渠道」两边都具备。
 
 ## B11 错误语义
 
@@ -152,11 +148,11 @@
 | B5 Java | ✅ | ✅ | `java/*` |
 | B6 客户端启动 | ✅ | ✅ | `client-plan/*` |
 | B7 服务端生命周期 | ✅ | ✅ | `server-lifecycle/*` |
-| B8 进度 | ✅ | ⚠️ | `progress/*` |
+| B8 进度 | ✅ | ✅ | `progress/*` |
 | B9 非 TTY | ✅ | ✅ | `non-tty/*` |
-| B10 版本解析 | ✅ | ⚠️ | `version-resolve/*` |
+| B10 版本解析 | ✅ | ✅ | `version-resolve/*` |
 | B11 错误语义 | ✅ | ✅ | `error/*` |
 
 > 说明：`⚠️` 不等于错误，而是"行为需按契约固化并被样例覆盖"。
-> **2026-10-17 复核结论**：Swift 侧 B1–B7/B9/B11 已落地（此前标 ❌/⚠️ 的条目源于 2026-10-13 快照，已过期）；
-> 仅 **B8（运行时进度结构）**、**B10（snapshot 渠道切换与搜索）** 仍需对齐。
+> **2026-10-17 复核结论**：Swift 侧 B1–B11 **全部落地**（早前标 ❌/⚠️ 的条目源于 2026-10-13 快照，已全部过期）；
+> 仅存的交互性差异（进度渲染形态、选择器 TUI vs 行式）不属契约项，已在 B8/B10 下注明。
