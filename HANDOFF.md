@@ -232,6 +232,14 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-17 — pi（合规声明单一事实源 + 版本输出美化/去邮箱）
+
+- **诉求**：`orzmc version` 的声明中英混在一行、与版本号无视觉分隔、且泄露联系邮箱；其他显示声明处也有类似问题；希望“声明改一处全局生效”。
+- **事实**：声明早已是单一事实源——父仓库 `docs/compliance/compliance.json` + `scripts/sync_compliance.py` 会生成 Swift `Compliance.swift`、Python `_compliance.py`、四处 README 合规块、官网页脚/隐私页。本次改的是**渲染格式与联系渠道**。
+- **变更**：去掉 `contact_email` → `contact_url`（GitHub 组织）；声明渲染为**英文/中文/商标各占一行**（`Compliance.text` / `disclaimer_text()`，保留 `disclaimer_line` 旧名）；CLI 版本行与声明空行分隔 + dim + soft_wrap；app 的联系按钮由 mailto 改为打开 GitHub 组织。
+- **落地**：python #64（`b332bfb`）、OrzMCKit #43（`a1af7c5`）、app #24（`eba6fd5`）；父仓库合规源同步。
+- **顺手修的 CI 坑**：app 的 OrzMCKit 是 `branch: main`（HEAD 制），但 `org.swift.swiftpm` 共享仓库缓存里的**分支 ref 与 SourcePackages 解析状态会钉住旧 revision**，删 `Package.resolved` 也没用（CI 实测把源码回退到旧 revision、构建报 `no member 'contactURL'`）。已改为解析前显式 `git fetch` 分支 + 清掉缓存的 OrzMCKit checkout/`workspace-state.json`。
+
 ### 2026-10-17 — pi（修复 `orzmc update` 无法升级：裸名 argv[0] 解析）
 
 - **症状（用户报）**：本机 `orzmc update` 执行后没升级，`orzmc version` 仍是旧版。

@@ -11,13 +11,13 @@
 | `plugin` | OrzMC/OrzMCPlugin | `main` | `5eadd6e5b4c8` |
 | `profile` | OrzMC/.github | `main` | `10fc4e1dbc87` |
 | `proxy` | OrzMC/OrzMCProxy | `main` | `3cc949cdb2e7` |
-| `python` | OrzMC/OrzPythonMC | `main` | `a57fb6f30f2c` |
+| `python` | OrzMC/OrzPythonMC | `main` | `b332bfb4e409` |
 | `site` | OrzMC/OrzMCSite | `main` | `a9307fb010c3` |
-| `swift/app` | OrzMC/OrzMCApp | `main` | `c2ed49c06fbb` |
+| `swift/app` | OrzMC/OrzMCApp | `main` | `eba6fd5521df` |
 | `swift/lib/ExarotonAPI` | OrzMC/ExarotonAPI | `main` | `1eea5719e44f` |
 | `swift/lib/MojangAPI` | OrzMC/MojangAPI | `main` | `0f11294ed7e0` |
 | `swift/lib/OrzAppUpdater` | OrzGeeker/OrzAppUpdater | `main` | `b23e0c414d78` |
-| `swift/lib/OrzMCKit` | OrzMC/OrzMCKit | `main` | `c42f6771c383` |
+| `swift/lib/OrzMCKit` | OrzMC/OrzMCKit | `main` | `a1af7c59998e` |
 | `swift/lib/OrzSwiftKit` | OrzGeeker/OrzSwiftKit | `main` | `d71cc57dedd4` |
 | `swift/lib/PaperMC` | OrzMC/PaperMC | `main` | `19ae5af4452d` |
 | `tools/DeathChest` | OrzMC/death-chest | `main` | `71d257127c7e` |
