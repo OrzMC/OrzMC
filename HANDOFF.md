@@ -60,7 +60,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端**离线**链路就绪，但 **Game Service API 审核被拒 → 真实登录不可用**；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差且 `--strict` 已进 CI**（含 enum 比对）；**元数据缓存已统一到 `<root>/cache`**；**最近发布**：Python `2.11.0` / Swift **`v0.11.1`** |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | ① **App Phase A 已提交 PR，等合并**（引擎 OrzMCKit #52 先、GUI OrzMCApp #25 后）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**（无提交编号；两周无回信按未通过处理，不再投第 3 次）；③ 并行推进 **authlib-injector / Yggdrasil**（不依赖白名单的正版联机主路） |
+| **下一步** | ① ~~App Phase A~~ **已合并并 bump 指针**（OrzMCKit #52 → `0d36e26`、OrzMCApp #25 → `23b4130`）；后续 Phase B/C 见 §4；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**（无提交编号；两周无回信按未通过处理，不再投第 3 次）；③ 并行推进 **authlib-injector / Yggdrasil**（不依赖白名单的正版联机主路） |
 
 ## 2. 状态快照（Repo State）
 
@@ -270,7 +270,9 @@ vanilla/paper、进度只有一个 `Double`、Java 状态读系统 JDK 并引导
 `branch = main` 指向 feat 分支，未提交）、`swift test` 4 suites 绿；真实 smoke：
 `orzmc server --type paper` → 下载 100% → Paper 启动成功（已清理）。
 
-**⚠️ 合并顺序**：**先 #52（引擎）再 #25（GUI）**。GUI 用 HEAD 制解析 `main`，引擎未合并时 GUI CI 必红。
+**合并（已按序完成）**：先引擎 #52（CI 绿）→ 再 GUI #25（首次 CI 因 HEAD 制解析旧 `main` 而红，符合预期；
+引擎合并后 rerun 即绿）→ 父仓库两次独立 bump（`ce14853` OrzMCKit `0d36e26`、`e43e7d7` app `23b4130`）。
+教训：**GUI 的 HEAD 制依赖决定了「引擎 PR 必须先进 main，GUI CI 才会绿」**，不要并行等 CI。
 
 **剩余（Phase B/C，未做）**：① `install.conf` 的 `surface = cli|gui`（需先改 `install-update.md` §3）；
 ② GUI 反向「安装/打开 CLI」入口（D7 的另一半）；③ GUI 认证 UI —— **等 authlib-injector / BYO 决策**，
