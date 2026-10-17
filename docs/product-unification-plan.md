@@ -56,7 +56,7 @@
 | 维度 | `python/` (OrzPythonMC) | `swift/app/` (OrzMCApp) |
 |---|---|---|
 | 角色 | 引擎 + CLI + 安装器 + 自升级，全栈自持 | GUI 外壳；引擎**不在本仓库** |
-| 引擎位置 | 仓内 `orzmc/orzmc/core/`（`mojang.py` / `fabric.py` / `forge.py` / `client/*` / `server/*`） | 外部 **Swift 依赖链**：`OrzMC/OrzMCKit`（`Game` / `Fabric`，**并自带 `orzmc` 可执行 CLI**）→ `wangzhizhou/MojangAPI`、`wangzhizhou/PaperMC`（`DownloadAPI`/`HangarAPI`）、`OrzGeeker/OrzSwiftKit`（`JokerKits`/`Utils`）；app 仓内仅 `GUIClient: Game.Client`、`GUIServer: Game.Server` 适配器 |
+| 引擎位置 | 仓内 `orzmc/orzmc/core/`（`mojang.py` / `fabric.py` / `forge.py` / `client/*` / `server/*`） | 外部 **Swift 依赖链**：`OrzMC/OrzMCKit`（`Game` / `Fabric`，**并自带 `orzmc` 可执行 CLI**）→ `OrzMC/MojangAPI`、`OrzMC/PaperMC`（`DownloadAPI`/`HangarAPI`）、`OrzGeeker/OrzSwiftKit`（`JokerKits`/`Utils`，通用基础设施）；app 仓内仅 `GUIClient: Game.Client`、`GUIServer: Game.Server` 适配器 |
 | 关键引擎符号归属 | `orzmc/services/{client,server,versions,downloader,java}.py` | `Game.ClientInfo` / `Game.ServerInfo` / `GameDir` / `generateDownloadItemInfos()` / `parseBootArgs()` 来自 `Game` 包（仓内 grep 无定义） |
 | 本仓组件 | 库 `orzmc`（PyPI）+ 应用 `orzmc-app`（typer CLI） | 本地 SwiftPM 模块：`OrzMCFoundation` / `OrzMCLauncher` / `OrzMCProtocol` / `OrzMCRemoteHosting` / `OrzMCDesignSystem`（`Package.swift`），另有 iOS SLP/RCON/Query、Exaroton 云集成、`OrzAppUpdater` |
 | 代码量 | ~5.6k LOC Python（`orzmc` + `orzmc_app`） | ~5.7k LOC Swift，且大半是 SwiftUI |
@@ -67,7 +67,7 @@
 
 **引擎链与治理发现（2026-10-13 浅克隆 `OrzMCKit` 核验）**：
 - `OrzMCKit` 产出 `Game` / `Fabric` 两个库 **外加一个 `orzmc` CLI 可执行**（swift-argument-parser，命令 `client`/`server`/`fabric`/`plugin`）——与 Python `orzmc` CLI **功能重叠**，是第三个前端面。
-- 引擎并非单仓：`Game` 依赖 `MojangAPI`（元数据）、`PaperMC`（`DownloadAPI`/`HangarAPI`）、`OrzSwiftKit`（`JokerKits`/`Utils`），**后三者位于个人仓库**（`wangzhizhou/*`、`OrzGeeker/*`），不在 `OrzMC` 组织下。
+- 引擎并非单仓：`Game` 依赖 `MojangAPI`（元数据）、`PaperMC`（`DownloadAPI`/`HangarAPI`）、`OrzSwiftKit`（`JokerKits`/`Utils`）。其中 `MojangAPI` / `PaperMC` **已迁入 `OrzMC`**；`OrzSwiftKit` 是**通用基础组件**，仍在维护者自有的 `OrzGeeker` 组织（不对产品绑定）。
 - **根目录布局两边不一致**：Swift `~/minecraft/manifest/<v>/client/<type>/...` vs Python `~/minecraft/versions/<v>/client/...`；类型支持也不同（Swift 服务器仅 vanilla/paper）。详见 [`product-architecture.md`](product-architecture.md) 第 8 章。
 
 **引擎重复点（G1/G2 的靶心）**：Mojang 版本清单、version JSON、libraries/assets 下载计划、
@@ -275,7 +275,7 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 - `swift/app/Package.swift`（本地 SwiftPM 模块划分）
 - `swift/app/OrzMC/Launcher(MacOS)/Controller/{GUIClient,GUIServer}.swift`（引擎适配器，看 `Game`/`MojangAPI` 用法）
 - `swift/app/OrzMC/Launcher(MacOS)/Model/{GameModel,GameCatalogService,GameLaunchService,JavaRuntimeService,SettingsModel}.swift`
-- `swift/app/OrzMC.xcodeproj/project.pbxproj`（外部包：`OrzMC/OrzMCKit`、`OrzGeeker/OrzSwiftKit`、`OrzGeeker/OrzAppUpdater`、`wangzhizhou/ExarotonAPI`）
+- `swift/app/OrzMC.xcodeproj/project.pbxproj`（外部包：`OrzMC/OrzMCKit`、`OrzGeeker/OrzSwiftKit`、`OrzGeeker/OrzAppUpdater`、`OrzMC/ExarotonAPI`）
 - `swift/app/Sources/OrzMCRemoteHosting/RemoteServerHosting.swift`（稳定协议示例）
 - `swift/app/Package.resolved`
 

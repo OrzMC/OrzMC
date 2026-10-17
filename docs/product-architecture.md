@@ -58,8 +58,9 @@ OrzMC 是一个围绕 **PaperMC 生态**的 Minecraft 社区服务器开源组�
 | `OrzMC/OrzMCProxy` | 运行面 | FRP 跨运营商中转 | Shell / frp | 脚本 |
 | `OrzMC/OrzMCBackup`、`rust-thanos`、`tools/*` | 运行面 | 世界优化备份、游戏内插件 | Kotlin/Rust/PHP/Java | 各自发布 |
 
-> **治理警示**：Swift 引擎的**部分依赖在个人仓库**（`wangzhizhou/*`、`OrzGeeker/*`），
-> 不在 `OrzMC` 组织下。这是当前治理最薄弱的一环（见第 7 章）。
+> **治理说明**：Swift 引擎依赖（`MojangAPI` / `PaperMC` / `ExarotonAPI`）**均已在 `OrzMC`**；
+> 仅**通用基础组件**（`OrzSwiftKit` / `OrzAppUpdater` / `OrzSwiftLint`）在维护者自有的 `OrzGeeker`
+> 组织——它们不对产品绑定、面向通用复用，属有意为之（见第 7 章）。
 
 ---
 
