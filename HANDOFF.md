@@ -60,7 +60,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端**离线**链路就绪，但 **Game Service API 审核被拒 → 真实登录不可用**；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差且 `--strict` 已进 CI**（含 enum 比对）；**元数据缓存已统一到 `<root>/cache`**；**最近发布**：Python `2.11.0` / Swift **`v0.11.1`** |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | ① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**等 authlib-injector 决策**；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**（无提交编号；两周无回信按未通过处理，不再投第 3 次）；③ 并行推进 **authlib-injector / Yggdrasil**（不依赖白名单的正版联机主路） |
+| **下一步** | ① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**已定：暂停，等 Mojang 第 2 次申请邮件回复**（不提前做，避免返工）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**（无提交编号；两周无回信按未通过处理，不再投第 3 次）；③ 认证路线（A. authlib-injector / B. BYO / C. 降级）**等回信后再拍板**，不提前动工 |
 
 ## 2. 状态快照（Repo State）
 
@@ -220,7 +220,8 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 - [x] **App Phase B** —— `install.conf.surface`（规范 §3.1 + 两通道 + GUI 读/写）、GUI 反向安装 CLI
   （设置页 Command Line 区块）；详见 §5。
-- [ ] **App Phase C（等决策）** —— GUI 认证 UI：等 authlib-injector / BYO client id 拍板后再做（现在做会返工）。
+- [ ] **App Phase C（暂停）** —— GUI 认证 UI：**维护者已定（2026-10-17）先等 Mojang 第 2 次申请的邮件回复**，
+  不提前实现（路线未定时做会返工）。
 - [ ] **下次 OrzMCKit 发版**：Release notes 补「升级须知」——此前 Swift 通道安装记录 `version` 字段可能被合规声明污染，
   重跑安装器即可（见 §5）。
 - [ ] **`--auth`（正版授权）** —— **离线优先**（安全敏感；`client_id` 依赖项待维护者注册）。
