@@ -285,7 +285,14 @@
 > **未获批准**、未进入 API 白名单，且明确**不提供申诉/咨询**；同批另有违规应用被处置。
 > 因此 `login_with_xbox` 的 `403 Invalid app registration` **不会消失**，内置 `client_id` **实际不可用**——
 > 本契约的**离线部分依然有效**（映射/存储/错误码/非 TTY 行为与实现无关），只是真实登录暂不可达。
-> **不做**重复提交，也不做任何冒用官方 client id 的规避（违反 EULA）。后续路线（authlib-injector / BYO client id / 降级）见 `HANDOFF.md` §4/§5。
+>
+> **门到底在哪一步（已核实）**：① 设备码 / ② 令牌 / ③ Xbox Live / ④ XSTS 都是**微软公开接口**，任何自注册 Azure app 都能用；
+> 只有 ⑤ `POST https://api.minecraftservices.com/authentication/login_with_xbox` 是 **Mojang 的 app 白名单**。
+> 所以 PrismLauncher / HMCL 能用**不是“不需要白名单”**，而是它们的 client ID **已经在名单里**
+> （旁证：`mlcmLauncher` PR #7 用自家 app 前先用的是 **Prism 的 client ID**，且自家 app 过审后才生效）。
+>
+> **不**做冒用官方 client id 等规避（违反 EULA）。**已做一次材料层面的重投**（只改表述为 launcher-only，
+> 不改产品/appID），材料见 [`../auth-application.md`](../auth-application.md)；**若再被拒即停止重投**，转 authlib-injector / Yggdrasil。
 
 **进度（2026-10-15）**：
 

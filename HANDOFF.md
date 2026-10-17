@@ -60,7 +60,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端**离线**链路就绪，但 **Game Service API 审核被拒 → 真实登录不可用**；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差且 `--strict` 已进 CI**（含 enum 比对）；**元数据缓存已统一到 `<root>/cache`**；**最近发布**：Python `2.11.0` / Swift **`v0.11.1`** |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | **正版登录路线拍板**（审核被拒）：A. authlib-injector / Yggdrasil（推荐）/ B. 摘掉内置 client_id 改 BYO / C. `--auth` 降级；见 §4 待办 A 与 §5 最新记录 |
+| **下一步** | ① **提交第 2 次申请材料**（launcher-only 表述，见 `docs/auth-application.md` §9，提交后回填 §7）；② 同时推进 **authlib-injector / Yggdrasil** 作为正版联机主路（不依赖白名单）；再被拒即**停止重投** |
 
 ## 2. 状态快照（Repo State）
 
@@ -174,8 +174,11 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > - [x] A2. 内置两端：Python `orzmc/core/auth.py` `DEFAULT_CLIENT_ID` / Swift `Game/Auth/AuthConfig.swift` `defaultClientId`（保留 `ORZMC_AZURE_CLIENT_ID` 覆盖）；已合并（python #54 / OrzMCKit #27）。
 > - [x] A3a. **真实 MSA→XBL→XSTS 验证通过**（设备码 → MSA 令牌 → Xbox Live RPS → XSTS 均 200；Xbox 档案可读）。
 > - [x] A3b. **已提交 Mojang Game Service API 申请**（2026-10-16，类型 New AppID for Approval）；提交回执（Microsoft Forms 提交 ID）`v4j5cvGGr0GRqy180BHbR-ajEQ1td1ROpz00KtS8Gd5UNVpPTkVLNFVROVQxNkdRMEtXVjNQQjdXVC4u`；官方免责声明已加（父仓库/各子模块 README、官网 `site-footer.html`、App `SettingsView` Disclaimer）。待人工审核（结果通常发到联系邮箱）；通过后做 A4。
-> - [x] A3c. **Mojang 审核结果：被拒（2026-10-17）**——Mojang Enforcement（`MCENotify@microsoft.com`）称本批 appID **未获批准**（未进 API 白名单），同批另有违规应用被处置，并明确**不提供申诉/咨询/排障**。⇒ `login_with_xbox` 仍 `403`，内置 `client_id` **实际不可用**。**决定：不再重复提交**；也**不做**冒用官方 client id 等规避（违反 EULA，风险远大于收益）。
-> - [ ] A4. **真实账号 E2E：被 A3c 阻塞**（需账号拥有 Minecraft Java 版）。仅在路线 A（authlib-injector / Yggdrasil）或 B（BYO client id 且用户自行获批）落地后，才有可验证的正版联机路径。
+> - [x] A3c. **Mojang 审核结果：被拒（2026-10-17）**——Mojang Enforcement（`MCENotify@microsoft.com`）称本批 appID **未获批准**（未进 API 白名单），同批另有违规应用被处置，并明确**不提供申诉/咨询/排障**。⇒ `login_with_xbox` 仍 `403`，内置 `client_id` **实际不可用**。
+>   - **门的位置（已核实）**：只有 ⑤ `api.minecraftservices.com/authentication/login_with_xbox` 需要 Mojang 白名单；①–④（微软 OAuth / Xbox Live / XSTS）任何自注册 app 都能用。Prism/HMCL 能用是因为它们的 client ID **已在名单内**（旁证：`mlcmLauncher` PR #7 先前用的是 **Prism 的 client ID**）。
+>   - **不做**冒用官方 client id 等规避（违反 EULA）。
+> - [~] A3d. **第 2 次提交（2026-10-17，仅改材料）**：把申请表述收敛为 **launcher-only**（第 1 次把 server-management 与启动器并列，对方回信却在讲 “3rd party server” → 疑被归类分流）。**不改产品、不改 appID、不改实现**；材料已改写完毕（`docs/auth-application.md`），**待维护者提交**。再被拒即停止重投。
+> - [ ] A4. **真实账号 E2E：被 A3c/A3d 阻塞**（需账号有 Minecraft Java 版）。仅在路线 A（authlib-injector / Yggdrasil）落地后才好验证。
 > - [x] A5. 推送已完成（python/OrzMCKit 先，父仓库 auth fixtures 随后；见 §5）。
 >
 > **待办 B — `orzmc mcp` server（不依赖 `client_id`）✅ 已完成（2026-10-15）**
@@ -232,6 +235,26 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-17 — pi（核实白名单到底卡在哪一步 + 改写为 launcher-only 申请材料）
+
+- **问题**：到底哪个 API 需要白名单？是不是大部分第三方启动器根本不需要？
+- **核实结论（有外部证据）**：
+  - ① 设备码 / ② 令牌 / ③ Xbox Live / ④ XSTS = 微软公开接口，**自注册 Azure app 即可**；
+  - **只⑤ 是门**：`POST https://api.minecraftservices.com/authentication/login_with_xbox`（Mojang allow-list）；
+  - 我们自己的实测：①–④ 均 200，⑤ 403 `Invalid app registration` —— 可定位到单点。
+  - **Prism/HMCL 能用 ≠ 不需要**：证据是 `neil289506-commits/mlcmLauncher` PR #7——
+    其自家 Azure app “Mojang 已通知審核通過” 后才生效；**在那之前它用的是 Prism 的 client ID**（说明 Prism 在名单内）。
+  - 旁证：`yannickfan67-ai/UN_Nexo` issue #22 收到与我们**措辞几乎一致**的拒信（2026-09-21），
+    并明确说“未给技术原因，不能据此推断被认定为 bad app”；其补救尝试是**删掉离线启动面**——
+    但 Prism 本身支持 Offline 账号却仍在名单内，所以该假设**不成立**，真实标准是黑盒。
+- **顺带纠正一处记录错误**：`v4j5cvGG…` 是 **Microsoft Forms 的表单 ID**（所有人相同），不是提交回执；
+  已写入 `docs/auth-application.md` §7。
+- **本次产出（纯材料，不动产品）**：`docs/auth-application.md` 整篇改写为**第 2 次提交（launcher-only）**：
+  - Purpose / 描述 / Justification 只讲**启动器 + 用户本人登录启动**；服务端部署降为“不调用该 API 的独立工具”；
+  - 不再主动强调“默认离线启动”，改为正面陈述“不绕过 entitlement”（仍为事实，无虚假陈述）；
+  - 新增 §0「为什么这么改」与 §9「提交步骤」；§7 加两次提交记录表。
+- **待维护者操作**：在 `aka.ms/mce-reviewappid` 提交后回填日期/结果；再被拒则**停止重投**，转 authlib-injector。
 
 ### 2026-10-17 — pi（Mojang 审核被拒：记录结论 + 申请材料脱敏）
 

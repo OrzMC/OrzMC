@@ -1,12 +1,27 @@
 # Minecraft Java Edition Game Service API —— 申请材料（OrzMC / orzmc）
 
-> **状态**：已提交并**被拒**（2026-10-17）｜ **最后更新**：2026-10-17
+> **状态**：**第 2 次提交（launcher-only 表述）— 待提交**｜ **最后更新**：2026-10-17
 > **背景**：Mojang 要求第三方应用通过 *Java Edition Game Service API Review or Application Process* 才能使用
-> `login_with_xbox`（`aka.ms/AppRegInfo` → <https://help.minecraft.net/hc/en-us/articles/16254801392141-Java-Edition-Game-Service-API-Review-or-Application-Process>）。
+> `login_with_xbox`（`aka.ms/AppRegInfo` → <https://help.minecraft.net/hc/en-us/articles/16254801392141-Java-Edition-Game-Service-API-Review-or-Application-Process>；
+> 实际提交入口 `aka.ms/mce-reviewappid` → <https://forms.cloud.microsoft/...>）。
 > 未获批时 `login_with_xbox` 返回 `403 Invalid app registration`（详见 [`spec/auth.md`](spec/auth.md) §10 与 [`../HANDOFF.md`](../HANDOFF.md) §4 待办 A）。
 >
-> **结果（2026-10-17）**：Mojang Enforcement 通知本批 appID **未获批准**（未进 API 白名单），且明确不提供申诉/咨询；同批另有违规应用被处置。因此 `login_with_xbox` 仍 `403`，本申请材料仅作记录保留，**不再重复提交**。
-> 🔒 **邮箱已脱敏**：原 Azure 账号 / 联系邮箱写在维护者私有记录中；公开仓库不再保留真实地址。
+> **历史**：第 1 次 2026-10-16 提交 → **2026-10-17 被拒**（未进白名单；邮件未给原因，声明无申诉/咨询通道）。
+> **本次策略**：**只改材料表述与组织，不改产品行为、不改 Azure appID、不改技术实现** —— 主叙事收敛为「启动器」。
+> 🔒 **邮箱已脱敏**：原 Azure 账号 / 联系邮箱写在维护者私有记录中；公开仓库不保留真实地址。
+
+---
+
+## 0. 本次为什么这样改（内部记录，**不提交**）
+
+| 观察 | 推断 | 本次动作 |
+|---|---|---|
+| 第 1 次材料把 `server-management / deploy servers` 与启动器并列为**核心能力** | 评审可能把我们归类为「第三方服务器团队」——对方回信正好在讲 *“if you are part of a team working with a 3rd party server…”* 并推销服务器列表 | 主叙事只讲**启动器**；服务端工具降为“同一开源项目里的独立工具，**不调用** Game Service API” |
+| 第 1 次材料主动强调 *“works offline by default”* | 可能被读成“可绕过正版账号启动” | **不再主动强调**默认离线；改为正面陈述「API 仅用于用户本人账号登录，不绕过 entitlement」 |
+| 对方未给任何原因 | 无法针对性修复 | 不动产品；把不确定项留给对方追问时如实回答 |
+
+> **诚实性边界**：本次所有陈述仍为**真**——服务端功能确实不调用该 API；我们也没有删改产品行为。
+> 若对方追问「能否无账号启动」，如实回答（能做到，但那是本地单机/第三方认证场景，与申请用途无关）。
 
 ---
 
@@ -23,7 +38,7 @@
 | License | Apache-2.0 (open source) |
 | Contact email | `<redacted>` |
 | Azure account (app owner) | `<redacted>` |
-| Purpose | Third-party Minecraft: Java Edition launcher & server-management CLI/GUI |
+| **Purpose** | **Third-party Minecraft: Java Edition launcher** |
 | Commercial | No — free, open-source, non-commercial |
 | Requested scopes | `XboxLive.signin offline_access` |
 | Auth flow | OAuth 2.0 **Device Code** (public client, no client secret) |
@@ -31,12 +46,18 @@
 
 ## 2. 项目描述（Project description，英文，直接粘贴）
 
-> **OrzMC / orzmc** is an open-source, non-commercial tool suite for **Minecraft: Java Edition**. It lets players launch the official Minecraft client and deploy/manage Minecraft servers (vanilla, Paper, Fabric, Forge). It ships as a cross-platform `orzmc` command-line tool (Python and native Swift builds), a macOS/iOS app, and server-ops tooling — all **Apache-2.0**, free of charge, with no ads or monetization.
+> **OrzMC / orzmc** is an open-source, non-commercial **launcher for Minecraft: Java Edition**. Players run a single
+> `orzmc client` command (or use the macOS/iOS app) to install and launch the official Minecraft client under
+> **their own Microsoft account**. It is distributed as a cross-platform `orzmc` command-line tool (Python and native
+> Swift builds) and a GUI app, all **Apache-2.0**, free of charge, with no ads and no monetization.
 >
-> We request access to the **Minecraft Java Edition Game Service API** solely to let users **sign in with their own Microsoft account** ("premium/online mode"), so the game launches under their legitimate account. The flow is the standard Microsoft **device code** flow:
-> `Microsoft OAuth (device code, scope XboxLive.signin) → Xbox Live (RPS) → XSTS → Minecraft login_with_xbox → /minecraft/profile`.
+> We request access to the **Minecraft Java Edition Game Service API solely to authenticate the user and launch the
+> game for that user**:
+> `Microsoft OAuth (device code, scope XboxLive.signin) → Xbox Live (RPS) → XSTS → login_with_xbox → /minecraft/profile`.
+> After that we only read the player's own profile (name/UUID/skin) to start the client — nothing else.
 >
-> We do **not** collect usernames/passwords, we operate **no authentication backend**, and we never ask users to share accounts. Authentication is **opt-in**; the tool's default mode is offline and it never uses the API to grant online access to non-owners.
+> The same open-source project also contains **separate server-deployment utilities**. They are unrelated to this
+> request: they download official server jars from Mojang's CDN and **never call the Game Service API**.
 
 ## 3. 数据处理与安全（Data handling，英文，直接粘贴）
 
@@ -49,50 +70,22 @@
 
 ## 4. 合规声明（英文，直接粘贴）
 
-> OrzMC complies with the **Minecraft End User License Agreement** and the **Minecraft Usage Guidelines**. It is a launcher/server-management tool, not a cheat, crack, or piracy tool: online play requires the user to own **Minecraft: Java Edition**, and the tool does not bypass authentication or entitlement checks. Offline mode is limited to local single-player.
+> OrzMC complies with the **Minecraft End User License Agreement** and the **Minecraft Usage Guidelines**.
+> It is a launcher, not a cheat, crack, or piracy tool: **online play requires the user to own Minecraft: Java Edition**,
+> and the tool **does not bypass authentication or entitlement checks** — every online session uses the token obtained
+> from the user's own account. We do **not** redistribute Minecraft or any game files (they are downloaded at runtime
+> from Mojang's official CDN), and we do **not** modify or hide Minecraft's EULA or dialogs.
 
 ## 5. 中文对照（便于核对；不必提交）
 
-- 开源、免费、非商业的 Minecraft: Java 版**启动器 + 服务端部署工具**（跨平台 CLI + macOS/iOS App）。
-- 申请 Game Service API 仅为让用户**用本人微软账号正版登录**（设备码：MSA→XBL→XSTS→`login_with_xbox`→`profile`）。
-- **令牌只存本地**（`0600`），**无服务端**、无遥测、不收账号密码；默认离线，`--auth` 才认证。
-- 合规：遵守 Minecraft EULA / Usage Guidelines；非外挂/破解；在线仍需用户**拥有** Java 版。
+- 开源、免费、非商业的 Minecraft: Java 版**启动器**（跨平台 CLI + macOS/iOS App）。
+- 申请 Game Service API **只为用户本人登录并启动游戏**：设备码（MSA→XBL→XSTS→`login_with_xbox`→`profile`），
+  之后只读取玩家自己的档案（名字/UUID/皮肤）用于启动。
+- **令牌只存本地**（`0600`），**无服务端**、无遥测、不收账号密码、不外传令牌。
+- 同仓库另有**服务端部署工具**，与本申请无关，且**不调用** Game Service API。
+- 合规：不重分发游戏文件、不改 EULA/对话、不绕过 entitlement、在线需用户**拥有** Java 版。
 
-## 6. 可能需要额外验证（如对方要求）
-
-- **发布者 / 域名验证**：本站点域名 **`orzmc.jokerhub.cn`**（可加 DNS TXT 或放置验证文件）。
-- **预期调用量**：user-initiated sign-ins only；low volume，开源社区（数百用户量级）。
-
-## 7. 提交与跟踪
-
-| 项 | 值 |
-|---|---|
-| Azure client_id | `1a3e628b-c9a5-4a7f-b7b7-562e22b9787e` |
-| Directory (tenant) ID | `ceed58ed-fbc2-40e5-b556-8c8903c24462` |
-| Azure 账号（应用所有者） | `<redacted>` |
-| 联系邮箱 | `<redacted>` |
-| 提交日期 | 2026-10-16 |
-| 提交回执（Microsoft Forms 提交 ID） | `v4j5cvGGr0GRqy180BHbR-ajEQ1td1ROpz00KtS8Gd5UNVpPTkVLNFVROVQxNkdRMEtXVjNQQjdXVC4u` |
-| 结果 | 待审核（人工审核；回执/结果通常发到联系邮箱） |
-
-## 8. 合规核对（对照 [Minecraft Usage Guidelines](https://www.minecraft.net/usage-guidelines)）
-
-**已符合**
-- **命名**：产品/应用名 `OrzMC` / `orzmc` 不含 “Minecraft”，也未把 “Minecraft” 作为主导名；描述中仅作**描述性**引用（“for Minecraft: Java Edition”）。
-- **非商业**：免费、开源（Apache-2.0）、无广告、无内购；不售卖 Minecraft 或账号。
-- **不重分发游戏文件**：运行期从 Mojang 官方 CDN 下载客户端/服务端核心；仓库与 Release 资产**不含** Mojang 游戏文件（assets / textures / sounds / client jar）。
-- **不改动官方对话 / EULA 提示**；无外挂/作弊；无恶意代码；无 NFT / play-to-earn。
-- **不冒充官方**：应用名与域名 `orzmc.jokerhub.cn` 均不显官方；授权走 Microsoft 官方设备码流程；令牌只存本地。
-
-**需补齐 / 注意（提交时建议一并说明，或先修）**
-1. **必须显著展示官方免责声明**（Guidelines 明确要求）：
-   `NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT`
-   **已补**：仓库 `README.md`（父仓库 + python + OrzMCKit + app）、官网页脚（`site` 的 `site-footer.html`）、App 设置页（`SettingsView` 的 Disclaimer 区块）。
-2. **责任主体 + 联系渠道**（不能用聊天/论坛链接）：发布者 `OrzMC`，联系渠道用 **GitHub 组织**（`https://github.com/OrzMC`，合规声明的 `contact_url`）——**不展示个人邮箱**。
-3. **品牌素材**：确认 Logo / App 图标（`images/orzmc.png`、`profile/assets/OrzMC.png`、App icon）**均为自创**，不含 Mojang 素材。
-4. **服务器正版验证默认**：Guidelines 要求“服务器访问仅授予正版玩家”。当前默认 `online-mode=false`（Python 未配置时写 false；Swift Paper `--online-mode=false`）。**建议改为默认 `online-mode=true`**（或至少不在引导里默认离线）——属产品决策。
-
-## 9. 表单逐字段（按实际表单填写）
+## 6. 表单逐字段（按实际表单填写）
 
 | # | 字段 | 填写值 |
 |---|---|---|
@@ -104,21 +97,80 @@
 | 5 | Application (Client) ID | `1a3e628b-c9a5-4a7f-b7b7-562e22b9787e` |
 | 6 | Tenant (Directory) ID | `ceed58ed-fbc2-40e5-b556-8c8903c24462` |
 | 7 | Associated website or domain | `https://orzmc.jokerhub.cn` |
-| 8 | Justification | 见下方英文段落 |
-| 9 | Any other information | 见下方英文段落 |
+| 8 | Justification | 见 §6.1 |
+| 9 | Any other information | 见 §6.2 |
 
-### 8. Justification（英文，直接粘贴）
+### 6.1 Justification（英文，直接粘贴）
 
-> OrzMC is an **open-source (Apache-2.0), non-commercial** launcher and server-management tool for **Minecraft: Java Edition**. It is distributed free of charge on GitHub and PyPI, with **no ads, no in-app purchases, and no monetization**, and it does not sell or transfer Minecraft accounts. It ships as a cross-platform `orzmc` CLI plus a macOS/iOS app.
+> OrzMC is an **open-source (Apache-2.0), non-commercial launcher for Minecraft: Java Edition**, distributed free of
+> charge on GitHub and PyPI with **no ads, no in-app purchases, and no monetization**. It does not sell, transfer or
+> rent Minecraft accounts. It ships as a cross-platform `orzmc` CLI plus a macOS/iOS app.
 >
-> We are requesting approval to use the **Minecraft Java Edition Game Service API for user sign-in only**. Our tools implement the standard Microsoft **device-code** flow (scope `XboxLive.signin offline_access`) → Xbox Live (RPS) → XSTS → `login_with_xbox` → `/minecraft/profile`, so users can launch the game under their **own legitimate Microsoft account** (“online mode”). Authentication is **opt-in**; the tool works offline by default for local single-player and never uses the API to grant online access to non-owners.
+> We are requesting approval to use the **Minecraft Java Edition Game Service API for user sign-in only**: our client
+> implements the standard Microsoft **device-code** flow (scope `XboxLive.signin offline_access`) → Xbox Live (RPS) →
+> XSTS → `login_with_xbox` → `/minecraft/profile`, so a player can launch the game under **their own legitimate
+> Microsoft account**. We use the resulting token **only** to start the client for that same user; we never use the API
+> to grant online access to non-owners and we do not bypass entitlement checks.
 >
-> We do **not** collect usernames/passwords, we operate **no authentication backend**, and all tokens are stored **only on the user’s device** (file mode `0600`) and never transmitted to our servers. We **do not redistribute Minecraft or any game files** — files are downloaded at runtime from Mojang’s official CDN — and we do **not** modify or hide Minecraft’s EULA or dialogs. We comply with the Minecraft EULA and Usage Guidelines and will display the required “**NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT**” disclaimer and our contact email on our website, app, and repository.
+> We do **not** collect usernames/passwords, we operate **no authentication backend**, and all tokens are stored
+> **only on the user's device** (file mode `0600`) and never transmitted to us. We **do not redistribute Minecraft or
+> any game files** (they are downloaded at runtime from Mojang's official CDN) and we do **not** modify or hide
+> Minecraft's EULA or dialogs. We comply with the Minecraft EULA and Usage Guidelines, and we display the required
+> “**NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT**” disclaimer in our
+> README, website footer, and app settings, together with our public contact channel
+> (https://github.com/OrzMC).
 >
-> Contact: **<redacted>**. Azure portal account: **<redacted>**. The app is registered in tenant `ceed58ed-fbc2-40e5-b556-8c8903c24462`.
+> The project also contains separate server-deployment tooling; it is **not** part of this request and **never calls**
+> the Game Service API.
 
-### 9. Any other information（英文，直接粘贴）
+### 6.2 Any other information（英文，直接粘贴）
 
-> The project is fully **open source** and auditable: https://github.com/OrzMC (CLI: https://github.com/OrzMC/OrzPythonMC and https://github.com/OrzMC/OrzMCKit; app: https://github.com/OrzMC/OrzMCApp; website: https://orzmc.jokerhub.cn).
+> Fully open source and auditable: https://github.com/OrzMC (CLI: https://github.com/OrzMC/OrzPythonMC and
+> https://github.com/OrzMC/OrzMCKit; app: https://github.com/OrzMC/OrzMCApp; website: https://orzmc.jokerhub.cn).
 >
-> We have already run the full authentication chain end-to-end: Microsoft device code → MSA token → Xbox Live (RPS) → XSTS all succeed; `login_with_xbox` currently returns `403 Invalid app registration`, which is exactly why we are submitting this request. We are happy to provide any further information and will add the required disclaimer and contact details prominently upon approval.
+> We have already exercised the full chain end-to-end: Microsoft device code → MSA token → Xbox Live (RPS) → XSTS all
+> succeed; `login_with_xbox` returns `403 Invalid app registration`, which is why we are submitting this request.
+> We are happy to provide any additional information, and we can add a DNS TXT record for domain verification on
+> request.
+
+## 7. 提交与跟踪
+
+| 项 | 值 |
+|---|---|
+| Azure client_id | `1a3e628b-c9a5-4a7f-b7b7-562e22b9787e` |
+| Directory (tenant) ID | `ceed58ed-fbc2-40e5-b556-8c8903c24462` |
+| Azure 账号（应用所有者） | `<redacted>` |
+| 联系邮箱 | `<redacted>` |
+| 提交入口 | `aka.ms/mce-reviewappid`（Microsoft Forms） |
+| **Forms ID（不是提交回执）** | `v4j5cvGGr0GRqy180BHbR-ajEQ1td1ROpz00KtS8Gd5UNVpPTkVLNFVROVQxNkdRMEtXVjNQQjdXVC4u` |
+
+> ⚠️ 更正：这个 `v4j5cvGG…` 是**表单本身的 ID**（所有人相同），**不是**本次提交的编号。
+> 第 1 次（2026-10-16）曾把它误记为「提交回执」。
+
+| # | 日期 | 表述 | 结果 |
+|---|---|---|---|
+| 1 | 2026-10-16 | launcher + server-management（并列） | **被拒**（2026-10-17，未进白名单，无原因、无申诉） |
+| 2 | （待提交） | **launcher-only**；服务端能力降为“不调用该 API 的独立工具” | 待提交 |
+
+## 8. 合规核对（内部核对，**不提交**）
+
+**已符合**
+- **命名**：产品/应用名 `OrzMC` / `orzmc` 不含 “Minecraft”，也未把 “Minecraft” 作为主导名；描述中仅作**描述性**引用。
+- **非商业**：免费、开源（Apache-2.0）、无广告、无内购；不售卖 Minecraft 或账号。
+- **不重分发游戏文件**：运行期从 Mojang 官方 CDN 下载；仓库与 Release 资产**不含** Mojang 游戏文件。
+- **不改动官方对话 / EULA 提示**；无外挂/作弊；无恶意代码；无 NFT / play-to-earn。
+- **不冒充官方**：应用名与域名均不显官方；授权走 Microsoft 官方设备码流程；令牌只存本地。
+- **免责声明**（Guidelines 明确要求）已展示：仓库 README（父仓库 + python + OrzMCKit + app）、官网 `site-footer.html`、App `SettingsView`。
+- **联系渠道**：用 GitHub 组织（合规声明的 `contact_url`），不展示个人邮箱。
+
+**已知但本次不改（属产品决策，且与申请用途无关）**
+1. 服务端 `online-mode` 默认值为 `false`（Python 未配置时、Swift Paper 显式传 `--online-mode=false`）——
+   Guidelines 希望服务器只对正版开放；若日后要动，单独评估。
+2. 客户端支持不带账号的启动（本地单机 / 第三方认证场景）——本次材料不主动强调；若被追问如实回答。
+
+## 9. 提交步骤（维护者操作）
+
+1. 打开 `aka.ms/mce-reviewappid`，按 §6 逐字段粘贴（§6.1 / §6.2 是英文段落，其余是短字段）。
+2. `What type of request is this?` 选 **New AppID for Approval**（沿用同一 appID，不新建 Azure 应用）。
+3. 提交后把结果回填到 §7 表格第 2 行（日期 + 结果），并同步 `spec/auth.md` §10 与 `HANDOFF.md`。
+4. 若再次被拒：**停止重投**，转 authlib-injector / Yggdrasil 路线（见 `HANDOFF.md` §4）。
