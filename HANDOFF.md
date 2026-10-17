@@ -60,7 +60,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端**离线**链路就绪，但 **Game Service API 审核被拒 → 真实登录不可用**；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差且 `--strict` 已进 CI**（含 enum 比对）；**元数据缓存已统一到 `<root>/cache`**；**最近发布**：Python `2.11.0` / Swift **`v0.11.1`** |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | ① ~~App Phase A~~ **已合并并 bump 指针**（OrzMCKit #52 → `0d36e26`、OrzMCApp #25 → `23b4130`）；后续 Phase B/C 见 §4；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**（无提交编号；两周无回信按未通过处理，不再投第 3 次）；③ 并行推进 **authlib-injector / Yggdrasil**（不依赖白名单的正版联机主路） |
+| **下一步** | ① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**等 authlib-injector 决策**；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**（无提交编号；两周无回信按未通过处理，不再投第 3 次）；③ 并行推进 **authlib-injector / Yggdrasil**（不依赖白名单的正版联机主路） |
 
 ## 2. 状态快照（Repo State）
 
@@ -218,10 +218,11 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - [x] **一致性｜新增操作**：`planClientDownload`（客户端下载清单）与 `normalizeExit`（B7 退出码归一，暴露并修了 Python 服务端退出码未归一的分叉）；参考 + Python + Swift 三适配器 **53/53**。
 **剩余项（下一会话，非阻塞）**
 
-- [ ] **App Phase B/C（适配后续）** —— Phase A（服务端四类型/结构化进度/托管 JRE）已进 PR。剩余：
-  ① `install.conf` 的 `surface = cli|gui`（**先改规范** `install-update.md` §3）；
-  ② GUI 反向「安装/打开 `orzmc` CLI」入口（D7 的另一半）；
-  ③ GUI 认证 UI —— **等 authlib-injector / BYO 决策**，现在做会返工。见 `spec/frontends.md` §7.1。
+- [x] **App Phase B** —— `install.conf.surface`（规范 §3.1 + 两通道 + GUI 读/写）、GUI 反向安装 CLI
+  （设置页 Command Line 区块）；详见 §5。
+- [ ] **App Phase C（等决策）** —— GUI 认证 UI：等 authlib-injector / BYO client id 拍板后再做（现在做会返工）。
+- [ ] **下次 OrzMCKit 发版**：Release notes 补「升级须知」——此前 Swift 通道安装记录 `version` 字段可能被合规声明污染，
+  重跑安装器即可（见 §5）。
 - [ ] **`--auth`（正版授权）** —— **离线优先**（安全敏感；`client_id` 依赖项待维护者注册）。
   - 现状：`--auth` 两端**离线链路已实现**（阶段 A/B/C ✅：契约 + 纯映射 + 令牌存储/设备码编排 + CLI 接线）；仅剩阶段 D（注册 `client_id` 后的真实 E2E）。
   - **[x] 阶段 A（父仓库，已完成）**：`docs/spec/auth.md` 定稿（Microsoft 设备码流程 → XBL → XSTS → MC → profile；令牌模型/持久化/刷新；非 TTY/`--json`；错误码 `E_AUTH*`；安全红线）；`reference.py` 新增 **13 个 `auth*` 纯映射操作**；`docs/spec/fixtures/auth/` **20 例**（参考适配器 **73/73**）；同步 `cli-surface` / `data-model` / `install-update` / `conformance` / `fixtures README`。
@@ -242,6 +243,43 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-17 — pi（App Phase B：`install.conf.surface` + GUI 反向安装 CLI；发 0.12.0）
+
+**发版**：合并 OrzMCKit release PR #53 → **`v0.12.0`**（六平台资产 + SHA256SUMS 已发布）。
+
+**规范先行（父仓库）**：`install-update.md` 新增 **§3.1**：`surface = cli|gui` = **哪个前端装了
+PATH 上的 `orzmc`**（不是 GUI 自身登记）；安装器写、`update` 保留原值、缺失 = 旧记录；
+选择手段是环境变量 `ORZMC_SURFACE`（缺省 `cli`）。`frontends.md` F1 身份判断加入 `surface`。
+
+**实现（两个通道 + GUI 都写/读）**
+- Python（#69）：`InstallManifest.surface`；`docs/install.sh` / `install.ps1` 写 `surface=`；
+  `update` 走 `dataclasses.replace` 天然保留。
+- Swift（#54）：**`InstallManifest` 下沉到 `Game` 公共面**（`Sources/Game/Install/`，新增 `surface`
+  与只读 `current()`）——它是跨前端共享契约，CLI `update`/`uninstall` 与 GUI 都要读；
+  `scripts/install.sh` 写 `surface=`。
+- GUI（#26）：设置页 **「Command Line」** 区块——显示 `orzmc` 版本/路径/**由谁安装**，
+  一键调用官方安装器（Python / Swift 通道，**不复制安装逻辑**）并以 `ORZMC_SURFACE=gui` 运行；
+  确认对话框显示将执行的一行命令，安装中逐行回显输出与退出码。**D7「互相安装/打开」补齐**。
+
+**顺手抓到一个真 bug（Swift 通道安装器）**：`scripts/install.sh` 用
+`orzmc version | awk '{print $2}'` 取版本，而 `orzmc version` 之后会打印**多行合规声明**
+→ 声明被写进 `install.conf` 的 `version` 字段（实测 0.12.0 装出
+`version=0.12.0\n\nAN\n是独立的社区开源项目，与\nMojang`）。已改为 `head -n 1 | awk` +
+空值兜底 `unknown`；影响范围仅 Swift 通道安装记录（`update`/`uninstall` 不依赖该字段解析，功能未坏）。
+→ **下次 OrzMCKit 发版时，Release notes 需补「升级须知」**：该版本前安装的记录 `version` 字段可能被污染，
+重跑一次安装器即可修复（符合 §7 发版须知规则）。
+
+**观察（非缺陷）**：发版后立刻用 `releases/latest/download/<asset>` 可能拿到**上一版**二进制
+（0.12.0 刚发布时 latest 的 arm64 仍是 0.11.1 字节，而 SHA256SUMS 已是 0.12.0）→ 安装器 SHA256
+校验会拦下并报错（**失败安全**）。等几分钟或 `ORZMC_VERSION=vX.Y.Z` 即可。
+
+**验证**：Python `ruff`/`mypy`/`pytest` 全绿 + CI 六平台绿；引擎 air `swift test` 88 tests/22 suites、
+conformance 76/76；GUI air `xcodebuild build` 绿、CI 绿；两个安装器真实实跑（临时 `XDG_STATE_HOME`）：
+`ORZMC_SURFACE=gui` → `surface=gui`、缺省 → `surface=cli`，`version` 单行正确。
+
+**父仓库**：三次独立 bump（`e854d54` python `3974436`、`453aeec` OrzMCKit `329230f`、`5c6ac12` app `50b08a6`）
++ `2d336a8` 规范定稿。
 
 ### 2026-10-17 — pi（App Phase A：GUI 收回成纯适配器）
 
