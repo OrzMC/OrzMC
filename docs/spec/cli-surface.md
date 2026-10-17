@@ -1,6 +1,8 @@
 # CLI 命令面契约（CLI Surface Contract）
 
-> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-15
+> **状态**：草案 `specVersion 0.2` ｜ **最后更新**：2026-10-20
+> `0.2`：补全契约定稿（`completion install` 的 shell 判定 / 落点 / 错误码 / `data.hint`）、
+> 解析错误退出码归一、错误一律 stderr、`-h` 与 `--help` 等价、明确禁止框架自带补全安装选项。
 > 目标：Swift CLI（`OrzMCKit` 的 `orzmc`）与 Python CLI（`orzmc-app`）收敛为**同一个工具**——
 > 用户看到的命令、参数、输出、退出码一致。实现可不同，**命令面必须相同**。
 
@@ -36,7 +38,7 @@
 | `update` | 升级工具自身（非游戏版本） | ✅ | ❌ |
 | `uninstall` | 卸载工具自身 | ✅ | ❌ |
 | `app` | **跨面**：安装 / 打开 / 卸载 GUI 应用 | ✅ (macOS) | ✅ (macOS) |
-| `completion` | 生成 / 安装 Shell 补全 | ✅ 新增 | ✅ 新增（bash/zsh） |
+| `completion` | 生成 / 安装 Shell 补全 | ✅ | ✅（bash/zsh/fish/powershell/pwsh + `install`） |
 | `capabilities` | 机器可读的命令 / 选项 / 退出码清单（AI 能力发现） | ✅ 新增 | ✅ 新增 |
 | `mcp` | 本地 MCP server（stdio JSON-RPC，把命令暴露为 AI tools） | ✅ 新增 | ✅ 新增 |
 | `version` | 打印工具版本 | ✅ | ✅ |
@@ -54,7 +56,7 @@
 | `--root-dir <path>` | 游戏根目录（默认 `~/minecraft`） | **全局（已决）**；子命令仍接受（Swift ✅ / Python ✅） |
 | `--json` | 机器可读输出（见 §6 / §8） | **全局（已决）**；非 TTY/脚本/AI 场景使用（Swift ✅ / Python ✅） |
 | `--version` | 打印工具版本 | **全局（已决）**；与子命令 `-v`（游戏版本）靠位置区分（Swift ✅ / Python ✅） |
-| `-h` / `--help` | 帮助 | 两者需补齐 |
+| `-h` / `--help` | 帮助（根命令与**每个子命令**等价） | 规范要求（`cli-surface.json` 的 `--help` 带 `short: "-h"`）；P ✅ / S ⚠️ 待补 |
 
 ---
 
@@ -127,9 +129,30 @@ orzmc plugin [--search TEXT] [--list] [--output DIR] [--version VER] [--count N]
 | `uninstall` | `--yes`、`--remove-root`、`--force` | Python |
 | `version` | — | Python |
 | `app` | `install\|open\|uninstall\|status`；`--channel release\|appstore`、`--version`、`--yes` | **新增（见 `install-update.md`）** |
-| `completion` | `bash\|zsh\|fish\|powershell`；`install` | **新增** |
+| `completion` | `bash\|zsh\|fish\|powershell\|pwsh`（打印脚本）；`install`（按 `$SHELL` 落盘） | **见 §4.5** |
 | `capabilities` | —（`--json` 输出命令 / 选项 / 退出码清单） | **新增（见 §8.1）** |
 | `mcp` | 无参数；stdio JSON-RPC server | **新增（见 §8.2）** |
+
+### 4.5 `completion`（补全契约，已定稿）
+
+```
+orzmc completion <shell>        # bash|zsh|fish|powershell|pwsh → 脚本写到 stdout
+orzmc completion install        # 按 $SHELL 落盘安装(幂等)
+```
+
+| 项 | 契约 |
+|:--|:--|
+| 脚本生成 | `completion <shell>` 把脚本写 **stdout**；`--json` → `data = {mode:"script", shell, script}`。`shell` **回显请求值**（`pwsh` 不折叠成 `powershell`） |
+| shell 判定 | `install` **只读环境变量**：`$SHELL` 的 basename（去 `.exe`、小写）；Windows 无 `$SHELL` 视为 `powershell`。**禁止做进程探测**（冻结二进制/沙箱里不可靠，见 §10 备注） |
+| 判定失败 | `E_USAGE`，消息里给出可执行退路：`orzmc completion <shell>`（手动落盘） |
+| 落点 | 固定路径见 [`frontends.md`](frontends.md) F6 / [`state-paths.json`](state-paths.json)；`powershell`/`pwsh` **不落盘**（只生成脚本） |
+| `powershell`/`pwsh` 的 `install` | `E_UNSUPPORTED`（不是「成功但没装」），消息要说明改用 `completion <shell>` 手动加入 `$PROFILE` |
+| 幂等 | 同路径覆盖即最新；rc 只在**该 shell 不会自动加载落点**时补一行，且只补一次（建议带 `orzmc` 标记） |
+| 落盘副作用 | 必须登记到 `install.conf` 的 `completion_file`，供 `uninstall` 清理（[`install-update.md`](install-update.md) §3/§9） |
+| `--json` 结果 | `data = {mode:"install", shell, path, hint}`；`hint` 为**可空字符串**（安装后的下一步提示，文案实现自定） |
+| 禁止 | 不提供框架自带的补全安装开关（Python/typer 的 `--install-completion` / `--show-completion` 必须**移除**，ConsoleKit 无此物）；不改 PowerShell 执行策略；不静默重写用户 rc |
+
+- 现状：`P` ✅（`orzmc_app/cli/completions.py`）；`S` ⚠️ 待对齐（缺 `data.hint`；未知 shell 用 `E_UNSUPPORTED` → 应为 `E_USAGE`；`$SHELL` 无法识别时报错文案需对齐；其余落点/幂等/`completion_file` 已符合）。
 
 ---
 
@@ -153,10 +176,13 @@ orzmc plugin [--search TEXT] [--list] [--output DIR] [--version VER] [--count N]
 | 退出码 | 含义 |
 |:--|:--|
 | `0` | 成功 |
-| `1` | 运行错误（用户可读错误信息写 **stderr**） |
-| `130` | 用户取消（Ctrl-C / 拒绝确认） |
+| `1` | 运行错误 / 用法错误（错误信息写 **stderr**） |
+| `130` | 用户取消（`E_CANCELLED`：Ctrl-C / 拒绝确认 / 非交互缺 `--yes`） |
 
-- 人类可读输出到 **stdout**；错误到 **stderr**。
+- 人类可读**结果**到 stdout；**错误、日志、进度一律 stderr**。
+- **用法错误（未知命令 / 未知选项 / 缺必填 / 非法枚举值）也是退出 `1`**：框架的默认值
+  （如 click 的 `2`）必须归一为 `1`。这类错误发生在参数解析阶段，**不要求** JSON 信封
+  （此时 `--json` 可能还没被解析）；只要退 1 且 stderr 有可读信息即可。
 - **机器可读输出**：全局 `--json`（**已决**）→ 结构化 JSON，字段与 `data-model.md` 对齐；
   非 TTY 时**默认仍为人类可读**（不破坏现状），显式 `--json` 才切换。
 
@@ -182,6 +208,8 @@ orzmc plugin [--search TEXT] [--list] [--output DIR] [--version VER] [--count N]
 | `schemaVersion` | string | | 信封版本（**建议**，如 `"1"`） |
 
 - `error.code`：稳定字符串，见下方**错误码表**。
+- `--json` 下 **stdout 只能有这一个对象**：库日志、人类可读错误、「已安装到 …」这类提示
+  全部走 stderr（实现里若把探针/诊断打进 stdout，等于破坏信封）。
 - `--json` 隐含**非交互**：绝不等待输入（§7）。
 - 退出码仍按上方（`0`/`1`/`130`）—— AI 可同时看 `ok` 与退出码。
 - `--auth` 的 `data` **不含任何令牌**（见 [`auth.md`](auth.md) §8）。
@@ -222,9 +250,16 @@ orzmc plugin [--search TEXT] [--list] [--output DIR] [--version VER] [--count N]
 | 非 TTY（管道/CI） | **不阻塞**：用 Mojang 最新 release + 默认值 |
 | TTY + 缺用户名 | 交互询问（回车用 `guest`） |
 | 非 TTY + 缺用户名 | 静默用 `guest` |
-| 需确认（EULA/删除/升级） | TTY 弹确认；非 TTY 用默认（`--yes` 明确跳过） |
+| 需确认（EULA/删除/升级） | TTY 弹确认（`--yes` 跳过）；**非 TTY 分两类，见下表** |
 
-> **规范红线**：任何非 TTY 场景**禁止等待输入**。
+**非 TTY 确认规则（已决，两套实现必须一致）**：
+
+| 类别 | 命令 | 非 TTY 且缺 `--yes` | 理由 |
+|:--|:--|:--|:--|
+| **破坏性 / 不可逆** | `remove`、`uninstall`、`app uninstall` | **取消**：`E_CANCELLED` + 退出 `130`，**不做任何修改** | 猜错就丢数据/丢二进制，不能默认同意（§8.2 / `frontends.md` F2） |
+| **有默认意图** | `update`（替换自身二进制）、`server`（EULA） | `update` 直接执行；`server` 缺 `--yes` 报错要求显式接受 EULA | 用户已显式调用即表达意图；EULA 是法律同意，不能被“默认”代为接受 |
+
+> **规范红线**：任何非 TTY 场景**禁止等待输入**；破坏性操作在非 TTY 下**绝不静默执行**。
 
 ---
 
@@ -358,17 +393,22 @@ stdout **只**输出 JSON-RPC 消息，日志 / 进度一律走 stderr。非交�
 
 ## 9. Shell 自动补全（用户要求）
 
+命令面与语义见 **§4.5**（本节只放总览与现状）：
+
 | 能力 | 规范 |
 |:--|:--|
-| 生成脚本 | `orzmc completion <shell>` 输出补全脚本到 stdout |
-| 安装补全 | `orzmc completion install` 自动写入对应 shell 的补全目录 |
-| 安装器集成 | 安装 CLI 时**自动安装补全**（见 `install-update.md`） |
-| 支持 shell | `bash`、`zsh`、`fish`、`powershell` |
+| 生成脚本 | `orzmc completion <shell>` 输出补全脚本到 stdout（`bash`/`zsh`/`fish`/`powershell`/`pwsh`） |
+| 安装补全 | `orzmc completion install` 按 `$SHELL` 幂等落盘；落点见 `frontends.md` F6 |
+| 落盘登记 | 写入 `install.conf` 的 `completion_file`，`uninstall` 据此清理 |
+| 安装器集成 | 安装 CLI 时**自动安装补全**（`install-update.md` §5；**当前两端都未实现**，见该节状态栏） |
+| 禁止 | 不暴露框架自带补全开关、不改 PowerShell 执行策略、不做进程探测、不静默重写 rc |
 
-- Python（typer）已开启补全(`add_completion=True`),并提供 `orzmc completion <shell>` / `orzmc completion install`;Swift（ConsoleKit）已提供 `completion`(`bash`/`zsh` 原生;`fish`/`powershell` 显式不支持)。
+- **Python**：`orzmc completion <shell>` / `completion install` 均 ✅（`orzmc_app/cli/completions.py`；
+  `add_completion=True` 仅用于注册 click 的 `_ORZMC_COMPLETE` 动态补全，typer 自带的
+  `--install-completion` / `--show-completion` 已按 §4.5 移除）。
+- **Swift**：`completion` 已实现（bash/zsh/fish/powershell/pwsh + install），差 §4.5 的
+  `data.hint` 与 `E_USAGE` 归一。
 - 全局选项（`--root-dir/--verbose/--json`）需在所有子命令中可用（可能需在解析层提升）。
-
----
 
 ## 10. 迁移清单（实现需做的改动）
 
@@ -388,5 +428,18 @@ stdout **只**输出 JSON-RPC 消息，日志 / 进度一律走 stderr。非交�
 4. 选项别名：`--minmem/--maxmem` 保留为 `--min-mem/--max-mem` 的别名 ✅。
 5. 开启补全（`add_completion=True`）✅。
 6. `mcp` 本地 MCP server（§8.2）✅。
+
+### 10.1 2026-10-20 契约增补（`specVersion 0.2`）的落实清单
+
+| 项 | Python | Swift |
+|:--|:--:|:--:|
+| `-h` 与 `--help` 等价（根 + 所有子命令） | ✅ | ⚠️ 待补（ConsoleKit 默认只有 `--help`） |
+| 移除框架自带的补全安装开关（typer 的两个；ConsoleKit 无） | ✅ | ✅（无此物） |
+| 用法错误退出码归一为 `1` | ✅（`main()` 把 2 → 1） | ⚠️ 待验收（ConsoleKit 解析错误路径需实测） |
+| 错误 / 日志一律 stderr（`--json` 下 stdout 只有信封） | ✅ | ✅（`StderrConsole`） |
+| 非交互破坏性操作缺 `--yes` → `E_CANCELLED`/130 | ✅（`remove` / `uninstall`） | ⚠️ 待改（当前非交互**直接执行**，`RemoveCommand` / `UninstallCommand`） |
+| `completion install` 的 `data.hint` + `E_USAGE`（未知 shell） | ✅ | ⚠️ 待补（`hint` 缺失；未知 shell 用 `E_UNSUPPORTED`；`pwsh` 的 `shell` 被折叠成 `powershell`） |
+| `E_UNSUPPORTED_TYPE`（具体类型不支持） | ✅ | ✅ |
+| CLI 行为验收（[`conformance.md`](conformance.md) §7 的 acceptance 分组） | ✅ `scripts/accept_cli.py` | ⚠️ 待建等价 harness |
 
 > 收尾状态与勾选见 [`product-unification-plan.md`](../product-unification-plan.md) Phase 3/4。

@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-10-16 by pi
+> **最后更新**：2026-10-20 by pi
 
 ---
 
@@ -60,7 +60,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端**离线**链路就绪，但 **Game Service API 审核被拒 → 真实登录不可用**；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差且 `--strict` 已进 CI**（含 enum 比对）；**元数据缓存已统一到 `<root>/cache`**；**最近发布**：Python `2.11.0` / Swift **`v0.11.1`** |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | ① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**已定：暂停，等 Mojang 第 2 次申请邮件回复**（不提前做，避免返工）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**（无提交编号；两周无回信按未通过处理，不再投第 3 次）；③ 认证路线（A. authlib-injector / B. BYO / C. 降级）**等回信后再拍板**，不提前动工 |
+| **下一步** | ⓪ **合并 `python` 的 CLI 契约 0.2 分支**（`fix/cli-completion-acceptance`）→ bump `python` 指针；随后按 `docs/spec/cli-surface.md` §10.1 对齐 **Swift CLI**（`-h`、非交互取消语义、`completion install` 的 `hint`/`E_USAGE`、Swift 侧 acceptance harness）。① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**已定：暂停，等 Mojang 第 2 次申请邮件回复**（不提前做，避免返工）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**（无提交编号；两周无回信按未通过处理，不再投第 3 次）；③ 认证路线（A. authlib-injector / B. BYO / C. 降级）**等回信后再拍板**，不提前动工 |
 
 ## 2. 状态快照（Repo State）
 
@@ -69,7 +69,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 值 |
 |---|---|
 | 分支 | `main`（跟随远端；子模块指针以 `git ls-tree HEAD` / `RELEASES.md` 为准） |
-| 工作区 | `M plugin`（本地常检出 develop，**预期**）；`python` / `OrzMCKit` 已合并且与记录指针一致 |
+| 工作区 | `M plugin`（本地常检出 develop，**预期**）；`M python`：本地分支 `fix/cli-completion-acceptance` 有 **未合并** 提交（CLI 契约 0.2，见 §5 2026-10-20）→ **预期，合入后再 bump 指针**；`OrzMCKit` 与记录指针一致 |
 | 父仓库 CI | ✅ `.github/workflows/ci.yml` → `python3 scripts/verify/check.py` |
 | 已删除（历史） | `GEMINI.md`、`.cursor/rules/` |
 
@@ -244,6 +244,52 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-20 — pi（CLI 契约 0.2：冻结二进制补全崩溃 + CLI 自动化验收；Python 分支待合）
+
+**触发**：用户实测发布版 `orzmc --install-completion` / `--show-completion` 崩在
+`RuntimeError: Shell detection not implemented for 'posix'`。
+
+**根因**：typer 的补全安装走 `shellingham`，而它用 `importlib.import_module(f".{os.name}")`
+**动态**导入平台实现；PyInstaller 静态分析看不到、contrib 也没有 hook → 冻结二进制缺
+`shellingham.posix` / `nt`。受影响的**不只是两个多余选项**：规范 §9 的
+`orzmc completion install` 在发布版里一直是坏的（单测用 CliRunner 进程内调用，全绿）。
+
+**先改规范（父仓库 `docs/spec/`，`specVersion 0.2`）**
+- `cli-surface.md`：新增 **§4.5 `completion` 全契约**（shell 只读环境变量、禁进程探测、
+  落点/幂等/rc 边界、`powershell`/`pwsh` 的 `install` → `E_UNSUPPORTED`、`data = {mode,shell,path,hint}`、
+  禁框架自带补全开关）；§6 明确**用法错误也退 1**（框架的 2 必须归一）、**错误/日志一律 stderr**；
+  §7 把“非 TTY 用默认”拆成**破坏性操作 → `E_CANCELLED`/130** 与“有默认意图（`update`/EULA）”两类；
+  §9 重写为总览 + 现状；§10.1 列出 **Swift 待对齐清单**。
+- `behavior.md`：**B9 定稿**「非 TTY 破坏性操作缺 `--yes` → 取消且数据不动」；**B11** 补退出码/流/信封规则。
+- `frontends.md`：**F6 重写**（落点、判定、幂等、rc 边界、禁改执行策略/禁进程探测、`completion_file` 登记）；
+  F2 补现状（`completion_file` 两侧均已落地）。
+- `install-update.md`：§5 重写（含“安装器自动装补全 + `--no-completion` **尚未实现**”的坦白状态）；
+  §9 明确非交互卸载必须 `--yes`。
+- `conformance.md`：新增 **§12 CLI 行为验收（acceptance）**——分组 `surface/envelope/contract/completion/mcp/frozen/network`，
+  要求**每套实现提供等价 harness**（Swift 待建）。
+
+**Python 实现（分支 `fix/cli-completion-acceptance`，**尚未合入 main / 未 bump**）**
+- `scripts/build.py` 加 `--collect-submodules shellingham`（冻结二进制补全崩溃的直接修复）。
+- `completion install` 换成自带安装器 `orzmc_app/cli/completions.py`：环境变量判定、固定落点幂等、
+  不改 PowerShell 执行策略、bash/zsh 只补一行带标记的 rc、powershell/pwsh → `E_UNSUPPORTED`；
+  落盘后经 `record_completion_file()` 登记到 `install.conf`（库新增 `completion_file` 字段 +
+  `uninstall` 清理 → 与 Swift 对齐）。
+- 摘掉 typer 的 `--install-completion`/`--show-completion`（保留 `add_completion=True` 供
+  `_ORZMC_COMPLETE` 动态补全）；`uninstall --json` 日志切 stderr；`remove`/`uninstall` 非交互缺 `--yes`
+  → `E_CANCELLED`；错误写 stderr；用法错误 2 → 1；`-h` 与 `--help` 等价；`E_UNSUPPORTED_TYPE`；
+  `RichReporter` 给注入的 Console `push_theme`（否则 `--json` 下第一次日志就 `MissingStyle` → `E_RUNTIME`）。
+- **新增 `scripts/accept_cli.py`**（CLI 自动化验收，真实进程 + 沙箱 + 超时；`--cli` 跑冻结二进制、
+  `--state-paths` 比对父仓库快照）。CI：`quality` 源码模式（带 `--state-paths`），`binary` 6 平台 `--cli`。
+- 本地结果：pytest / ruff / mypy 全绿；`surface --strict` 0 漂移；acceptance 源码 20/20、
+  **冻结二进制 23/23**；`check.py` 全绿；`accept_selfupdate`（跳过网络）24/24。
+
+**下一步**
+1. 用户确认后推分支 → PR（标题建议 `fix(cli): 修复冻结二进制补全崩溃并补齐 CLI 自动化验收`）→ 合并后父仓库 bump `python` 指针。
+2. **发版时补「升级须知」**：`--install-completion`/`--show-completion` 已移除（改用 `completion install`）；
+   非交互卸载/移除必须带 `--yes`（缺则 130）；用法错误退出码 2 → 1；错误改走 stderr。
+3. **Swift 待对齐**（见 `cli-surface.md` §10.1）：`-h`、非交互 `remove`/`uninstall` 取消语义、
+   `completion install` 的 `data.hint` 与未知 shell 的 `E_USAGE`、CLI acceptance harness。
 
 ### 2026-10-17 — pi（App Phase B：`install.conf.surface` + GUI 反向安装 CLI；发 0.12.0）
 

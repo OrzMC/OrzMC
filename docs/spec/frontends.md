@@ -1,6 +1,6 @@
 # 多前端与共享数据契约（N Frontends, One Dataset）
 
-> **状态**：草案 `specVersion 0.1`｜**最后更新**：2026-10-17
+> **状态**：草案 `specVersion 0.2`｜**最后更新**：2026-10-17
 > **定位**：定义「**规范唯一、数据唯一、前端多个**」的模型。Python CLI、Swift CLI、`OrzMCApp`(GUI)、
 > `orzmc mcp`、agent / CI 脚本，**都是同一套数据的不同前端**，不是各自独立的工具。
 > **上游**：[`../product-architecture.md`](../product-architecture.md) §1.2 / §3；
@@ -43,7 +43,7 @@
 | 安装记录 | `<状态目录>/install.conf`（兜底 `<二进制目录>/.orzmc-manifest`） | 安装器 / `update` | **读多写少**，写入需护栏（F3） | [`install-update.md`](install-update.md) §3 |
 | 认证会话 | `<状态目录>/auth.json`（`0600`，原子写） | 登录 / 刷新令牌的前端 | **同一时刻应只有一个前端刷新**（F4） | [`auth.md`](auth.md) §5 |
 | 游戏根 | `~/minecraft`（`--root-dir` 可改） | 任意前端 | **元数据可并发，运行时目录独占**（F5） | [`data-model.md`](data-model.md) |
-| 补全脚本 | `~/.local/share/bash-completion/completions/orzmc`、`~/.zsh/completions/_orzmc`、`~/.config/fish/completions/orzmc.fish` | `completion install` | 幂等覆盖（F6） | [`install-update.md`](install-update.md) §5 |
+| 补全脚本 | `~/.local/share/bash-completion/completions/orzmc`、`~/.zsh/completions/_orzmc`、`~/.config/fish/completions/orzmc.fish` | `completion install`（并在 `install.conf` 记 `completion_file`） | 幂等覆盖（F6）；卸载按记录删除 | [`install-update.md`](install-update.md) §5 |
 | 可执行体 | `${XDG_BIN_HOME:-$HOME/.local/bin}/orzmc` | 安装器 / `update` | **同一路径只能有一个**（F1） | [`install-update.md`](install-update.md) §2 |
 | 前端私有状态 | 前端自有位置（如 GUI 的 `UserDefaults`、窗口/缓存设置） | 该前端 | 独占 | F7 |
 
@@ -60,6 +60,7 @@
 
 **F2 记录共享、卸载一致**：`install.conf` 是**唯一的安装事实**。任一前端的 `uninstall` 都必须按它执行：
 移除二进制、删除记录、清理补全文件、按 `path_line` 精确删除 PATH 行、可选删游戏根。
+（`completion_file` 已落地：P ✅ 2026-10-20 起由 `completion install` 登记、`uninstall` 删除；S ✅ 早已实现。）
 由于这会**连带拆掉另一份前端**，`uninstall` 必须保留二次确认（`--yes`）与危险目录护栏。
 
 **F3 更新不越界**：`update` 只替换**自己正在运行的那份二进制**，且只有在
@@ -79,7 +80,19 @@
 即：可以两个前端并存，但**不要同时启动同一个版本 + 同一个 profile**。
 
 **F6 补全幂等**：`completion install` 覆盖同路径即为最新；内容由各自 `capabilityList()` 渲染，
-命令面统一后两者内容等价。`powershell`/`pwsh` 目前仅生成脚本、不落盘安装（交互差异，不属契约）。
+命令面统一后两者内容等价。细则（与 [`cli-surface.md`](cli-surface.md) §4.5 同一契约）：
+
+| 项 | 契约 |
+|:--|:--|
+| 落点 | 上表三个固定路径（`state-paths.json` 的 `completion` 段）；**不写别处** |
+| shell 判定 | 只读环境变量：`$SHELL` 的 basename（去 `.exe`、小写）；Windows 无 `$SHELL` 视为 `powershell`。**禁止进程探测 / 执行外部命令探测** |
+| 幂等 | 同路径覆盖即最新；rc 只在**该 shell 不会自动加载落点**时补一行（建议带 `orzmc` 标记，便于人工核对），已存在就不再写（bash：落点目录需 bash-completion，故补一行 `source`；zsh：必须确保 `fpath`；fish 自动加载，无需 rc） |
+| rc 边界 | 只**追加**自己那一行；不改执行策略、不改无关配置、不重写整个文件 |
+| `powershell`/`pwsh` | 仅生成脚本、**不落盘**；`completion install` 对它们返回 `E_UNSUPPORTED`（不是「成功但没装」） |
+| 登记 | 落盘后把路径写进 `install.conf` 的 `completion_file`（F2） |
+| 失败 | 判定不出 shell → `E_USAGE` 并提示 `orzmc completion <shell>`；写盘失败 → 明确报错（不静默） |
+
+- 现状：`P` ✅（`orzmc_app/cli/completions.py`，2026-10-20）；`S` ✅（落点/幂等/`completion_file` 已符合，差 `data.hint` 与未知 shell 的 `E_USAGE` 归一，见 `cli-surface.md` §10.1）。
 
 **F7 私有状态不污染共享层**：前端专有的持久化（GUI 窗口状态、同步/缓存偏好等）放在前端自有位置，
 **不得**写进状态目录的契约文件、也不得写进游戏根的契约布局。

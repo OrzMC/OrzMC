@@ -1,6 +1,6 @@
 # 安装 / 自升级 / 跨面安装契约（Install & Update Contract）
 
-> **状态**：草案 `specVersion 0.2` ｜ **最后更新**：2026-10-17
+> **状态**：草案 `specVersion 0.3` ｜ **最后更新**：2026-10-20
 > 支撑产品形态「一个 `orzmc`、CLI 与 GUI 两面、可互相安装/打开」（见 [`../product-architecture.md`](../product-architecture.md) §1.2）。
 > **基线**：复用 Python 现有安装体验（用户认可），并吸收 Swift 亮点。
 
@@ -50,7 +50,7 @@
 | `path_line` | | 写入的 PATH 行（卸载按其精确匹配删除） |
 | `root_dir` | ✅ | 游戏根目录 |
 | `surface` | | `cli` / `gui`：**装出这条记录的前端**（语义与写入规则见 §3.1） |
-| `completion_file` | | 补全脚本路径（**新增**，卸载时一并清理） |
+| `completion_file` | | 补全脚本路径；由 `completion install` 写入，`uninstall` 据此删除（P ✅ / S ✅） |
 
 - **PS 5.1 写 BOM** → 读取一律 `utf-8-sig`（沿用 Python 约定）。
 - 可选字段为空则不写行。
@@ -90,21 +90,30 @@
 
 ## 5. Shell 补全安装（用户要求）
 
-安装 CLI 时**自动安装补全**，使命令/参数可 Tab 补全。
+**两层**：(a) 用户随时可 `orzmc completion install`（行为契约见 [`cli-surface.md`](cli-surface.md) §4.5）；
+(b) 安装器**应当**在装完 CLI 后自动调用一次（免去用户手动一步）。
 
-| shell | 落点（示例，实现按平台确认） |
-|:--|:--|
-| bash | `~/.local/share/bash-completion/completions/orzmc` 或 source 到 rc |
-| zsh | `~/.zsh/completions/_orzmc`（并确保 `fpath` 含该目录） |
-| fish | `~/.config/fish/completions/orzmc.fish` |
-| powershell | 追加 `Register-ArgumentCompleter` 到 `$PROFILE` |
+| shell | 落点 | 额外动作 |
+|:--|:--|:--|
+| bash | `~/.local/share/bash-completion/completions/orzmc` | 装了 bash-completion 会自动加载；否则幂等追加一行 `source` 到 `~/.bashrc` |
+| zsh | `~/.zsh/completions/_orzmc` | 必须确保 `fpath` 含该目录（幂等追加一行带 `orzmc` 标记） |
+| fish | `~/.config/fish/completions/orzmc.fish` | 自动加载，无需 rc |
+| powershell / pwsh | —（只生成脚本） | 不落盘；`install` 明确报 `E_UNSUPPORTED`，提示手动加入 `$PROFILE` |
 
-- 生成源：`orzmc completion <shell>` 输出脚本（见 `cli-surface.md` §8）。
-- 记录 `completion_file` 到 manifest，卸载时清理。
+- **禁止**：改 PowerShell 执行策略（`Set-ExecutionPolicy`）、重写用户的 rc 文件、做 shell 进程探测
+  （冻结/沙箱环境下不可靠，见 `cli-surface.md` §4.5）。
+- 生成源：`orzmc completion <shell>`（同一份 `capabilities`，两套实现内容等价）。
+- **登记**：落盘后把路径写入 `install.conf` 的 `completion_file`，`uninstall` 按它删除（§9 / `frontends.md` F2）。
 - 关闭：安装器 `--no-completion`。
-- **实现要点**：Python（typer）需开启补全生成；Swift（ConsoleKit）需补生成器或内置静态脚本。
 
----
+| 项 | Python | Swift |
+|:--|:--|:--|
+| `orzmc completion install`（幂等 + 登记） | ✅ | ✅（差 `data.hint` / `E_USAGE`，见 `cli-surface.md` §10.1） |
+| 安装器自动装补全 + `--no-completion` | ⚠️ **未实现（backlog）** | ⚠️ 未实现 |
+| 安装器写 `completion_file` | ⚠️ 同上（目前只有用户在装完后手动跑 `completion install` 才会登记） | ⚠️ 同上 |
+
+> 现状说明：`install.sh` / `install.ps1` 目前**不**自动安装补全，也没有 `--no-completion`。
+> 这是 §1「装完即可用」的已知缺口，已列入 backlog；在补齐之前，文档不得声称“安装器已自动装补全”。
 
 ## 6. 自升级 `orzmc update`（复用 Python 规范）
 
@@ -172,7 +181,7 @@
 |:--|:--|
 | `orzmc uninstall` | 删二进制 → 还原 PATH → 删补全 → `rmdir` 空目录 → 删 manifest；游戏数据默认保留 |
 | `--remove-root` | 连游戏根目录一并删除 |
-| `--yes` | 免确认（脚本化） |
+| `--yes` | 免确认（脚本化）。**非交互调用必须带它**，否则 `E_CANCELLED`（130）且不做任何修改（`frontends.md` F2 / `behavior.md` B9） |
 | **开发环境护栏** | 路径含 `.venv`/`venv`/`env`/`site-packages`/`dist-packages`/`_MEI*` 或 `_MEIPASS` 同目录 → 拒绝；`--force` 放行 |
 | **pip/pipx 托管** | 二进制旁有 `*.dist-info` 或路径含 site-packages → 不删，提示用 pip 卸载 |
 | **只删自登记内容** | 只 `rmdir` **空**目录，绝不递归删共享目录（如 `~/.local/bin`） |

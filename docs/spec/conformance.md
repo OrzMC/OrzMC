@@ -1,6 +1,6 @@
 # 一致性套件（Conformance Suite）
 
-> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-15
+> **状态**：草案 `specVersion 0.2` ｜ **最后更新**：2026-10-20（新增 §12 CLI 行为验收）
 > 用**黄金样例**把规范变成可断言对象：各语言实现跑同一批样例，**差异即红灯**。
 > 这是"规范不漂移"的唯一长期保障（决策 D4）。
 
@@ -218,3 +218,44 @@ python3 scripts/conformance/run.py --adapter "$BIN" --strict
 - 数据形状来自 [`data-model.md`](data-model.md)。
 - 行为语义来自 [`behavior.md`](behavior.md)。
 - 落地阶段与勾选见 [`product-unification-plan.md`](../product-unification-plan.md) Phase 2/3。
+
+---
+
+## 12. CLI 行为验收（acceptance）
+
+fixtures 断言的是**库层**输入→输出（计划、下载、缓存、错误语义）。CLI 还有一批
+**进程级行为**用 fixture 表达不了，但它们同样是契约，且历史上真出过事故
+（2026-10：冻结二进制里 `completion install` 因 PyInstaller 漏打包动态 import 的
+`shellingham.posix` 而崩，单测全绿、用户一跑就炸）。所以契约再加一层**可执行验收**。
+
+### 12.1 规则
+
+1. **每套实现都要有一个等价 harness**，用例分组、断言语义相同；实现语言/框架自选。
+2. **断言按规范写**（`cli-surface.md` §4/§6/§7/§9、`behavior.md` B9/B11、`frontends.md` F2/F6），
+   不按当前实现写。规范变了先改断言，再改实现。
+3. 每个用例跑**真实子进程**（不是进程内调用），`stdin` 接 `/dev/null`（或固定脚本），带超时；
+   「非交互不阻塞」本身就是被测行为。
+4. 每个用例用**隔离沙箱**（`HOME` / `XDG_*` / 游戏根指向临时目录），不碰真实配置。
+5. 必须能在**发布形态（冻结二进制）**上跑一遍 —— 那是唯一能发现「打包漏了模块」的地方。
+
+### 12.2 分组（两套实现一致）
+
+| 组 | 断言要点 | 对应规范 |
+|:--|:--|:--|
+| `surface` | 无参打印帮助并退 0；`-h` 与 `--help` 等价（根 + 每个子命令）；`version` 与 `--version` 一致；用法错误退 **1**；全局选项只能在子命令前 | §1 / §3 / §6 |
+| `envelope` | 每个命令 `--json` 下 stdout **恰好一个**对象；`command` 正确；失败有稳定 `E_*` 且退出码匹配（`E_CANCELLED`→130，其余→1）；stdout 无 ANSI / 无人类可读行 | §6 / §6.1 |
+| `contract` | 非交互破坏性操作缺 `--yes` → 130 且**数据不动**；`list` 能识别已安装版本；任何路径都不阻塞 | §7 / §8.2 / B9 |
+| `completion` | 五个 shell 都能生成脚本；未知 shell → `E_USAGE`；`install` 落点/幂等/rc 只写一次；powershell/pwsh → `E_UNSUPPORTED`；`$SHELL` 缺失时给出可执行退路 | §4.5 / §9 / F6 |
+| `mcp` | stdio JSON-RPC 全会话（`initialize`/`tools/list`/`tools/call`/`ping`/未知方法/坏 JSON）；排除集；`isError` 语义；缺 `--yes` 的 `remove` 是 tool 错误而非 RPC 错误 | §8.2 |
+| `frozen` | 仅发布形态：动态补全（`_ORZMC_COMPLETE`）可用；框架自带的补全开关**不存在**；`completion install` 不崩 | §4.5 / §9 |
+| `network` | 默认不跑；`--network` 才跑 `update --check` / `plugin --search`（限流也要「有信封地失败」） | §6.1 |
+
+### 12.3 现状与接线
+
+| 实现 | harness | CI |
+|:--|:--|:--|
+| Python | `python/scripts/accept_cli.py`（`--cli dist/orzmc` 跑冻结二进制） | `quality` 跑源码模式；`binary` 6 平台各跑一次 `--cli dist/orzmc` |
+| Swift | ⚠️ 待建等价 harness（分组/断言照 §12.2） | 建议在 `OrzMCKit` CI 加 `conformance` 之后的一步 |
+
+新增用例：先确认它属于**规范**要求（不是实现细节），再写进对应分组；断言失败信息里要能看出
+「哪条规范、哪次调用、实际输出」。

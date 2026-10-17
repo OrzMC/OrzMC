@@ -1,6 +1,6 @@
 # 行为契约（Behavior Contracts）
 
-> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-17（现状列已按代码重新核验）
+> **状态**：草案 `specVersion 0.2` ｜ **最后更新**：2026-10-20（B9/B11 按 2026-10 的 CLI 契约增补重新定稿）
 > 定义实现必须一致的**行为**（而非数据形状）。每条契约都应有对应一致性样例（见 [`conformance.md`](conformance.md)）。
 > 标注：`P`=Python 现状、`S`=Swift 现状；✅ 已符合 / ⚠️ 需对齐 / ❌ 缺失。
 
@@ -110,9 +110,20 @@
 | 禁止阻塞 | 任何非 TTY 场景**不得等待输入** |
 | 版本缺省 | 用 Mojang 最新 release |
 | 用户名缺省 | `guest` |
-| 确认项 | 用默认值（`--yes` 明确跳过） |
+| 确认项 | 见下方「非 TTY 确认规则」 |
+| 破坏性操作 | 非 TTY 且缺 `--yes` → **取消**（`E_CANCELLED` / 130），**不做任何修改** |
+| 有默认意图的操作 | `update` 直接执行；`server` 的 EULA 必须显式 `--yes`，不被“默认”代为接受 |
 
-- 现状：`P` ✅；`S` ✅（`TerminalEnvironment.isInteractive` 探测；`--json` 或非 TTY → 最新 release + 用户名 `guest`，不阻塞）。
+**非 TTY 确认规则**（与 [`cli-surface.md`](cli-surface.md) §7 同一条契约）：
+
+| 命令 | 缺 `--yes` 的非 TTY 行为 |
+|:--|:--|
+| `remove` / `uninstall` / `app uninstall` | `E_CANCELLED`（130），数据/二进制保持原样 |
+| `update` | 直接执行（用户显式调用即意图） |
+| `server`（EULA） | 报错要求 `--yes`（法律同意不能默认） |
+
+- 现状：`P` ✅（`remove`/`uninstall` 非 TTY 缺 `--yes` 退 130；`update` 直接执行；`server` 报错）；
+  `S` ⚠️ 待对齐（`RemoveCommand`/`UninstallCommand` 当前在非交互下**直接执行**；`update`/`server` 已符合）。
 
 ## B10 版本解析与渠道
 
@@ -130,10 +141,13 @@
 | 项 | 契约 |
 |:--|:--|
 | 归一化 | 网络/文件错误在 service 层统一转为**用户可读**信息（不裸抛底层异常） |
-| 去向 | 错误写 stderr；退出码 `1` |
+| 去向 | **错误 / 日志 / 进度一律 stderr**；人类可读**结果**才进 stdout |
+| 退出码 | 只有 `0`（成功）/ `1`（运行 / 用法错误）/ `130`（`E_CANCELLED`）；框架默认值（click 的 `2`、ConsoleKit 的默认值）必须归一 |
+| 信封 | `--json` 下 stdout **恰好一个** JSON 对象；解析阶段（未知命令/选项、缺必填）不要求信封，但必须退 `1` 且 stderr 可读 |
 | 不静默 | 任何降级（如缓存回退、类型不支持）都要有明确提示 |
 
-- 现状：`P` ✅；`S` ✅（`ErrorPresentation` 归一为用户可读信息，错误走 stderr、退出码 `1`；`error/*` 通过）。
+- 现状：`P` ✅（`_console_err` + `_reporter` 切 stderr；`main()` 收敛退出码）；`S` ✅（`ErrorPresentation` + `StderrConsole`）。
+- 用例：`error/*`；CLI 层行为见 [`conformance.md`](conformance.md) §7 的 acceptance `envelope` / `surface` 组。
 
 ---
 
@@ -149,7 +163,7 @@
 | B6 客户端启动 | ✅ | ✅ | `client-plan/*` |
 | B7 服务端生命周期 | ✅ | ✅ | `server-lifecycle/*` |
 | B8 进度 | ✅ | ✅ | `progress/*` |
-| B9 非 TTY | ✅ | ✅ | `non-tty/*` |
+| B9 非 TTY | ✅ | ⚠️ 取消语义待对齐 | `non-tty/*` |
 | B10 版本解析 | ✅ | ✅ | `version-resolve/*` |
 | B11 错误语义 | ✅ | ✅ | `error/*` |
 
