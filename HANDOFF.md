@@ -80,7 +80,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `0a8a797` | `OrzPythonMC`；适配器 + 下载续传 + 全局选项 + `--json` + `completion` + `capabilities` + `plugin`/`app` + `planClientDownload` + 退出码归一；**已发布 `2.9.1`**；**内置 client_id**：`--auth` 离线链路 + `orzmc mcp` + `auth/*` 适配器 + 服务端 `--demo`/`--online-mode`；**`quality` job 追加 CLI 命令面 `--strict` 校验**；**README/落地页对齐命令面**；**`2.9.1` 修复 `orzmc update` 裸名 `argv[0]` 误把 CWD 同名文件当目标（`running_binary()` + 验收步骤 5b）** |
+| `python` | `a57fb6f` | `OrzPythonMC`；适配器 + 下载续传 + 全局选项 + `--json` + `completion` + `capabilities` + `plugin`/`app` + `planClientDownload` + 退出码归一；**已发布 `2.9.1`**；**内置 client_id**：`--auth` 离线链路 + `orzmc mcp` + `auth/*` 适配器 + 服务端 `--demo`/`--online-mode`；**`quality` job 追加 CLI 命令面 `--strict` 校验**；**README/落地页对齐命令面**；**`2.9.1` 修复 `orzmc update` 裸名 `argv[0]` 误把 CWD 同名文件当目标（`running_binary()` + 验收步骤 5b）；CHANGELOG/Release notes 补「升级须知」并固化约定** |
 | `swift/app` | `efbb665` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
 | `swift/lib/OrzMCKit` | `c42f677` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已发布 `v0.9.1`**；**内置 client_id** + `orzmc mcp` + **`client --type` vanilla/fabric（fabric-meta）/forge（官方安装器）** + 命令面全量收敛 + `--strict` 进 CI；**Mojang 元数据缓存指向 `<root>/cache`（与 Python/app 共享）**；**CI SwiftPM 缓存 + OrzSwiftKit 预编译 SwiftLint（lint 插件回归）**；此前已发 `v0.1.0`…`v0.9.0` |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
@@ -242,6 +242,11 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - **已发布 `2.9.1`（`0a8a797`）**：合并 #61 → Release 六平台二进制 + PyPI 全部成功；用户机器已用绝对路径升级到 **2.9.1**（`orzmc version` = 2.9.1，`install.conf` 一致），裸名 `orzmc update` 已验证正常；顺手清理了 bug 期间产生的拷贝（`~/OrzMC/orzmc`、`~/Downloads/orzmc`）与 `.orzmc-update.log`。
 - **`air` 也命中同一 bug（已修）**：其安装的 `~/.local/bin/orzmc` 是 **2.4.1**（Sep 21）；在 `~` 下裸名 `orzmc update` 把 2.9.1 写进了 `~/orzmc`、安装的没动（`install.conf` 被改成 v2.9.1）。已用**绝对路径** `~/.local/bin/orzmc update` 升到 **2.9.1** 并清理 `~/orzmc` + `~/.orzmc-update.log`；裸名复测正常。→ **2.9.1 之前所有已发布二进制都带此 bug**，旧机器需用绝对路径（或一键安装器）过河。
 - **Windows 验证机（`win`）正常**：安装的 `…\Programs\orzmc\orzmc.exe` = **2.9.1**，无残留 `orzmc.exe`。
+- **升级须知已入库并固化为约定（OrzPythonMC #63，`a57fb6f`）**：
+  - `CHANGELOG.md` 的 2.9.1 条目加「⚠️ 升级须知」（现象 + 三种「过河」方式）；
+  - GitHub Release `v2.9.1` 的 notes 已用 `gh release edit` 同步（保留机器人生成正文）；
+  - `CONTRIBUTING.md` 新增「升级须知」节（触发条件 + 写法模板 + 同步命令）；`AGENTS.md` 发布链路补硬性规则；父仓库 `AGENTS.md §7` 同步一条伞级规则。
+  - 原则：**release-please 只渲染 commit 列表，不会替你说“用户该怎么办”**；凡需用户手动处理（自升级/安装器 bug、破坏性变更、迁移、已知问题）必须写进该版本 CHANGELOG **和** Release notes。
 
 ### 2026-10-16 — pi（CI/迭代提速：SwiftPM 缓存 + 修重复触发）
 

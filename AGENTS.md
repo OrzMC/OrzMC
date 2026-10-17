@@ -196,6 +196,10 @@ git diff --submodule <路径>
 - **不写无信息量的提交**（如 "update"）；说明"为什么 bump / 改了什么"。
 - **发版列车**：父仓库是产品组合的锚点。跨子模块的一次产品级变更，记入 [`RELEASES.md`](RELEASES.md)
   （用 `python3 scripts/release/composition.py` 生成基准组合表）。
+- **发版须知要面向用户**：任何**需要用户手动处理**的变更（自升级/安装器自身的 bug、破坏性变更、
+  迁移、需改环境、已知问题与 workaround），发版时必须写入该子模块**对应版本的 `CHANGELOG.md`**
+  **和** GitHub Release notes —— release-please 只渲染 commit 列表，**不会替你说“用户该怎么办”**。
+  写法与同步命令见 [`python/CONTRIBUTING.md`](python/CONTRIBUTING.md) 的「升级须知」节；`orzmc 2.9.1` 是首个例子。
 
 ### 7.1 依赖仓库协作（自有仓库可直接改）
 
