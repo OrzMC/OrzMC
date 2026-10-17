@@ -109,13 +109,18 @@
 | 项 | Python | Swift |
 |:--|:--|:--|
 | `orzmc completion install`（幂等 + 登记） | ✅ | ✅ |
-| 安装器自动装补全 | ⚠️ **未实现（backlog）** | ✅（`scripts/install.sh` 装完即调用 `completion install`） |
-| 安装器关闭开关 | ⚠️ 无 | ✅ `ORZMC_NO_COMPLETION=1` |
-| 安装器写 `completion_file` | ⚠️ 无（用户在装完后手动跑 `completion install` 才会登记） | ✅ |
+| 安装器自动装补全 | ✅（Unix `docs/install.sh` 装完即调用） | ✅（`scripts/install.sh` 装完即调用） |
+| 安装器关闭开关 | ✅ `--no-completion` / `ORZMC_NO_COMPLETION=1` | ✅ `ORZMC_NO_COMPLETION=1` |
+| 安装器写 `completion_file` | ✅（Unix） | ✅ |
+| 安装器 e2e 覆盖 | ✅（`scripts/accept_selfupdate.py` 3b 步骤） | —（安装器脚本由 release 流程跑） |
 
-> 现状说明：Python 的两个安装器（`docs/install.sh` / `install.ps1`）目前**不**自动安装补全，
-> 也没有 `--no-completion`/`ORZMC_NO_COMPLETION` —— 这是 §1「装完即可用」的已知缺口，
-> 已列入 backlog；在补齐之前，Python 侧文档不得声称“安装器已自动装补全”。
+> 现状说明（2026-10-20 补齐）：
+> - **Unix 两侧**都自动装补全并登记 `completion_file`；`--no-modify-rc` / `ORZMC_NO_RC=1`
+>   会**一并跳过补全**（该开关承诺不碰 shell 配置，而补全可能补一行 rc）。
+> - **Windows**：`install.ps1` 解析 `-no-completion`，但按 `frontends.md` F6
+>   （powershell/pwsh 只生成脚本、不落盘）**不调用** `completion install`，因此也不写
+>   `completion_file` —— 这是规范要求的行为，不是缺口。
+> - 旧版二进制没有 `completion` 子命令时，安装器静默跳过，不影响安装。
 
 ## 6. 自升级 `orzmc update`（复用 Python 规范）
 
