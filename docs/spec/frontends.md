@@ -54,8 +54,9 @@
 
 **F1 二进制唯一**：所有前端共用同一个 `orzmc` 可执行文件名与默认目录，**后装者覆盖先装者**。
 "同时安装"≠"同时可用"：PATH 上永远只有一个 `orzmc`。
-判断当前装的是哪一份 → 读 `install.conf` 的 `source` / `version`，或 `orzmc version --json`；
+判断当前装的是哪一份 → 读 `install.conf` 的 `surface` / `source` / `version`，或 `orzmc version --json`；
 **禁止**用文件名、文件大小、字节数推断身份（`0.11.0` 与 `0.11.1` 资产字节数曾恰好相同）。
+`surface`（`cli` / `gui`）标明**哪个前端装了它**，语义与写入规则见 [`install-update.md`](install-update.md) §3.1。
 
 **F2 记录共享、卸载一致**：`install.conf` 是**唯一的安装事实**。任一前端的 `uninstall` 都必须按它执行：
 移除二进制、删除记录、清理补全文件、按 `path_line` 精确删除 PATH 行、可选删游戏根。
@@ -108,7 +109,7 @@
 3. 提供机器可读命令面（`capabilities`）与 `--json` 输出，并与 `cli-surface.json` `--strict` 比对无未声明差异。
 4. 通过 `fixtures/` 一致性用例（`scripts/conformance`）。
 5. 安装 / 自升级遵守 F1–F3（同护栏）。
-6. 声明自己的"面"：`install.conf` 的 `surface = cli|gui`（见 §7 待补项）。
+6. 声明自己的"面"：`surface = cli|gui` 写入 `install.conf`（§3.1 与 §7 待补项 2）。
 
 ## 6. 反模式
 
@@ -133,9 +134,10 @@
 
 1. **`state.paths` conformance 用例**：两侧上报实际使用的状态目录 / 记录文件 / 认证文件 / 默认游戏根 /
    补全路径，与 [`state-paths.json`](state-paths.json) 比对 → 防路径漂移。
-2. **`surface` 字段**：[`install-update.md`](install-update.md) §3 已声明 `surface = cli|gui`，
-   但**两侧安装器都还没写**（Python `install.sh`、Swift `InstallManifest` 均缺）。这是"哪份前端装的"
-   的唯一标记，补上后 F1/F2 的身份判断就不必靠猜。
+2. ~~**`surface` 字段**~~ ✅ **已落地**（2026-10-17）：Python `InstallManifest.surface` + `docs/install.sh`/`install.ps1`
+   与 Swift `Game.InstallManifest.surface` + `scripts/install.sh` 都读 `ORZMC_SURFACE`（缺省 `cli`）并写入；
+   GUI 的「安装 CLI」入口以 `ORZMC_SURFACE=gui` 调用官方安装器。语义见 [`install-update.md`](install-update.md) §3.1。
+   附带修掉一个真实 bug：Swift 安装器用 `orzmc version | awk` 取版本，会把多行合规声明写进 `version` 字段。
 3. **守卫并发写入**：`auth.json` 的"先重读再刷新"目前靠约定，尚未有跨进程锁。
 
 **当前实现对照（Python `2.11.0` / Swift `0.11.1`）**
@@ -161,8 +163,8 @@ conformance 比对）；它**不持有自己的下载/版本/认证格式**。
 | 进度 | ✅ 共用引擎 | `Game.LaunchProgress`（count/bytes、不定长），与 CLI 同一语义（B8） |
 | Java 运行时 | ✅ 共用引擎 | 只读 `<root>/java/<major>`（托管 JRE），不探系统 JDK |
 | 认证（`auth.json`） | ⏳ 未接线 | 引擎 `Game/Auth/*` 就绪；真实登录被 Mojang 审核阻塞（见 `auth.md` §10） |
-| `install.conf` 的 `surface = gui` | ⏳ 未落地 | 依赖上面的待补项 2 先改规范 |
-| 反向「安装/打开 `orzmc` CLI」 | ⏳ 未落地 | D7「互相安装/打开」目前只有 CLI → GUI 一半（`orzmc app`） |
+| `install.conf` 的 `surface = gui` | ✅ 已落地 | GUI 只**读**记录；装 CLI 时以 `ORZMC_SURFACE=gui` 调用官方安装器 |
+| 反向「安装/打开 `orzmc` CLI」 | ✅ 已落地 | 设置页「Command Line」：状态（版本/路径/surface）+ 一键安装（Python / Swift 通道），D7 补齐 |
 
 > 发布通道：GUI 走 Developer ID + notarize + appcast（Sparkle），与前两个 CLI 通道并列，
 > 因此 `update` 的 F3 护栏对它不适用（它不替换 PATH 上的 `orzmc`）。

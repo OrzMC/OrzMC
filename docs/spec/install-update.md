@@ -1,6 +1,6 @@
 # 安装 / 自升级 / 跨面安装契约（Install & Update Contract）
 
-> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-14
+> **状态**：草案 `specVersion 0.2` ｜ **最后更新**：2026-10-17
 > 支撑产品形态「一个 `orzmc`、CLI 与 GUI 两面、可互相安装/打开」（见 [`../product-architecture.md`](../product-architecture.md) §1.2）。
 > **基线**：复用 Python 现有安装体验（用户认可），并吸收 Swift 亮点。
 
@@ -49,11 +49,27 @@
 | `path_file` | | 被修改的 shell 配置文件 |
 | `path_line` | | 写入的 PATH 行（卸载按其精确匹配删除） |
 | `root_dir` | ✅ | 游戏根目录 |
-| `surface` | | `cli` / `gui`（**新增**，用于跨面识别；**两侧安装器尚未写入**，见 [`frontends.md`](frontends.md) §7） |
+| `surface` | | `cli` / `gui`：**装出这条记录的前端**（语义与写入规则见 §3.1） |
 | `completion_file` | | 补全脚本路径（**新增**，卸载时一并清理） |
 
 - **PS 5.1 写 BOM** → 读取一律 `utf-8-sig`（沿用 Python 约定）。
 - 可选字段为空则不写行。
+
+### 3.1 `surface` 语义与写入规则
+
+`surface` 回答一个问题：**PATH 上的 `orzmc` 是哪份前端装上去的？**（[`frontends.md`](frontends.md) F1/F2 的身份判断依据）
+
+| 项 | 规则 |
+|:--|:--|
+| 取值 | `cli` / `gui`；**缺失 = 未知**（兼容旧记录，不得据此报错） |
+| 语义 | 只是「这条安装记录的写入者」，**不是** GUI 应用本体登记：`.app` / dmg / appcast 的安装**不写** `install.conf` |
+| 写入 | 安装器（含 GUI 内触发的安装）**必须**写；`update` **保留原值不改写**（升级不改变"谁装的"） |
+| 选择 | 安装器读环境变量 `ORZMC_SURFACE`（缺省 `cli`，接受 `gui`）；GUI 以其为 `gui` 调用官方安装器 |
+| 读取 | 缺失容忍；**不得**用文件名/大小推断前端身份（F1） |
+
+> GUI 侧的「安装 CLI」入口只是**调用官方安装器**（Python / Swift 任一通道），
+> 不复制安装逻辑——因此 `surface=gui` 也意味着"这条记录由 GUI 触发安装"，
+> 而 `source` 仍指向真实发布通道（`OrzMC/OrzPythonMC` 或 `OrzMC/OrzMCKit`）。
 
 ---
 
