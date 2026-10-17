@@ -298,8 +298,25 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - **规范回写**:`cli-surface.md` §1（`--json` 无子命令例外）+ §10.1 全部打勾；`conformance.md` §12.3
   两个 harness 均接入；`install-update.md` §5 状态（Swift 安装器自动装补全 + 关闭开关 ✅，Python 仍 backlog）；
   `frontends.md` F6 / `behavior.md` B9 现状改为两端 ✅。
-- **注意**:Swift 侧本地无法编译（本机只有 CommandLineTools，包要 Swift 6），改动**未在本机跑过**，
-  以 `OrzMCKit` CI（macos-15）为准；提交前请确认 `cli-acceptance` 与 `test`/`conformance` 三 job 全绿。
+- **第三轮（收尾）**:Python 安装器也补齐「装完自动装补全 + `--no-completion`/`ORZMC_NO_COMPLETION`
+  + 记录 `completion_file` + 卸载清理」（Unix），Windows 按 F6 不落盘；`accept_selfupdate.py`
+  新增 3b) 步骤覆盖这条链路（HOME 也关进沙箱）。Windows 真机 PS 5.1 上验证过 install.ps1 的解析/安装记录。
+
+**PR 与 CI（2026-10-20）**
+- Python **#71** <https://github.com/OrzMC/OrzPythonMC/pull/71>；Swift **#56** <https://github.com/OrzMC/OrzMCKit/pull/56>。
+- 两端都已全绿：Python `quality` + 6×`test`，另用 `gh workflow run ci.yml -f full=true`
+  跑了 **6×`binary`（冻结二进制 CLI 验收）+ 6×`installer`**；Swift `test` / `conformance` / **`cli-acceptance`**。
+- **CI 抓到的 4 个真问题**（都已修，说明验收确实在起作用）：
+  1. `completion install` 用 `PSModulePath` 猜平台 → ubuntu runner 有 pwsh 环境变量，被误判成
+     Windows 报 `E_UNSUPPORTED`；改为按 `os.name` 判定（规范已补「不得用 PSModulePath 猜平台」）。
+  2. 验收 harness 自己在 Windows 控制台（cp1252）第一行中文就 `UnicodeEncodeError` → 强制 UTF-8。
+  3. Swift `remove` 把「缺 `--yes`」判在「目标是否存在」之前 → 不存在时报 `E_CANCELLED` 而非
+     `E_NOT_FOUND`；改为先判存在性（与 Python 一致）。
+  4. Windows 上 `frozen/completion-install-does-not-crash` 断言退出 0，但按 F6 应 `E_UNSUPPORTED` —— 用例改按平台断言。
+- 待办：**合并两个 PR → bump 两个子模块指针**；发版时按 PR 正文里的「升级须知」写进 CHANGELOG / Release notes。
+
+- **注意**:Swift 侧本地无法编译（本机只有 CommandLineTools，包要 Swift 6），改动以 `OrzMCKit` CI
+  （macos-15，含 `cli-acceptance`）为准 —— 现已全绿。
 
 **下一步**
 1. 用户确认后推分支 → PR（标题建议 `fix(cli): 修复冻结二进制补全崩溃并补齐 CLI 自动化验收`）→ 合并后父仓库 bump `python` 指针。
