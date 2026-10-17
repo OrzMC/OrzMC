@@ -238,7 +238,9 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - **规范（父仓库 `f3c639b`）**：`docs/spec/cli-surface.json`（命令名 + `--yes/--remove-root/--force`）、`cli-surface.md`、`install-update.md`、`data-model.md`、`product-unification-plan.md`（D13）、`docs/compliance/privacy.md` 先行改名。
 - **实现**：python #66（`3c061cb3`）、OrzMCKit #45（`f277e4f5`）、site #6（`88e14b1b`）。Python `@app.command("uninstall")` + MCP 排除清单 + README/落地页/installer-design/AGENTS/验收 harness；Swift `UninstallCommand` + `Feature.uninstall`（rawValue 即命令名）+ MCP 排除。
 - **规范驱动 CI 的坑**：`docs/spec/cli-surface.json` 是**父仓库**的单一事实源，子模块 CI 会 `checkout OrzMC/OrzMC` 后 `--strict` 比对——所以**必须先把父仓库 spec 推上 main**，否则子模块 CI 会报“缺少 self-uninstall / 多出 uninstall”（本次先推父仓库再 rerun 即绿）。
-- **破坏性变更**：按仓库约定（2.x 不用 `!`）走 minor + CHANGELOG 人工注明；release PR 出现时按「升级须知」约定补说明。
+- **破坏性变更**：按仓库约定（2.x 不用 `!`）走 minor + CHANGELOG 人工注明。
+- **已发版**：OrzPythonMC **2.10.0**（`fdfe17b`）+ OrzMCKit **0.10.0**（`41c4950`），六平台二进制 + PyPI 全部成功；两处 CHANGELOG 与 Release notes 均已补「⚠️ 升级须知（卸载命令改名）」。
+- **发版后文档/Pages 一致性修复（python `fd8e65a`）**：`docs/install.sh` / `docs/install.ps1`（Pages 上的一键安装器）帮助与提示仍写 `self-uninstall` → 改 `uninstall`（**保留 install.ps1 的 BOM**）；删掉误入库、无人引用且会被上传到 Pages 的 `docs/index.html.bak`；ci.yml 注释同步。Pages 已重新部署（`fd8e65a`）。教训：搜“待同步命令名”时别漏 `*.sh`/`*.ps1` 这类非代码后缀。
 
 ### 2026-10-17 — pi（合规声明单一事实源 + 版本输出美化/去邮箱）
 
