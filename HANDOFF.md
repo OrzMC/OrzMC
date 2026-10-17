@@ -232,6 +232,14 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-17 — pi（CLI 卸载命令 self-uninstall → uninstall，规范先行）
+
+- **诉求**：`self-uninstall` 不符合 CLI 卸载命名习惯，改为 `uninstall`；**先改规范再改实现**。
+- **规范（父仓库 `f3c639b`）**：`docs/spec/cli-surface.json`（命令名 + `--yes/--remove-root/--force`）、`cli-surface.md`、`install-update.md`、`data-model.md`、`product-unification-plan.md`（D13）、`docs/compliance/privacy.md` 先行改名。
+- **实现**：python #66（`3c061cb3`）、OrzMCKit #45（`f277e4f5`）、site #6（`88e14b1b`）。Python `@app.command("uninstall")` + MCP 排除清单 + README/落地页/installer-design/AGENTS/验收 harness；Swift `UninstallCommand` + `Feature.uninstall`（rawValue 即命令名）+ MCP 排除。
+- **规范驱动 CI 的坑**：`docs/spec/cli-surface.json` 是**父仓库**的单一事实源，子模块 CI 会 `checkout OrzMC/OrzMC` 后 `--strict` 比对——所以**必须先把父仓库 spec 推上 main**，否则子模块 CI 会报“缺少 self-uninstall / 多出 uninstall”（本次先推父仓库再 rerun 即绿）。
+- **破坏性变更**：按仓库约定（2.x 不用 `!`）走 minor + CHANGELOG 人工注明；release PR 出现时按「升级须知」约定补说明。
+
 ### 2026-10-17 — pi（合规声明单一事实源 + 版本输出美化/去邮箱）
 
 - **诉求**：`orzmc version` 的声明中英混在一行、与版本号无视觉分隔、且泄露联系邮箱；其他显示声明处也有类似问题；希望“声明改一处全局生效”。
