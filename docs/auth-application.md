@@ -1,6 +1,6 @@
 # Minecraft Java Edition Game Service API —— 申请材料（OrzMC / orzmc）
 
-> **状态**：**第 2 次提交（launcher-only 表述）— 待提交**｜ **最后更新**：2026-10-17
+> **状态**：**第 2 次提交（launcher-only 表述）— 已提交，待结果**｜ **最后更新**：2026-10-17
 > **背景**：Mojang 要求第三方应用通过 *Java Edition Game Service API Review or Application Process* 才能使用
 > `login_with_xbox`（`aka.ms/AppRegInfo` → <https://help.minecraft.net/hc/en-us/articles/16254801392141-Java-Edition-Game-Service-API-Review-or-Application-Process>；
 > 实际提交入口 `aka.ms/mce-reviewappid` → <https://forms.cloud.microsoft/...>）。
@@ -143,14 +143,16 @@
 | 联系邮箱 | `<redacted>` |
 | 提交入口 | `aka.ms/mce-reviewappid`（Microsoft Forms） |
 | **Forms ID（不是提交回执）** | `v4j5cvGGr0GRqy180BHbR-ajEQ1td1ROpz00KtS8Gd5UNVpPTkVLNFVROVQxNkdRMEtXVjNQQjdXVC4u` |
+| 提交返回页 | <https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbR-ajEQ1td1ROpz00KtS8Gd5UNVpPTkVLNFVROVQxNkdRMEtXVjNQQjdXVC4u> |
 
 > ⚠️ 更正：这个 `v4j5cvGG…` 是**表单本身的 ID**（所有人相同），**不是**本次提交的编号。
-> 第 1 次（2026-10-16）曾把它误记为「提交回执」。
+> 第 1 次（2026-10-16）曾把它误记为「提交回执」。第 2 次提交后的返回页也是这个 URL——
+> 即**没有可引用的提交编号**，结果只能等邮件（发到表单里填的联系邮箱）。
 
 | # | 日期 | 表述 | 结果 |
 |---|---|---|---|
 | 1 | 2026-10-16 | launcher + server-management（并列） | **被拒**（2026-10-17，未进白名单，无原因、无申诉） |
-| 2 | （待提交） | **launcher-only**；服务端能力降为“不调用该 API 的独立工具” | 待提交 |
+| 2 | 2026-10-17 | **launcher-only**；服务端能力降为“不调用该 API 的独立工具” | **已提交，待结果**（结果邮件到联系邮箱；无提交编号可查） |
 
 ## 8. 合规核对（内部核对，**不提交**）
 
@@ -174,3 +176,6 @@
 2. `What type of request is this?` 选 **New AppID for Approval**（沿用同一 appID，不新建 Azure 应用）。
 3. 提交后把结果回填到 §7 表格第 2 行（日期 + 结果），并同步 `spec/auth.md` §10 与 `HANDOFF.md`。
 4. 若再次被拒：**停止重投**，转 authlib-injector / Yggdrasil 路线（见 `HANDOFF.md` §4）。
+
+> ✅ **2026-10-17 已按本节提交**（launcher-only 表述）。等待邮件结果；**无论结果如何不再投第 3 次**。
+> 参照：第 1 次 2026-10-16 提交 → 2026-10-17 出结果（约 1 天一个批次）；若两周内无任何邮件，按“未通过”处理并转 authlib。

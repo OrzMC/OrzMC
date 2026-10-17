@@ -60,7 +60,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端**离线**链路就绪，但 **Game Service API 审核被拒 → 真实登录不可用**；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差且 `--strict` 已进 CI**（含 enum 比对）；**元数据缓存已统一到 `<root>/cache`**；**最近发布**：Python `2.11.0` / Swift **`v0.11.1`** |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | ① **提交第 2 次申请材料**（launcher-only 表述，见 `docs/auth-application.md` §9，提交后回填 §7）；② 同时推进 **authlib-injector / Yggdrasil** 作为正版联机主路（不依赖白名单）；再被拒即**停止重投** |
+| **下一步** | ① **第 2 次申请已于 2026-10-17 提交，等邮件结果**（无提交编号；两周无回信按未通过处理，不再投第 3 次）；② 并行推进 **authlib-injector / Yggdrasil**（不依赖白名单的正版联机主路） |
 
 ## 2. 状态快照（Repo State）
 
@@ -177,7 +177,10 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > - [x] A3c. **Mojang 审核结果：被拒（2026-10-17）**——Mojang Enforcement（`MCENotify@microsoft.com`）称本批 appID **未获批准**（未进 API 白名单），同批另有违规应用被处置，并明确**不提供申诉/咨询/排障**。⇒ `login_with_xbox` 仍 `403`，内置 `client_id` **实际不可用**。
 >   - **门的位置（已核实）**：只有 ⑤ `api.minecraftservices.com/authentication/login_with_xbox` 需要 Mojang 白名单；①–④（微软 OAuth / Xbox Live / XSTS）任何自注册 app 都能用。Prism/HMCL 能用是因为它们的 client ID **已在名单内**（旁证：`mlcmLauncher` PR #7 先前用的是 **Prism 的 client ID**）。
 >   - **不做**冒用官方 client id 等规避（违反 EULA）。
-> - [~] A3d. **第 2 次提交（2026-10-17，仅改材料）**：把申请表述收敛为 **launcher-only**（第 1 次把 server-management 与启动器并列，对方回信却在讲 “3rd party server” → 疑被归类分流）。**不改产品、不改 appID、不改实现**；材料已改写完毕（`docs/auth-application.md`），**待维护者提交**。再被拒即停止重投。
+> - [~] A3d. **第 2 次提交（launcher-only，仅改材料）**：把申请表述收敛为 **launcher-only**（第 1 次把 server-management 与启动器并列，对方回信却在讲 “3rd party server” → 疑被归类分流）。**不改产品、不改 appID、不改实现**。
+>   - **2026-10-17 已提交**；结果等邮件（发到表单里的联系邮箱）。提交后的返回页就是**表单页面本身**（`forms.cloud.microsoft/...ResponsePage.aspx?id=v4j5cvGG…`）——**没有可引用的提交编号**。
+>   - 参照第 1 次（2026-10-16 提 → 2026-10-17 出结果）：约 1 天一批；若两周无邮件，按未通过处理。
+>   - **无论结果如何不再投第 3 次**；未通过即转 authlib-injector / Yggdrasil。
 > - [ ] A4. **真实账号 E2E：被 A3c/A3d 阻塞**（需账号有 Minecraft Java 版）。仅在路线 A（authlib-injector / Yggdrasil）落地后才好验证。
 > - [x] A5. 推送已完成（python/OrzMCKit 先，父仓库 auth fixtures 随后；见 §5）。
 >
@@ -235,6 +238,15 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-17 — pi（第 2 次 AppID 申请已提交：launcher-only）
+
+- 维护者已在 `aka.ms/mce-reviewappid` 按新材料提交（launcher-only）。
+- **提交后返回页**：`https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=v4j5cvGG…`——这就是**表单页本身**，
+  与之前记录的表单 ID 一致；即**没有可引用的提交编号**，结果只能等邮件（发到表单填的联系邮箱）。
+- 已回填：`docs/auth-application.md` §7 两次提交表 + §9 状态；本文件 §1 下一步、§4 A3d。
+- **判定口径**：参照第 1 次（10-16 提 → 10-17 出结果，约 1 天一批）；**若两周无邮件即按未通过**，
+  **不再投第 3 次**，转 authlib-injector / Yggdrasil。
 
 ### 2026-10-17 — pi（核实白名单到底卡在哪一步 + 改写为 launcher-only 申请材料）
 
