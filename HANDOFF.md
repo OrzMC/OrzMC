@@ -232,6 +232,22 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-17 — pi（收尾 B8/B10：进度结构化 + 版本选择器）
+
+上一轮剩下两条 ⚠️ 是 Swift 侧行为契约差异，本轮全部清掉：
+
+- **B8 进度**：`TransferKit` 本就产出 `TransferProgress`（kind/total/current），但 `Downloader` 只透 `fraction`。
+  OrzSwiftKit #11（`01dc675`）新增 `onEvent` 通道 → OrzMCKit 新增 `Game/Progress/ProgressReporter`：
+  count/bytes 分开；`total == nil` **不画 0% 假进度**，改输出一行状态；`tracking()` 统一起条/收尾/失败标红。
+  接入 client 下载 / music / Fabric 库 / vanilla+fabric 服务端与 installer；`ConformanceAdapter.normalizeProgress`
+  改用**真实模型**（此前是直拷输入，等于没测）。
+- **B10 版本选择**：`VersionPickerState`（纯逻辑）+ `runVersionPicker`（行式）：`t` 切 release/snapshot、
+  子串搜索、`n`/`p` 翻页、序号选择、`x` 清除、空行回退最新 release；显式 `-v` 现在 release+snapshot 都查
+  （非 release 一律算 snapshot）；非 TTY 行为不变。OrzMCKit #49（`71cbf44`）。
+- **验证**：air `swift test` **80 tests / 20 suites**；conformance **76/76**；surface 对 Swift **0 漂移**。
+- **文档**：`behavior.md` B8/B10 转 ✅（交互形态差异不属契约）；`spec/README.md` §5 「仍待统一」= 无；
+  `product-unification-plan.md` Phase 3 差异清零 ☑。
+
 ### 2026-10-17 — pi（一份规格约束两套实现：补齐缺口 + 校验可发现）
 
 用户问「CLI 改造完成了吗 / 满足一份规格约束两种实现吗」。实跑核对后发现：**命令面 0 漂移、conformance 76×3 全绿、两侧 CI 已接**，但有 4 个功能层缺口，且 `surface.py` **不比 enum**，所以“声明了没实现”会静默漏掉。本轮全做：
