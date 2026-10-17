@@ -32,7 +32,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 > 读 `AGENTS.md` 与 `HANDOFF.md`，从 §4「待办 A / 剩余项」继续。
 >
 > **当前状态（2026-10-16）**
-> - **正版授权**：Azure `client_id` 已内置两端；`login_with_xbox` 卡在 Mojang 的 **Game Service API 审核**（已提交，见 `docs/auth-application.md` §7 的提交 ID）→ **等审核**，通过后跑 `uv run --directory python python scripts/accept_auth.py`（+ air/win 真机）。
+> - **正版授权**：Azure `client_id` 已内置两端；**Mojang Game Service API 审核被拒（2026-10-17，无申诉通道）** → `login_with_xbox` 仍 `403`，**真实登录不可用**；下一步三选一（A. authlib-injector / B. BYO client id / C. 降级）见 §4 待办 A 与 §5 最新记录。
 > - **合规**：免责声明/隐私政策/CLI 声明已落地，**单一来源** `docs/compliance/`（`compliance.json` + `privacy.md`），由 `scripts/sync_compliance.py` 生成到各引用；`check.py` 校验漂移。**改文案只改 `docs/compliance/` 再跑一次脚本。**
 > - **命令面**：**两侧 0 偏差**（Python 完全一致；Swift `client --type fabric` 已落地并随 `v0.7.0` 发布；`forge` 命令面接受、引擎待落地）。
 >
@@ -56,11 +56,11 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 项 | 内容 |
 |---|---|
-| **主题** | 产品统一化 — Phase 0–5 完成；T1 端到端完成；**T2 命令面统一完成且两侧 0 偏差**（Swift `client --type` vanilla/fabric/forge 全落地）；一致性 **76/76**（三适配器）；**`--auth` 离线部分完成**；**`orzmc mcp` 两端完成**；剩余：**`client_id`/真实 E2E（等 Mojang 审核）**、codegen（已评估：暂不做） |
-| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端链路就绪（内置公共 `client_id`，`ORZMC_AZURE_CLIENT_ID` 可覆盖）；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差且 `--strict` 已进 CI**；**元数据缓存（清单/版本 JSON）已统一到 `<root>/cache`，三端共享**；**最近发布**：Python `2.9.0` / Swift **`v0.9.0`**（fabric+forge + 缓存共享） |
+| **主题** | 产品统一化 — Phase 0–5 完成；T1 端到端完成；**T2 命令面统一完成且两侧 0 偏差**（Swift `client --type` vanilla/fabric/forge 全落地）；一致性 **76/76**（三适配器）；**行为契约 B1–B11 两侧全 ✅**；`--auth` 离线部分完成但** Mojang 审核被拒**（2026-10-17，内置 client_id 实际不可用）；**`orzmc mcp` 两端完成**；剩余：**正版登录后续路线（A/B/C 待拍板）**、codegen（已评估：暂不做） |
+| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端**离线**链路就绪，但 **Game Service API 审核被拒 → 真实登录不可用**；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差且 `--strict` 已进 CI**（含 enum 比对）；**元数据缓存已统一到 `<root>/cache`**；**最近发布**：Python `2.11.0` / Swift **`v0.11.1`** |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | 待办 A（`client_id`/真实 E2E，等 Mojang 审核，见 §4）；其余均已完成（命令面 0 漂移 + `--strict` 进 CI；codegen 已评估暂不做） |
+| **下一步** | **正版登录路线拍板**（审核被拒）：A. authlib-injector / Yggdrasil（推荐）/ B. 摘掉内置 client_id 改 BYO / C. `--auth` 降级；见 §4 待办 A 与 §5 最新记录 |
 
 ## 2. 状态快照（Repo State）
 
@@ -174,7 +174,8 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > - [x] A2. 内置两端：Python `orzmc/core/auth.py` `DEFAULT_CLIENT_ID` / Swift `Game/Auth/AuthConfig.swift` `defaultClientId`（保留 `ORZMC_AZURE_CLIENT_ID` 覆盖）；已合并（python #54 / OrzMCKit #27）。
 > - [x] A3a. **真实 MSA→XBL→XSTS 验证通过**（设备码 → MSA 令牌 → Xbox Live RPS → XSTS 均 200；Xbox 档案可读）。
 > - [x] A3b. **已提交 Mojang Game Service API 申请**（2026-10-16，类型 New AppID for Approval）；提交回执（Microsoft Forms 提交 ID）`v4j5cvGGr0GRqy180BHbR-ajEQ1td1ROpz00KtS8Gd5UNVpPTkVLNFVROVQxNkdRMEtXVjNQQjdXVC4u`；官方免责声明已加（父仓库/各子模块 README、官网 `site-footer.html`、App `SettingsView` Disclaimer）。待人工审核（结果通常发到联系邮箱）；通过后做 A4。
-> - [ ] A4. 审核通过后：真实账号 E2E（到 `profile`；需账号有 Minecraft Java 版）+ 真机（`ssh air` / `ssh win`）→ 记入 §5。
+> - [x] A3c. **Mojang 审核结果：被拒（2026-10-17）**——Mojang Enforcement（`MCENotify@microsoft.com`）称本批 appID **未获批准**（未进 API 白名单），同批另有违规应用被处置，并明确**不提供申诉/咨询/排障**。⇒ `login_with_xbox` 仍 `403`，内置 `client_id` **实际不可用**。**决定：不再重复提交**；也**不做**冒用官方 client id 等规避（违反 EULA，风险远大于收益）。
+> - [ ] A4. **真实账号 E2E：被 A3c 阻塞**（需账号拥有 Minecraft Java 版）。仅在路线 A（authlib-injector / Yggdrasil）或 B（BYO client id 且用户自行获批）落地后，才有可验证的正版联机路径。
 > - [x] A5. 推送已完成（python/OrzMCKit 先，父仓库 auth fixtures 随后；见 §5）。
 >
 > **待办 B — `orzmc mcp` server（不依赖 `client_id`）✅ 已完成（2026-10-15）**
@@ -231,6 +232,19 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-17 — pi（Mojang 审核被拒：记录结论 + 申请材料脱敏）
+
+- **事实**：收到 Mojang Enforcement（`MCENotify@microsoft.com`）邮件——本批 appID **未获批准**、未进 API 白名单；同批另有违规应用被处置；明确**不提供**申诉/咨询/排障。
+  ⇒ `login_with_xbox` 仍 `403`，**内置 `client_id` 实际不可用**；`--auth` 离线部分（契约/映射/存储/错误码）不受影响。
+- **决定**：不再重复提交（该批次已有 bad-app 处置语境，继续提交边际收益为负）；**不做**冒用官方客户端的 client id 等规避行为（违反 Minecraft EULA/Usage Guidelines）。
+- **邮件里的 "Official Minecraft Server List"**（`aka.ms/OfficialMinecraftServerList` → `findmcserver.com`）只是**公开服务器目录/发现入口**（面向服主，供玩家检索），不提供任何 API 授权或认证能力——与 appID 白名单无关，对本项目无用。
+- **本轮改动（纯簿记，无代码行为变更）**：
+  - `docs/spec/auth.md` §10：状态从“待审核”改为“**已提交、2026-10-17 被拒**”，加后果与“不重复提交/不冒险规避”的边界；A4（真实 E2E）标为被阻塞。
+  - `docs/auth-application.md`：顶部标结果；两个真实邮箱 **9 处脱敏**为 `<redacted>`；联系渠道改为 GitHub 组织（与合规声明的 `contact_url` 一致，不再写邮箱）。
+  - `docs/spec/README.md` §4、`docs/spec/cli-surface.md` §10：去掉过时的“`client_id` 待注册”，改为“已注册但审核被拒”。
+  - 本文件 §1 主题/状态/下一步、§4 A3c/A4 同步。
+- **待拍板**：A. authlib-injector / Yggdrasil（推荐）/ B. 摘掉内置 `client_id` 改 BYO / C. `--auth` 降级。
 
 ### 2026-10-17 — pi（发版：OrzPythonMC 2.11.0 / OrzMCKit 0.11.1）
 

@@ -384,7 +384,7 @@ stdout **只**输出 JSON-RPC 消息，日志 / 进度一律走 stderr。非交�
 **Python CLI**
 1. 新增 `plugin` / `app` / `completion` / `capabilities`。—— 均 ✅（`app` macOS）。
 2. 全局 `--version` / `--verbose` / `--root-dir`（**已决**）✅。
-3. 新增全局 `--json` ✅ 与 `--auth`（正版授权；契约见 [`auth.md`](auth.md)，离线链路已实现，仅 `client_id` 待注册）。
+3. 新增全局 `--json` ✅ 与 `--auth`（正版授权；契约见 [`auth.md`](auth.md)，离线链路已实现；`client_id` 已注册但 **Mojang Game Service API 审核被拒（2026-10-17）**，真实登录暂不可用）。
 4. 选项别名：`--minmem/--maxmem` 保留为 `--min-mem/--max-mem` 的别名 ✅。
 5. 开启补全（`add_completion=True`）✅。
 6. `mcp` 本地 MCP server（§8.2）✅。

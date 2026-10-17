@@ -1,11 +1,12 @@
 # Minecraft Java Edition Game Service API —— 申请材料（OrzMC / orzmc）
 
-> **状态**：申请材料（待提交 / 跟踪工单号）｜ **最后更新**：2026-10-15
+> **状态**：已提交并**被拒**（2026-10-17）｜ **最后更新**：2026-10-17
 > **背景**：Mojang 要求第三方应用通过 *Java Edition Game Service API Review or Application Process* 才能使用
 > `login_with_xbox`（`aka.ms/AppRegInfo` → <https://help.minecraft.net/hc/en-us/articles/16254801392141-Java-Edition-Game-Service-API-Review-or-Application-Process>）。
 > 未获批时 `login_with_xbox` 返回 `403 Invalid app registration`（详见 [`spec/auth.md`](spec/auth.md) §10 与 [`../HANDOFF.md`](../HANDOFF.md) §4 待办 A）。
 >
-> ⚠️ 本文件含**两个邮箱**（Azure 账号 `wangzhizhou2014@outlook.com`、联系 `824219521@qq.com`）；仓库为公开仓库，如需可改为占位符。
+> **结果（2026-10-17）**：Mojang Enforcement 通知本批 appID **未获批准**（未进 API 白名单），且明确不提供申诉/咨询；同批另有违规应用被处置。因此 `login_with_xbox` 仍 `403`，本申请材料仅作记录保留，**不再重复提交**。
+> 🔒 **邮箱已脱敏**：原 Azure 账号 / 联系邮箱写在维护者私有记录中；公开仓库不再保留真实地址。
 
 ---
 
@@ -20,8 +21,8 @@
 | Website | https://orzmc.jokerhub.cn |
 | Source code | https://github.com/OrzMC/OrzMC |
 | License | Apache-2.0 (open source) |
-| Contact email | `824219521@qq.com` |
-| Azure account (app owner) | `wangzhizhou2014@outlook.com` |
+| Contact email | `<redacted>` |
+| Azure account (app owner) | `<redacted>` |
 | Purpose | Third-party Minecraft: Java Edition launcher & server-management CLI/GUI |
 | Commercial | No — free, open-source, non-commercial |
 | Requested scopes | `XboxLive.signin offline_access` |
@@ -68,8 +69,8 @@
 |---|---|
 | Azure client_id | `1a3e628b-c9a5-4a7f-b7b7-562e22b9787e` |
 | Directory (tenant) ID | `ceed58ed-fbc2-40e5-b556-8c8903c24462` |
-| Azure 账号（应用所有者） | `wangzhizhou2014@outlook.com` |
-| 联系邮箱 | `824219521@qq.com` |
+| Azure 账号（应用所有者） | `<redacted>` |
+| 联系邮箱 | `<redacted>` |
 | 提交日期 | 2026-10-16 |
 | 提交回执（Microsoft Forms 提交 ID） | `v4j5cvGGr0GRqy180BHbR-ajEQ1td1ROpz00KtS8Gd5UNVpPTkVLNFVROVQxNkdRMEtXVjNQQjdXVC4u` |
 | 结果 | 待审核（人工审核；回执/结果通常发到联系邮箱） |
@@ -87,7 +88,7 @@
 1. **必须显著展示官方免责声明**（Guidelines 明确要求）：
    `NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT`
    **已补**：仓库 `README.md`（父仓库 + python + OrzMCKit + app）、官网页脚（`site` 的 `site-footer.html`）、App 设置页（`SettingsView` 的 Disclaimer 区块）。
-2. **责任主体 + 联系渠道**（不能用聊天/论坛链接）：发布者 `OrzMC`，联系邮箱 `824219521@qq.com`——**已随免责声明一同展示**。
+2. **责任主体 + 联系渠道**（不能用聊天/论坛链接）：发布者 `OrzMC`，联系渠道用 **GitHub 组织**（`https://github.com/OrzMC`，合规声明的 `contact_url`）——**不展示个人邮箱**。
 3. **品牌素材**：确认 Logo / App 图标（`images/orzmc.png`、`profile/assets/OrzMC.png`、App icon）**均为自创**，不含 Mojang 素材。
 4. **服务器正版验证默认**：Guidelines 要求“服务器访问仅授予正版玩家”。当前默认 `online-mode=false`（Python 未配置时写 false；Swift Paper `--online-mode=false`）。**建议改为默认 `online-mode=true`**（或至少不在引导里默认离线）——属产品决策。
 
@@ -96,8 +97,8 @@
 | # | 字段 | 填写值 |
 |---|---|---|
 | 1 | 阅读并同意 EULA + Usage Guidelines | ☑ 勾选 |
-| 2 | Contact Information → Azure Portal Email | `wangzhizhou2014@outlook.com` |
-| 2 | Contact Information → Personal Email | `824219521@qq.com` |
+| 2 | Contact Information → Azure Portal Email | `<redacted>` |
+| 2 | Contact Information → Personal Email | `<redacted>` |
 | 3 | What type of request is this? | **New AppID for Approval** |
 | 4 | Application Name | `OrzMC` |
 | 5 | Application (Client) ID | `1a3e628b-c9a5-4a7f-b7b7-562e22b9787e` |
@@ -114,7 +115,7 @@
 >
 > We do **not** collect usernames/passwords, we operate **no authentication backend**, and all tokens are stored **only on the user’s device** (file mode `0600`) and never transmitted to our servers. We **do not redistribute Minecraft or any game files** — files are downloaded at runtime from Mojang’s official CDN — and we do **not** modify or hide Minecraft’s EULA or dialogs. We comply with the Minecraft EULA and Usage Guidelines and will display the required “**NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT**” disclaimer and our contact email on our website, app, and repository.
 >
-> Contact: **824219521@qq.com**. Azure portal account: **wangzhizhou2014@outlook.com**. The app is registered in tenant `ceed58ed-fbc2-40e5-b556-8c8903c24462`.
+> Contact: **<redacted>**. Azure portal account: **<redacted>**. The app is registered in tenant `ceed58ed-fbc2-40e5-b556-8c8903c24462`.
 
 ### 9. Any other information（英文，直接粘贴）
 
