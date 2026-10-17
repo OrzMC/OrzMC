@@ -13,7 +13,7 @@
 | 约定 | 规范 |
 |:--|:--|
 | 调用形式 | `orzmc <command> [options] [args]` |
-| 无子命令 | **打印帮助到 stdout 并退出 0**（不隐式启动客户端） |
+| 无子命令 | **打印帮助到 stdout 并退出 0**（不隐式启动客户端）；**`--json` 例外**：返回 `E_USAGE` 信封 + 退出 `1`（`--json` 承诺 stdout 只有信封，帮助是给人看的） |
 | 帮助 | `-h` / `--help`（每个命令与全局均支持） |
 | 工具版本 | 全局 `orzmc --version` → 打印 `orzmc <ver>`；同时保留 `orzmc version` 子命令 |
 | 游戏版本 | 子命令内 `-v` / `--version`（**与全局 `--version` 语义不同**，靠位置区分） |
@@ -433,13 +433,18 @@ stdout **只**输出 JSON-RPC 消息，日志 / 进度一律走 stderr。非交�
 
 | 项 | Python | Swift |
 |:--|:--:|:--:|
-| `-h` 与 `--help` 等价（根 + 所有子命令） | ✅ | ⚠️ 待补（ConsoleKit 默认只有 `--help`） |
+| `-h` 与 `--help` 等价（根 + 所有子命令） | ✅ | ✅（ConsoleKit 的 `GlobalSignature` 已含 `-h`） |
 | 移除框架自带的补全安装开关（typer 的两个；ConsoleKit 无） | ✅ | ✅（无此物） |
-| 用法错误退出码归一为 `1` | ✅（`main()` 把 2 → 1） | ⚠️ 待验收（ConsoleKit 解析错误路径需实测） |
+| 用法错误退出码归一为 `1` | ✅（`main()` 把 2 → 1） | ✅（`main()` 统一 `exit(1)`） |
 | 错误 / 日志一律 stderr（`--json` 下 stdout 只有信封） | ✅ | ✅（`StderrConsole`） |
-| 非交互破坏性操作缺 `--yes` → `E_CANCELLED`/130 | ✅（`remove` / `uninstall`） | ⚠️ 待改（当前非交互**直接执行**，`RemoveCommand` / `UninstallCommand`） |
-| `completion install` 的 `data.hint` + `E_USAGE`（未知 shell） | ✅ | ⚠️ 待补（`hint` 缺失；未知 shell 用 `E_UNSUPPORTED`；`pwsh` 的 `shell` 被折叠成 `powershell`） |
-| `E_UNSUPPORTED_TYPE`（具体类型不支持） | ✅ | ✅ |
-| CLI 行为验收（[`conformance.md`](conformance.md) §7 的 acceptance 分组） | ✅ `scripts/accept_cli.py` | ⚠️ 待建等价 harness |
+| `--json` + 无子命令 → `E_USAGE`/1（不打帮助到 stdout） | ✅ | ✅ |
+| 非交互破坏性操作缺 `--yes` → `E_CANCELLED`/130 | ✅（`remove` / `uninstall`） | ✅（`RemoveCommand` / `UninstallCommand` / `AppCommand.uninstall`，经 `confirmOverride`） |
+| `completion install` 的 `data.hint` + `E_USAGE`（未知 shell） + `pwsh` 回显请求值 | ✅ | ✅ |
+| `completion install` 登记 `completion_file` | ✅ | ✅ |
+| `E_NOT_FOUND`（目标不存在，如 `remove` 未装版本） | ✅（`VersionNotFoundError`） | ✅ |
+| CLI 行为验收（[`conformance.md`](conformance.md) §12 的分组） | ✅ `OrzPythonMC/scripts/accept_cli.py`（CI：`quality` 源码 + `binary` 6 平台冻结二进制） | ✅ `OrzMCKit/scripts/accept_cli.py`（CI：`cli-acceptance` job） |
 
+> 两个 harness **相互独立但断言同一份契约**：Swift 侧 harness 在落地时先用 Python 二进制做过对照
+> （同分组同断言全绿），确保它断言的是规范而不是某套实现。
+>
 > 收尾状态与勾选见 [`product-unification-plan.md`](../product-unification-plan.md) Phase 3/4。

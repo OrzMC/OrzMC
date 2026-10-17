@@ -254,8 +254,12 @@ fixtures 断言的是**库层**输入→输出（计划、下载、缓存、错�
 
 | 实现 | harness | CI |
 |:--|:--|:--|
-| Python | `python/scripts/accept_cli.py`（`--cli dist/orzmc` 跑冻结二进制） | `quality` 跑源码模式；`binary` 6 平台各跑一次 `--cli dist/orzmc` |
-| Swift | ⚠️ 待建等价 harness（分组/断言照 §12.2） | 建议在 `OrzMCKit` CI 加 `conformance` 之后的一步 |
+| Python | `OrzPythonMC/scripts/accept_cli.py`（`--cli dist/orzmc` 跑冻结二进制；`--state-paths` 比对父仓库快照） | `quality` 跑源码模式（带 `--state-paths`）；`binary` 6 平台各跑一次 `--cli dist/orzmc` |
+| Swift | `OrzMCKit/scripts/accept_cli.py`（同一批分组；`--cli` 可指向任意二进制） | `OrzMCKit` 的 `cli-acceptance` job（`swift build --product orzmc` 后直接跑） |
+
+> 两个 harness 各自独立（实现语言即可用标准库 shell/python），但**断言同一份契约**：
+> 分组名、断言语义、错误码与退出码一致。Swift harness 落地时先用 Python 二进制做了对照
+> （同分组同断言全绿），避免把某套实现的现状写进断言。
 
 新增用例：先确认它属于**规范**要求（不是实现细节），再写进对应分组；断言失败信息里要能看出
 「哪条规范、哪次调用、实际输出」。

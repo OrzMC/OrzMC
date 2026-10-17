@@ -92,7 +92,7 @@
 | 登记 | 落盘后把路径写进 `install.conf` 的 `completion_file`（F2） |
 | 失败 | 判定不出 shell → `E_USAGE` 并提示 `orzmc completion <shell>`；写盘失败 → 明确报错（不静默） |
 
-- 现状：`P` ✅（`orzmc_app/cli/completions.py`，2026-10-20）；`S` ✅（落点/幂等/`completion_file` 已符合，差 `data.hint` 与未知 shell 的 `E_USAGE` 归一，见 `cli-surface.md` §10.1）。
+- 现状：`P` ✅（`orzmc_app/cli/completions.py`，2026-10-20）；`S` ✅（`OrzMC/CompletionCommand.swift` 已对齐：落点/幂等/rc 边界/`completion_file`/`data.hint`/`E_USAGE`；安装器另自动调用一次）。
 
 **F7 私有状态不污染共享层**：前端专有的持久化（GUI 窗口状态、同步/缓存偏好等）放在前端自有位置，
 **不得**写进状态目录的契约文件、也不得写进游戏根的契约布局。

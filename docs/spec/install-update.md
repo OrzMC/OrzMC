@@ -108,12 +108,14 @@
 
 | 项 | Python | Swift |
 |:--|:--|:--|
-| `orzmc completion install`（幂等 + 登记） | ✅ | ✅（差 `data.hint` / `E_USAGE`，见 `cli-surface.md` §10.1） |
-| 安装器自动装补全 + `--no-completion` | ⚠️ **未实现（backlog）** | ⚠️ 未实现 |
-| 安装器写 `completion_file` | ⚠️ 同上（目前只有用户在装完后手动跑 `completion install` 才会登记） | ⚠️ 同上 |
+| `orzmc completion install`（幂等 + 登记） | ✅ | ✅ |
+| 安装器自动装补全 | ⚠️ **未实现（backlog）** | ✅（`scripts/install.sh` 装完即调用 `completion install`） |
+| 安装器关闭开关 | ⚠️ 无 | ✅ `ORZMC_NO_COMPLETION=1` |
+| 安装器写 `completion_file` | ⚠️ 无（用户在装完后手动跑 `completion install` 才会登记） | ✅ |
 
-> 现状说明：`install.sh` / `install.ps1` 目前**不**自动安装补全，也没有 `--no-completion`。
-> 这是 §1「装完即可用」的已知缺口，已列入 backlog；在补齐之前，文档不得声称“安装器已自动装补全”。
+> 现状说明：Python 的两个安装器（`docs/install.sh` / `install.ps1`）目前**不**自动安装补全，
+> 也没有 `--no-completion`/`ORZMC_NO_COMPLETION` —— 这是 §1「装完即可用」的已知缺口，
+> 已列入 backlog；在补齐之前，Python 侧文档不得声称“安装器已自动装补全”。
 
 ## 6. 自升级 `orzmc update`（复用 Python 规范）
 

@@ -123,7 +123,8 @@
 | `server`（EULA） | 报错要求 `--yes`（法律同意不能默认） |
 
 - 现状：`P` ✅（`remove`/`uninstall` 非 TTY 缺 `--yes` 退 130；`update` 直接执行；`server` 报错）；
-  `S` ⚠️ 待对齐（`RemoveCommand`/`UninstallCommand` 当前在非交互下**直接执行**；`update`/`server` 已符合）。
+  `S` ✅（`RemoveCommand`/`UninstallCommand`/`AppCommand.uninstall` 经 ConsoleKit 的
+  `confirmOverride` 判断显式 `--yes`；`update`/`server` 原本已符合）。
 
 ## B10 版本解析与渠道
 
@@ -163,7 +164,7 @@
 | B6 客户端启动 | ✅ | ✅ | `client-plan/*` |
 | B7 服务端生命周期 | ✅ | ✅ | `server-lifecycle/*` |
 | B8 进度 | ✅ | ✅ | `progress/*` |
-| B9 非 TTY | ✅ | ⚠️ 取消语义待对齐 | `non-tty/*` |
+| B9 非 TTY | ✅ | ✅ | `non-tty/*` |
 | B10 版本解析 | ✅ | ✅ | `version-resolve/*` |
 | B11 错误语义 | ✅ | ✅ | `error/*` |
 

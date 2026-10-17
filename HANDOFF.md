@@ -60,7 +60,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端**离线**链路就绪，但 **Game Service API 审核被拒 → 真实登录不可用**；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差且 `--strict` 已进 CI**（含 enum 比对）；**元数据缓存已统一到 `<root>/cache`**；**最近发布**：Python `2.11.0` / Swift **`v0.11.1`** |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | ⓪ **合并 `python` 的 CLI 契约 0.2 分支**（`fix/cli-completion-acceptance`）→ bump `python` 指针；随后按 `docs/spec/cli-surface.md` §10.1 对齐 **Swift CLI**（`-h`、非交互取消语义、`completion install` 的 `hint`/`E_USAGE`、Swift 侧 acceptance harness）。① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**已定：暂停，等 Mojang 第 2 次申请邮件回复**（不提前做，避免返工）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**（无提交编号；两周无回信按未通过处理，不再投第 3 次）；③ 认证路线（A. authlib-injector / B. BYO / C. 降级）**等回信后再拍板**，不提前动工 |
+| **下一步** | ⓪ **合并两个 CLI 契约 0.2 分支**：`python` 的 `fix/cli-completion-acceptance` 与 `swift/lib/OrzMCKit` 的 `feat/cli-contract-0-2`（Swift 侧已按 §10.1 全部对齐并新增 CLI 验收 harness）→ 合并后各自 bump 指针。① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**已定：暂停，等 Mojang 第 2 次申请邮件回复**（不提前做，避免返工）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**（无提交编号；两周无回信按未通过处理，不再投第 3 次）；③ 认证路线（A. authlib-injector / B. BYO / C. 降级）**等回信后再拍板**，不提前动工 |
 
 ## 2. 状态快照（Repo State）
 
@@ -69,7 +69,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 值 |
 |---|---|
 | 分支 | `main`（跟随远端；子模块指针以 `git ls-tree HEAD` / `RELEASES.md` 为准） |
-| 工作区 | `M plugin`（本地常检出 develop，**预期**）；`M python`：本地分支 `fix/cli-completion-acceptance` 有 **未合并** 提交（CLI 契约 0.2，见 §5 2026-10-20）→ **预期，合入后再 bump 指针**；`OrzMCKit` 与记录指针一致 |
+| 工作区 | `M plugin`（本地常检出 develop，**预期**）；`M python`：分支 `fix/cli-completion-acceptance` 有 **未合并** 提交；`M swift/lib/OrzMCKit`：分支 `feat/cli-contract-0-2` 有 **未合并** 提交（CLI 契约 0.2，见 §5 2026-10-20）→ 两者都**预期，合入后再各自 bump 指针** |
 | 父仓库 CI | ✅ `.github/workflows/ci.yml` → `python3 scripts/verify/check.py` |
 | 已删除（历史） | `GEMINI.md`、`.cursor/rules/` |
 
@@ -283,6 +283,23 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
   `--state-paths` 比对父仓库快照）。CI：`quality` 源码模式（带 `--state-paths`），`binary` 6 平台 `--cli`。
 - 本地结果：pytest / ruff / mypy 全绿；`surface --strict` 0 漂移；acceptance 源码 20/20、
   **冻结二进制 23/23**；`check.py` 全绿；`accept_selfupdate`（跳过网络）24/24。
+
+**第二轮（同一天，按用户要求把文档 / Pages / Swift 一起对齐）**
+- **Python 文档与 Pages**:`README.md`（补全用法/落点/幂等/登记、`-h`、验收命令、「2.12 起的行为变化」）、
+  `docs/index.html`（卸载需 `--yes`、卸载连补全一起清、quickstart 补 `completion install`、features 加「Shell 补全」）。
+- **新发现的两处实现差异，已对齐**:`--json` + 无子命令 → 两端统一 `E_USAGE`/1（Python 之前把帮助打到 stdout）；
+  `remove` 目标不存在 → 两端统一 `E_NOT_FOUND`（Python 新增 `VersionNotFoundError`，之前是 `E_RUNTIME`）。
+- **Swift 对齐（`OrzMCKit` 分支 `feat/cli-contract-0-2`）**:非交互 `remove`/`uninstall`/`app uninstall` 缺 `--yes`
+  → `E_CANCELLED`（经 ConsoleKit `confirmOverride`）；`completion install` 补 `data.hint`、未知 shell → `E_USAGE`、
+  powershell/pwsh 明确 `E_UNSUPPORTED`、落盘后登记 `completion_file`、`pwsh` 回显请求值；
+  安装器加 `ORZMC_NO_COMPLETION=1`；**新增 `scripts/accept_cli.py`**（与 Python 侧同分组同语义，
+  落地时用 Python 二进制做过对照 20/20）+ CI `cli-acceptance` job。
+  `-h` 与用法错误退出码 1 经核对 **本来就符合**（ConsoleKit `GlobalSignature` 含 `-h`；`main()` 统一 exit 1）。
+- **规范回写**:`cli-surface.md` §1（`--json` 无子命令例外）+ §10.1 全部打勾；`conformance.md` §12.3
+  两个 harness 均接入；`install-update.md` §5 状态（Swift 安装器自动装补全 + 关闭开关 ✅，Python 仍 backlog）；
+  `frontends.md` F6 / `behavior.md` B9 现状改为两端 ✅。
+- **注意**:Swift 侧本地无法编译（本机只有 CommandLineTools，包要 Swift 6），改动**未在本机跑过**，
+  以 `OrzMCKit` CI（macos-15）为准；提交前请确认 `cli-acceptance` 与 `test`/`conformance` 三 job 全绿。
 
 **下一步**
 1. 用户确认后推分支 → PR（标题建议 `fix(cli): 修复冻结二进制补全崩溃并补齐 CLI 自动化验收`）→ 合并后父仓库 bump `python` 指针。
