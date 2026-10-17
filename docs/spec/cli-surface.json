@@ -101,7 +101,7 @@
       ]
     },
     {
-      "name": "self-uninstall",
+      "name": "uninstall",
       "help": "卸载工具自身",
       "options": [
         { "name": "--yes", "type": "boolean", "flag": true },

@@ -263,7 +263,7 @@
 **契约要点（【待定】细化）**：
 - CLI → GUI：`orzmc app install`（下载并安装图形应用）、`orzmc app open`。
 - GUI → CLI：GUI 提供"安装命令行工具"入口，把 `orzmc` 写入 PATH 并写 `InstallRecord`。
-- 卸载只删除自己登记过的内容（沿用 Python `self-uninstall` 的安全护栏）。
+- 卸载只删除自己登记过的内容（沿用 Python `uninstall` 的安全护栏）。
 
 **对照**：Python `services/selfinstall.py`（`InstallManifest`）+ `selfupdate.py`；Swift `OrzAppUpdater` + App 安装器。
 

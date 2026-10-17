@@ -94,7 +94,7 @@ natives OS-arch 规则、Java 版本推导、Fabric/Forge/Paper provider、启�
 | D10 | Swift/SwiftPM 依赖一律用 `OrzMC/*` **规范路径**（禁重定向）；`OrzMCKit` 本地覆盖**仅供开发态、不提交** | 消除重定向误读，同时不破坏 app 独立构建 |
 | D11 | **外部 Swift 依赖版本策略：HEAD 制**——`OrzMCKit` 的 `MojangAPI`/`PaperMC`/`OrzSwiftKit` 改用 `branch: main` | 与 Q7 一致，支撑快速迭代 |
 | D12 | **`MojangAPI` 平台下限抬到 macOS 13 / iOS 16**（消费 `CacheKit`） | 统一缓存层跨包复用；预稳定期可接受 |
-| D13 | **Swift `orzmc` CLI 作为发行产品**：独立 release 线（`OrzMCKit` 的 release-please + tag `vX.Y.Z`），资产 `orzmc-macos-{arm64,x86_64}`，与 Python 同规范（install.conf / PATH / 补全 / `update` / `self-uninstall` / `app`）；版本身份暂用 OrzMCKit 版本线（是否与 Python 统一待定） | 兑现 D7「一个 `orzmc`」：两面都发行 |
+| D13 | **Swift `orzmc` CLI 作为发行产品**：独立 release 线（`OrzMCKit` 的 release-please + tag `vX.Y.Z`），资产 `orzmc-macos-{arm64,x86_64}`，与 Python 同规范（install.conf / PATH / 补全 / `update` / `uninstall` / `app`）；版本身份暂用 OrzMCKit 版本线（是否与 Python 统一待定） | 兑现 D7「一个 `orzmc`」：两面都发行 |
 
 > 决策若被推翻，必须在本章追加「~~D#~~ 已推翻，原因…」并说明替代方案，不得直接删除。
 

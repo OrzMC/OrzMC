@@ -10,7 +10,7 @@
 
 - **无 sudo**：全部为用户级安装（写入用户目录），不触碰系统目录、不要求管理员权限。
 - **装完即可用**：安装后 Shell **自动识别**（PATH），并**自动补全**，减轻用户记忆负担。
-- **可卸载**：只删自己登记过的内容（沿用 Python `self-uninstall` 安全护栏）。
+- **可卸载**：只删自己登记过的内容（沿用 Python `uninstall` 安全护栏）。
 - **跨面**：GUI 能装 CLI，CLI 能装 GUI；渠道可互相兜底。
 - **单一事实**：安装记录格式、PATH 修改、补全落点都写入 `install.conf`，卸载据此还原。
 
@@ -91,7 +91,7 @@
 
 | 项 | 规范 |
 |:--|:--|
-| 语义 | `update` = 升级**工具自身**；`remove/list` = 游戏版本；`self-uninstall` = 卸载工具 |
+| 语义 | `update` = 升级**工具自身**；`remove/list` = 游戏版本；`uninstall` = 卸载工具 |
 | 版本解析 | 首选 GitHub REST `releases/latest`；失败/限流回退**非 API 的 302** `releases/latest` 的 `Location` |
 | 指定版本 | `-v/--version vX.Y.Z`（完全绕过 API，限流回退） |
 | 校验 | 下载产物 magic 校验（ELF/Mach-O/PE；拒绝 HTML/JSON）+ sha256 |
@@ -151,7 +151,7 @@
 
 | 场景 | 规范 |
 |:--|:--|
-| `orzmc self-uninstall` | 删二进制 → 还原 PATH → 删补全 → `rmdir` 空目录 → 删 manifest；游戏数据默认保留 |
+| `orzmc uninstall` | 删二进制 → 还原 PATH → 删补全 → `rmdir` 空目录 → 删 manifest；游戏数据默认保留 |
 | `--remove-root` | 连游戏根目录一并删除 |
 | `--yes` | 免确认（脚本化） |
 | **开发环境护栏** | 路径含 `.venv`/`venv`/`env`/`site-packages`/`dist-packages`/`_MEI*` 或 `_MEIPASS` 同目录 → 拒绝；`--force` 放行 |
@@ -198,6 +198,6 @@
 | PATH 还原 | 完整 | 部分 | 对齐 |
 
 > 2026-10-14：Swift 侧已建**发版链路**（release-please + `release.yml` → `orzmc-macos-<arch>` + `SHA256SUMS` +
-> `scripts/install.sh`，见 `OrzMCKit#6`）；`update` / `self-uninstall` / `app` / `completion` 命令待实现。
+> `scripts/install.sh`，见 `OrzMCKit#6`）；`update` / `uninstall` / `app` / `completion` 命令待实现。
 
 > 落地与勾选见 [`product-unification-plan.md`](../product-unification-plan.md) Phase 4。

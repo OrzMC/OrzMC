@@ -34,7 +34,7 @@
 | `remove` | 移除已安装版本 | ✅ | ❌ |
 | `backup` | 备份服务端世界 | ✅ | ❌ |
 | `update` | 升级工具自身（非游戏版本） | ✅ | ❌ |
-| `self-uninstall` | 卸载工具自身 | ✅ | ❌ |
+| `uninstall` | 卸载工具自身 | ✅ | ❌ |
 | `app` | **跨面**：安装 / 打开 / 卸载 GUI 应用 | ✅ (macOS) | ✅ (macOS) |
 | `completion` | 生成 / 安装 Shell 补全 | ✅ 新增 | ✅ 新增（bash/zsh） |
 | `capabilities` | 机器可读的命令 / 选项 / 退出码清单（AI 能力发现） | ✅ 新增 | ✅ 新增 |
@@ -124,7 +124,7 @@ orzmc plugin [--search TEXT] [--list] [--output DIR] [--version VER] [--count N]
 | `remove` | `-v`（必填）、`--server`、`-t`（移除服务端时必填）、`--yes` | Python |
 | `backup` | `-v`（可推断）、`-t` | Python |
 | `update` | `-v/--version`（工具版本）、`--check`、`--channel release\|beta`、`--file`、`--yes`、`--force` | Python |
-| `self-uninstall` | `--yes`、`--remove-root`、`--force` | Python |
+| `uninstall` | `--yes`、`--remove-root`、`--force` | Python |
 | `version` | — | Python |
 | `app` | `install\|open\|uninstall\|status`；`--channel release\|appstore`、`--version`、`--yes` | **新增（见 `install-update.md`）** |
 | `completion` | `bash\|zsh\|fish\|powershell`；`install` | **新增** |
@@ -299,7 +299,7 @@ stdout **只**输出 JSON-RPC 消息，日志 / 进度一律走 stderr。非交�
 - tool 名 = 规范命令名；参数名 = 长选项去掉 `--` 前缀（位置参数用其名字，如 `app` 的 `action`）。
 - `--json` 恒开启；`inputSchema` 中 flag → `boolean`（仅 `true` 时追加该旗标），`int` → `integer`，其余 → `string`；
   必填项（选项 / 位置参数）进 `required`。
-- **不暴露**元 / 自毁命令：`capabilities`、`completion`、`mcp`、`self-uninstall`。
+- **不暴露**元 / 自毁命令：`capabilities`、`completion`、`mcp`、`uninstall`。
 - 非交互：需要确认的命令（如 `remove`）在缺 `--yes` 时按 §7 返回取消（`E_CANCELLED`）。
 
 **结果与错误**
@@ -337,11 +337,11 @@ stdout **只**输出 JSON-RPC 消息，日志 / 进度一律走 stderr。非交�
   **两侧 `--strict` 均已进 CI**：Python 在 `OrzPythonMC` 的 `quality` job、Swift 在 `OrzMCKit` 的 `conformance` job（均检出父仓库 manifest 后用真实 `capabilities` 对比）。
 - **已收敛（累计）**：Python `server --demo`/`--online-mode`/`--print-jar-help`/`update --channel`/`--kill-all`；
   Swift `server --online-mode`/`--jvm-opts`/`--yes`/`--refresh`/`--symlink`/`--force-download`/`--download-threads`、
-  client `--jvm-opts`/`--refresh`/`--extract-music`/`--download-threads`、`remove --yes`、`self-uninstall --root-dir`；
+  client `--jvm-opts`/`--refresh`/`--extract-music`/`--download-threads`、`remove --yes`、`uninstall --root-dir`；
   `--jar-help` 改名 `--print-jar-help`（两侧）。
 - **本轮已收敛**：Python `server --demo` / `--online-mode` / `--print-jar-help` / `update --channel` / `--kill-all`；Swift `server --online-mode`（Option→Flag）、
   `server --jvm-opts`/`--yes`/`--refresh`/`--symlink`/`--force-download`/`--download-threads`、`client --jvm-opts`/`--refresh`/`--extract-music`/`--download-threads`/`--type`（fabric+forge）、
-  `remove --yes`、`self-uninstall --root-dir`；`--jar-help` 改名 `--print-jar-help`（两侧）。
+  `remove --yes`、`uninstall --root-dir`；`--jar-help` 改名 `--print-jar-help`（两侧）。
 - **codegen 评估（路线 A 第 3 步，2026-10-16）**：结论——**暂不做代码生成**，保留「manifest + 两侧 `--strict` 校验」为单一事实源的落地方式。理由：
   1. 两套实现宿主不同（Python `typer` / Swift `ConsoleKit`），生成代码需同时贴合两套框架的类型系统与帮助/补全机制，
      生成器自身会成为第三套「元实现」；
@@ -369,7 +369,7 @@ stdout **只**输出 JSON-RPC 消息，日志 / 进度一律走 stderr。非交�
 
 **Swift CLI**
 1. 无子命令 → 打印帮助并退出 0（去掉默认 `client`）。✅
-2. 新增命令：`list` / `remove` / `backup` / `version` / `completion`（bash/zsh）/ `capabilities` / `update` / `self-uninstall` / `app` ✅。
+2. 新增命令：`list` / `remove` / `backup` / `version` / `completion`（bash/zsh）/ `capabilities` / `update` / `uninstall` / `app` ✅。
 3. 选项改名：`--ms/--mx` → `--min-mem/--max-mem`；`--debug` → `--verbose`；`--force_upgrade` → `--force-upgrade`；
    `--jar-opts` → `--server-args`；`--gui` → `--nogui`（反向）。✅
 4. 全局 `--version` / `--verbose` / `--root-dir` / `--json` ✅（在 main 预解析 argv）。
