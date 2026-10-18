@@ -164,6 +164,20 @@
 | 补全安装路径 | bash/zsh/fish（+ powershell 仅生成） | bash/zsh/fish | ✅（powershell 交互差异） |
 | 自升级渠道 | `OrzMC/OrzPythonMC` | `OrzMC/OrzMCKit` | ✅ 设计如此（两个发布通道，F3） |
 
+### 7.2 平台支持矩阵（D14：Swift 收敛为唯一 CLI 方向）
+
+| 前端 | macOS | Linux | Windows | 说明 |
+|:--|:--|:--|:--|:--|
+| `python` CLI（`orzmc` / PyPI） | ✅ 已发布 | ✅ 已发布 | ✅ 已发布 | 6 平台资产已验证；**维护模式**（D14：不再新增功能） |
+| Swift CLI（`OrzMCKit` 的 `orzmc`） | ✅ 已发布（arm64/x86_64） | ⚠️ 建置中（Phase 6） | ❌ 未开始 | 收敛目标实现；判据见 `product-unification-plan.md` D14.1 |
+| Swift GUI（`OrzMCApp`） | ✅ | — | — | SwiftUI，天然 Apple only |
+
+跨平台能力差异（Swift CLI 到 Linux/Windows 的已知边界）：
+
+- `orzmc app …` 安装的是 macOS `.app`：非 macOS 上**显式**返回 `E_UNSUPPORTED`（不假装支持）；
+- 系统外部工具（`unzip`）由 `Game.PlatformTools` 解析，缺失时按功能降级（音乐提取跳过）或报 `E_EXTRACT`；
+- `completion install` 在 PowerShell 下按 F6 只生成脚本，不做磁盘安装。
+
 ### 7.1 GUI 前端（`OrzMCApp`）接入现状
 
 GUI 是同一个 `Game` 引擎的**第三个前端**（不走命令面，因此不参与 `cli-surface` /

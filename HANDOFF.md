@@ -60,7 +60,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端**离线**链路就绪，但 **Game Service API 审核被拒 → 真实登录不可用**；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差且 `--strict` 已进 CI**（含 enum 比对）；**元数据缓存已统一到 `<root>/cache`**；**最近发布**：Python `2.11.0` / Swift **`v0.11.1`** |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | ⓪ ~~合并分支 / 发版~~ **已完成**（2026-10-18）：Python **2.12.0** 与 Swift **0.13.0** 均已发布（Release 资产 + PyPI / 升级须知已进 Release notes）；用**已发布**的 `orzmc-macos-x86_64` 复跑 CLI 验收 24/24。① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**已定：暂停，等 Mojang 第 2 次申请邮件回复**（不提前做，避免返工）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**；③ 认证路线（A. authlib-injector / B. BYO / C. 降级）**等回信后再拍板**，不提前动工 |
+| **下一步** | **D14 跨平台收敛（进行中）**：Swift CLI 已在 Linux（`swift:6.0` 容器）编译通过；余下 6.3 Linux CI 常态化 → 6.4 Linux 资产 → 6.5 Windows → 6.6 Python 停迭代（见 `product-unification-plan.md` Phase 6）。⓪ ~~合并分支 / 发版~~ **已完成**（2026-10-18）：Python **2.12.0** 与 Swift **0.13.0** 均已发布（Release 资产 + PyPI / 升级须知已进 Release notes）；用**已发布**的 `orzmc-macos-x86_64` 复跑 CLI 验收 24/24。① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**已定：暂停，等 Mojang 第 2 次申请邮件回复**（不提前做，避免返工）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**；③ 认证路线（A. authlib-injector / B. BYO / C. 降级）**等回信后再拍板**，不提前动工 |
 
 ## 2. 状态快照（Repo State）
 
@@ -244,6 +244,28 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-18 — pi（D14：Swift CLI 跨平台收敛，Linux 编译已打通）
+
+**用户决策**：一套规范两份实现的迭代成本太高；Swift 长期会跨平台，因此 **Swift CLI 按跨平台迭代**，
+验证通过后**停掉 Python CLI 迭代**（已落进 `docs/product-unification-plan.md` **D14 + D14.1 退场判据**）。
+
+**做法（验证驱动，不猜）**：本地 Swift 5.8.1 无法编译（包要 6.0），故用 CI 探针 `swift:6.0` 容器真跑
+`swift build`，一轮一轮消缺口：
+
+| 轮 | 报错 | 根因 | 修法（仓库） |
+|---|---|---|---|
+| 1 | `URLSession has no member 'shared'` | `PaperMC/Common/SimpleDownloader` 缺 `FoundationNetworking` | 补条件导入；corelibs 无 async bytes → `data(from:)` 后本地分块（PaperMC#5） |
+| 2 | 同样报错（依赖被 `Package.resolved` 钉住） | 需刷新 pin | 刷新 `Package.resolved` |
+| 3 | `CryptoKit` 缺失 / 多处 `URLSession` | MojangAPI 无条件 `import CryptoKit`；多库缺 `FoundationNetworking` | `swift-crypto` 兜底（MojangAPI#8）、8 文件补导入（OrzSwiftKit#12）、OracleJDK（OrzSwiftKit#13）、MojangAPI#9、PaperMC#6 |
+| 4 | `Shell` 缺失 / 适配器 `CryptoKit` | `JokerKits.Shell` 被 `#if os(macOS)` 关掉 | Shell 放开到非 Windows（OrzSwiftKit#12）；`ConformanceAdapter` 用 `Crypto` 兜底 |
+| 5 | — | — | **`Build complete!` Linux 编译通过** ✅ |
+
+**OrzMCKit 侧**（分支 `feat/linux-build` / PR #57）：新增 `Game.PlatformTools`（`unzip` 路径解析，缺失则降级或报错）、
+两处 `/usr/bin/unzip` 收拢、`AppInstaller` 整块 `#if os(macOS)`、`AppCommand` 在非 macOS 返回 **`E_UNSUPPORTED`**、
+多处 `FoundationNetworking`。
+
+**规范**：`product-unification-plan.md` 新增 **D14 / D14.1 / Phase 6（6.1–6.6）**；`frontends.md` 新增 **§7.2 平台支持矩阵**。
 
 ### 2026-10-18 — pi（CLI 契约 0.2：冻结二进制补全崩溃 + CLI 自动化验收；已发 Python 2.12.0 / Swift 0.13.0）
 

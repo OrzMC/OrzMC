@@ -96,6 +96,18 @@ natives OS-arch 规则、Java 版本推导、Fabric/Forge/Paper provider、启�
 | D12 | **`MojangAPI` 平台下限抬到 macOS 13 / iOS 16**（消费 `CacheKit`） | 统一缓存层跨包复用；预稳定期可接受 |
 | D13 | **Swift `orzmc` CLI 作为发行产品**：独立 release 线（`OrzMCKit` 的 release-please + tag `vX.Y.Z`），资产 `orzmc-macos-{arm64,x86_64}`，与 Python 同规范（install.conf / PATH / 补全 / `update` / `uninstall` / `app`）；版本身份暂用 OrzMCKit 版本线（是否与 Python 统一待定） | 兑现 D7「一个 `orzmc`」：两面都发行 |
 
+| D14 | **迭代收敛到单一 CLI 实现**：以 **Swift `orzmc`** 为唯一 CLI 方向，**Python CLI 进入维护模式**（只修安全/致命缺陷，不再新增功能）；Swift 侧跨平台验证通过后**停掉 Python CLI 的迭代** | 维护「一份规范 + 两套实现」的双份迭代成本已高于收益（2026-10 的 CLI 契约 0.2 就要在两侧各改一遍）；Swift 长期会走向跨平台，且 GUI 已共用 `Game` 引擎，收敛后引擎只有一份。**但收敛必须由验证驱动**，见 D14.1 的退场判据 |
+
+**D14.1 Python CLI 退场判据**（四条全部满足才停迭代 / 停止发行；任一不满足则 Python 仍是跨平台主力）：
+
+1. **Linux 官方资产**：`orzmc-linux-{x86_64,arm64}` 有 release 产物，`scripts/accept_cli.py` 在**真实二进制**上全绿；
+2. **Windows 官方资产**：`orzmc-windows-{x86_64,arm64}` 同上（含 `install.ps1` / 补全 / 自升级）；
+3. **能力对齐**：`conformance` 76 例 + `surface.py --strict` 0 漂移 + `capabilities` 枚举一致（同一版本内）；
+4. **安装链路可用**：`install` / `update` / `completion install` / `uninstall` 在 3 平台上都通过（含非交互 `--yes` 语义）。
+
+> 过渡期规则（避免双份迭代继续膨胀）：**新功能只在一侧实现**（默认 Swift），规范先改；Python 只做「防崩溃/安全」修补。
+> 触发 D14.1 第 1 条前，跨平台用户仍应使用 Python 通道（它是唯一 6 平台已验证的实现）。
+
 > 决策若被推翻，必须在本章追加「~~D#~~ 已推翻，原因…」并说明替代方案，不得直接删除。
 
 ---
@@ -106,6 +118,8 @@ natives OS-arch 规则、Java 版本推导、Fabric/Forge/Paper provider、启�
 Layer 3  产品伞（父仓库 OrzMC + profile + site）          ← 品牌 / 版本列车 / 文档索引
             ▲                        ▲
 Layer 2  前端 orzmc-app (typer CLI)   OrzMCApp (SwiftUI GUI + iOS 助手)
+                 ↑ 维护模式(D14)：只修缺陷    ↑
+                 └────────── 收敛目标：orzmc (Swift CLI) 作为唯一 CLI 实现 ──────────┘
             │                        │
 Layer 1  引擎 orzmc (PyPI lib)        OrzMCKit (Game / MojangAPI)   ← 各自实现，同过 conformance
             │                        │
@@ -211,6 +225,19 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 - **产出物状态**：☑ RELEASES.md ☑ 文档索引 ☐ 官网产品页
 
 ---
+
+### Phase 6 — 跨平台收敛（D14：Swift 唯一 CLI 实现）
+
+> 目标：把 Swift `orzmc` 推到 Linux/Windows，达标后停掉 Python CLI 迭代（判据见 D14.1）。
+
+| 步骤 | 内容 | 影响仓库 | 验收 |
+|---|---|---|---|
+| 6.1 | 依赖链去 Apple-only：`CryptoKit → Crypto`、`URLSession → FoundationNetworking`、`Shell` 放开到非 Windows | `lib/MojangAPI`、`lib/PaperMC`、`lib/OrzSwiftKit` | Linux 上 `swift build` 通过 |
+| 6.2 | 平台外部工具收拢（`unzip` 等）、`app` 子系统改 macOS 限定并在其它平台给 `E_UNSUPPORTED` | `lib/OrzMCKit` | Linux 上 `orzmc` 可执行、`app` 返回 `E_UNSUPPORTED` |
+| 6.3 | Linux CI 常态化（`swift:6.0` 容器）+ `accept_cli.py` 在 Linux 真跑 | `lib/OrzMCKit` | CI 绿；非 macOS 用例按规范 SKIP 或断言 `E_UNSUPPORTED` |
+| 6.4 | Linux 资产进 `release.yml`（`orzmc-linux-{x86_64,arm64}`） | `lib/OrzMCKit` | 资产可下载、验收全绿 |
+| 6.5 | Windows：`WinSDK` 分支 + `install.ps1` + 资产 | `lib/OrzMCKit` | 同 6.4 |
+| 6.6 | 达标后 Python CLI 停迭代（维护模式→冻结），`docs/spec` 标注 Swift 为唯一实现 | `python`、`parent` | D14.1 四条全绿 |
 
 ## 6. 进度与里程碑状态表
 
