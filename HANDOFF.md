@@ -245,6 +245,27 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-18 — pi（本机 Swift 6 工具链 + 秒级反馈车道）
+
+**装好了**：`swiftly` 安装 `swift-6.0.3-RELEASE.xctoolchain`（免 sudo，`~/Library/Developer/Toolchains`），
+`swift --version` 正常。**但本机仍无法全量构建**，三个客观限制（已写进 `docs/iteration-efficiency.md` §3.1）：
+
+1. macOS SDK **13.3** < 14 → 依赖 `OpenAPIKit 3.9.0` 用 macOS 14 才有的 `URL(string:encodingInvalidCharacters:)`；
+2. 只有 CommandLineTools（无 Xcode）→ SwiftLint 构建插件找不到 `sourcekitdInProc`；
+3. 磁盘仅剩 ~9.8 GB → 装 Xcode 16（~20 GB）不可行。
+   本机性能：空项目 no-op 构建 **16.7s**（user 1.7s）、本包冷构建 **35 分钟**。
+
+**于是把「反馈回路」分层缩短**（本地 + CI 两条快车道）：
+
+| 层级 | 手段 | 实测 |
+|---|---|---|
+| 平台写法错误 | `OrzMCKit/scripts/dev/local-build.sh lint` / CI 新 job `portability` | **1s** / **5s** |
+| 语法错误 | `local-build.sh check`（`swiftc -parse` 80 文件） | **50s** |
+| 完整门禁 | CI `linux`（缓存） / macOS 三件套 | 2m02s / 1m07s–1m56s |
+
+`scripts/dev/local-build.sh` 会打印工具链/SDK/开发者目录诊断与具体修复建议（不静默失败），
+子命令 `check|lint|parse|build|test|linux`。CI 里 `portability` 已拆成独立快 job（宿主机跑，不建容器）。
+
 ### 2026-10-18 — pi（D14：Linux 侧完工 + 迭代效率专项）
 
 **发版**：`OrzMCKit v0.14.0` 已发布，资产 `orzmc-{macos,linux}-{arm64,x86_64}` + `SHA256SUMS`（首次含 Linux）。

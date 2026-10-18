@@ -50,6 +50,8 @@
 
 | 措施 | 位置 | 效果 |
 |---|---|---|
+| **本机快速迭代脚本** | `OrzMCKit/scripts/dev/local-build.sh`（`check`/`lint`/`parse`/`build`/`test`/`linux`，自动探测 swiftly 工具链 + SDK 诊断） | R1：语法级反馈 **50 s**、平台级 **1 s**，不必等 CI |
+| **portability 独立快车道** | `.github/workflows/ci.yml` 的 `portability` job（宿主机，不建容器） | R5：**5 s** 出结论（此前要 8 分钟） |
 | **秒级可移植性静态检查** | `OrzMCKit/scripts/verify/portability.py`，接入 CI `linux` job 首步 | 把 R5 从"8 分钟一轮"变成"**<1 秒**"；本轮扫描 89 个文件，当场抓出 4 处 |
 | **Linux job 加 SwiftPM 缓存** | `.github/workflows/ci.yml`（`.build` + `/root/.cache/org.swift.swiftpm`，key 含 `Package.resolved` 哈希） | R2：**8m52s → 2m07s** |
 | **本地 Linux 门禁脚本** | `OrzMCKit/scripts/dev/linux-build.sh`（docker/podman；`build`/`test`/`accept`/`all`/`lint`） | R1+R3：本地增量编译，一次看全错误 |
@@ -57,11 +59,49 @@
 | **跨平台边界显式化** | `Game.PlatformTools`、`app` 非 macOS → `E_UNSUPPORTED` | 减少"跑起来才炸"的隐性问题 |
 | **发布链路容器适配** | `uname -m` 断言替代 `file`；容器内步骤 `shell: bash` | R6：容器环境差异提前修掉 |
 
+## 3.1 本机 Swift 6 工具链（2026-10-18 实测）
+
+按建议装了本机工具链（`swiftly`，免 sudo）：
+
+```bash
+swiftly install 6.0            # → swift-6.0.3-RELEASE.xctoolchain
+export PATH="$HOME/Library/Developer/Toolchains/swift-6.0.3-RELEASE.xctoolchain/usr/bin:$PATH"
+swift --version                 # Apple Swift version 6.0.3
+```
+
+**结论：工具链可用，但这台机器仍无法做完整本机构建**，三点客观限制（`scripts/dev/local-build.sh` 会把它们打印成诊断）：
+
+| 限制 | 证据 | 影响 |
+|---|---|---|
+| macOS SDK **13.3** < 14 | 依赖 `OpenAPIKit 3.9.0` 的 `Container+DecodeURLAsString.swift` 调用 `URL(string:encodingInvalidCharacters:)`（macOS 14 SDK 才有；`#available` 无法绕过） | `swift build` 必失败 |
+| 只有 CommandLineTools（无 Xcode） | SwiftLint 构建插件报 `sourcekitdInProc … not found`（预编译 SwiftLint 期望 Swift 6.2 目录布局） | 插件噪音/偶发失败 |
+| 磁盘仅剩 ~9.8 GB | `df -h /` | 装 Xcode 16（~20 GB）不可行 |
+
+**本机性能实测（2015 款 i5-5257U / 16 GB）**：
+
+| 操作 | 耗时 | 说明 |
+|---|---|---|
+| `swift --version` | 2.2 s | syscall 开销主导 |
+| 空项目首次构建 | 65 s | |
+| 空项目 no-op 构建 | **16.7 s** | user 仅 1.7 s → 这台机器 I/O/系统调用极慢 |
+| 本包冷构建（跑到 OpenAPIKit 失败处） | **35 分钟** | 依赖图全量编译 |
+
+因此本机只做**秒级/分钟级**反馈，全量构建交给 CI：
+
+| 反馈层级 | 手段 | 实测耗时 |
+|---|---|---|
+| 平台写法错误 | 本机 `local-build.sh lint` / CI `portability` job | **~1 s** / **5 s** |
+| 语法错误 | 本机 `local-build.sh check`（`swiftc -parse` 80 文件） | **50 s** |
+| 完整构建 + 单测 + 验收 | CI `linux` job（带缓存） | **2m02s** |
+| 完整构建 + 单测 + 验收 | CI macOS job | 1m07s–1m56s |
+
+> 想在本机打通全量构建的唯一现实路径：**释放磁盘 + 装 Xcode 16+ 或更新 CommandLineTools**（需管理员），
+> 或改用 Linux 容器（`scripts/dev/linux-build.sh`，需 docker/podman）把构建搬到 Linux 侧。
+
 ## 4. 建议（尚未落地，按性价比排序）
 
-1. **本地装 Swift 6 工具链**（最高性价比）
-   - `swiftly install 6.0`（或官方 toolchain pkg），之后 `swift build` 本地跑，**单次编译循环从 7 分钟降到 1–2 分钟**，且 `swift build 2>&1 | grep error:` 一次看全。
-   - 前提：macOS 13+ x86_64/arm64。装好后把 `swift --version` 写进 `HANDOFF.md` 的"环境"节。
+1. ~~本地装 Swift 6 工具链~~ **已做**（见 §3.1）：工具链可用，但本机 SDK/磁盘不足以全量构建；
+   现实路径是**释放磁盘 + 装 Xcode 16+/更新 CLT**（需管理员），或改用 Linux 容器构建。
 2. **依赖侧改动走"可验证的 pin 刷新"**
    - 依赖是 `branch: main` 时，合并依赖仓库后**立刻**刷新 `Package.resolved`（本轮漏了一次，白跑一轮）。
    - 建议加小脚本 `scripts/dev/bump-deps.sh`：拉三个依赖仓库的 main → 更新 `Package.resolved` → 打印 diff。
