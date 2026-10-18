@@ -92,11 +92,46 @@ swift --version                 # Apple Swift version 6.0.3
 |---|---|---|
 | 平台写法错误 | 本机 `local-build.sh lint` / CI `portability` job | **~1 s** / **5 s** |
 | 语法错误 | 本机 `local-build.sh check`（`swiftc -parse` 80 文件） | **50 s** |
+| 完整构建 + 单测 + 验收 | **`ssh air`**（`scripts/air/run.sh accept`） | **24s（build）/ 25s（test）/ 1m33s（accept）** |
 | 完整构建 + 单测 + 验收 | CI `linux` job（带缓存） | **2m02s** |
 | 完整构建 + 单测 + 验收 | CI macOS job | 1m07s–1m56s |
 
 > 想在本机打通全量构建的唯一现实路径：**释放磁盘 + 装 Xcode 16+ 或更新 CommandLineTools**（需管理员），
 > 或改用 Linux 容器（`scripts/dev/linux-build.sh`，需 docker/podman）把构建搬到 Linux 侧。
+
+## 3.2 远端构建（`ssh air`）——本轮的最终答案
+
+本机既然做不了全量构建，就把构建搬到达标的机器上。`air`（Apple Silicon M1 / 8 核 / Swift 6.4 / SDK 27 /
+剩余 24GB）已接入：**[`scripts/air/run.sh`](../scripts/air/run.sh)**。
+
+```bash
+scripts/air/run.sh build     # rsync 工作树 + swift build --product orzmc
+scripts/air/run.sh accept    # + release 构建 + CLI 验收
+```
+
+**实测（本轮真跑，2026-10-18）**：
+
+| 任务 | 耗时 | 说明 |
+|---|---|---|
+| `build`（增量，含 rsync） | **24 s** | 远端编译本体 **1.5–15 s**；rsync ~15 s |
+| `build`（首轮冷构建，含依赖拉取） | 1 m 08 s | 之后靠远端 `.build` 增量 |
+| `test`（90 + 1 例） | **25 s** | |
+| `accept`（release + 20 用例） | **1 m 33 s** | |
+| `ORZMC_LOCAL_DEPS=1 build`（依赖走本地工作树） | **37 s** | 改依赖仓库时不必先 push |
+
+**同一件事的四条路径对比**：
+
+| 路径 | 时长 | 可行性 |
+|---|---|---|
+| 本机全量构建 | **不可行** | SDK 13.3 < 14（依赖要求） |
+| 本机 `check`（lint + 语法） | 50 s | ✅ 只能抓语法/平台写法 |
+| **`ssh air` 远端构建** | **24 s（增量）** | ✅ **日常主力** |
+| CI（macOS / Linux，带缓存） | 1 m 07 s – 2 m 02 s | ✅ 合并前门禁 |
+
+**两个关键优化**（否则远端也要 1 分钟以上）：
+1. 依赖是 `branch: main`，SwiftPM 每次解析都联网刷新 → 默认加
+   `--only-use-versions-from-resolved-file`（要更新依赖时用 `ORZMC_UPDATE_DEPS=1`）：24 s vs 1 m 07 s。
+2. `rsync --delete` 但 **排除 `.build`** → 远端增量构建得以保留（否则每次都冷编译）。
 
 ## 4. 建议（尚未落地，按性价比排序）
 

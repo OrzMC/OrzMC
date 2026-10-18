@@ -252,6 +252,36 @@ git diff --submodule <路径>
 
 ---
 
+### 8.2 远端构建（`ssh air`）
+
+本机（macOS 13 + CLT 13.3 + 剩余磁盘 <10GB）**无法全量构建** Swift 包（依赖要 macOS 14+ SDK），
+Swift 相关的编译/测试/验收一律在 **`air`** 上做（Apple Silicon M1 / 8 核 / Swift 6.4 / SDK 27）。
+
+| 项 | 值 |
+|---|---|
+| SSH 主机 | `air`（`joker@192.168.0.26`，免密 key，**arm64**） |
+| 远端工作目录 | `~/orzmc-build/OrzMCKit`（`rsync --delete`，`.build` 保留 → 增量构建） |
+| 统一入口 | **[`scripts/air/run.sh`](scripts/air/run.sh)** |
+
+```bash
+scripts/air/run.sh env            # 远端自检（swift / SDK / CPU / 磁盘）
+scripts/air/run.sh build          # 同步 + swift build --product orzmc   ~25s（增量）
+scripts/air/run.sh test           # 同步 + swift test（90+ 例）           ~25s
+scripts/air/run.sh accept         # 同步 + release 构建 + CLI 验收 20 例   ~1m30s
+scripts/air/run.sh all            # 三者全跑
+scripts/air/run.sh sh '<cmd>'     # 远端自定义命令
+```
+
+- **改依赖仓库时**（`MojangAPI` / `PaperMC` / `OrzSwiftKit`）加 `ORZMC_LOCAL_DEPS=1`：脚本会把本地
+  工作树同步过去并把**远端副本**的 `Package.swift` 改成 path 依赖（不改仓库、不要求先 push）。
+- 依赖是 `branch: main`，默认用 `Package.resolved` 离线解析（`--only-use-versions-from-resolved-file`）；
+  要拉依赖最新时用 `ORZMC_UPDATE_DEPS=1`。
+- `air` 会休眠：`ssh` 连不上时先唤醒机器（本机 `ssh air true` 报 `This system is locked` 即此因）。
+- 本机仍保留**秒级/分钟级**轻量检查：`swift/lib/OrzMCKit/scripts/dev/local-build.sh lint|check`
+  （跨平台静态检查 1s、语法检查 50s）。
+
+---
+
 ## 9. 进行中的计划与状态
 
 - [`HANDOFF.md`](HANDOFF.md) —— **跨会话/跨设备交接文档**：当前焦点、状态快照、下一步、

@@ -245,6 +245,22 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-18 — pi（构建搬到 `ssh air`：增量 24 秒）
+
+**本机不再构建**（SDK 13.3 / 磁盘 9.8GB / no-op 构建 16.7s，见上一条）。改为远端构建：
+
+- 新增 **[`scripts/air/run.sh`](scripts/air/run.sh)**：`env|sync|build|test|accept|all|sh|clean`；
+  `rsync --delete`（排除 `.build`）→ `~/orzmc-build/OrzMCKit` → 远端 `swift build`。
+- `air`：`joker@192.168.0.26`，**Apple Silicon M1 / 8 核 / Swift 6.4 / SDK 27 / 24GB 可用**。
+- 关键优化：依赖 `branch: main` 每次解析都联网 → 默认 `--only-use-versions-from-resolved-file`
+  （**1m07s → 24s**）；要更新依赖用 `ORZMC_UPDATE_DEPS=1`。
+- 依赖迭代：`ORZMC_LOCAL_DEPS=1` 会把 `swift/lib/{MojangAPI,PaperMC,OrzSwiftKit}` 同步过去并把
+  **远端副本**的 `Package.swift` 改成 path 依赖（37s 完成构建，不必先 push）。
+- **实测**：build 24s（编译本体 1.5–15s）/ test 25s（90+1 例全过）/ accept 1m33s（20/20 通过）。
+
+已写进 [`AGENTS.md`](AGENTS.md) §8.2（含"air 休眠 → ssh 报 `This system is locked`"的排查提示）
+与 [`docs/iteration-efficiency.md`](docs/iteration-efficiency.md) §3.2（四条路径耗时对比）。
+
 ### 2026-10-18 — pi（本机 Swift 6 工具链 + 秒级反馈车道）
 
 **装好了**：`swiftly` 安装 `swift-6.0.3-RELEASE.xctoolchain`（免 sudo，`~/Library/Developer/Toolchains`），
