@@ -169,7 +169,7 @@
 | 前端 | macOS | Linux | Windows | 说明 |
 |:--|:--|:--|:--|:--|
 | `python` CLI（`orzmc` / PyPI） | ✅ 已发布 | ✅ 已发布 | ✅ 已发布 | 6 平台资产已验证；**维护模式**（D14：不再新增功能） |
-| Swift CLI（`OrzMCKit` 的 `orzmc`） | ✅ 已发布（arm64/x86_64） | ✅ **已发布**（`orzmc-linux-{x86_64,arm64}`，v0.14.0 起；发布后自动验收） | ⚠️ 编译+冒烟已过（W1/W2 完成，剩 W3–W6，见 [`../windows-port.md`](../windows-port.md)） | 收敛目标实现；判据见 `product-unification-plan.md` D14.1 |
+| Swift CLI（`OrzMCKit` 的 `orzmc`） | ✅ 已发布（arm64/x86_64） | ✅ **已发布**（`orzmc-linux-{x86_64,arm64}`，v0.14.0 起；发布后自动验收） | ✅ **已发布**（`orzmc-windows-x86_64.zip`，v0.15.0 起；真机无 Swift 环境验证通过，见 [`../windows-port.md`](../windows-port.md)） | 收敛目标实现；判据见 `product-unification-plan.md` D14.1 |
 | Swift GUI（`OrzMCApp`） | ✅ | — | — | SwiftUI，天然 Apple only |
 
 跨平台能力差异（Swift CLI 到 Linux/Windows 的已知边界）：
@@ -177,6 +177,7 @@
 - `orzmc app …` 安装的是 macOS `.app`：非 macOS 上**显式**返回 `E_UNSUPPORTED`（不假装支持）；
 - 系统外部工具（`unzip`）由 `Game.PlatformTools` 解析，缺失时按功能降级（音乐提取跳过）或报 `E_EXTRACT`；
 - `completion install` 在 PowerShell 下按 F6 只生成脚本，不做磁盘安装；
+- **Windows 资产是 zip**（exe + Swift 运行时 DLL）：单 exe 在没装 Swift 的机器上会 `STATUS_DLL_NOT_FOUND`；
 - Linux 上 `orzmc backup` 依赖系统 `zip`（安装器会提示；缺失时给明确错误而非静默产出空包）；
   音乐提取依赖系统 `unzip`，缺失则跳过该功能。
 
