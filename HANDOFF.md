@@ -245,6 +245,16 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-18 — pi（Windows W1/W2 完成并合并）
+
+- **W1 补全函数名**：`orzmc completion bash` 在 Windows 曾输出 `function _D:\a\...\orzmc.exe()`（用 `argv[0]` 全路径）。
+  现在 `programName(from:)` 归一为 `orzmc`（切 `/`、`\`，去 `.exe`）→ Windows 实测 `function _orzmc()` ✓。
+- **W2 状态目录**：规范 `state-paths.json` 早已写 Windows 形状，Swift 实现没跟上。新增 `Game.StatePaths`
+  （平台判定**可注入** → macOS 上也能单测 Windows 形态），`InstallManifest` / `AuthStore` / `GamePlan.defaultRoot` 全部改走它。
+- 验证：`air` 上 `swift test` **94 passed**（新增 4 例）；Windows 探针（windows-2022 + Swift 6.2）构建 + 冒烟全绿；
+  PR `OrzMCKit#63` 已合并（含 `Terminal` 走 `ucrt`、crypto 条件加 `.windows`、探针改手动触发）。
+- 剩余：**W3** 自升级替换、**W4** 备份走 `tar.exe`、**W5** `install.ps1`、**W6** CI job + `.exe` 资产。
+
 ### 2026-10-18 — pi（Windows 探针：编译 + 基础运行已通过）
 
 **8 轮探针**（`windows-probe.yml`，每轮 3–10 分钟）把"Windows 到底行不行"问清楚了：

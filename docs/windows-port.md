@@ -1,6 +1,6 @@
 # Windows 移植（Phase 6.5）——探针结论与路线
 
-> **状态**：探针完成，**编译 + 基础运行已通过**；功能收尾待做 · **最后更新**：2026-10-18
+> **状态**：编译+冒烟已过，**W1/W2 已完成**；W3–W6 待做 · **最后更新**：2026-10-18
 > 关联：`docs/product-unification-plan.md` D14 / Phase 6.5，`docs/iteration-efficiency.md`
 
 ---
@@ -40,8 +40,8 @@ completion bash                   ⚠️ 函数名带完整 .exe 路径（见 §
 
 | # | 项 | 现状 | 做法 |
 |---|---|---|---|
-| W1 | `completion` 脚本函数名 | `function _D:\a\...\orzmc.exe()` —— 取的是 `argv[0]` 全路径 | 函数名固定 `orzmc`（或取 basename 去 `.exe`） |
-| W2 | 状态目录 | `~/.local/state/orzmc`（POSIX 形状） | Windows → `%LOCALAPPDATA%\orzmc`；**先改规范** `state-paths.json` + `install-update.md` |
+| ~~W1~~ | ~~`completion` 脚本函数名~~ | ☑ **已修**（`OrzMCKit#63`）：`programName(from:)` 切 `/` 与 `\`、去 `.exe`；Windows 实测输出 `function _orzmc()` | 函数名固定 `orzmc` |
+| ~~W2~~ | ~~状态目录 / 游戏根~~ | ☑ **已修**（`OrzMCKit#63`）：新增 `Game.StatePaths`（平台判定可注入 → 可在 macOS/Linux 上单测），`InstallManifest`/`AuthStore`/`GamePlan.defaultRoot` 全部改走它 | Windows → `%LOCALAPPDATA%\orzmc`、`%USERPROFILE%\minecraft` |
 | W3 | 自升级 | `SelfUpdate` 写 `/bin/sh` 脚本替换自身 | Windows → 重命名旧 exe + 移动新 exe（`FileManager.replaceItemAt`） |
 | W4 | 备份 `zip` | `PlatformTools.zip()` 在 Windows 返回 `nil` → 明确报错 | Windows 用系统自带 `tar.exe -a -c -f x.zip`（10+ 内置） |
 | W5 | 安装器 | 只有 `install.sh` | 写 `install.ps1`（资产 `orzmc-windows-<arch>.exe`、PATH、`completion install` 按 F6 只提示脚本） |
