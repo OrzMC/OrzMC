@@ -169,14 +169,20 @@
 | 前端 | macOS | Linux | Windows | 说明 |
 |:--|:--|:--|:--|:--|
 | `python` CLI（`orzmc` / PyPI） | ✅ 已发布 | ✅ 已发布 | ✅ 已发布 | 6 平台资产已验证；**维护模式**（D14：不再新增功能） |
-| Swift CLI（`OrzMCKit` 的 `orzmc`） | ✅ 已发布（arm64/x86_64） | ⚠️ 建置中（Phase 6） | ❌ 未开始 | 收敛目标实现；判据见 `product-unification-plan.md` D14.1 |
+| Swift CLI（`OrzMCKit` 的 `orzmc`） | ✅ 已发布（arm64/x86_64） | ✅ **已发布**（`orzmc-linux-{x86_64,arm64}`，v0.14.0 起；发布后自动验收） | ❌ 未开始（Phase 6.5） | 收敛目标实现；判据见 `product-unification-plan.md` D14.1 |
 | Swift GUI（`OrzMCApp`） | ✅ | — | — | SwiftUI，天然 Apple only |
 
 跨平台能力差异（Swift CLI 到 Linux/Windows 的已知边界）：
 
 - `orzmc app …` 安装的是 macOS `.app`：非 macOS 上**显式**返回 `E_UNSUPPORTED`（不假装支持）；
 - 系统外部工具（`unzip`）由 `Game.PlatformTools` 解析，缺失时按功能降级（音乐提取跳过）或报 `E_EXTRACT`；
-- `completion install` 在 PowerShell 下按 F6 只生成脚本，不做磁盘安装。
+- `completion install` 在 PowerShell 下按 F6 只生成脚本，不做磁盘安装；
+- Linux 上 `orzmc backup` 依赖系统 `zip`（安装器会提示；缺失时给明确错误而非静默产出空包）；
+  音乐提取依赖系统 `unzip`，缺失则跳过该功能。
+
+**Linux 证据链（v0.14.0）**：`release.yml` 的 `verify-linux` 每次发版自动执行——下载真实
+`orzmc-linux-x86_64` → `sha256sum -c` → `scripts/accept_cli.py`（20/20）→ `install.sh`
+安装 → 版本/补全/`install.conf` 字段断言 → `uninstall --yes` 清理。
 
 ### 7.1 GUI 前端（`OrzMCApp`）接入现状
 

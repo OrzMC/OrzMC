@@ -239,6 +239,18 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 | 6.5 | Windows：`WinSDK` 分支 + `install.ps1` + 资产 | `lib/OrzMCKit` | 同 6.4 |
 | 6.6 | 达标后 Python CLI 停迭代（维护模式→冻结），`docs/spec` 标注 Swift 为唯一实现 | `python`、`parent` | D14.1 四条全绿 |
 
+**进度（2026-10-18）**
+
+| 步骤 | 状态 | 证据 |
+|---|---|---|
+| 6.1 依赖去 Apple-only | ☑ | `PaperMC#5/#6`、`MojangAPI#8/#9`、`OrzSwiftKit#12/#13` |
+| 6.2 平台工具收拢 / `app` 收口 | ☑ | `OrzMCKit#57`（`Game.PlatformTools`、非 macOS → `E_UNSUPPORTED`） |
+| 6.3 Linux CI 常态化 | ☑ | `ci.yml` 的 `linux` job（lint + build + 91 单测 + 验收 20/20，缓存后 ~2 分钟） |
+| 6.4 Linux 资产 | ☑ | **v0.14.0** 起有 `orzmc-linux-{x86_64,arm64}` + `SHA256SUMS` |
+| 6.4+ 发布后自动验收 | ☑ | `release.yml` 的 `verify-linux`（真实资产 → 验收 → 安装/卸载全链路） |
+| 6.5 Windows | ☐ | 需 `WinSDK` 分支、`/bin`→`cmd` 抽象、`install.ps1`、内置 zip/unzip |
+| 6.6 Python 停迭代 | ☐ | 等 6.5 |
+
 ## 6. 进度与里程碑状态表
 
 | 阶段 | 关键里程碑 | 状态 |

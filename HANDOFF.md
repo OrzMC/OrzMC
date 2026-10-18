@@ -60,7 +60,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端**离线**链路就绪，但 **Game Service API 审核被拒 → 真实登录不可用**；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差且 `--strict` 已进 CI**（含 enum 比对）；**元数据缓存已统一到 `<root>/cache`**；**最近发布**：Python `2.11.0` / Swift **`v0.11.1`** |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | **D14 跨平台收敛（进行中）**：Swift CLI 已在 Linux（`swift:6.0` 容器）编译通过；余下 6.3 Linux CI 常态化 → 6.4 Linux 资产 → 6.5 Windows → 6.6 Python 停迭代（见 `product-unification-plan.md` Phase 6）。⓪ ~~合并分支 / 发版~~ **已完成**（2026-10-18）：Python **2.12.0** 与 Swift **0.13.0** 均已发布（Release 资产 + PyPI / 升级须知已进 Release notes）；用**已发布**的 `orzmc-macos-x86_64` 复跑 CLI 验收 24/24。① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**已定：暂停，等 Mojang 第 2 次申请邮件回复**（不提前做，避免返工）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**；③ 认证路线（A. authlib-injector / B. BYO / C. 降级）**等回信后再拍板**，不提前动工 |
+| **下一步** | **D14 跨平台收敛**：Linux 侧**已完工**（6.1–6.4 + 发布后自动验收全绿；v0.14.0 起有 `orzmc-linux-*` 资产）；下一步 **6.5 Windows**（`WinSDK` 分支 / `install.ps1` / 内置 zip-unzip），之后 6.6 Python 停迭代。迭代方法见 [`docs/iteration-efficiency.md`](docs/iteration-efficiency.md)。⓪ ~~合并分支 / 发版~~ **已完成**（2026-10-18）：Python **2.12.0** 与 Swift **0.13.0** 均已发布（Release 资产 + PyPI / 升级须知已进 Release notes）；用**已发布**的 `orzmc-macos-x86_64` 复跑 CLI 验收 24/24。① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**已定：暂停，等 Mojang 第 2 次申请邮件回复**（不提前做，避免返工）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**；③ 认证路线（A. authlib-injector / B. BYO / C. 降级）**等回信后再拍板**，不提前动工 |
 
 ## 2. 状态快照（Repo State）
 
@@ -244,6 +244,27 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-18 — pi（D14：Linux 侧完工 + 迭代效率专项）
+
+**发版**：`OrzMCKit v0.14.0` 已发布，资产 `orzmc-{macos,linux}-{arm64,x86_64}` + `SHA256SUMS`（首次含 Linux）。
+`release.yml` 新增的 `verify-linux` **在真实发布资产上全绿**：`sha256sum -c` → `accept_cli.py` **20/20** →
+`install.sh` 安装 → 版本/补全/`install.conf` 断言 → `uninstall --yes` 清理。
+
+**途中修的两个发布链路问题**（都是容器特有，CI 里发现不了）：
+1. `swift:6.0` 精简镜像没有 `file` → `Assert architecture` 直接 127；改用 `uname -m` + 执行产物双重断言。
+2. 容器默认 shell 是 `sh`（不支持 `set -o pipefail`）、且不带 `python3` → 显式 `shell: bash` + 先装工具。
+
+**Linux 收尾（OrzMCKit#59 / #61）**：`scripts/install.sh` 支持 Linux（平台判定 / `orzmc-<os>-<arch>` /
+`sha256sum` 回退 / ELF 魔数 / `platform=linux-*` / `zip` 缺失提示）；`verify-release` 挂进 release 流水线。
+
+**迭代效率**（用户要求专项分析，落进 [`docs/iteration-efficiency.md`](docs/iteration-efficiency.md)）：
+本轮 9 轮 CI / 约 2.5 小时，其中 5 轮只换来一句编译错误。已落地：
+- `scripts/verify/portability.py`（秒级静态扫描 `CryptoKit` / `FoundationNetworking` / `/usr/bin/*`）→ 接进 CI 首步；
+- Linux job 加 SwiftPM 缓存 → **8m52s → 2m07s**；
+- `scripts/dev/linux-build.sh`（docker/podman 本地跑 build/test/accept）；
+- 发布后自动验收（资产坏了流水线就红）。
+建议下一步：本机装 Swift 6（`swiftly install 6.0`）把编译循环从 7 分钟降到 1–2 分钟。
 
 ### 2026-10-18 — pi（D14：Swift CLI 跨平台收敛，Linux 编译已打通）
 
