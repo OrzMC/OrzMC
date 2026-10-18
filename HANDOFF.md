@@ -60,7 +60,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端**离线**链路就绪，但 **Game Service API 审核被拒 → 真实登录不可用**；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差且 `--strict` 已进 CI**（含 enum 比对）；**元数据缓存已统一到 `<root>/cache`**；**最近发布**：Python `2.11.0` / Swift **`v0.11.1`** |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | **D14 跨平台收敛**：Linux 侧**已完工**（6.1–6.4 + 发布后自动验收全绿；v0.14.0 起有 `orzmc-linux-*` 资产）；下一步 **6.5 Windows**（`WinSDK` 分支 / `install.ps1` / 内置 zip-unzip），之后 6.6 Python 停迭代。迭代方法见 [`docs/iteration-efficiency.md`](docs/iteration-efficiency.md)。⓪ ~~合并分支 / 发版~~ **已完成**（2026-10-18）：Python **2.12.0** 与 Swift **0.13.0** 均已发布（Release 资产 + PyPI / 升级须知已进 Release notes）；用**已发布**的 `orzmc-macos-x86_64` 复跑 CLI 验收 24/24。① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**已定：暂停，等 Mojang 第 2 次申请邮件回复**（不提前做，避免返工）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**；③ 认证路线（A. authlib-injector / B. BYO / C. 降级）**等回信后再拍板**，不提前动工 |
+| **下一步** | **Phase 6.5 Windows**：探针已证明「能编译 + 能跑」，按 [`docs/windows-port.md`](docs/windows-port.md) 的 W1–W6 收尾（补全函数名 → 状态目录 → 自升级 → tar 备份 → install.ps1 → CI/发布）。**主线仍是 D14 跨平台收敛**：Linux 侧**已完工**（6.1–6.4 + 发布后自动验收全绿；v0.14.0 起有 `orzmc-linux-*` 资产）；下一步 **6.5 Windows**（`WinSDK` 分支 / `install.ps1` / 内置 zip-unzip），之后 6.6 Python 停迭代。迭代方法见 [`docs/iteration-efficiency.md`](docs/iteration-efficiency.md)。⓪ ~~合并分支 / 发版~~ **已完成**（2026-10-18）：Python **2.12.0** 与 Swift **0.13.0** 均已发布（Release 资产 + PyPI / 升级须知已进 Release notes）；用**已发布**的 `orzmc-macos-x86_64` 复跑 CLI 验收 24/24。① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**已定：暂停，等 Mojang 第 2 次申请邮件回复**（不提前做，避免返工）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**；③ 认证路线（A. authlib-injector / B. BYO / C. 降级）**等回信后再拍板**，不提前动工 |
 
 ## 2. 状态快照（Repo State）
 
@@ -244,6 +244,27 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-18 — pi（Windows 探针：编译 + 基础运行已通过）
+
+**8 轮探针**（`windows-probe.yml`，每轮 3–10 分钟）把"Windows 到底行不行"问清楚了：
+
+| 轮 | 失败点 | 处理 |
+|---|---|---|
+| 1 | `Invalid manifest … module 'ucrt'` | `update-sdk-modules: true` |
+| 2 | `Tool 'swiftlint' is not supported` | OrzSwiftLint **0.0.9**：Windows 跳过 lint 插件 |
+| 3 | `missing inputs: …GeneratedSources/*` | 开发者模式（符号链接）；SwiftPM 6.0 缺陷 → **换 Swift 6.2** |
+| 4 | `STL1000: expected Clang 20+` | 用 `windows-2022`（VS 2022），不用 windows-2025 |
+| 5 | `no such module 'Crypto'` | swift-crypto 条件加 `.windows`（OrzSwiftKit#14 / MojangAPI#10） |
+| 6 | `cannot find 'SIGKILL'/'kill'` | OrzSwiftKit#15：`terminate()` + Shell 的 Windows 实现（tasklist/taskkill/powershell） |
+| 7 | `run` 重载歧义 | OrzSwiftKit#16：显式类型标注 |
+| 8 | — | **`orzmc.exe` 构建成功**，`--version` / `--json capabilities` / `--json list` / `completion bash` 均能跑 |
+
+**结论：A 路线（全量 Windows）可行**，剩余是 6 项平台细节（W1 补全脚本函数名、W2 状态目录
+`%LOCALAPPDATA%`、W3 自升级替换、W4 `tar.exe` 备份、W5 `install.ps1`、W6 CI/发布资产）。
+详见 [`docs/windows-port.md`](docs/windows-port.md)。
+
+**前提（已写进文档）**：`windows-2022` + **Swift 6.2** + `update-sdk-modules: true` + 开发者模式。
 
 ### 2026-10-18 — pi（构建搬到 `ssh air`：增量 24 秒）
 
