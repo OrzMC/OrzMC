@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-10-18 by pi
+> **最后更新**：2026-10-19 by pi
 
 ---
 
@@ -29,19 +29,39 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 ## 0.1 接力提示词（新会话直接复制这段）
 
-> 读 `AGENTS.md` 与 `HANDOFF.md`，从 §4「待办 A / 剩余项」继续。
+> 你在 `OrzMC` 父仓库（产品伞，21 个子模块）。**先读 `AGENTS.md`（规则）+ `HANDOFF.md`（状态）**，
+> 再按需读 `docs/`。铁律：**代码改子模块、父仓库只 bump 指针**、**禁用 `git add -A`**、
+> 一次提交只 bump 一个子模块（同一产品级变更可合并 bump，见 AGENTS §2）。
 >
-> **当前状态（2026-10-16）**
-> - **正版授权**：Azure `client_id` 已内置两端；**Mojang Game Service API 审核被拒（2026-10-17，无申诉通道）** → `login_with_xbox` 仍 `403`，**真实登录不可用**；下一步三选一（A. authlib-injector / B. BYO client id / C. 降级）见 §4 待办 A 与 §5 最新记录。
-> - **合规**：免责声明/隐私政策/CLI 声明已落地，**单一来源** `docs/compliance/`（`compliance.json` + `privacy.md`），由 `scripts/sync_compliance.py` 生成到各引用；`check.py` 校验漂移。**改文案只改 `docs/compliance/` 再跑一次脚本。**
-> - **命令面**：**两侧 0 偏差**（Python 完全一致；Swift `client --type fabric` 已落地并随 `v0.7.0` 发布；`forge` 命令面接受、引擎待落地）。
+> **当前状态（2026-10-19）**
+> - **两套 CLI 并行**（用户决策：先并行，别冻结 Python）：
+>   `docs/two-cli-strategy.md` 定义规则（规范先行 / **一个功能只在一侧写** / 平台差异归平台侧 / 落后要交差），
+>   台账 `docs/spec/parity.json`，校验器 `scripts/verify/parity.py`（父仓库 CI + 两个子模块各自的 `ledger` job，**三处都在跑**）。
+> - **跨平台已打通**：Swift CLI 在 macOS / **Linux**（v0.14.0 起）/ **Windows**（v0.16.0 起，zip = exe + 运行时 DLL）
+>   均有官方资产；D14.1 判据 ①②③④ 全绿。Windows 真机（无 Swift 环境）已验证安装→运行→卸载。
+> - **验收判据只有一份**（M2 已完成）：父仓库 `scripts/accept/cli.py`；两个仓库的本地副本已删除，
+>   CI 稀疏检出父仓库调用。M2 落地当天就抓出 Swift 侧 3 个真 bug（已修）。
+> - **迭代成本已治理**：推前钩子 `scripts/dev/prepush.sh`（OrzMCKit 20–27 秒 / python 2.5 秒）、
+>   `ssh air` 远端构建（增量 14–24 秒）、CI 跳过 release-please 与纯文档 push、
+>   Windows job 只在源码变更时跑、`release.yml` 支持 **dry-run**（发版前必跑，10 分钟、零副作用）。
+>   取证与规则见 `docs/iteration-efficiency.md`。
+> - **最近发布**：`OrzMCKit v0.16.0`、`OrzPythonMC 2.12.0`。**待合**：release PR `OrzMCKit#77`（0.17.0）、
+>   `OrzPythonMC#75`（2.13.0）。
 >
 > **请按顺序**
-> 1. `python3 scripts/verify/check.py`（登记表 + 一致性 76/76 + manifest + 合规漂移）确认基线绿；`git submodule status` 21 个齐全。
-> 2. **若 Mojang 有回信**：按其要求处理；通过后立刻跑真实 E2E（上文脚本）+ `ssh air`/`ssh win` 真机，更新 `docs/spec/auth.md` 与 `HANDOFF.md`（§4 A4、§5）。
-> 3. **否则**推进 `client --type forge`（Forge installer + patched jar，属新引擎能力；fabric 已完成，见 `v0.7.0`），走 `OrzMCKit` PR + `ssh air` 验证 + 发版。
->
-> 铁律：代码改子模块、父仓库只 bump；不用 `git add -A`；一次提交只 bump 一个子模块。
+> 1. `git pull --recurse-submodules && git submodule update --init --recursive`；
+>    `python3 scripts/verify/check.py`（登记表 + 一致性 76 + manifest + **能力台账** + 合规）确认基线绿。
+> 2. **装推前钩子**（钩子不入版本库，新机器/新 clone 必须装）：`scripts/dev/install-hooks.sh`；
+>    `scripts/dev/install-hooks.sh --check` 应显示 python / OrzMCKit 都已安装。
+> 3. `ssh air` 可能休眠：连不上先唤醒（`ssh air 'swift --version'` 超时即此因）。
+>    日常构建用它：`scripts/air/run.sh test|accept`（增量 14–24 秒）。
+> 4. **推进顺序**（详见 §4「下一会话起点」）：
+>    Windows arm64 资产（台账唯一挂账）→ 两个 release PR → `orzmc app` 文案 / `install.ps1` 进文档 /
+>    `state.paths` 动态 conformance → 评估 M3（Python 作发行通道）。
+> 5. 改功能前先看 `docs/spec/parity.json`：确认该命令的 `lead` 是哪一侧，**不要两边都写**。
+> 6. 发版：`gh workflow run release.yml -f tag=vX.Y.Z -f dry-run=true` 绿了再正式 dispatch；
+>    需要「升级须知」时按 `python/CONTRIBUTING.md`（release-please 会 force-push 分支，**合并后**用
+>    `gh release edit` 同步到 Release notes）。
 
 然后按顺序读：
 
@@ -56,11 +76,11 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 项 | 内容 |
 |---|---|
-| **主题** | 产品统一化 — Phase 0–5 完成；T1 端到端完成；**T2 命令面统一完成且两侧 0 偏差**（Swift `client --type` vanilla/fabric/forge 全落地）；一致性 **76/76**（三适配器）；**行为契约 B1–B11 两侧全 ✅**；`--auth` 离线部分完成但** Mojang 审核被拒**（2026-10-17，内置 client_id 实际不可用）；**`orzmc mcp` 两端完成**；剩余：**正版登录后续路线（A/B/C 待拍板）**、codegen（已评估：暂不做） |
-| **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端**离线**链路就绪，但 **Game Service API 审核被拒 → 真实登录不可用**；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差且 `--strict` 已进 CI**（含 enum 比对）；**元数据缓存已统一到 `<root>/cache`**；**最近发布**：Python `2.11.0` / Swift **`v0.11.1`** |
+| **主题** | **D14 跨平台收敛**：Swift CLI 已在 macOS/Linux/Windows 发布（D14.1 判据全绿）；**两套 CLI 并行期治理**（台账 + 三处 CI 校验 + M2 共享验收脚本）已落地；迭代成本治理（推前钩子 / air 远端构建 / dry-run 发布）已落地；`--auth` 仍被 **Mojang 审核拒绝（2026-10-17）** 阻塞；一致性 **76/76**；行为契约 B1–B11 两侧 ✅ |`orzmc mcp` 两端完成**；剩余：**正版登录后续路线（A/B/C 待拍板）**、codegen（已评估：暂不做） |
+| **状态** | 🟢 一份规范 + 两套实现（Swift 为 lead）+ 三个前端；一致性 **76/76**；命令面两侧 0 偏差（`--strict` 进 CI）；能力台账三处校验全绿；**最近发布**：`OrzMCKit v0.16.0`、`OrzPythonMC 2.12.0`；**待合**：release PR `OrzMCKit#77`(0.17.0)、`OrzPythonMC#75`(2.13.0) |hon `2.11.0` / Swift **`v0.11.1`** |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | **两套 CLI 并行期治理已就位**（`docs/two-cli-strategy.md` + `parity.json` + CI 校验）；中期 **M2 共享验收 harness**（review_by 2026-12-31）、**M3 Python 作发行通道**（前置：Windows arm64 资产）。**D14.1 判据已基本齐**：Linux ✅（v0.14.0 起）、Windows ✅（v0.15.0 起，真机验证）、macOS ✅ → 剩余 **6.6「Python CLI 停迭代」**（把 Python 置为冻结/维护模式，`docs/spec` 标注 Swift 为唯一实现）。Windows 侧待补：`orzmc app` 的 `E_UNSUPPORTED` 文案、arm64 资产、`install.ps1` 进站点文档。**主线仍是 D14 跨平台收敛**：Linux 侧**已完工**（6.1–6.4 + 发布后自动验收全绿；v0.14.0 起有 `orzmc-linux-*` 资产）；下一步 **6.5 Windows**（`WinSDK` 分支 / `install.ps1` / 内置 zip-unzip），之后 6.6 Python 停迭代。迭代方法见 [`docs/iteration-efficiency.md`](docs/iteration-efficiency.md)。⓪ ~~合并分支 / 发版~~ **已完成**（2026-10-18）：Python **2.12.0** 与 Swift **0.13.0** 均已发布（Release 资产 + PyPI / 升级须知已进 Release notes）；用**已发布**的 `orzmc-macos-x86_64` 复跑 CLI 验收 24/24。① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**已定：暂停，等 Mojang 第 2 次申请邮件回复**（不提前做，避免返工）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**；③ 认证路线（A. authlib-injector / B. BYO / C. 降级）**等回信后再拍板**，不提前动工 |
+| **下一步** | **Windows arm64 资产**（台账唯一挂账，M3 前置）→ 合并两个 release PR → `orzmc app` 非 macOS 文案 / `install.ps1` 进站点文档 / `state.paths` 动态 conformance → 评估 **M3（Python 作发行通道）**。详见 §4「下一会话起点（2026-10-19）」 |
 
 ## 2. 状态快照（Repo State）
 
@@ -69,7 +89,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 值 |
 |---|---|
 | 分支 | `main`（跟随远端；子模块指针以 `git ls-tree HEAD` / `RELEASES.md` 为准） |
-| 工作区 | 干净（`python` / `swift/lib/OrzMCKit` 的 CLI 契约 0.2 已合并并 bump）；仅 `M plugin`（本地常检出 develop，**预期**） |
+| 工作区 | **干净**（2026-10-19 交接时 `git status` 无改动） |
 | 父仓库 CI | ✅ `.github/workflows/ci.yml` → `python3 scripts/verify/check.py` |
 | 已删除（历史） | `GEMINI.md`、`.cursor/rules/` |
 
@@ -80,9 +100,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `a57fb6f` | `OrzPythonMC`；适配器 + 下载续传 + 全局选项 + `--json` + `completion` + `capabilities` + `plugin`/`app` + `planClientDownload` + 退出码归一；**已发布 `2.9.1`**；**内置 client_id**：`--auth` 离线链路 + `orzmc mcp` + `auth/*` 适配器 + 服务端 `--demo`/`--online-mode`；**`quality` job 追加 CLI 命令面 `--strict` 校验**；**README/落地页对齐命令面**；**`2.9.1` 修复 `orzmc update` 裸名 `argv[0]` 误把 CWD 同名文件当目标（`running_binary()` + 验收步骤 5b）；CHANGELOG/Release notes 补「升级须知」并固化约定** |
+| `python` | `e7b8d27` | `OrzPythonMC`；**2.12.0 已发布**（CLI 契约 0.2）；验收脚本已并入父仓库 `scripts/accept/cli.py`（M2）；CI 增加 `ledger` 能力台账反向校验适配器 + 服务端 `--demo`/`--online-mode`；**`quality` job 追加 CLI 命令面 `--strict` 校验**；**README/落地页对齐命令面**；**`2.9.1` 修复 `orzmc update` 裸名 `argv[0]` 误把 CWD 同名文件当目标（`running_binary()` + 验收步骤 5b）；CHANGELOG/Release notes 补「升级须知」并固化约定** |
 | `swift/app` | `efbb665` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
-| `swift/lib/OrzMCKit` | `c42f677` | **Swift 引擎 + `orzmc` CLI（发行产品，D13）**；含 `ConformanceAdapter`（76/76）；**已发布 `v0.9.1`**；**内置 client_id** + `orzmc mcp` + **`client --type` vanilla/fabric（fabric-meta）/forge（官方安装器）** + 命令面全量收敛 + `--strict` 进 CI；**Mojang 元数据缓存指向 `<root>/cache`（与 Python/app 共享）**；**CI SwiftPM 缓存 + OrzSwiftKit 预编译 SwiftLint（lint 插件回归）**；此前已发 `v0.1.0`…`v0.9.0` |
+| `swift/lib/OrzMCKit` | `acd99d4` | **Swift 引擎 + `orzmc` CLI**；**`v0.16.0` 已发布**（macOS×2 / Linux×2 / **windows-x86_64.zip**）；`Game.StatePaths`/`PlatformTools`/`MemorySpec`/`LaunchOptionRules`；`windows`/`linux`/`portability`/`ledger` CI 全接全量收敛 + `--strict` 进 CI；**Mojang 元数据缓存指向 `<root>/cache`（与 Python/app 共享）**；**CI SwiftPM 缓存 + OrzSwiftKit 预编译 SwiftLint（lint 插件回归）**；此前已发 `v0.1.0`…`v0.9.0` |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
@@ -165,6 +185,39 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 4. 下一步（Next Actions，增量、非阻塞）
 
+### ★ 下一会话起点（2026-10-19 交接）
+
+> 上一轮已把 **D14 跨平台**、**两套 CLI 治理**、**迭代成本** 三件事收口；本节只列**接下来要做的**，
+> 历史细节见 §5 会话日志（最新在最上）。
+
+**A. 合并待发的 release PR（低风险，先做）**
+- [ ] `OrzMCKit#77` → **0.17.0**（内容：M2 共享验收 + 3 个 bug 修复 + CI 成本治理）。
+      先 `gh workflow run release.yml -f tag=v0.17.0 -f dry-run=true` 或直接合（CI 已全绿）。
+- [ ] `OrzPythonMC#75` → **2.13.0**（内容：CI 成本治理 + M2 改用共享验收脚本）。
+- 合并后：父仓库 bump 两个子模块指针（同一次产品级变更，可合并为一次提交）。
+
+**B. Windows arm64 资产（台账唯一挂账，`review_by 2026-12-31`）**
+- [ ] `release.yml` 的 `build-windows` 加 `windows-11-arm` + Swift arm64 工具链（先 dry-run 验证）。
+- [ ] `install.ps1`：`PROCESSOR_ARCHITECTURE=ARM64` 已映射 `arm64`，资产名 `orzmc-windows-arm64.zip` 就绪后即可；
+- [ ] 真机验证（`ssh win` 是 x64，只能验 x64；arm64 需另找机器或只用 CI 断言）。
+- 完成即满足 **M3（Python 作发行通道）** 的前置条件之一。
+
+**C. 收尾小项（各自独立、可并行）**
+- [ ] `orzmc app` 在非 macOS 的 `E_UNSUPPORTED` 文案与 `docs/spec/install-update.md` §8 对齐（现状已返回该码）；
+- [ ] `install.ps1` 进入官网文档（`site` 子模块）与 `OrzMCKit/README.md`；
+- [ ] `state.paths` **动态** conformance 用例（`frontends.md` §7 待补第 1 条）：两侧上报实际路径 vs `state-paths.json`；
+- [ ] dependabot 两个 PR（python `#30`/`#31`）择机合并。
+
+**D. 中期评估（不急于动手）**
+- [ ] **M3**：Python CLI 变成"装/升级/转发 Swift 二进制"的发行通道（`docs/two-cli-strategy.md` §5）；
+      前置：六类资产齐（当前缺 Windows arm64）+ 干净环境可运行（Windows 已验证 zip+DLL 方案）。
+
+**接手时最容易踩的三个坑**
+1. **git 钩子不入版本库**：新机器必须 `scripts/dev/install-hooks.sh`（否则推前验证不生效）。
+2. **`ssh air` 会休眠**：`ssh air true` 超时 → 先唤醒；构建优先用 `scripts/air/run.sh`（14–24 秒），别直接推 CI。
+3. **`parity.json` 是硬约束**：改命令面/能力前先看该命令的 `lead`，只在一侧实现；另一侧要么跟随、要么登记 `behind`（带 `reason` + `review_by`，过期 CI 会红）。
+
+
 > **★ 下一会话起点（2026-10-15 交接）**：本地 `--auth` 离线部分（阶段 A/B/C，三适配器 73/73）与
 > **`orzmc mcp` server（两端）均已完成**。真实登录 E2E 等办卡/注册后再做（待办 A）；
 > 无阻塞时可选推进「命令面单一化」（§4 可选/治理）。
@@ -244,6 +297,20 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-19 — pi（会话收尾：v0.16.0 发布 + M2 落地 + 交接）
+
+本轮后半段完成三件事（细节见上面两条日志）：
+
+1. **v0.16.0 发布**：dry-run（**未打 tag 也能跑**）→ 抓出 `build-windows` 断言拿到 `main` 的缺陷 → 修 →
+   正式发布 6 个资产；Windows 真机（无 Swift）复验 `install.ps1` → `orzmc 0.16.0` ✓。
+2. **M2 落地**：`scripts/accept/cli.py`（父仓库）成为唯一验收脚本（1566 → 875 行），
+   两侧 CI 稀疏检出调用；**共享判据当场抓出 Swift 3 个真 bug**（内存/并发数前置校验、补全 rc 标记）并修复。
+3. **交接整理**：§0.1 接力提示词、§1 焦点、§2 指针、§4「下一会话起点」全部刷新到当前事实
+   （父仓库 `main` @ `971619e`，python `e7b8d27`，OrzMCKit `acd99d4`，工作区干净）。
+
+**待合 PR**：`OrzMCKit#77`（0.17.0）、`OrzPythonMC#75`（2.13.0）。
+**下一步第一件事**：合并这两个 release PR（或先 dry-run），然后 Windows arm64 资产。
 
 ### 2026-10-19 — pi（M2 落地：验收判据收敛成一份，并抓出 Swift 3 个真 bug）
 
