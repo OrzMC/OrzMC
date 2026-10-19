@@ -171,11 +171,14 @@ scripts/air/run.sh accept    # + release 构建 + CLI 验收
 | **Windows job 只在源码/依赖/工作流变更时跑** | `ci.yml` 的 `Detect source changes`（`git diff HEAD~1 HEAD -- Sources Package.swift Package.resolved .github/workflows`） | **每次非源码 push 省 13 分钟** |
 | **`release.yml` 支持 `dry-run`** | 新增输入；`publish`/`verify-linux` 跳过 | 把 1–3 次真实重发（15–20 分/次）换成 1 次 dry-run |
 | **parity 台账 + 三处 CI 门禁** | `docs/spec/parity.json` / `scripts/verify/parity.py` | 不再"凭记忆决定两边都改"（见 `two-cli-strategy.md`） |
+| **推前验证钩子（pre-push）** | `scripts/dev/prepush.sh` + `scripts/dev/install-hooks.sh` | 把 W1（每推一次排 3.3 分钟）变成 **20–27 秒**；实测 `OrzMCKit` 一次 = 可移植性 1s + air 构建/单测 19–26s |
 
 ## 3.7 流程规则（写进协作约定，按收益排序）
 
-1. **推之前先本地验证**：`scripts/air/run.sh test`（25 秒）或 `check`（50 秒），**绿了再推**。
-   推一次 PR CI ≈ 3.3 分钟；本地一轮 ≈ 25 秒 → 单次省 87%。
+1. **推之前先本地验证**（**已做成 git 钩子**，`scripts/dev/install-hooks.sh` 一键安装）：
+   `OrzMCKit` = 可移植性检查（1 秒）+ `air` 构建/单测（19–26 秒）；`python` = `ruff`（2.5 秒，本机 pytest 反而更慢）。
+   推一次 PR CI ≈ 3.3 分钟；本地一轮 ≈ 20–27 秒 → 单次省 **~90%**。
+   逃生阀：`SKIP_PREPUSH=1`（会打印提示，CI 仍复核）。
 2. **攒改动再推**：同一个小目标内的多处修改**一次 commit + 一次 push**，不要"改一行→推→等 3 分钟→再改一行"。
    本轮 `feat/windows-probe` 推了 14 次，若攒成 3 次可省 ~35 分钟。
 3. **探针用 matrix，不用串行试**：一次 workflow 跑完所有候选组合（Swift 版本 × runner × 参数），

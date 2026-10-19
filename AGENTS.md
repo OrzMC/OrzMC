@@ -257,7 +257,12 @@ git diff --submodule <路径>
 
 ### 8.1.1 迭代成本纪律（2026-10 实测，见 `docs/iteration-efficiency.md`）
 
-- **推之前先本地验证**：`scripts/air/run.sh test`（约 25 秒）或 `check`（约 50 秒），绿了再推。
+- **推之前先本地验证**（已装成 git 钩子，见下）：`scripts/air/run.sh test`（约 25 秒）或 `check`（约 50 秒）。
+  一次性安装：`scripts/dev/install-hooks.sh`；核查：`scripts/dev/install-hooks.sh --check`。
+  钩子行为：纯文档改动放行；`OrzMCKit` 跑可移植性检查 + `air` 构建/单测（约 20–27 秒）；
+  `python` 跑 `ruff`（本机 pytest 比 CI 还慢，`ORZMC_PREPUSH_TESTS=1` 才本地跑）。
+  逃生阀：`SKIP_PREPUSH=1`（会打印提示，CI 仍复核）；`ORZMC_PREPUSH_STRICT=0` 允许 `air` 不可达时放行。
+  ⚠️ git 钩子**不入版本库**（每个 clone 各一份），新机器/新 clone 必须跑一次安装器。
 - **攒改动一次推**：同一个小目标内不要"改一行 → 推 → 等 3 分钟"；一轮 PR CI 约 3.3 分钟。
 - **探针用 matrix 一次跑完**候选组合，不要串行 dispatch（本轮 Windows 探针 20 次本可 1–2 次）。
 - **改发布链路先 dry-run**：`gh workflow run release.yml -f tag=vX.Y.Z -f dry-run=true`。
