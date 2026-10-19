@@ -133,6 +133,58 @@ scripts/air/run.sh accept    # + release 构建 + CLI 验收
    `--only-use-versions-from-resolved-file`（要更新依赖时用 `ORZMC_UPDATE_DEPS=1`）：24 s vs 1 m 07 s。
 2. `rsync --delete` 但 **排除 `.build`** → 远端增量构建得以保留（否则每次都冷编译）。
 
+## 3.5 全量取证：一天 450 分钟 CI 花在哪（2026-10-18）
+
+用 GitHub API 把当天所有 run 拉出来统计（不是估的）：
+
+| 仓库 / 工作流 | 次数 | CI 分钟 | 备注 |
+|---|---|---|---|
+| `OrzMCKit` / CI | **58** | **257** | PR 38 次（平均 3.3 分）/ main push 15 次（5.2 分）/ 手动 5 次（11 分） |
+| `OrzMCKit` / Windows Probe | **20** | **117** | 每次 dispatch 只测一个组合（Swift 版本 × runner） |
+| `OrzMCKit` / Release | **7** | **76** | **同一个 tag 重发 3 次**（`file` 缺失 / 静态链接无效 / 资产名不匹配） |
+| `OrzMCKit` / Release Please | 15 | 4 | 只改版本号与 CHANGELOG |
+| 父仓库 / CI | 15 | 2 | 指针 bump 各触发一次（每次 10 秒，便宜） |
+
+**单次 job 耗时**（一次 CI 的分项）：`portability` 4 秒 / `test` 2 分 02 / `cli-acceptance` 1 分 16 /
+`conformance` 1 分 23 / `linux` 2 分 11 / **`windows` 13 分 15**。
+
+### 浪费在哪（按 CI 分钟排序）
+
+| # | 模式 | 证据 | 性质 |
+|---|---|---|---|
+| W1 | **每推一个小修就跑满 6 个 job** | `feat/windows-probe` 一个分支 **14 次** CI、`feat/linux-build` **12 次** | 可省（本地 `air` 预检 + 攒一次推） |
+| W2 | **探针一次只测一个组合** | Windows Probe **20 次 / 117 分钟** | 可省（一次 matrix 覆盖 Swift 6.0/6.2 × windows-2022/2025） |
+| W3 | **发布后才发现打包问题 → 同一 tag 重发 3 次** | Release 7 次 / 76 分钟 | 可省（dry-run 排雷） |
+| W4 | **release-please 分支也跑满 CI** | 11 次 PR run（只改版本号与 CHANGELOG） | 已修 |
+| W5 | **纯文档/指针 bump 的 push 也跑 Windows（13 分钟）** | 15 次 main push；Windows 单次 13:15 | 已修 |
+| W6 | **同一份改动验证 3 遍** | `air`（24 秒）→ PR CI（3.3 分）→ main CI（5.2 分）→ release CI（16 分） | 部分必要（门禁分层），PR 层可瘦身 |
+| W7 | **可避免的返工** | `--static-swift-stdlib` 无效（2 次）、`Package.resolved` 被 air 重排格式（1 次）、Windows runner/SDK 逐轮试（6 轮） | 部分是探索成本；模式是"先验证再承诺" |
+
+> 结论：**慢的不是写代码，是"每次小改动都要排 3–13 分钟的队"，以及"发布链路的问题只能靠真发版发现"。**
+
+## 3.6 已落地的成本优化（2026-10-19）
+
+| 措施 | 位置 | 省什么 |
+|---|---|---|
+| **跳过 release-please 分支的 CI** | 两个子模块 `ci.yml` 的 `pull_request.branches-ignore` | 每次 release PR 的一整套 job（实测一天 11 次） |
+| **纯文档/CHANGELOG push 不跑 CI** | `push.paths-ignore` | main 上的文档提交 |
+| **Windows job 只在源码/依赖/工作流变更时跑** | `ci.yml` 的 `Detect source changes`（`git diff HEAD~1 HEAD -- Sources Package.swift Package.resolved .github/workflows`） | **每次非源码 push 省 13 分钟** |
+| **`release.yml` 支持 `dry-run`** | 新增输入；`publish`/`verify-linux` 跳过 | 把 1–3 次真实重发（15–20 分/次）换成 1 次 dry-run |
+| **parity 台账 + 三处 CI 门禁** | `docs/spec/parity.json` / `scripts/verify/parity.py` | 不再"凭记忆决定两边都改"（见 `two-cli-strategy.md`） |
+
+## 3.7 流程规则（写进协作约定，按收益排序）
+
+1. **推之前先本地验证**：`scripts/air/run.sh test`（25 秒）或 `check`（50 秒），**绿了再推**。
+   推一次 PR CI ≈ 3.3 分钟；本地一轮 ≈ 25 秒 → 单次省 87%。
+2. **攒改动再推**：同一个小目标内的多处修改**一次 commit + 一次 push**，不要"改一行→推→等 3 分钟→再改一行"。
+   本轮 `feat/windows-probe` 推了 14 次，若攒成 3 次可省 ~35 分钟。
+3. **探针用 matrix，不用串行试**：一次 workflow 跑完所有候选组合（Swift 版本 × runner × 参数），
+   本轮 Windows 探针 20 次 → 本可 1–2 次。
+4. **改发布链路先用 dry-run**：`gh workflow run release.yml -f tag=vX.Y.Z -f dry-run=true`。
+5. **指针 bump 批量做**：同一产品级变更涉及的多个子模块，允许**一次提交 bump 多个**（例：一次 Windows
+   变更只 bump OrzMCKit + OrzSwiftKit + MojangAPI 三条，之前是 4 个提交 + 4 次父 CI）。
+6. **不要重复验证同一事实**：`air` 已验证的构建结果，PR 上只需要"平台矩阵 + 行为契约"的增量价值。
+
 ## 4. 建议（尚未落地，按性价比排序）
 
 1. ~~本地装 Swift 6 工具链~~ **已做**（见 §3.1）：工具链可用，但本机 SDK/磁盘不足以全量构建；

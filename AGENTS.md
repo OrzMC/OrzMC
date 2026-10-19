@@ -50,6 +50,9 @@
   必须 `git add <子模块路径>` 再提交，否则指针漂移不会被记录。
 - 现状惯例：**一次提交只 bump 一个子模块**，提交信息写清 bump 到了什么版本/里程碑。
   这样历史可读、可回滚。
+- **例外（2026-10 起）**：同一次**产品级变更**涉及的多个子模块，允许**一次提交 bump 多个**指针
+  （提交信息里逐个列明）。理由：一次 Windows 变更可能同时涉及 `OrzMCKit` + `OrzSwiftKit` + `MojangAPI`，
+  拆成 4 个提交只会增加噪音与 4 次父 CI；可读性靠提交信息保证。跨主题的变更仍应分开。
 - 提交前用 `git submodule status` 确认指针，用 `git diff --submodule` 查看子模块内部差异摘要。
 
 ---
@@ -251,6 +254,14 @@ git diff --submodule <路径>
 - 真机验证的结论/关键命令记入 [`HANDOFF.md`](HANDOFF.md)。
 
 ---
+
+### 8.1.1 迭代成本纪律（2026-10 实测，见 `docs/iteration-efficiency.md`）
+
+- **推之前先本地验证**：`scripts/air/run.sh test`（约 25 秒）或 `check`（约 50 秒），绿了再推。
+- **攒改动一次推**：同一个小目标内不要"改一行 → 推 → 等 3 分钟"；一轮 PR CI 约 3.3 分钟。
+- **探针用 matrix 一次跑完**候选组合，不要串行 dispatch（本轮 Windows 探针 20 次本可 1–2 次）。
+- **改发布链路先 dry-run**：`gh workflow run release.yml -f tag=vX.Y.Z -f dry-run=true`。
+- CI 已加固：跳过 release-please 分支、纯文档 push、非源码 push 的 Windows job。
 
 ### 8.2 远端构建（`ssh air`）
 
