@@ -170,6 +170,13 @@ scripts/air/run.sh accept    # + release 构建 + CLI 验收
 | **纯文档/CHANGELOG push 不跑 CI** | `push.paths-ignore` | main 上的文档提交 |
 | **Windows job 只在源码/依赖/工作流变更时跑** | `ci.yml` 的 `Detect source changes`（`git diff HEAD~1 HEAD -- Sources Package.swift Package.resolved .github/workflows`） | **每次非源码 push 省 13 分钟** |
 | **`release.yml` 支持 `dry-run`** | 新增输入；`publish`/`verify-linux` 跳过 | 把 1–3 次真实重发（15–20 分/次）换成 1 次 dry-run |
+
+**dry-run 实测（2026-10-19，`tag=v0.15.0`）**：`verify` + 五个构建（macOS ×2、Linux ×2、Windows zip）
+全部 success，`publish` / `verify-linux` **skipped**，**总耗时 10 分钟**；发版前后 Release 资产快照
+`diff` **完全一致**（无副作用）。Windows 侧照常跑了 `zip: 33.38 MB` 打包与「干净 PATH 下运行」断言。
+
+→ 标准动作：**发版前必跑一次**
+`gh workflow run release.yml -f tag=vX.Y.Z -f dry-run=true`，绿了再正式 dispatch（不带 `dry-run`）。
 | **parity 台账 + 三处 CI 门禁** | `docs/spec/parity.json` / `scripts/verify/parity.py` | 不再"凭记忆决定两边都改"（见 `two-cli-strategy.md`） |
 | **推前验证钩子（pre-push）** | `scripts/dev/prepush.sh` + `scripts/dev/install-hooks.sh` | 把 W1（每推一次排 3.3 分钟）变成 **20–27 秒**；实测 `OrzMCKit` 一次 = 可移植性 1s + air 构建/单测 19–26s |
 

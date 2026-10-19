@@ -265,7 +265,8 @@ git diff --submodule <路径>
   ⚠️ git 钩子**不入版本库**（每个 clone 各一份），新机器/新 clone 必须跑一次安装器。
 - **攒改动一次推**：同一个小目标内不要"改一行 → 推 → 等 3 分钟"；一轮 PR CI 约 3.3 分钟。
 - **探针用 matrix 一次跑完**候选组合，不要串行 dispatch（本轮 Windows 探针 20 次本可 1–2 次）。
-- **改发布链路先 dry-run**：`gh workflow run release.yml -f tag=vX.Y.Z -f dry-run=true`。
+- **发版前必跑 dry-run**：`gh workflow run release.yml -f tag=vX.Y.Z -f dry-run=true`
+  （完整构建 + 打包 + 断言，但不发布、不改 Release；实测 10 分钟、零副作用）。绿了再正式 dispatch。
 - CI 已加固：跳过 release-please 分支、纯文档 push、非源码 push 的 Windows job。
 
 ### 8.2 远端构建（`ssh air`）

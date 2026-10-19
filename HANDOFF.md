@@ -245,6 +245,20 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-19 — pi（发布 dry-run 实测通过）
+
+对 `v0.15.0` 实跑 `gh workflow run release.yml -f tag=v0.15.0 -f dry-run=true`：
+
+| 项 | 结果 |
+|---|---|
+| `verify` + 构建（macOS×2 / Linux×2 / **Windows zip**） | 全 success（Windows 侧 `zip: 33.38 MB` + 干净 PATH 断言） |
+| `publish` / `verify-linux` | **skipped**（按设计） |
+| 总耗时 | **10 分钟**（对比：真实重发 16–18 分钟，且会动线上资产） |
+| 副作用 | Release 资产快照前后 `diff` **完全一致** |
+
+→ 定成标准动作（写进 `AGENTS.md` §8.1.1 与 `iteration-efficiency.md` §3.6）：
+**发版前必跑 dry-run，绿了再正式 dispatch。**
+
 ### 2026-10-19 — pi（迭代成本取证 + 三项 CI 优化）
 
 **取证（GitHub API，不是估算）**：OrzMCKit 一天 **CI 58 次 / 257 分钟**、**Windows Probe 20 次 / 117 分钟**、
