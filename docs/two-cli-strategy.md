@@ -59,13 +59,23 @@
    - `behind` 必须写 `reason` + `review_by`，**过期即失败**；
    - **验收用例对齐**：两个 `accept_cli.py` 的用例集合必须一致，实现独有的必须登记原因；
    - 可选动态校验：喂两侧 `capabilities --json` → 台账写 `parity` 就必须真有该命令，写 `na` 就不许有。
-3. **本轮就抓到的真实漂移**：Python 有 4 个 Swift 没有的用例（typer 自动选项、冻结二进制、动态补全、补全落点 vs `state-paths.json`）。已按"实现独有"登记，其中最后一条标了 `review_by: 2026-12-31`（M2 解决）。
+3. **本轮就抓到两处真实漂移**（这正是台账的价值）：
+   - Python 有 4 个 Swift 没有的验收用例（typer 自动选项、冻结二进制、动态补全、补全落点 vs `state-paths.json`）
+     → 前三条登记为"实现独有"，最后一条标 `review_by: 2026-12-31`（M2 解决）；
+   - 台账把 `app` 记成 `python: na`，而 **Python 其实也有 `app` 命令** → Python 侧 `ledger` job 当场报错，
+     已修正为 `parity`（并给非 macOS 的 `E_UNSUPPORTED` 语义留了注）。
+4. **三处门禁的分工**：
+   | 位置 | 跑什么 | 抓什么 |
+   |---|---|---|
+   | 父仓库 `check.py`（CI） | `parity.py` 静态 + 两个 harness 用例对齐（浅检出两个子模块） | 台账覆盖/状态/到期、判据漂移 |
+   | `OrzMCKit` CI `ledger` job | `parity.py --swift-caps` | 台账声明 vs Swift 实际 capabilities |
+   | `python` CI `ledger` job | `parity.py --python-caps` | 台账声明 vs Python 实际 capabilities |
 
 ## 5. 中期路线（M1–M3）
 
 | 里程碑 | 内容 | 收益 | 状态 |
 |---|---|---|---|
-| **M1** | 台账 + 校验器 + CI（本轮） | 不再"凭记忆决定两边改不改"；落后可见、可到期 | ☑ 已完成 |
+| **M1** | 台账 + 校验器 + **三处 CI 门禁**（父仓库 `check.py`、两个子模块各自的 `ledger` job） | 不再"凭记忆决定两边改不改"；落后可见、可到期；**台账与真实 capabilities 双向对账** | ☑ 已完成 |
 | **M2** | **共享验收 harness**：`scripts/accept/cli.py` 放父仓库，两侧 CI 通过 checkout 父仓库调用 | 少维护 ~750 行；判据真正只有一份；独有用例用 `--only`/条件表达 | ☐ 待做（review_by 2026-12-31） |
 | **M3** | **Python 作发行通道**：`orzmc` (PyPI) 负责装/升级 Swift 二进制并**转发**命令（自研 shim，非重写引擎） | 功能只有一份；PyPI/uvx 生态保留；Windows/Linux 用户拿到的就是 Swift 实现 | ☐ 待评估（前置：Windows arm64 资产 + 全平台资产齐） |
 

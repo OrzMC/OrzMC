@@ -260,6 +260,14 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - **本轮就抓到真漂移**：Python harness 有 4 个 Swift 没有的用例（typer 自动选项 / 冻结二进制 / 动态补全 /
   补全落点 vs `state-paths.json`）→ 前三条登记为实现独有，最后一条给 M2（共享 harness）定了 `review_by: 2026-12-31`。
 
+**三处门禁已就位**（都真跑，不是摆设）：
+- 父仓库 `check.py` → `parity.py` 静态校验 + 两个 harness 用例对齐（CI 里浅检出两个子模块）；
+- `OrzMCKit` CI `ledger` job → `parity.py --swift-caps`；
+- `python` CI `ledger` job → `parity.py --python-caps`。
+
+**当场抓到两处真漂移**：① Python 独有 4 个验收用例（已登记，其中 1 条定了 M2 的 review_by）；
+② 台账把 `app` 写成 `python: na`，而 Python 其实也有 `app` → Python 侧 ledger job 报错，已修正为 `parity`。
+
 **M2 待做**：把两个 `accept_cli.py`（842 + 724 行）合并成父仓库 `scripts/accept/cli.py`，两侧 CI 通过 checkout 父仓库调用。
 
 ### 2026-10-18 — pi（Windows W3–W6 完成并发布：v0.15.0 真机验证通过）
