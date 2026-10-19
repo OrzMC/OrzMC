@@ -76,6 +76,19 @@ def check_reference() -> bool:
     return True
 
 
+def check_parity_ledger() -> bool:
+    """两套 CLI 的能力台账（`docs/spec/parity.json`，策略见 `docs/two-cli-strategy.md`）。"""
+    script = REPO / "scripts" / "verify" / "parity.py"
+    proc = subprocess.run([sys.executable, str(script)], capture_output=True, text=True)
+    out = (proc.stdout + proc.stderr).strip()
+    if proc.returncode != 0:
+        fail("两套 CLI 的能力台账不一致")
+        print(out[-2000:])
+        return False
+    print(out.splitlines()[-1] if out else "[ok] 能力台账")
+    return True
+
+
 def check_surface_manifest() -> bool:
     script = REPO / "scripts" / "verify" / "surface.py"
     proc = subprocess.run(
@@ -139,7 +152,13 @@ def main() -> int:
     ap.add_argument("--remote", action="store_true", help="追加远端指针存在性检查（需网络）")
     args = ap.parse_args()
 
-    results = [check_registry(), check_reference(), check_surface_manifest(), check_compliance()]
+    results = [
+        check_registry(),
+        check_reference(),
+        check_surface_manifest(),
+        check_parity_ledger(),
+        check_compliance(),
+    ]
     if args.remote:
         results.append(check_remote())
     return 0 if all(results) else 1

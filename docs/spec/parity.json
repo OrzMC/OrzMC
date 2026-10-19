@@ -1,0 +1,114 @@
+{
+  "schema": 1,
+  "specVersion": "0.1",
+  "status": "生效中",
+  "note": "两套 CLI 并行期的**能力台账**（策略见 docs/two-cli-strategy.md）。每个 manifest 命令都必须在此登记：谁是 lead（唯一实现新功能的一侧）、另一侧处在什么状态。`behind` 必须写 reason + review_by（到期未处理 → CI 失败），`parity` 由实现侧 capabilities 校验。",
+  "rules": {
+    "lead": "新功能只在这一侧实现；另一侧要么跟随，要么登记 behind。",
+    "parityValues": [
+      "parity",
+      "behind",
+      "lead",
+      "na"
+    ]
+  },
+  "commands": {
+    "client": {
+      "lead": "swift",
+      "python": "parity",
+      "swift": "lead",
+      "note": "引擎语义（下载/启动/认证）以 Swift `Game` 为准；Python 只在修复平台缺陷时跟随。"
+    },
+    "server": {
+      "lead": "swift",
+      "python": "parity",
+      "swift": "lead",
+      "note": "同 client：部署/生命周期语义以 Swift 为准。"
+    },
+    "plugin": {
+      "lead": "python",
+      "python": "lead",
+      "swift": "parity",
+      "note": "Hangar 搜索/下载暂以 Python 为 lead（Swift 侧只是兼容实现）。"
+    },
+    "list": {
+      "lead": "swift",
+      "python": "parity",
+      "swift": "lead"
+    },
+    "remove": {
+      "lead": "swift",
+      "python": "parity",
+      "swift": "lead",
+      "note": "非交互需 --yes（E_CANCELLED/130）两侧一致。"
+    },
+    "backup": {
+      "lead": "swift",
+      "python": "parity",
+      "swift": "lead",
+      "note": "Windows 走内置 tar.exe，Linux 需系统 zip，macOS 自带 zip。"
+    },
+    "update": {
+      "lead": "swift",
+      "python": "parity",
+      "swift": "lead",
+      "note": "自升级按平台：资产名/魔数/替换方式各异（Win 为 zip + 改名替换）。"
+    },
+    "uninstall": {
+      "lead": "swift",
+      "python": "parity",
+      "swift": "lead"
+    },
+    "app": {
+      "lead": "swift",
+      "python": "na",
+      "swift": "lead",
+      "note": "macOS 专属（安装/打开 GUI .app）；Python CLI 没有该命令，非 macOS 上 Swift 返回 E_UNSUPPORTED。"
+    },
+    "completion": {
+      "lead": "swift",
+      "python": "parity",
+      "swift": "lead",
+      "note": "F6：PowerShell 只生成脚本、不落盘；install 只认 bash/zsh/fish。"
+    },
+    "capabilities": {
+      "lead": "swift",
+      "python": "parity",
+      "swift": "lead"
+    },
+    "mcp": {
+      "lead": "swift",
+      "python": "parity",
+      "swift": "lead",
+      "note": "stdio JSON-RPC 2.0；工具集相同，只暴露非破坏性命令。"
+    },
+    "version": {
+      "lead": "swift",
+      "python": "parity",
+      "swift": "lead"
+    }
+  },
+  "sharedArtifacts": {
+    "note": "两边**只能有一份**的共用件；漂移由 CI 检查。",
+    "spec": "docs/spec/",
+    "fixtures": "docs/spec/fixtures/",
+    "harnessCases": {
+      "note": "两侧 scripts/accept_cli.py 的用例集合必须一致；确属实现独有的用例在此登记（带原因），未登记即 CI 失败。",
+      "pythonOnly": {
+        "completion/typer-auto-options-are-gone": "typer 专属：Swift 没有 typer 的 --install-completion/--show-completion 自动选项。",
+        "frozen/completion-install-does-not-crash": "冻结二进制专属：PyInstaller 打包产物才有 shellingham 动态导入问题。",
+        "completion/dynamic-completion-dispatch": "click/typer 的 _ORZMC_COMPLETE 动态补全通路，Swift 侧无此机制（ConsoleKit 直接渲染静态脚本）。",
+        "completion/install-paths-match-state-paths": "规范防漂移用例：目前只有 Python harness 支持 --state-paths；M2 共享 harness 后两侧自动覆盖。"
+      },
+      "swiftOnly": {}
+    },
+    "knownDrift": [
+      {
+        "item": "accept_cli.py 实现（两份）",
+        "reason": "暂未合并到父仓库共享脚本：两侧各自依赖不同（Python 走 uv，Swift 走 release 构建）。",
+        "plan": "中期迁到父仓库 scripts/accept/cli.py，子模块 CI 通过 checkout 父仓库调用（见 docs/two-cli-strategy.md M2）。",
+        "review_by": "2026-12-31"
+      }
+    ]
+  }
+}

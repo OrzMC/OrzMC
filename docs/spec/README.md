@@ -6,6 +6,12 @@
 
 ---
 
+## 两套实现的并行台账
+
+- [`parity.json`](parity.json)：每个命令的 `lead`（新功能只在哪侧写）、另一侧状态（`parity`/`behind`/`na`）、
+  `behind` 的 `reason` 与 `review_by`。由 `scripts/verify/parity.py` 校验（父仓库 CI），
+  策略与中期路线见 [`../two-cli-strategy.md`](../two-cli-strategy.md)。
+
 ## 1. 这个规范是什么
 
 OrzMC 的工具产品（见 [`../product-architecture.md`](../product-architecture.md) §1.2）目标是

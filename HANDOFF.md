@@ -60,7 +60,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **状态** | 🟢 一份规范 + 多实现 + 前端共用核心；一致性套件 **76/76**（三适配器全绿）；`--auth` 两端**离线**链路就绪，但 **Game Service API 审核被拒 → 真实登录不可用**；`orzmc mcp` 两端就绪；命令面 **两侧 0 偏差且 `--strict` 已进 CI**（含 enum 比对）；**元数据缓存已统一到 `<root>/cache`**；**最近发布**：Python `2.11.0` / Swift **`v0.11.1`** |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | **D14.1 判据已基本齐**：Linux ✅（v0.14.0 起）、Windows ✅（v0.15.0 起，真机验证）、macOS ✅ → 剩余 **6.6「Python CLI 停迭代」**（把 Python 置为冻结/维护模式，`docs/spec` 标注 Swift 为唯一实现）。Windows 侧待补：`orzmc app` 的 `E_UNSUPPORTED` 文案、arm64 资产、`install.ps1` 进站点文档。**主线仍是 D14 跨平台收敛**：Linux 侧**已完工**（6.1–6.4 + 发布后自动验收全绿；v0.14.0 起有 `orzmc-linux-*` 资产）；下一步 **6.5 Windows**（`WinSDK` 分支 / `install.ps1` / 内置 zip-unzip），之后 6.6 Python 停迭代。迭代方法见 [`docs/iteration-efficiency.md`](docs/iteration-efficiency.md)。⓪ ~~合并分支 / 发版~~ **已完成**（2026-10-18）：Python **2.12.0** 与 Swift **0.13.0** 均已发布（Release 资产 + PyPI / 升级须知已进 Release notes）；用**已发布**的 `orzmc-macos-x86_64` 复跑 CLI 验收 24/24。① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**已定：暂停，等 Mojang 第 2 次申请邮件回复**（不提前做，避免返工）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**；③ 认证路线（A. authlib-injector / B. BYO / C. 降级）**等回信后再拍板**，不提前动工 |
+| **下一步** | **两套 CLI 并行期治理已就位**（`docs/two-cli-strategy.md` + `parity.json` + CI 校验）；中期 **M2 共享验收 harness**（review_by 2026-12-31）、**M3 Python 作发行通道**（前置：Windows arm64 资产）。**D14.1 判据已基本齐**：Linux ✅（v0.14.0 起）、Windows ✅（v0.15.0 起，真机验证）、macOS ✅ → 剩余 **6.6「Python CLI 停迭代」**（把 Python 置为冻结/维护模式，`docs/spec` 标注 Swift 为唯一实现）。Windows 侧待补：`orzmc app` 的 `E_UNSUPPORTED` 文案、arm64 资产、`install.ps1` 进站点文档。**主线仍是 D14 跨平台收敛**：Linux 侧**已完工**（6.1–6.4 + 发布后自动验收全绿；v0.14.0 起有 `orzmc-linux-*` 资产）；下一步 **6.5 Windows**（`WinSDK` 分支 / `install.ps1` / 内置 zip-unzip），之后 6.6 Python 停迭代。迭代方法见 [`docs/iteration-efficiency.md`](docs/iteration-efficiency.md)。⓪ ~~合并分支 / 发版~~ **已完成**（2026-10-18）：Python **2.12.0** 与 Swift **0.13.0** 均已发布（Release 资产 + PyPI / 升级须知已进 Release notes）；用**已发布**的 `orzmc-macos-x86_64` 复跑 CLI 验收 24/24。① ~~App Phase A/B~~ **均已合并并 bump**（A：`0d36e26`/`23b4130`；B：python `3974436`、OrzMCKit `329230f`、app `50b08a6`，已发 Swift CLI `v0.12.0`）；剩余 Phase C（GUI 认证 UI）**已定：暂停，等 Mojang 第 2 次申请邮件回复**（不提前做，避免返工）；② **第 2 次申请已于 2026-10-17 提交，等邮件结果**；③ 认证路线（A. authlib-injector / B. BYO / C. 降级）**等回信后再拍板**，不提前动工 |
 
 ## 2. 状态快照（Repo State）
 
@@ -244,6 +244,23 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-18 — pi（两套 CLI 并行策略 + 能力台账）
+
+**用户决策**：Python CLI 与 Swift CLI **先并行**，找更合理的关系、降低重复开发。
+
+**结论（写进 [`docs/two-cli-strategy.md`](docs/two-cli-strategy.md)）**：
+- 采用 **B：并行 + 单一主导 + 台账**（现在），**M3：Python 作发行通道、功能委托 Swift**（中期目标）；
+- 规则 R1–R5：规范先行 / **一个功能只在一侧写** / 平台差异归平台侧 / 共用件只有一份 / 落后要交差；
+- `lead` 分工：引擎语义与 CLI 契约以 **Swift** 为准；`plugin` 与 PyPI 分发以 **Python** 为准；`app` 是 Python 的 `na`。
+
+**已落地机制**：
+- `docs/spec/parity.json`（13 命令台账）+ `scripts/verify/parity.py`（已接 `check.py` → 父仓库 CI）：
+  覆盖率、状态自洽、`behind` 到期、**两个验收 harness 用例集合对齐**、可选 capabilities 反向校验。
+- **本轮就抓到真漂移**：Python harness 有 4 个 Swift 没有的用例（typer 自动选项 / 冻结二进制 / 动态补全 /
+  补全落点 vs `state-paths.json`）→ 前三条登记为实现独有，最后一条给 M2（共享 harness）定了 `review_by: 2026-12-31`。
+
+**M2 待做**：把两个 `accept_cli.py`（842 + 724 行）合并成父仓库 `scripts/accept/cli.py`，两侧 CI 通过 checkout 父仓库调用。
 
 ### 2026-10-18 — pi（Windows W3–W6 完成并发布：v0.15.0 真机验证通过）
 

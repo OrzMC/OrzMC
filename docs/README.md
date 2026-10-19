@@ -26,6 +26,7 @@
 |:--|:--|:--|:--|
 | [product-architecture.md](product-architecture.md) | 现行 | **产品架构**：仓库角色地图、分层模型（L0 规范 / L1 引擎 / L2 前端 / L3 产品伞）、引擎六阶段、**允许依赖方向与禁止事项**、治理与已知差异 | docs/ |
 | [product-unification-plan.md](product-unification-plan.md) | 草案 | 客户端/服务端工具（`python` × `app`）统一化推进计划：已核验事实、决策 D1–D9、Phase 0–5、开放问题、上下文包 | docs/ |
+| [two-cli-strategy.md](two-cli-strategy.md) | 生效中 | **两套 CLI 并行策略**：四种模型对比、并行期规则 R1–R5、`lead` 分工表、台账机制、中期路线 M1–M3（Python 作发行通道） | docs/ |
 | [windows-port.md](windows-port.md) | 进行中 | **Windows 移植（Phase 6.5）**：8 轮探针的失败点与处理、冒烟结果、剩余 W1–W6、CI 前提（windows-2022 + Swift 6.2） | docs/ |
 | [iteration-efficiency.md](iteration-efficiency.md) | 生效中 | **迭代效率**：跨平台推进的实测耗时、根因（反馈回路太长）、已落地措施（秒级可移植性检查 / CI 缓存 / 本地容器脚本 / 发布后自动验收）与建议 | docs/ |
 | [spec/README.md](spec/README.md) | 草案 | **语言无关规范**（`orzmc-spec` 雏形）：定位、原则、实现映射、已知差异 | docs/spec/ |
