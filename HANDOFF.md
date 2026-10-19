@@ -245,6 +245,23 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-19 — pi（M2 落地：验收判据收敛成一份，并抓出 Swift 3 个真 bug）
+
+**M2（`docs/two-cli-strategy.md`）完成**：两个 `accept_cli.py`（842 + 724 行）→ 父仓库
+`scripts/accept/cli.py` 一份；两侧 CI 稀疏检出父仓库调用（python 的 `quality`/`binary`、OrzMCKit 的
+`cli-acceptance`/`linux`/`verify-linux`），本地副本删除。`--frozen` 表达冻结二进制专属用例。
+
+**上来就抓到 Swift 侧 3 个真 bug（已修，`OrzMCKit#76`）**：
+
+| 现象 | 根因 | 修法 |
+|---|---|---|
+| `--json client -m nope -v 1.20.4` **90 秒超时** | 非法内存值一路带到下载阶段（先联网） | `Game.MemorySpec` 前置校验 → `E_USAGE`（文案与 Python 一致） |
+| `--json client -v 1.20.4 -j 0` **挂住** | 并发数未校验 | `Game.LaunchOptionRules`（1–64）→ `E_USAGE` |
+| 补全 rc 行缺 `# added by orzmc` | 与 Python 不一致（幂等识别靠标记） | 补齐标记 |
+
+**验证**：`ssh air` + 共享脚本对 Swift **22/22**；python `quality` 源码模式 **22/22**；
+`parity.py` 变为「共享脚本就位 + 两侧 CI 必须引用 + 不许引用旧副本」。
+
 ### 2026-10-19 — pi（发布 dry-run 实测通过）
 
 对 `v0.15.0` 实跑 `gh workflow run release.yml -f tag=v0.15.0 -f dry-run=true`：

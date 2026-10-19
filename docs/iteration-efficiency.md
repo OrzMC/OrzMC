@@ -179,6 +179,7 @@ scripts/air/run.sh accept    # + release 构建 + CLI 验收
 `gh workflow run release.yml -f tag=vX.Y.Z -f dry-run=true`，绿了再正式 dispatch（不带 `dry-run`）。
 | **parity 台账 + 三处 CI 门禁** | `docs/spec/parity.json` / `scripts/verify/parity.py` | 不再"凭记忆决定两边都改"（见 `two-cli-strategy.md`） |
 | **推前验证钩子（pre-push）** | `scripts/dev/prepush.sh` + `scripts/dev/install-hooks.sh` | 把 W1（每推一次排 3.3 分钟）变成 **20–27 秒**；实测 `OrzMCKit` 一次 = 可移植性 1s + air 构建/单测 19–26s |
+| **验收判据只有一份（M2）** | `scripts/accept/cli.py`（父仓库），两侧 CI 稀疏检出调用 | 少维护 1566 → 870 行；同一份断言同时压两个实现，落地当天就抓出 Swift 侧 3 个真 bug |
 
 ## 3.7 流程规则（写进协作约定，按收益排序）
 
