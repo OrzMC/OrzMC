@@ -97,9 +97,10 @@ def check_statuses(ledger: dict) -> None:
                     raise Failure(f"{name}: {side}=behind 已过期（review_by {review}），该补齐或改台账")
 
 
-def harness_cases(path: Path) -> set[tuple[str, str]]:
+def harness_cases(path: Path) -> set[tuple[str, str]] | None:
+    """读一个验收脚本的用例集合；文件不存在（如父仓库 CI 未检出子模块）返回 None。"""
     if not path.exists():
-        raise Failure(f"缺验收脚本: {path.relative_to(REPO)}")
+        return None
     cases: set[tuple[str, str]] = set()
     for line in path.read_text(encoding="utf-8").splitlines():
         match = CASE_RE.match(line.strip())
@@ -123,6 +124,12 @@ def allowed_exclusive(ledger: dict) -> dict[str, set[tuple[str, str]]]:
 
 def check_harness_parity(ledger: dict) -> str:
     sets = {side: harness_cases(path) for side, path in HARNESSES.items()}
+    missing = [side for side, value in sets.items() if value is None]
+    if missing:
+        # 父仓库 CI 默认不检出子模块：此时跳过（与 `sync_compliance.py --check` 的"跳过未检出"一致），
+        # 本地/带子模块的 CI 仍会真校验。
+        return f"验收用例对齐跳过（未检出子模块: {', '.join(missing)}）"
+    assert all(value is not None for value in sets.values())
     allowed = allowed_exclusive(ledger)
     problems: list[str] = []
     for side, other in (("python", "swift"), ("swift", "python")):

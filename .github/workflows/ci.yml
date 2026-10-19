@@ -16,5 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 只检出两个「两套 CLI」相关的子模块（浅克隆），用于校验验收 harness 用例对齐；
+      # 21 个全检出太慢，而这两个正是 `scripts/verify/parity.py` 要读的。
+      - name: Checkout CLI harness sources
+        run: git submodule update --init --depth 1 python swift/lib/OrzMCKit
+
       - name: Verify composition + conformance reference
         run: python3 scripts/verify/check.py
