@@ -93,20 +93,17 @@
     "spec": "docs/spec/",
     "fixtures": "docs/spec/fixtures/",
     "harnessCases": {
-      "note": "两侧 scripts/accept_cli.py 的用例集合必须一致；确属实现独有的用例在此登记（带原因），未登记即 CI 失败。",
-      "pythonOnly": {
-        "completion/typer-auto-options-are-gone": "typer 专属：Swift 没有 typer 的 --install-completion/--show-completion 自动选项。",
-        "frozen/completion-install-does-not-crash": "冻结二进制专属：PyInstaller 打包产物才有 shellingham 动态导入问题。",
-        "completion/dynamic-completion-dispatch": "click/typer 的 _ORZMC_COMPLETE 动态补全通路，Swift 侧无此机制（ConsoleKit 直接渲染静态脚本）。",
-        "completion/install-paths-match-state-paths": "规范防漂移用例：目前只有 Python harness 支持 --state-paths；M2 共享 harness 后两侧自动覆盖。"
-      },
-      "swiftOnly": {}
+      "note": "M2 已落地：验收脚本**只有一份**——父仓库 `scripts/accept/cli.py`，两侧 CI 通过稀疏检出父仓库调用；实现独有通路用 `--frozen` 开关表达（PyInstaller 专属），不再各自维护副本。",
+      "frozenOnly": {
+        "completion/dynamic-completion-dispatch": "click/typer 的 _ORZMC_COMPLETE 动态补全通路，仅冻结二进制有意义。",
+        "frozen/completion-install-does-not-crash": "PyInstaller 打包产物专属（shellingham 动态导入问题）。"
+      }
     },
     "knownDrift": [
       {
-        "item": "accept_cli.py 实现（两份）",
-        "reason": "暂未合并到父仓库共享脚本：两侧各自依赖不同（Python 走 uv，Swift 走 release 构建）。",
-        "plan": "中期迁到父仓库 scripts/accept/cli.py，子模块 CI 通过 checkout 父仓库调用（见 docs/two-cli-strategy.md M2）。",
+        "item": "Windows arm64 资产",
+        "reason": "release 目前只出 windows-x86_64（runner windows-2022 + Swift x64 工具链）；arm64 需 windows-11-arm + Swift arm64。",
+        "plan": "M3（Python 作发行通道）的前置条件之一；届时一并评估。",
         "review_by": "2026-12-31"
       }
     ]
