@@ -245,6 +245,24 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-19 — pi（迭代成本取证 + 三项 CI 优化）
+
+**取证（GitHub API，不是估算）**：OrzMCKit 一天 **CI 58 次 / 257 分钟**、**Windows Probe 20 次 / 117 分钟**、
+**Release 7 次 / 76 分钟**（同一 tag 重发 3 次），父仓库 15 次（各 10 秒）。
+单次 job：`windows` **13:15**、`linux` 2:11、`test` 2:02、`conformance` 1:23、`cli-acceptance` 1:16、`portability` 4 秒。
+
+**浪费的六个模式**：W1 每推一个小修跑满 6 个 job（`feat/windows-probe` 推了 14 次）· W2 探针一次只测一个组合 ·
+W3 发布后才暴露打包问题导致重发 · W4 release-please 分支跑满 CI（11 次）· W5 纯文档/指针 bump 也跑 13 分钟的 Windows ·
+W6 同一改动验证 3 遍。
+
+**已落地**（两个子模块各一个 PR）：
+- 跳过 release-please 分支与纯文档 push；
+- **Windows job 只在源码/依赖/工作流变更时跑**（`git diff HEAD~1 HEAD -- Sources …`）→ 每次省 13 分钟；
+- **`release.yml` 支持 `dry-run`**（发布前排雷，替代"重发 3 次"）。
+
+**纪律**（写进 `AGENTS.md` §8.1.1 与 `docs/iteration-efficiency.md` §3.7）：推前先 `air` 验证（25 秒 vs 3.3 分钟）、
+攒改动一次推、探针用 matrix、发布先 dry-run、**指针可批量 bump**（同一次产品级变更）。
+
 ### 2026-10-18 — pi（两套 CLI 并行策略 + 能力台账）
 
 **用户决策**：Python CLI 与 Swift CLI **先并行**，找更合理的关系、降低重复开发。
