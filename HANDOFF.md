@@ -34,7 +34,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 > 一次提交只 bump 一个子模块（同一产品级变更可合并 bump，见 AGENTS §2）。
 >
 > **当前状态（2026-10-20）**
-> - **两套 CLI 并行**（用户决策：先并行，别冻结 Python）：`docs/two-cli-strategy.md` 定义规则，
+> - **两套 CLI 并行 + 同步迭代**（`docs/two-cli-strategy.md` 定义规则；§6 是分发口径），
 >   台账 `docs/spec/parity.json`，校验器 `scripts/verify/parity.py`（父仓库 CI + 两个子模块的 `ledger` job，三处都在跑）。
 > - **跨平台已齐（六类资产全部已发布、Linux 已自包含）**：`OrzMCKit v0.19.0` 起 `orzmc-linux-*`
 >   静态链接 Swift 运行时（无 `libswift*` 依赖、glibc 2.35、体积 62–65 MB），`verify-linux` 改在干净
@@ -42,14 +42,13 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 >   Windows 三个坑（工具链架构 / MSVC 库架构 / STL1000 工具集版本）的解法见 `docs/windows-port.md` §3.5。
 >   台账 `sharedArtifacts.knownDrift` 已**清空**。
 > - **一致性 79/79**（新增 `state-paths/*` 三例：两侧实际上报落点 vs `state-paths.json`）。
-> - **M3 阶段 1 已落地（opt-in）**：PyPI 的 `orzmc` 可作发行通道——`ORZMC_RUNTIME=swift` 时转发给 Swift 真身
->   （首次自动下载 + SHA256 校验 + 落 `<stateDir>/bin/`），`orzmc runtime status|install` 管理真身。
->   **`2.17.0` 起默认判定已生效**：`pip` 新装走 swift，有安装记录（含一键安装器）仍走 python；
->   `ORZMC_RUNTIME=python|swift` 永远优先。Python 引擎进入 6 个月维护窗口（至 2027-04-20）。
-> - **正版登录：Mojang 第 2 次申请同样被拒（2026-10-20）** → 不再投第 3 次，转 authlib-injector / Yggdrasil。
-> - **验收判据只有一份**：父仓库 `scripts/accept/cli.py`，两侧 CI 稀疏检出调用。
-> - **迭代成本**：推前钩子 / `ssh air` 远端构建 / CI 跳过 release-please 与纯文档 push / `release.yml` dry-run。
-> - **最近发布**：`OrzMCKit v0.18.0`（六资产，首个带 Windows arm64）、`OrzPythonMC 2.17.1`。
+> - **分发口径（2026-10-20 决定，见 `docs/two-cli-strategy.md` §6）**：
+>   **Python 是实现主体、唯一对外分发渠道**（PyPI + 6 平台 PyInstaller 资产 + 一键安装器）；
+>   **Swift 与 Python 同步迭代**（命令面/行为继续对齐、台账仍是硬约束），但**不对外分发**
+>   （`release.yml` 一律发 pre-release、README 标注实验性）。
+>   `2.15–2.17` 试过的「`pip` 新装默认走 Swift」已在 `2.17.2` **回退**（默认 Python、零下载）；
+>   `ORZMC_RUNTIME=swift` 保留为实验开关。
+> - **正版登录：Mojang 两次拒绝（2026-10-17 / 10-20）** → 不再投第 3 次，转 authlib-injector / Yggdrasil（待定范围）。
 > - ⚠️ **别再把 release PR 整条跳过 CI**：`main` 的分支保护要求 `pr-title`/`quality`/`test (ubuntu-latest, x86_64)`，
 >   工作流不跑 = 必需检查永不上报 = release PR **永久 BLOCKED**（2026-10-19 实测，python #75 只能 admin 绕过，已修）。
 >
@@ -82,10 +81,10 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | **D14 跨平台收敛已收口**（macOS / Linux / Windows x64+arm64 全有构建链路）；**两套 CLI 并行期治理**（台账 + 三处 CI 校验 + M2 共享验收脚本）；迭代成本治理（推前钩子 / air 远端构建 / dry-run 发布）；`--auth` 仍被 **Mojang 审核拒绝（2026-10-17）** 阻塞 |
-| **状态** | 🟢 一份规范 + 两套实现（Swift 为 lead）+ 三个前端；一致性 **79/79**；命令面两侧 0 偏差（`--strict` 进 CI）；能力台账三处校验全绿、**`knownDrift` 已清空**；**最近发布**：`OrzMCKit v0.18.0`（六资产，含 Windows arm64）、`OrzPythonMC 2.17.1` |
+| **状态** | 🟢 一份规范 + 两套实现（Swift 为 lead）+ 三个前端；一致性 **79/79**；命令面两侧 0 偏差（`--strict` 进 CI）；能力台账三处校验全绿、**`knownDrift` 已清空**；**最近发布**：`OrzMCKit v0.18.0`（六资产，含 Windows arm64）、`OrzPythonMC 2.17.2` |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` + `docs/two-cli-strategy.md` + `docs/windows-port.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | **M3 阶段 2**：按 D-M3-1..5 拍板后决定是否把默认切到 `swift`（需升级须知 + 迁移窗口）。**正版登录改走 authlib-injector / Yggdrasil**（Mojang 两次拒绝，已停止申请）。详见 §4「下一会话起点（2026-10-20 M3）」 |
+| **下一步** | **Python 作为主力正常迭代**（两套 CLI 继续同步对齐）；`M3` 已归档。待做：正版登录改走 authlib-injector / Yggdrasil（需先定范围）、`auth.json` 跨进程写锁、`runtime` 真身损坏回滚。详见 §4「下一会话起点（2026-10-20 方向调整）」 |
 
 ## 2. 状态快照（Repo State）
 
@@ -190,52 +189,37 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 4. 下一步（Next Actions，增量、非阻塞）
 
-### ★ 下一会话起点（2026-10-20 M3 交接）
+### ★ 下一会话起点（2026-10-20 方向调整后）
 
-> 本轮把 **M3 阶段 1** 落地（opt-in 转发通道）、**Windows arm64 资产发布**、**`orzmc app`/`state.paths` 契约**
-> 全部收口；Mojang 第 2 次申请被拒，正版登录改道。细节见 §5。
+> 本轮按新决定收口：**Python 是实现主体与唯一对外分发**，**Swift 同步迭代但不对外分发**（pre-release）。
+> `2.15–2.17` 的「默认走 Swift」实验已回退（`2.17.2`）；M3 归档。细节见 §5。
 
-**A. M3 阶段 2（要维护者拍板才能继续）**——评估与阶段 1 都在 `docs/two-cli-strategy.md` §5.1/§5.2
-- [ ] **D-M3-1**：是否把默认运行时从 `python` 切到 `swift`（软切已就绪：`ORZMC_RUNTIME=swift` 可先观察）。
-      切换必须配一版带「升级须知」的发版 + 迁移窗口。
-- [ ] **D-M3-2**：旧 Python 引擎的安全修复承诺期限（建议 M3 发布后 6 个月）。
-- [x] ~~**D-M3-3** 真身落点~~ ✅ **已定（2026-10-20）**：混合方案——默认 `<stateDir>/bin/`，
-      但**优先复用已有原生 Swift 安装**（不下载第二份、不覆盖 `install.conf`）；R1–R5 见
-      `install-update.md` §10.1，实现见 `OrzPythonMC#86`。
-- [ ] **D-M3-4**：PyPI 的 6 平台 PyInstaller `binary` 通道是否下线（省一半发布矩阵）。
-- [x] ~~**D-M3-5** `orzmc` 库是否继续发版~~ ✅ **已定（2026-10-20）**：继续发，但明确定位为
-      「供 Python 程序调用的能力库」——`orzmc-app` 才是产品主路径（README + pyproject 已写明）。
-- 拍板前**不要**动默认行为（阶段 1 刻意不碰）。
+**A. Python 主力线（正常迭代，无阻塞）**
+- 按 `docs/spec/` 正常推进功能；两套 CLI 的行为对齐仍走台账 + 三处 CI 校验（`parity.json` 不变）。
+- 新功能按 `lead` 分工：引擎语义/CLI 契约 Swift 侧先行、Python 跟随；`plugin` 与分发以 Python 为准。
 
-**B. 正版登录（改道）**——Mojang 两次拒绝，规则已定：**不再投第 3 次**
-- [ ] 路线 A：**authlib-injector / Yggdrasil**（第三方认证服务器）。要先写规范：
-      令牌来源/存储（`auth.json` 已有 schema 可复用）、`client --auth` 的接线、
-      与 Microsoft 设备码流程的关系（互斥？并存？）、错误码 `E_AUTH*` 的映射。
-- [ ] 规范落 `docs/spec/auth.md` 新章节后，再按「一个功能只在一侧写」推进（Swift lead）。
+**B. 正版登录改道（需要先定范围，唯一需要拍板的）**
+- Mojang 两次拒绝（2026-10-17 / 2026-10-20）→ 按规则不再投第 3 次。
+- 待定：只支持"用户自填 authlib-injector / Yggdrasil 服务器地址"（轻），还是内置常见第三方认证（重）？
+  以及它与现有 `--auth`（微软设备码）并存还是替代。
+- 定了范围就写 `docs/spec/auth.md` 新一节（服务器地址 + 复用 `auth.json` + `E_AUTH*`），Swift lead、Python 跟随。
 
-**B2. ✅ Swift 资产自包含（2026-10-20 已修，`OrzMCKit v0.19.0`）**
-- [x] `build-linux` 改在 `swift:6.0-jammy`（glibc 2.35）+ `--static-swift-stdlib` + `-Xlinker -s`；
-      构建后断言 `ldd` 无 `libswift*`（探针矩阵确认 x64/arm64 都生效）。
-- [x] `verify-linux` 改**干净 `ubuntu:24.04`**（+binutils）：先断言自包含，再跑验收与安装器全链路
-      —— `v0.19.0` 实发在干净容器里全绿。
-- [x] 附带：自有依赖 `OrzSwiftLint` 加 `ORZSWIFTLINT_SKIP=1` 逃生阀（SwiftLint 预编译二进制要
-      GLIBC_2.38，在 jammy 上会中止构建），发布流水线用它构建产物，日常 CI 仍跑 lint。
-
-**C. 可选加固（非阻塞）**
+**C. 小加固（各 ~0.5 天，可并行）**
 - `auth.json` 跨进程写锁（`frontends.md` §7 待补第 3 条）。
-- `runtime` 的 Rust-free 降级：真身损坏（魔数/校验失败）时自动 `.bak` 回滚。
+- `runtime` 实验通道：真身损坏（魔数/校验失败）时自动回滚 `.bak` + 提示。
+- Swift Linux 体积（65 MB）继续探索压缩（`--gc-sections` / 评估去掉 ICU）；纯实验收益，不急。
 
 **接手时最容易踩的坑（更新）**
 1. **git 钩子不入版本库**：新机器必须 `scripts/dev/install-hooks.sh`。
 2. **`ssh air` 会休眠**：`ssh air true` 超时 → 先唤醒；构建优先 `scripts/air/run.sh`（14–24 秒）。
-3. **`parity.json` 是硬约束**：新命令必须同时改 `cli-surface.json`（manifest）+ `parity.json`（台账），
-   否则 `surface.py --strict` 在子模块 CI 红（本轮 `runtime` 就是这样：父仓库那条得先合，子模块 PR 才能绿）。
+3. **`parity.json` 是硬约束**（Swift 虽不对外分发，但**仍要同步迭代**，差异照样会让 CI 红）。
 4. **别用「跳过工作流」省 CI**：必需检查不上报 = PR 永久 BLOCKED。
 5. **dry-run 不要带旧 tag**（`release.yml` 用 `inputs.tag || github.ref` checkout）。
 6. **release-please 不为 `build:`/`docs:`/`ci:`/`chore:` 升版本**：要发就加 `Release-As: X.Y.Z` footer。
-7. **Python 侧 ruff 禁全角标点**（RUF002/RUF003）：中文注释/docstring 用半角 `, ( ) : ;`。
-8. **GitHub 用 `GITHUB_TOKEN` 建的 PR 不触发 `pull_request` 工作流** → release PR 没有 checks 是常态，
-   用 close/reopen 补触发（或配 `RELEASE_PLEASE_TOKEN`）。
+7. **凡是"直接跑 `orzmc`"的 CI/脚本都要钉 `ORZMC_RUNTIME=python`**（默认已是 Python，但钉住能防止实验开关误开）。
+8. **Python 侧 ruff 禁全角标点**（RUF002/RUF003）。
+9. **`GITHUB_TOKEN` 建的 PR 不触发 `pull_request` 工作流** → release PR 没 checks 是常态，close/reopen 补触发。
+10. **Swift 的 Release 是 pre-release**：`releases/latest` 不会指向它；实验通道（`runtime`）已改为列 Release 取最新。
 
 > **★ 下一会话起点（2026-10-15 交接）**：本地 `--auth` 离线部分（阶段 A/B/C，三适配器 73/73）与
 > **`orzmc mcp` server（两端）均已完成**。真实登录 E2E 等办卡/注册后再做（待办 A）；
@@ -316,6 +300,29 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-20 — pi（方向调整落地：Python 唯一对外分发，Swift 同步迭代但不分发）
+
+用户决定：**Python CLI 因体积 / 迭代速度 / 单二进制优势做对外分发主力**；**Swift CLI 保留、与 Python 同步迭代**
+（命令面/行为继续对齐），但**不对外分发**（选方案 B：继续发 **pre-release**、不宣传）；**M3 归档**。
+
+**⚠️ 先回退了一件已经在用户手里的行为**：`2.15–2.17` 让「`pip` 全新安装 → 默认下载 Swift 真身」
+（Linux 65 MB）—— 等于正在对外分发 Swift。`2.17.2` 已回退：
+
+| | 2.15–2.17.1 | 2.17.2 起 |
+|---|---|---|
+| 全新安装（无 `install.conf`） | 下载 Swift 真身（13–65 MB）后转发 | **Python 实现，零下载**（实测：不创建状态目录） |
+| `channel=wrapper` / `source=OrzMCKit` | swift | 仍 swift（用户自己装过，尊重选择） |
+| `ORZMC_RUNTIME=swift` | swift | 仍 swift（**实验开关**） |
+
+**Swift 侧**：`release.yml` 的 `gh release create/edit` 加 `--prerelease`（`releases/latest`、官网、安装器默认路径都不会指向它）；
+README 顶部加「实验性 / 不对外分发」提示、Install 小节提示需显式版本。
+**联动**：Python 的 `runtime` 实验通道改为**列 Release 取最新**（`releases/latest` 不再指向 pre-release），新增单测。
+
+**文档**：`two-cli-strategy.md` 新增 **§6 分发口径**（含实测依据与"为什么这么分工"）；`install-update.md` §10.1 整节
+降级为实验通道；`cli-comparison.md` 结论改为「Python 对外 / Swift 实验」；`AGENTS.md` 登记表与 §9 导航同步。
+
+**没有动的**：`parity.json` 与并行规则（**Swift 仍同步迭代**，差异照旧会让 CI 红）、PyInstaller 6 平台资产（保留）。
 
 ### 2026-10-20 — pi（修掉 Linux 自包含硬伤：静态链 + jammy 构建 + 干净容器验收）
 

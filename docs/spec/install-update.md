@@ -220,10 +220,13 @@
 
 ---
 
-## 10.1 运行时分发（wrapper 通道，M3）
+## 10.1 运行时分发（**实验通道**，默认关闭）
 
-> 目标（`docs/two-cli-strategy.md` §5.1 M3）：**PyPI 上的 `orzmc` 只做发行通道**——安装/升级
-> Swift 实现的真身并**转发**命令，功能语义仍然只有一份（Swift 侧）。
+> ⚠️ **定位（2026-10-20 决定）**：**Python 实现是实现主体、也是唯一对外分发的渠道**。
+> 本节描述的通道只是给维护者/实验者的入口：用 `ORZMC_RUNTIME=swift` **显式开启**才会解析/下载
+> Swift 实现并转发命令。默认（不设任何变量）**一律走 Python，且不会下载任何东西**。
+> Swift 实现与 Python 同步迭代，但其 Release 标为 **pre-release**、不对外宣传
+> （见 `docs/two-cli-strategy.md` §6）。
 
 **角色划分（对 F1 的裁定）**
 
@@ -236,32 +239,25 @@
 F1「PATH 上只有一个 `orzmc`」仍然成立：**只有 launcher 在 PATH 上**，payload 不在 PATH。
 两者是不同路径、不同职责，因此不构成"同时安装两份实现"。
 
-**开关（软切，默认关闭）**
+**开关**
 
 | 变量 | 值 | 行为 |
 |:--|:--|:--|
-| `ORZMC_RUNTIME` | `python` | **钉住** Python 实现（逃生阀，永远有效） |
-| `ORZMC_RUNTIME` | `swift` | 走 shim：解析/安装真身 → **转发** argv 与退出码 |
-| `ORZMC_RUNTIME` | 未设置 | 按下面的**默认判定**（D-M3-1，2026-10-20 生效） |
+| 未设置 | — | **Python 实现**（默认；不下载任何东西） |
+| `ORZMC_RUNTIME` | `python` | 显式钉住 Python 实现 |
+| `ORZMC_RUNTIME` | `swift` | **实验**：解析/安装真身 → 转发 argv 与退出码 |
 
-**默认判定（未设 `ORZMC_RUNTIME` 时，按顺序取自 `install.conf`）**
+**判定（未设 `ORZMC_RUNTIME` 时）**
 
-| 顺序 | 条件 | 判定 | 理由 |
+| 顺序 | 条件 | 判定 | 说明 |
 |:--|:--|:--|:--|
-| 1 | 没有 `install.conf` | **`swift`** | 典型 `pip install` **新装**:直接给唯一实现,不引入第二套 |
-| 2 | `channel=wrapper` | **`swift`** | 用户主动跑过 `runtime install`/走过 shim,说明要的是真身 |
-| 3 | `source` 指向 `OrzMC/OrzMCKit` | **`swift`** | 原生 Swift 安装(见 R1) |
-| 4 | 其余(有 `install.conf` 且 `source` 指向 OrzPythonMC) | **`python`** | **存量零打扰**:一键安装器装的(含**新装**)暂仍走 Python——不因升级被悄悄换实现 |
+| 1 | `ORZMC_RUNTIME=swift` | `swift` | **实验开关**，仅显式设置生效 |
+| 2 | `ORZMC_RUNTIME=python` | `python` | 显式钉住（与默认等价） |
+| 3 | 未设置 + `channel=wrapper` | `swift` | 用户自己跑过 `runtime install`，尊重已有选择 |
+| 4 | 未设置 + `source` 指向 `OrzMCKit` | `swift` | 用户自己装了 Swift 原生版，复用它（R1） |
+| 5 | 其余（**含全新安装**） | **`python`** | **默认**：不会因为"没装过"就去下载任何东西 |
 
-> 这就是 D-M3-1 的选择：**`pip` 新装直接单一实现；已有安装记录的一律不动**。
-> ⚠️ 注意第 4 条把「一键安装器」也算作存量：安装器目前装的是 **PyInstaller 二进制**，
-> 首次运行若再默认下载 Swift 真身等于让用户白下两遍。**解法在 D-M3-4**：把安装器改成直接装
-> Swift 二进制（`source=OrzMCKit` → 自动落到第 3 条），随后下线 PyInstaller 通道；
-> 在那之前，安装器用户想用单一实现就设 `ORZMC_RUNTIME=swift`。
-> 老用户想提前用上，设 `ORZMC_RUNTIME=swift`;想永久钉住 Python,设 `ORZMC_RUNTIME=python`。
->
-> **Python 引擎的维护窗口（D-M3-2）**：自默认切换版（`orzmc-app 2.17.0`）发布起 **6 个月**内，
-> Python 实现只修**安全 / 数据损坏 / 无法启动**这三类问题，不再开发新功能；到期归档并移除判定第 4 条的豁免。
+> `2.15.0`–`2.17.1` 曾让「全新安装 → swift」，该实验已于 `2.17.2` **回退**。
 
 **资产与校验**
 
@@ -306,7 +302,7 @@ F1「PATH 上只有一个 `orzmc`」仍然成立：**只有 launcher 在 PATH �
 
 - 台账（`docs/spec/parity.json`）：`runtime` 记为 **Python lead / Swift `na`**——它是发行通道的职责，
   Swift 侧不需要等价实现（真身自己就是被转发方）。
-- 上线时**不**下线 PyPI 的 6 平台 PyInstaller 资产（D-M3-4 未拍板）。
+- PyPI 的 6 平台 PyInstaller 资产是**对外分发的主渠道**，不下线（原 D-M3-4 排期作废）。
 
 ---
 

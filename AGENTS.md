@@ -114,7 +114,7 @@ git commit -m "docs: ..."
 | `plugin` | `OrzMC/OrzMCPlugin` | `main`（开发用 `develop`） | 自研 | PaperMC 核心插件（白名单/机器人/权限/维护） | ✅ |
 | `python` | `OrzMC/OrzPythonMC` | `main` | 自研 | `orzmc` CLI：客户端启动 / 服务端部署 | ✅ |
 | `swift/app` | `OrzMC/OrzMCApp` | `main` | 自研 | macOS/iOS 启动器（SwiftUI；引擎见 `swift/lib/OrzMCKit`） | — |
-| `swift/lib/OrzMCKit` | `OrzMC/OrzMCKit` | `main` | 自研 | Swift 引擎（`Game`/`Fabric`）+ `orzmc` CLI | — |
+| `swift/lib/OrzMCKit` | `OrzMC/OrzMCKit` | `main` | 自研 | Swift 引擎（`Game`/`Fabric`）+ `orzmc` CLI（**与 Python 同步迭代，但不对外分发**：Release 为 pre-release） | — |
 | `swift/lib/MojangAPI` | `OrzMC/MojangAPI` | `main` | 自研 | Mojang 元数据（清单 / version JSON / assets） | — |
 | `swift/lib/PaperMC` | `OrzMC/PaperMC` | `main` | 自研 | Paper 下载 / Hangar API | — |
 | `swift/lib/ExarotonAPI` | `OrzMC/ExarotonAPI` | `main` | 自研 | Exaroton API 客户端 | — |
@@ -303,6 +303,10 @@ scripts/air/run.sh sh '<cmd>'     # 远端自定义命令
 
 - [`HANDOFF.md`](HANDOFF.md) —— **跨会话/跨设备交接文档**：当前焦点、状态快照、下一步、
   会话日志、待决策。每次会话结束前更新它。
+- [`docs/two-cli-strategy.md`](docs/two-cli-strategy.md) —— 两套 CLI 的关系与**分发口径**（§6，2026-10-20）：
+  **Python 是实现主体、唯一对外分发**；**Swift 与 Python 同步迭代、但不对外分发**（Release 为 pre-release）。
+- [`docs/cli-comparison.md`](docs/cli-comparison.md) —— 两套实现的实测对比（启动/内存/独立运行/依赖/迭代/发布）
+  与选型依据；可复跑脚本 `scripts/bench/cli.py`。
 - [`docs/product-unification-plan.md`](docs/product-unification-plan.md) —— 客户端/服务端工具
   （`python` 与 `app`）统一化：一份规范 + 多套实现 + 多个前端 + 一个产品伞。**推进前先读该文件**，
   它记录了已核验事实、决策 D1–D6、Phase 0–5、开放问题与上下文包。
