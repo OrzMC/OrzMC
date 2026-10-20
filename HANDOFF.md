@@ -46,7 +46,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 > - **正版登录：Mojang 第 2 次申请同样被拒（2026-10-20）** → 不再投第 3 次，转 authlib-injector / Yggdrasil。
 > - **验收判据只有一份**：父仓库 `scripts/accept/cli.py`，两侧 CI 稀疏检出调用。
 > - **迭代成本**：推前钩子 / `ssh air` 远端构建 / CI 跳过 release-please 与纯文档 push / `release.yml` dry-run。
-> - **最近发布**：`OrzMCKit v0.18.0`（六资产，首个带 Windows arm64）、`OrzPythonMC 2.14.0`。
+> - **最近发布**：`OrzMCKit v0.18.0`（六资产，首个带 Windows arm64）、`OrzPythonMC 2.15.0`。
 > - ⚠️ **别再把 release PR 整条跳过 CI**：`main` 的分支保护要求 `pr-title`/`quality`/`test (ubuntu-latest, x86_64)`，
 >   工作流不跑 = 必需检查永不上报 = release PR **永久 BLOCKED**（2026-10-19 实测，python #75 只能 admin 绕过，已修）。
 >
@@ -79,7 +79,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | **D14 跨平台收敛已收口**（macOS / Linux / Windows x64+arm64 全有构建链路）；**两套 CLI 并行期治理**（台账 + 三处 CI 校验 + M2 共享验收脚本）；迭代成本治理（推前钩子 / air 远端构建 / dry-run 发布）；`--auth` 仍被 **Mojang 审核拒绝（2026-10-17）** 阻塞 |
-| **状态** | 🟢 一份规范 + 两套实现（Swift 为 lead）+ 三个前端；一致性 **79/79**；命令面两侧 0 偏差（`--strict` 进 CI）；能力台账三处校验全绿、**`knownDrift` 已清空**；**最近发布**：`OrzMCKit v0.18.0`（六资产，含 Windows arm64）、`OrzPythonMC 2.14.0` |
+| **状态** | 🟢 一份规范 + 两套实现（Swift 为 lead）+ 三个前端；一致性 **79/79**；命令面两侧 0 偏差（`--strict` 进 CI）；能力台账三处校验全绿、**`knownDrift` 已清空**；**最近发布**：`OrzMCKit v0.18.0`（六资产，含 Windows arm64）、`OrzPythonMC 2.15.0` |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` + `docs/two-cli-strategy.md` + `docs/windows-port.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
 | **下一步** | **M3 阶段 2**：按 D-M3-1..5 拍板后决定是否把默认切到 `swift`（需升级须知 + 迁移窗口）。**正版登录改走 authlib-injector / Yggdrasil**（Mojang 两次拒绝，已停止申请）。详见 §4「下一会话起点（2026-10-20 M3）」 |
@@ -102,7 +102,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `90c97d8` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**`feat(conformance)`**：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；CI 修回归（release PR 重新上报必需检查）；`ledger` 台账校验 + 命令面 `--strict` |
+| `python` | `05800af` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.15.0 已发布（首个带 M3 runtime shim，opt-in）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；CI 修回归（release PR 重新上报必需检查）；`ledger` 台账校验 + 命令面 `--strict` |
 | `swift/app` | `efbb665` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
 | `swift/lib/OrzMCKit` | `cee4697` | **Swift 引擎 + `orzmc` CLI**；**`v0.18.0` 已发布 = 六类资产齐**（macOS×2 / Linux×2 / **windows-{x86_64,arm64}.zip**）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
