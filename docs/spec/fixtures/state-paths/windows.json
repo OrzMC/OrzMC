@@ -1,0 +1,26 @@
+{
+  "specVersion": "0.1",
+  "id": "state-paths/windows",
+  "area": "state-paths",
+  "description": "Windows 形态：%LOCALAPPDATA%\\orzmc / %USERPROFILE%\\minecraft（分隔符在断言里归一成 /）",
+  "given": {
+    "operation": "statePaths",
+    "platform": {
+      "os": "windows",
+      "arch": "x86_64"
+    },
+    "env": {
+      "USERPROFILE": "C:/Users/fixture",
+      "LOCALAPPDATA": "C:/Users/fixture/AppData/Local"
+    }
+  },
+  "expect": {
+    "stateDir": "C:/Users/fixture/AppData/Local/orzmc",
+    "installRecord": "C:/Users/fixture/AppData/Local/orzmc/install.conf",
+    "authSession": "C:/Users/fixture/AppData/Local/orzmc/auth.json",
+    "gameRoot": "C:/Users/fixture/minecraft",
+    "absent": [
+      "completion"
+    ]
+  }
+}

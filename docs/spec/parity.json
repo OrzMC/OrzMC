@@ -63,7 +63,7 @@
       "lead": "swift",
       "python": "parity",
       "swift": "lead",
-      "note": "macOS 专属能力（安装/打开 GUI .app）。两侧都有该命令；非 macOS 上应返回 E_UNSUPPORTED（Swift 已实现，Python 见 orzmc_app/cli/app.py）。"
+      "note": "macOS 专属能力（安装/打开 GUI .app）。两侧都有该命令；**非 macOS 上四个子命令一律 E_UNSUPPORTED + 固定文案**（install-update.md §8），由共享验收用例 contract/app-unsupported-outside-macos 在 Linux/Windows CI 上断言。"
     },
     "completion": {
       "lead": "swift",

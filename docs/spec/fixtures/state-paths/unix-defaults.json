@@ -1,0 +1,27 @@
+{
+  "specVersion": "0.1",
+  "id": "state-paths/unix-defaults",
+  "area": "state-paths",
+  "description": "没有 XDG_STATE_HOME 时回退 $HOME/.local/state（同一条模板的默认分支）",
+  "given": {
+    "operation": "statePaths",
+    "platform": {
+      "os": "osx",
+      "arch": "arm64"
+    },
+    "env": {
+      "HOME": "/tmp/orzmc-fixture/home"
+    }
+  },
+  "expect": {
+    "stateDir": "/tmp/orzmc-fixture/home/.local/state/orzmc",
+    "installRecord": "/tmp/orzmc-fixture/home/.local/state/orzmc/install.conf",
+    "authSession": "/tmp/orzmc-fixture/home/.local/state/orzmc/auth.json",
+    "gameRoot": "/tmp/orzmc-fixture/home/minecraft",
+    "completion": {
+      "bash": "/tmp/orzmc-fixture/home/.local/share/bash-completion/completions/orzmc",
+      "zsh": "/tmp/orzmc-fixture/home/.zsh/completions/_orzmc",
+      "fish": "/tmp/orzmc-fixture/home/.config/fish/completions/orzmc.fish"
+    }
+  }
+}

@@ -71,9 +71,9 @@ python3 scripts/conformance/run.py --adapter "<cmd>" --filter cache
 
 | 适配器 | 状态 |
 |:--|:--:|
-| 规范参考 `scripts/conformance/reference.py` | ☑ 76/76 |
-| Python `python/orzmc/tests/conformance/adapter.py` | ☑ 76/76 |
-| Swift `OrzMCKit` | ☑ 76/76 |
+| 规范参考 `scripts/conformance/reference.py` | ☑ 79/79 |
+| Python `python/orzmc/tests/conformance/adapter.py` | ☑ 79/79 |
+| Swift `OrzMCKit` | ☑ 79/79 |
 
 ## 待补（Phase 2 后续）
 

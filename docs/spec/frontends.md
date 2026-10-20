@@ -145,15 +145,19 @@
 
 **待补（按优先级）**
 
-1. **`state.paths` conformance 用例**：两侧上报实际使用的状态目录 / 记录文件 / 认证文件 / 默认游戏根 /
-   补全路径，与 [`state-paths.json`](state-paths.json) 比对 → 防路径漂移。
+1. ~~**`state.paths` conformance 用例**~~ ✅ **已落地（2026-10-20）**：新增 `statePaths` 操作 +
+   `fixtures/state-paths/{unix-xdg,unix-defaults,windows}`，三个适配器 **79/79**。
+   两侧上报状态目录 / `install.conf` / `auth.json` / 默认游戏根 / 补全落点，参考适配器**直接读**
+   `state-paths.json` 做模板替换（比对对象是规范文件本身）。
+   Swift 侧顺带把 `InstallManifest.defaultPath` / `AuthStore.path` / `CompletionCommand` 三处手写落点
+   收敛到 `Game.StatePaths`；Python 侧给 `default_state_dir()` 加了 `environ` / `is_windows` 接缝。
 2. ~~**`surface` 字段**~~ ✅ **已落地**（2026-10-17）：Python `InstallManifest.surface` + `docs/install.sh`/`install.ps1`
    与 Swift `Game.InstallManifest.surface` + `scripts/install.sh` 都读 `ORZMC_SURFACE`（缺省 `cli`）并写入；
    GUI 的「安装 CLI」入口以 `ORZMC_SURFACE=gui` 调用官方安装器。语义见 [`install-update.md`](install-update.md) §3.1。
    附带修掉一个真实 bug：Swift 安装器用 `orzmc version | awk` 取版本，会把多行合规声明写进 `version` 字段。
 3. **守卫并发写入**：`auth.json` 的"先重读再刷新"目前靠约定，尚未有跨进程锁。
 
-**当前实现对照（Python `2.11.0` / Swift `0.11.1`）**
+**当前实现对照（Python `2.13.0` / Swift `0.18.0`）**
 
 | 项 | Python | Swift | 结论 |
 |:--|:--|:--|:--|
@@ -162,6 +166,7 @@
 | `auth.json` | 同路径同 schema | 同 | ✅ |
 | 游戏根 | `~/minecraft` | 同 | ✅ |
 | 补全安装路径 | bash/zsh/fish（+ powershell 仅生成） | bash/zsh/fish | ✅（powershell 交互差异） |
+| 落点可注入性 | `default_state_dir(environ=, is_windows=)` | `StatePaths.*(environment:, isWindows:)` | ✅ 两侧都能按平台求值（一致性用例因此可跨平台跑） |
 | 自升级渠道 | `OrzMC/OrzPythonMC` | `OrzMC/OrzMCKit` | ✅ 设计如此（两个发布通道，F3） |
 
 ### 7.2 平台支持矩阵（D14：Swift 收敛为唯一 CLI 方向）
@@ -174,7 +179,8 @@
 
 跨平台能力差异（Swift CLI 到 Linux/Windows 的已知边界）：
 
-- `orzmc app …` 安装的是 macOS `.app`：非 macOS 上**显式**返回 `E_UNSUPPORTED`（不假装支持）；
+- `orzmc app …` 安装的是 macOS `.app`：非 macOS 上四个子命令**一律** `E_UNSUPPORTED`
+  （错误码与固定文案见 `install-update.md` §8，逐字一致，由验收 harness 兜住）；
 - 系统外部工具（`unzip`）由 `Game.PlatformTools` 解析，缺失时按功能降级（音乐提取跳过）或报 `E_EXTRACT`；
 - `completion install` 在 PowerShell 下按 F6 只生成脚本，不做磁盘安装；
 - **Windows 资产是 zip**（exe + Swift 运行时 DLL）：单 exe 在没装 Swift 的机器上会 `STATUS_DLL_NOT_FOUND`；

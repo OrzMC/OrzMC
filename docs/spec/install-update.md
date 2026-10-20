@@ -178,6 +178,16 @@
 - **安装落点**：macOS 用户级 `~/Applications`（免 sudo，`release` 渠道）；App Store 渠道由系统装到系统位置。
 - **App Store 渠道细节**：通过 `macappstore://` URL（或 `mas`）打开产品页，**需用户交互**（Apple ID）；CLI 只负责引导，**不做静默安装**。
 - **`app open`**：`open -a` 打开应用（macOS）。
+- **非 macOS 平台（normative）**：`app install / open / uninstall / status` **一律**返回
+  `E_UNSUPPORTED`（退出码 1、日志走 stderr、`--json` 时 `ok:false`、`data:null`），消息固定为：
+
+  ```
+  「orzmc app」仅支持 macOS;当前平台不支持,请从 Release 下载应用包
+  ```
+
+  即：**不假装成功**（不许 `ok:true` + 空 path）、**不降级成 `E_RUNTIME`**（那不是运行时故障，
+  是平台边界）、**不联网**（不要先去查 release 再报错）。两侧实现必须逐字一致，
+  由 `scripts/accept/cli.py` 的 `contract/app-unsupported-outside-macos` 用例在 Linux/Windows CI 上兜住。
 - **appcast 口径对齐**：GUI 自更新走 appcast（Swift `OrzAppUpdater`）；`orzmc app install/update` 与 appcast **必须引用同一 App 版本号与产物**，避免两套版本源打架。
 
 ---

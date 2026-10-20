@@ -546,7 +546,70 @@ def op_progress(req):
                "phase": i.get("phase"), "indefinite": i.get("total") is None})
 
 
+# ---------------------------------------------------------------- state paths
+#: 规范里的共享落点（`docs/spec/state-paths.json`）。参考适配器**直接读这份文件**做替换，
+#: 这样「实现是否漂移」比对的对象是规范文件本身，而不是这里另抄的一份常量。
+STATE_PATHS_SPEC = Path(__file__).resolve().parents[2] / "docs" / "spec" / "state-paths.json"
+
+
+def _spec_state_paths() -> dict:
+    with STATE_PATHS_SPEC.open(encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def _expand_default(expr: str, env: dict, home: str) -> str:
+    """展开模板里的 `$HOME` / `$VAR` / `${VAR:-默认}` / `%VAR%`（只支持这些形态）。"""
+    out = expr
+
+    def braced(match):
+        var, default = match.group(1), match.group(2)
+        value = env.get(var)
+        if value:
+            return value
+        return _expand_default(default, env, home) if default is not None else ""
+
+    out = re.sub(r"\$\{([A-Za-z_][A-Za-z0-9_]*)(?::-([^}]*))?\}", braced, out)
+    out = re.sub(r"%([A-Za-z_][A-Za-z0-9_]*)%", lambda m: env.get(m.group(1), ""), out)
+    out = out.replace("$HOME", home)
+    return out
+
+
+def op_state_paths(req):
+    """`statePaths`：按 `state-paths.json` 解析出各落点（平台与环境可注入）。
+
+    返回 `{stateDir, installRecord, authSession, gameRoot, completion?}`；分隔符统一成 `/`
+    （与其它 fixture 一致），Windows 形态的 `\\` 在这里归一，断言才能跨平台比较。
+    """
+    spec = _spec_state_paths()
+    windows = (req.get("platform") or {}).get("os") == "windows"
+    env = dict(req.get("env") or {})
+    home = env.get("USERPROFILE" if windows else "HOME", "")
+    block = spec["windows" if windows else "unix"]
+    state_dir = _expand_default(block["stateDir"], env, home)
+
+    def expand(template: str) -> str:
+        return _expand_default(template.replace("<stateDir>", state_dir), env, home)
+
+    data: dict = {
+        "stateDir": state_dir,
+        "installRecord": expand(block["installRecord"]),
+        "authSession": expand(block["authSession"]),
+        "gameRoot": _expand_default(block["gameRoot"], env, home),
+    }
+    if "completion" in block:
+        data["completion"] = {shell: _expand_default(path, env, home)
+                              for shell, path in block["completion"].items()}
+    if windows:
+        for key, value in list(data.items()):
+            if isinstance(value, dict):
+                data[key] = {k: v.replace("\\", "/") for k, v in value.items()}
+            else:
+                data[key] = value.replace("\\", "/")
+    return ok(data)
+
+
 OPS = {
+    "statePaths": op_state_paths,
     "planLayout": op_plan_layout,
     "planClientLaunch": op_client_launch,
     "planClientDownload": op_plan_client_download,

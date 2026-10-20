@@ -1,0 +1,28 @@
+{
+  "specVersion": "0.1",
+  "id": "state-paths/unix-xdg",
+  "area": "state-paths",
+  "description": "XDG_STATE_HOME 生效：状态目录/记录/认证/游戏根/补全落点都跟着走（规范 state-paths.json unix 块）",
+  "given": {
+    "operation": "statePaths",
+    "platform": {
+      "os": "linux",
+      "arch": "x86_64"
+    },
+    "env": {
+      "HOME": "/tmp/orzmc-fixture/home",
+      "XDG_STATE_HOME": "/tmp/orzmc-fixture/state"
+    }
+  },
+  "expect": {
+    "stateDir": "/tmp/orzmc-fixture/state/orzmc",
+    "installRecord": "/tmp/orzmc-fixture/state/orzmc/install.conf",
+    "authSession": "/tmp/orzmc-fixture/state/orzmc/auth.json",
+    "gameRoot": "/tmp/orzmc-fixture/home/minecraft",
+    "completion": {
+      "bash": "/tmp/orzmc-fixture/home/.local/share/bash-completion/completions/orzmc",
+      "zsh": "/tmp/orzmc-fixture/home/.zsh/completions/_orzmc",
+      "fish": "/tmp/orzmc-fixture/home/.config/fish/completions/orzmc.fish"
+    }
+  }
+}

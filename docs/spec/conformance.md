@@ -33,7 +33,7 @@ scripts/conformance/           # spec-owned 运行器（父仓库）
 ```
 
 - `<area>` 对应契约域：`layout` / `version-manifest` / `client-plan` / `client-download` / `server-plan` / `server-launch` /
-  `server-lifecycle` / `download` / `verify` / `cache` / `java` / `progress` / `non-tty` / `error` / `auth`。
+  `server-lifecycle` / `download` / `verify` / `cache` / `java` / `progress` / `non-tty` / `error` / `auth` / `state-paths`。
 - `snapshots/` 是**钉住版本**的上游 JSON，保证 fixture 离线、可复现。
 
 ---
@@ -132,10 +132,10 @@ python3 scripts/conformance/run.py --adapter "python3 scripts/conformance/refere
 
 | 语言 | 位置 | 状态 |
 |:--|:--|:--:|
-| Python | `python/orzmc/tests/conformance/adapter.py` | ☑ 已接入（76/76） |
-| Swift | `swift/lib/OrzMCKit/Sources/ConformanceAdapter` | ☑ 已接入（76/76，OrzMCKit CI 内运行） |
+| Python | `python/orzmc/tests/conformance/adapter.py` | ☑ 已接入（79/79） |
+| Swift | `swift/lib/OrzMCKit/Sources/ConformanceAdapter` | ☑ 已接入（79/79，OrzMCKit CI 内运行） |
 
-> **当前 76 例**：参考适配器 76/76；Python 适配器 76/76；Swift 适配器 76/76。
+> **当前 79 例**：参考适配器 79/79；Python 适配器 79/79；Swift 适配器 79/79。
 > `auth/*`（20 例）为**离线优先**新增，三者均已实现；另含 `layout/no-type-*`（无 type 省略 server 字段）
 > 与 `client-plan|client-download/mismatched-version-id`（`given.version` 与 `snapshot.id` 不一致时以 `given.version` 为准）3 例。
 > ⚠️ **合入顺序**：Swift CI 会检出**父仓库 main** 并 `--strict`。Python/Swift 的 `auth/*` 适配器改动目前

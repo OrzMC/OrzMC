@@ -1,6 +1,6 @@
 # 两套 CLI 的并行策略（Two CLIs, One Product）
 
-> **状态**：生效中 · **最后更新**：2026-10-18
+> **状态**：生效中 · **最后更新**：2026-10-20（新增 §5.1 M3 评估）
 > **结论先说**：不冻结 Python CLI，但**改并行规则**——「规范先行 + 一个功能只在一侧写 + 台账显式记录落后」，
 > 把"要不要两边都改"从**人记忆**变成**机器可校验**。中期目标是 **M3：Python 变成发行通道，功能委托 Swift**。
 >
@@ -80,13 +80,60 @@
 |---|---|---|---|
 | **M1** | 台账 + 校验器 + **三处 CI 门禁**（父仓库 `check.py`、两个子模块各自的 `ledger` job） | 不再"凭记忆决定两边改不改"；落后可见、可到期；**台账与真实 capabilities 双向对账** | ☑ 已完成 |
 | **M2** | **共享验收 harness** | ☑ **已完成（2026-10-19）**：`scripts/accept/cli.py` 一份，两侧 CI 稀疏检出父仓库调用；删除两份副本（842 + 724 行）；`--frozen` 表达冻结二进制专属用例 |
-| **M3** | **Python 作发行通道**：`orzmc` (PyPI) 负责装/升级 Swift 二进制并**转发**命令（自研 shim，非重写引擎） | 功能只有一份；PyPI/uvx 生态保留；Windows/Linux 用户拿到的就是 Swift 实现 | ☐ 待评估（前置：Windows arm64 资产 + 全平台资产齐） |
+| **M3** | **Python 作发行通道**：`orzmc` (PyPI) 负责装/升级 Swift 二进制并**转发**命令（自研 shim，非重写引擎） | 功能只有一份；PyPI/uvx 生态保留；Windows/Linux 用户拿到的就是 Swift 实现 | ☐ **已评估（2026-10-20）**：前置条件基本齐，建议方案 + 5 个待拍板项见 §5.1 |
 
-**M3 的前置检查**（做之前必须满足，否则用户会掉进"装了 Python 包却跑不起来"）：
+### 5.1 M3 评估（2026-10-20）
 
-1. `orzmc-{macos,linux,windows}-{x86_64,arm64}` 六类资产齐（当前缺 Windows arm64）；
-2. 每个平台的二进制都能在**干净环境**跑（Windows 已验证 zip+DLL 方案）；
-3. `orzmc` (Python) 的 shim 在无网络/受限网络下的降级路径（缓存已装二进制、明确报错）。
+**前置条件核对**
+
+| # | 条件 | 状态 |
+|---|---|---|
+| 1 | `orzmc-{macos,linux,windows}-{x86_64,arm64}` 六类资产齐 | 🟡 构建链路**六条全通**（2026-10-20 dry-run 全绿）；Windows arm64 资产随 OrzMCKit `0.18.0` 发布落地 |
+| 2 | 干净环境可运行 | ✅ Windows zip+DLL 真机验过；Linux 每版 `verify-linux` 自动验收；macOS `install.sh` 全链路 |
+| 3 | shim 的离线/受限网络降级 | ☐ 未做（M3 才需要） |
+
+**建议方案（shim 转发，不是重写引擎）**
+
+1. PyPI 仍发 `orzmc` / `orzmc-app`，但把**实现体**换成 ~300 行 shim（标准库 only，零新依赖）。
+2. shim 首次运行：按 `platform` + `arch` 从 `OrzMC/OrzMCKit` 的 release 取
+   `orzmc-<os>-<arch>`（Windows 是 zip），用同一 Release 的 `SHA256SUMS` 校验，
+   解到 `<状态目录>/bin/`（Windows 另解运行时 DLL），**然后 `exec` 它**。
+3. 之后每次运行**直接 exec**，Python 只做「找真身 + 转发 argv / 退出码 / 信号 / 三股流」。
+   没有任何命令语义落在 Python 侧——避免又变成两份实现。
+4. `orzmc update` / `self-uninstall` 交给**真身**（Swift 自升级，走 OrzMCKit 通道）。
+5. `--json` 信封、`capabilities`、`mcp` 全部来自真身，天然与规范一致；
+   共享验收 harness 对 shim 与真身跑同一套判据。
+
+**必须先解决的三处规范冲突**（否则做出来就不合规范）
+
+| 冲突 | 说明 | 建议 |
+|---|---|---|
+| **F1**「同一路径只能有一个可执行体」 | shim 与真身必然是两条路径 | 规范承认第三类角色：`~/.local/bin/orzmc` = **launcher**，`<状态目录>/bin/orzmc` = 真身；`install.conf` 记真身路径 + 新增 `channel=wrapper` |
+| **F3**「`update` 只替换自己」 | shim 不参与版本号，否则两套版本打架 | `orzmc --version` 一律报**真身**版本；shim 版本只在 `orzmc version --json` 的 `wrapper` 字段暴露 |
+| 版本号语义 | PyPI 包版本 vs Swift 版本 | shim 用 `0.x` 包装版本（或 `+swift.0.18.0` 本地标识），**不**跟随 Swift 版本号 |
+
+**主要风险与缓解**
+
+| 风险 | 缓解 |
+|---|---|
+| 首次运行要下载几十 MB（体验倒退） | 安装器（`pip install` 之后首次 `orzmc`）明确进度；也提供 `orzmc install-runtime` 预取 |
+| 受限网络/企业离线 | 保留「已缓存真身则完全离线可用」；无缓存时报 `E_NETWORK` 并给出手动安装指引 |
+| 存量 Python 实现用户被静默换实现 | 必须写**升级须知**（CHANGELOG + Release notes），并保留一版 `orzmc legacy` 逃生阀 |
+| shim 自身出 bug 就全挂 | shim 足够薄（找真身 + exec）；`orzmc legacy` 可直接跑旧实现 |
+| Windows 上 exec 语义弱（无 `exec`） | `subprocess` 转发 + 原样透传退出码；`Ctrl-C` 转 `CTRL_BREAK`/终止树（`ProcessRunner` 已有同类实现可参考） |
+| PyInstaller 冻结的 shim？ | 不需要：shim 是 pip 安装的普通 Python 包；冻结二进制通道（`binary` job）在 M3 里**下线**，资产改由 OrzMCKit 唯一提供 |
+| 双通道版本对账 | 台账 `parity.json` 增加 `channel` 维度：`OrzPythonMC` 的发布物 = shim 版本，`OrzMCKit` = 真身版本 |
+
+**需要维护者拍板（拍板后才有 M3 实施 PR）**
+
+- **D-M3-1**：切换方式——硬切（下一个 major 直接把实现换成 shim）还是软切（先 `orzmc legacy` 默认、`ORZMC_RUNTIME=swift` 预演一版）？
+- **D-M3-2**：旧 Python 引擎的维护承诺——安全修复保多久（如「M3 发布后 6 个月」）？
+- **D-M3-3**：真身落点是否就用 `<状态目录>/bin/`（对 F1/F3 的影响最小），还是装到 `~/.local/bin/orzmc` 并让 shim 改名？
+- **D-M3-4**：PyPI `binary` 通道（6 平台 PyInstaller 资产）是否随 M3 一起下线（省一半发布矩阵）？
+- **D-M3-5**：`orzmc`（库）是否仍独立发版给第三方当库用（当前 `orzmc` 库与 app 双包发布）？
+
+**结论**：M3 技术上可行、前置基本就绪；真正的成本不在转发（那部分很小），而在
+①**规范三处冲突的裁定**、②**存量用户的迁移叙事**。建议按 D-M3-1..5 拍板后再开实施。
 
 ## 6. 反模式（并行期禁止）
 

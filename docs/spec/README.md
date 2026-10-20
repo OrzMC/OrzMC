@@ -50,7 +50,7 @@ OrzMC 的工具产品（见 [`../product-architecture.md`](../product-architectu
 | [`install-update.md`](install-update.md) | 安装 / 自升级 / 跨面安装（GUI↔CLI、双渠道兜底、补全） | 草案 |
 | [`frontends.md`](frontends.md) | **多前端与共享数据契约**：数据归属、共存规则 F1–F9、隔离手段、新前端接入清单 | 草案 |
 | [`conformance.md`](conformance.md) | 一致性套件与黄金样例 | 草案 |
-| [`fixtures/`](fixtures/README.md) | 黄金样例（`given→expect`）+ 快照 + schema + 运行器说明 | 草案 · 已落地 76 例 |
+| [`fixtures/`](fixtures/README.md) | 黄金样例（`given→expect`）+ 快照 + schema + 运行器说明 | 草案 · 已落地 79 例 |
 
 ## 4. 实现映射（谁实现这份规范）
 

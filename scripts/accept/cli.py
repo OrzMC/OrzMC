@@ -51,6 +51,9 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]  # 父仓库根（docs/spec 在这里）
 
+#: 非 macOS 上 `orzmc app` 的固定报错文案(规范 install-update.md §8)。两侧必须逐字一致。
+APP_UNSUPPORTED_MESSAGE = "「orzmc app」仅支持 macOS;当前平台不支持,请从 Release 下载应用包"
+
 #: 规范命令集(规范 §2)。新增/删除命令时这里和 docs/spec/cli-surface.json 一起改。
 EXPECTED_COMMANDS = (
     "client",
@@ -444,6 +447,26 @@ def case_uninstall_cancel(ctx: Context) -> None:
     # --force:让「开发环境护栏」不抢先,这里只验证非交互缺 --yes → 取消。
     result = ctx.run("--json", "--root-dir", str(ctx.sandbox.root), "uninstall", "--force")
     expect_error(result, "uninstall", "E_CANCELLED")
+
+
+@case("contract", "app-unsupported-outside-macos")
+def case_app_unsupported_outside_macos(ctx: Context) -> None:
+    """非 macOS 上 `orzmc app` 四个子命令一律 E_UNSUPPORTED（install-update.md §8）。
+
+    需要卡住三件事：① 不假装成功（`ok:true` + 空 path）；② 不降级成 `E_RUNTIME`；
+    ③ 不联网（先去查 release 再报错）。macOS 上跳过——那里的路径会真的碰 `~/Applications`。
+    """
+    if sys.platform == "darwin":
+        return
+    for action in ("status", "install", "open", "uninstall"):
+        result = ctx.run("--json", "app", action, "--yes", timeout=30)
+        payload = expect_error(result, "app", "E_UNSUPPORTED")
+        message = str(payload["error"]["message"])  # type: ignore[index]
+        check(
+            message == APP_UNSUPPORTED_MESSAGE,
+            "非 macOS 的 app 报错文案必须与规范逐字一致：\n"
+            f"  期望 {APP_UNSUPPORTED_MESSAGE!r}\n  实际 {message!r}\n" + result.describe(),
+        )
 
 
 @case("contract", "non-interactive-never-blocks")
