@@ -42,11 +42,12 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 > - **一致性 79/79**（新增 `state-paths/*` 三例：两侧实际上报落点 vs `state-paths.json`）。
 > - **M3 阶段 1 已落地（opt-in）**：PyPI 的 `orzmc` 可作发行通道——`ORZMC_RUNTIME=swift` 时转发给 Swift 真身
 >   （首次自动下载 + SHA256 校验 + 落 `<stateDir>/bin/`），`orzmc runtime status|install` 管理真身。
->   默认仍是 Python 实现；切默认待拍板（D-M3-1）。
+>   **`2.17.0` 起默认判定已生效**：`pip` 新装走 swift，有安装记录（含一键安装器）仍走 python；
+>   `ORZMC_RUNTIME=python|swift` 永远优先。Python 引擎进入 6 个月维护窗口（至 2027-04-20）。
 > - **正版登录：Mojang 第 2 次申请同样被拒（2026-10-20）** → 不再投第 3 次，转 authlib-injector / Yggdrasil。
 > - **验收判据只有一份**：父仓库 `scripts/accept/cli.py`，两侧 CI 稀疏检出调用。
 > - **迭代成本**：推前钩子 / `ssh air` 远端构建 / CI 跳过 release-please 与纯文档 push / `release.yml` dry-run。
-> - **最近发布**：`OrzMCKit v0.18.0`（六资产，首个带 Windows arm64）、`OrzPythonMC 2.16.0`。
+> - **最近发布**：`OrzMCKit v0.18.0`（六资产，首个带 Windows arm64）、`OrzPythonMC 2.17.0`。
 > - ⚠️ **别再把 release PR 整条跳过 CI**：`main` 的分支保护要求 `pr-title`/`quality`/`test (ubuntu-latest, x86_64)`，
 >   工作流不跑 = 必需检查永不上报 = release PR **永久 BLOCKED**（2026-10-19 实测，python #75 只能 admin 绕过，已修）。
 >
@@ -79,7 +80,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | **D14 跨平台收敛已收口**（macOS / Linux / Windows x64+arm64 全有构建链路）；**两套 CLI 并行期治理**（台账 + 三处 CI 校验 + M2 共享验收脚本）；迭代成本治理（推前钩子 / air 远端构建 / dry-run 发布）；`--auth` 仍被 **Mojang 审核拒绝（2026-10-17）** 阻塞 |
-| **状态** | 🟢 一份规范 + 两套实现（Swift 为 lead）+ 三个前端；一致性 **79/79**；命令面两侧 0 偏差（`--strict` 进 CI）；能力台账三处校验全绿、**`knownDrift` 已清空**；**最近发布**：`OrzMCKit v0.18.0`（六资产，含 Windows arm64）、`OrzPythonMC 2.16.0` |
+| **状态** | 🟢 一份规范 + 两套实现（Swift 为 lead）+ 三个前端；一致性 **79/79**；命令面两侧 0 偏差（`--strict` 进 CI）；能力台账三处校验全绿、**`knownDrift` 已清空**；**最近发布**：`OrzMCKit v0.18.0`（六资产，含 Windows arm64）、`OrzPythonMC 2.17.0` |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` + `docs/two-cli-strategy.md` + `docs/windows-port.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
 | **下一步** | **M3 阶段 2**：按 D-M3-1..5 拍板后决定是否把默认切到 `swift`（需升级须知 + 迁移窗口）。**正版登录改走 authlib-injector / Yggdrasil**（Mojang 两次拒绝，已停止申请）。详见 §4「下一会话起点（2026-10-20 M3）」 |
@@ -102,7 +103,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `887fcf5` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.15.0 已发布（首个带 M3 runtime shim，opt-in）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；CI 修回归（release PR 重新上报必需检查）；`ledger` 台账校验 + 命令面 `--strict` |
+| `python` | `6fece66` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.15.0 已发布（首个带 M3 runtime shim，opt-in）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；CI 修回归（release PR 重新上报必需检查）；`ledger` 台账校验 + 命令面 `--strict` |
 | `swift/app` | `efbb665` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
 | `swift/lib/OrzMCKit` | `cee4697` | **Swift 引擎 + `orzmc` CLI**；**`v0.18.0` 已发布 = 六类资产齐**（macOS×2 / Linux×2 / **windows-{x86_64,arm64}.zip**）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
@@ -305,6 +306,34 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-20 — pi（M3 收口：默认切换 + 维护窗口 + PyInstaller 下线排期）
+
+用户「按建议来」→ D-M3-1 / D-M3-2 / D-M3-4 拍板并落地，**`orzmc-app 2.17.0` 已发布**。
+
+**D-M3-1 默认判定**（`install-update.md` §10.1，四步）
+无 `install.conf` → **swift**（pip 新装）；`channel=wrapper` → swift；`source=OrzMCKit` → swift；
+其余（含一键安装器）→ **python**（存量零打扰）。显式 `ORZMC_RUNTIME` 永远优先，`python` 是永久逃生阀。
+> 第 4 条刻意把「安装器新装」也算存量：安装器装的是 PyInstaller 二进制，再默认下真身等于白下两遍。
+> 解法排进 D-M3-4：安装器改为直接装 Swift 二进制 → 自动落规则 3 → 再下线 PyInstaller 通道。
+
+**D-M3-2 维护窗口**：`2.17.0` 起 6 个月（至 2027-04-20）只修安全 / 数据损坏 / 无法启动（写在 README）。
+
+**D-M3-4 排期**：观察期内把一键安装器改成装 Swift 二进制，之后下线 6 平台 PyInstaller 资产
+（保留 macOS x86_64 + Linux x86_64 作离线包）；`review_by 2027-04-20`。
+
+**三次连环踩坑（都是"默认判定"的连带影响，值得记住）**
+| 现象 | 根因 | 修法 |
+|---|---|---|
+| CI `quality`/`ledger` 127（`libswiftCore.so` 缺失） | 干净 runner = 无 `install.conf` → 被当新装 → 下载真身并 exec | `ci.yml` 加**工作流级** `env: ORZMC_RUNTIME=python` |
+| 发版 `binary` 六腿全红（"自报版本 0.18.0 ≠ v2.17.0"） | `release.yml` 的断言直接跑二进制 → 同上 | `release.yml` 也加工作流级 env（#90），重发 2.17.0 |
+| Windows 单测四条红 | 用例注入 unix 形状 env，却按主机平台解析状态目录 | 用例显式 `is_windows=False`（#89） |
+
+**教训（已进 AGENTS.md 开发注意节）**：**凡是"直接跑 `orzmc`"的 CI/脚本/开发命令都要显式钉住
+`ORZMC_RUNTIME=python`**；要验运行时通道的用例自己 `env=` 覆盖（共享 harness 的沙箱与
+`accept_selfupdate.py` 都已钉住）。
+
+2.17.0 的 CHANGELOG + Release notes 补了「升级须知」（新装首跑要下载 / 老用户不变 / 逃生阀 / 维护窗口）。
 
 ### 2026-10-20（深夜）— pi（D-M3-3 / D-M3-5 落地，其余 3 条待拍板）
 
