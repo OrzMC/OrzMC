@@ -11,7 +11,7 @@
 | `plugin` | OrzMC/OrzMCPlugin | `main` | `5eadd6e5b4c8` |
 | `profile` | OrzMC/.github | `main` | `bb6b4ac4c66c` |
 | `proxy` | OrzMC/OrzMCProxy | `main` | `087bb52129a1` |
-| `python` | OrzMC/OrzPythonMC | `main` | `05800afea5b3` |
+| `python` | OrzMC/OrzPythonMC | `main` | `a3f6c707d602` |
 | `site` | OrzMC/OrzMCSite | `main` | `31d215f6400e` |
 | `swift/app` | OrzMC/OrzMCApp | `main` | `50b08a64c6c3` |
 | `swift/lib/ExarotonAPI` | OrzMC/ExarotonAPI | `main` | `4f5c1a28985d` |
