@@ -99,13 +99,7 @@
         "frozen/completion-install-does-not-crash": "PyInstaller 打包产物专属（shellingham 动态导入问题）。"
       }
     },
-    "knownDrift": [
-      {
-        "item": "Windows arm64 资产",
-        "reason": "构建链路已在 main：release.yml 的 build-windows 变成 x64+arm64 双臂矩阵，arm64 腿用 windows-11-arm + Swift arm64 工具链 + .github/actions/msvc-arm64；ci.yml 的 windows-arm64 探针（build+冒烟+单测）已绿。但**已发布**资产里还没有 orzmc-windows-arm64.zip —— 用户目前仍下载不到。",
-        "plan": "下一次 OrzMCKit 发版（≥0.18.0）产出 orzmc-windows-arm64.zip 并做 dry-run 核对；资产出现在 Release 上后删除本挂账，M3 的前置条件随之满足。",
-        "review_by": "2026-12-31"
-      }
-    ]
+    "knownDrift": [],
+    "knownDriftNote": "当前**无挂账**（2026-10-20 清空）：最后一条「Windows arm64 资产」已随 OrzMCKit v0.18.0 发布（orzmc-windows-arm64.zip）。新增挂账必须带 reason + review_by。"
   }
 }

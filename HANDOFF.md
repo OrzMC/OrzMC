@@ -36,13 +36,13 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 > **当前状态（2026-10-20）**
 > - **两套 CLI 并行**（用户决策：先并行，别冻结 Python）：`docs/two-cli-strategy.md` 定义规则，
 >   台账 `docs/spec/parity.json`，校验器 `scripts/verify/parity.py`（父仓库 CI + 两个子模块的 `ledger` job，三处都在跑）。
-> - **跨平台已齐**：Swift CLI 在 macOS / Linux / Windows（**含 arm64**）都有构建链路。Windows arm64 的三个坑
->   （工具链架构 / MSVC 库架构 / STL1000 工具集版本）2026-10-20 已打通，`release.yml` dry-run 的
->   `build-windows (windows-11-arm, arm64)` 腿**全绿**；`orzmc-windows-arm64.zip` 随下一次发版产出
->   （台账 `knownDrift` 仍挂着这一条，等资产真的出现在 Release 上再删）。
+> - **跨平台已齐（六类资产全部已发布）**：`OrzMCKit v0.18.0` 起有 `orzmc-windows-arm64.zip`，
+>   Windows 三个坑（工具链架构 / MSVC 库架构 / STL1000 工具集版本）的解法见 `docs/windows-port.md` §3.5。
+>   台账 `sharedArtifacts.knownDrift` 已**清空**。
+> - **一致性 79/79**（新增 `state-paths/*` 三例：两侧实际上报落点 vs `state-paths.json`）。
 > - **验收判据只有一份**：父仓库 `scripts/accept/cli.py`，两侧 CI 稀疏检出调用。
 > - **迭代成本**：推前钩子 / `ssh air` 远端构建 / CI 跳过 release-please 与纯文档 push / `release.yml` dry-run。
-> - **最近发布**：`OrzMCKit v0.17.0`、`OrzPythonMC 2.13.0`（2.13.0 的六个资产含 `orzmc-windows-arm64.exe`）。
+> - **最近发布**：`OrzMCKit v0.18.0`（六资产，首个带 Windows arm64）、`OrzPythonMC 2.13.0`。
 > - ⚠️ **别再把 release PR 整条跳过 CI**：`main` 的分支保护要求 `pr-title`/`quality`/`test (ubuntu-latest, x86_64)`，
 >   工作流不跑 = 必需检查永不上报 = release PR **永久 BLOCKED**（2026-10-19 实测，python #75 只能 admin 绕过，已修）。
 >
@@ -75,10 +75,10 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | **D14 跨平台收敛已收口**（macOS / Linux / Windows x64+arm64 全有构建链路）；**两套 CLI 并行期治理**（台账 + 三处 CI 校验 + M2 共享验收脚本）；迭代成本治理（推前钩子 / air 远端构建 / dry-run 发布）；`--auth` 仍被 **Mojang 审核拒绝（2026-10-17）** 阻塞 |
-| **状态** | 🟢 一份规范 + 两套实现（Swift 为 lead）+ 三个前端；一致性 **76/76**；命令面两侧 0 偏差（`--strict` 进 CI）；能力台账三处校验全绿；**最近发布**：`OrzMCKit v0.17.0`、`OrzPythonMC 2.13.0`；台账 `knownDrift` 只剩「Windows arm64 **已发布资产**」一条（构建链路已验，资产随下次发版） |
+| **状态** | 🟢 一份规范 + 两套实现（Swift 为 lead）+ 三个前端；一致性 **79/79**；命令面两侧 0 偏差（`--strict` 进 CI）；能力台账三处校验全绿、**`knownDrift` 已清空**；**最近发布**：`OrzMCKit v0.18.0`（六资产，含 Windows arm64）、`OrzPythonMC 2.13.0` |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` + `docs/two-cli-strategy.md` + `docs/windows-port.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | 下次 OrzMCKit 发版产出 `orzmc-windows-arm64.zip` → `orzmc app` 非 macOS 文案/错误码对齐（**Python 现为 `E_RUNTIME`，规范要 `E_UNSUPPORTED`**）→ `state.paths` 动态 conformance → 评估 **M3（Python 作发行通道）**。详见 §4「下一会话起点（2026-10-20）」 |
+| **下一步** | **M3 需要维护者拍板 5 项**（`docs/two-cli-strategy.md` §5.1 的 D-M3-1..5）→ 拍板后开 shim 实施 PR。其余挂账：`--auth` 真实 E2E 仍被 **Mojang 白名单被拒（2026-10-17）** 阻塞。详见 §4「下一会话起点（2026-10-20 午后）」 |
 
 ## 2. 状态快照（Repo State）
 
@@ -98,9 +98,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `95d50c0` | `OrzPythonMC`；**2.13.0 已发布**（6 资产；CLI 契约 0.2）；验收脚本已并入父仓库 `scripts/accept/cli.py`（M2）；**CI 修回归：release PR 不再被 `branches-ignore` 整条跳过**（否则必需检查永不上报 → release PR 永久 BLOCKED，见 §5 2026-10-20）；`ledger` 台账反向校验 + `quality` 的命令面 `--strict` |
+| `python` | `4687d8e` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**`feat(conformance)`**：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；CI 修回归（release PR 重新上报必需检查）；`ledger` 台账校验 + 命令面 `--strict` |
 | `swift/app` | `efbb665` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
-| `swift/lib/OrzMCKit` | `bad15bd` | **Swift 引擎 + `orzmc` CLI**；**`v0.17.0` 已发布**（macOS×2 / Linux×2 / windows-x86_64.zip）；**Windows arm64 构建链路 2026-10-20 打通**（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 手动探针，dry-run 全绿；资产随下次发版）；`Game.StatePaths`/`PlatformTools`/`MemorySpec`/`LaunchOptionRules`；`--strict` 与 `ledger` 三处 CI 校验 |
+| `swift/lib/OrzMCKit` | `cee4697` | **Swift 引擎 + `orzmc` CLI**；**`v0.18.0` 已发布 = 六类资产齐**（macOS×2 / Linux×2 / **windows-{x86_64,arm64}.zip**）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
@@ -183,45 +183,41 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 4. 下一步（Next Actions，增量、非阻塞）
 
-### ★ 下一会话起点（2026-10-20 交接）
+### ★ 下一会话起点（2026-10-20 午后交接）
 
-> 上一轮把 **两个 release PR**、**Windows arm64 构建链路**、**三个收尾项** 做完（细节见 §5 2026-10-20）。
-> 本节只列**接下来要做的**。
+> 上一轮（本日第二段）把 **A/B/C/D 四件挂着的事全部处理完**：Windows arm64 资产已发布、
+> `orzmc app` 跨平台契约两侧对齐、`state.paths` 动态一致性落地、M3 评估成文。细节见 §5。
+> 本节只剩**要拍板**和**被外部阻塞**的事。
 
-**A. 下一次 OrzMCKit 发版产出 arm64 资产（台账唯一挂账，`review_by 2026-12-31`）**
-- [ ] 等 `main` 攒到下一个 feat/fix 后合并 release PR（→ ≥0.18.0）；或需要时手动 `git tag` 走同一流水线。
-- [ ] 发版前 **dry-run 不要带 tag**（`gh workflow run release.yml -f dry-run=true`）：
-      带了旧 tag 会 checkout 旧代码，新加的 composite action 就找不到（2026-10-20 踩过）。
-- [ ] 资产出现后：删 `docs/spec/parity.json` 的 `sharedArtifacts.knownDrift` 那条，
-      并在 `docs/spec/frontends.md` §7.2 把 Windows 列更新成「x64 + arm64 都已发布」。
-- [ ] 真机：`ssh win` 是 x64，arm64 只能靠 CI/发布断言（除非另找 arm64 机器）。
+**A. M3 需要维护者拍板 5 项**（`docs/two-cli-strategy.md` §5.1，评估已写完，不是待研究）
+- [ ] **D-M3-1 切换方式**：硬切（下个 major 直接换实现）vs 软切（先 `orzmc legacy` 默认 +
+      `ORZMC_RUNTIME=swift` 预演一版）。
+- [ ] **D-M3-2 旧 Python 引擎维护承诺**：安全修复保多久（建议「M3 发布后 6 个月」）。
+- [ ] **D-M3-3 真身落点**：`<状态目录>/bin/orzmc`（对 F1/F3 影响最小）vs `~/.local/bin/orzmc`（shim 改名）。
+- [ ] **D-M3-4**：PyPI 的 6 平台 PyInstaller `binary` 通道是否随 M3 下线（省一半发布矩阵）。
+- [ ] **D-M3-5**：`orzmc`（库）是否继续独立发版供第三方当库用。
+- 拍板后才有实施 PR（shim ≈300 行：找真身 → 校验 SHA256SUMS → `exec`；命令语义零落在 Python 侧）。
 
-**B. `orzmc app` 非 macOS 对齐（方向已明确：改 Python，不改 Swift）**
-- [ ] 规范先行：`docs/spec/install-update.md` §8 补一条normative——非 macOS 上
-      `install/open/uninstall/status` 一律 **`E_UNSUPPORTED`**（+ 固定文案）。
-- [ ] **Python 是偏离侧**：`orzmc/services/app.py` 抛 `RuntimeError("GUI 应用仅支持 macOS;其它平台计划中")`
-      → CLI 映射成 `E_RUNTIME`。改成 `E_UNSUPPORTED`（`AppInstaller.supported()` 已存在，可直接在 CLI 前置判定）。
-- [ ] Swift 已返回 `E_UNSUPPORTED`，只需把文案对齐规范。
-- [ ] 验收：`scripts/accept/cli.py` 加一条**平台条件**用例（非 macOS 上 `app status` → `E_UNSUPPORTED`），
-      这样 Linux CI 会替两边兜住。
+**B. 被外部阻塞（我们能做的都做完了）**
+- `--auth` 真实账号 E2E：**Mojang 白名单被拒（2026-10-17）**，第 2 次 launcher-only 申请等邮件；
+  两周无回音按未通过处理 → 转 authlib-injector / Yggdrasil。
+- App Phase C（GUI 认证 UI）：维护者已定「等邮件再动」。
 
-**C. `state.paths` 动态 conformance（`frontends.md` §7 待补第 1 条）**
-- [ ] 两侧上报**实际**状态/缓存路径 vs `docs/spec/state-paths.json`（现在只是静态断言补全落点）。
-- [ ] 注意 Windows/macOS/Linux 三套形状；`Game.StatePaths` 平台判定已可注入，Python 侧需等价接缝。
-
-**D. 中期：评估 M3（Python CLI 变「装/升级/转发 Swift 二进制」的发行通道）**
-- [ ] 前置基本齐了：六类资产（macOS×2 / Linux×2 / Windows×2）构建链路都已验；
-      干净环境可运行（Windows zip+DLL 真机验过）。
-- 规则见 `docs/two-cli-strategy.md` §5；真做之前先想清楚「谁是唯一事实源」「旧 Python 用户怎么迁移」。
+**C. 可选加固（非阻塞，按需）**
+- `auth.json` 的跨进程写锁（`frontends.md` §7 待补第 3 条）。
+- `orzmc legacy` 逃生阀若选软切，需要先定「旧实现如何与 share harness 共存」。
 
 **接手时最容易踩的坑（更新）**
 1. **git 钩子不入版本库**：新机器必须 `scripts/dev/install-hooks.sh`。
 2. **`ssh air` 会休眠**：`ssh air true` 超时 → 先唤醒；构建优先 `scripts/air/run.sh`（14–24 秒）。
-3. **`parity.json` 是硬约束**：改命令面/能力前先看 `lead`，只在一侧实现。
-4. **别用「跳过工作流」省 CI**：分支保护的必需检查不上报 = PR 永久 BLOCKED（2026-10-19 的 Python release PR 就是这么卡的）。
-5. **本机到 `github.com` 的 DNS 可能不通**（`dscacheutil` 解析到的那个 GitHub 亚太 IP 不可达），`git push` 会超时；
-   `api.github.com` 正常。临时办法：本地 CONNECT 代理把 github.com:443 转到可达 IP
-   （`HTTPS_PROXY=http://127.0.0.1:8899 git push ...`），换网络后再试也行。
+3. **`parity.json` 是硬约束**：改命令面/能力前先看 `lead`，只在一侧实现；`knownDrift` 现在为空，
+   新增必须带 `reason` + `review_by`。
+4. **别用「跳过工作流」省 CI**：分支保护的必需检查不上报 = PR 永久 BLOCKED。
+5. **dry-run 不要带旧 tag**：`release.yml` 用 `ref: inputs.tag || github.ref` checkout，带旧 tag 会
+   checkout 旧代码（新加的 composite action 就找不到）。发版 dry-run 一律不带 tag。
+6. **release-please 不为 `build:`/`docs:`/`ci:` 升版本**：要让某个「非 feat/fix」变更进版本，
+   用 `Release-As: X.Y.Z` footer（0.18.0 就是这么发的）。
+7. **Python 侧 ruff 禁全角标点**（RUF002/RUF003）——中文注释里用半角 `,` `(` `)` `:`。
 
 > **★ 下一会话起点（2026-10-15 交接）**：本地 `--auth` 离线部分（阶段 A/B/C，三适配器 73/73）与
 > **`orzmc mcp` server（两端）均已完成**。真实登录 E2E 等办卡/注册后再做（待办 A）；
@@ -302,6 +298,45 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-20（午后）— pi（A/B/C/D 四件挂着的事全部收口）
+
+**A. Windows arm64 资产 → 已发布**（台账唯一挂账，清空）
+- arm64 那笔是 `build(windows): ...`，而 **release-please 不为 `build` 升版本** → 资产永远等不到发版。
+  用官方支持的 **`Release-As: 0.18.0`** footer（空提交 + 说明）让机器人开 release PR，**不手改版本号、不手打 tag**。
+- `v0.18.0` 已发布 **六类资产**：`orzmc-{macos,linux}-{arm64,x86_64}` + `orzmc-windows-{x86_64,arm64}.zip`；
+  `verify-linux` 在真实资产上跑共享 harness（含本日新增用例）全绿。
+- Release notes + `CHANGELOG.md` 补「升级须知」（arm64 首次提供：怎么装 / 已装 x64 怎么切 / x64 无影响），
+  按 AGENTS §7 —— release-please 只渲染 commit 列表，不会替你说「该怎么办」。
+
+**B. `orzmc app` 非 macOS 对齐**（方向确认：**改 Python**，不是 Swift）
+- 规范先行：`install-update.md` §8 加 normative（一律 `E_UNSUPPORTED` + 固定文案、不假装成功、不降级 `E_RUNTIME`、不联网）。
+- **Python 是偏离侧**：`AppInstaller` 抛 `RuntimeError` → CLI 映射成 `E_RUNTIME`。改为在碰网络/文件**之前**
+  用 `AppInstaller.available` 前置判定（#77）+ 单测（monkeypatch `sys.platform`，macOS 本机也能跑）。
+- Swift 只改文案（#81）。
+- 共享 harness 新增 `contract/app-unsupported-outside-macos`：四个子命令在 Linux/Windows CI 上断言
+  码 + **文案逐字相等**。已实测：python `quality`（源码模式）**PASS**、`v0.18.0` 的 Linux 资产上 **PASS**。
+
+**C. `state.paths` 动态一致性（`frontends.md` §7 待补第 1 条）→ 一致性 76 → 79**
+- 参考适配器新增 `statePaths`，**直接读 `docs/spec/state-paths.json`** 做 `${VAR:-默认}` / `$HOME` / `%VAR%`
+  替换 —— 比对对象是规范文件本身，不是另抄一份常量。
+- 三个 fixture：`state-paths/{unix-xdg,unix-defaults,windows}`；分隔符归一 `/`，Windows 形态在 macOS/Linux
+  上也能断言；Windows 块没有 `completion` → 用 `absent` 断言。
+- **实现侧的关键不是加适配器，而是把路径收敛成单一来源**：
+  Swift `Game.StatePaths` 补 `installRecord`/`authSession`/`completionPath(shell:home:)`，
+  并把 `InstallManifest.defaultPath`、`AuthStore.path`、`CompletionCommand` 三处手写落点改成从它派生（#83）；
+  Python 给 `default_state_dir()` 加 `environ=`/`is_windows=` 接缝，适配器复用 `orzmc_app.cli.completions.target_path`（#78）。
+- 验证：参考/Python/Swift 适配器 **79/79**；Swift 单测 98 例绿（`ssh air`）。
+
+**D. M3 评估成文**（`docs/two-cli-strategy.md` §5.1）
+前置条件核对（六类资产 ✅、干净环境 ✅、离线降级未做）、建议方案（~300 行 shim：找真身 → 校验 → `exec`，
+命令语义零落在 Python 侧）、**三处规范硬冲突**（F1 同一路径唯一可执行体 / F3 `update` 只替换自己 /
+版本号语义）与建议裁定、风险缓解表、**5 个待拍板项 D-M3-1..5**。
+
+**顺手记的坑**
+- `release.yml` 用 `ref: inputs.tag || github.ref` checkout → **dry-run 带旧 tag 会 checkout 旧代码**（已写进 §4 坑 5）。
+- python 的 ruff 禁全角标点（RUF002/RUF003），中文注释要写半角。
+- 本机到 `github.com` 的 DNS 一度不可达（`api.github.com` 正常）；后恢复，直连即可。
 
 ### 2026-10-20 — pi（合并两个 release PR + Windows arm64 打通 + 一个 CI 回归）
 

@@ -174,7 +174,7 @@
 | 前端 | macOS | Linux | Windows | 说明 |
 |:--|:--|:--|:--|:--|
 | `python` CLI（`orzmc` / PyPI） | ✅ 已发布 | ✅ 已发布 | ✅ 已发布 | 6 平台资产已验证；**维护模式**（D14：不再新增功能） |
-| Swift CLI（`OrzMCKit` 的 `orzmc`） | ✅ 已发布（arm64/x86_64） | ✅ **已发布**（`orzmc-linux-{x86_64,arm64}`，v0.14.0 起；发布后自动验收） | ✅ **已发布**（`orzmc-windows-x86_64.zip`，v0.15.0 起；真机无 Swift 环境验证通过）；**arm64** 链路 2026-10-20 已打通，资产随下一次发版 | 收敛目标实现；判据见 `product-unification-plan.md` D14.1 |
+| Swift CLI（`OrzMCKit` 的 `orzmc`） | ✅ 已发布（arm64/x86_64） | ✅ **已发布**（`orzmc-linux-{x86_64,arm64}`，v0.14.0 起；发布后自动验收） | ✅ **已发布 x64 + arm64**（`orzmc-windows-{x86_64,arm64}.zip`；x64 v0.15.0 起、arm64 v0.18.0 起；x64 真机无 Swift 环境验证通过） | 收敛目标实现；判据见 `product-unification-plan.md` D14.1 |
 | Swift GUI（`OrzMCApp`） | ✅ | — | — | SwiftUI，天然 Apple only |
 
 跨平台能力差异（Swift CLI 到 Linux/Windows 的已知边界）：
