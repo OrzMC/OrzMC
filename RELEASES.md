@@ -3,23 +3,23 @@
 > 父仓库是产品组合的锚点：本文件记录 `main` 上一次基准组合的各子模块**记录指针**（gitlink）。
 > 更新：`python3 scripts/release/composition.py` 生成表格后粘贴至此；校验：`python3 scripts/verify/check.py`。
 
-## 基准组合（2026-10-18）
+## 基准组合（2026-10-20）
 
 | 子模块 | 仓库 | 分支 | 记录指针 |
 |---|---|---|---|
 | `deploy` | OrzMC/OrzMCDeploy | `main` | `e72ad9de9506` |
 | `plugin` | OrzMC/OrzMCPlugin | `main` | `5eadd6e5b4c8` |
 | `profile` | OrzMC/.github | `main` | `bb6b4ac4c66c` |
-| `proxy` | OrzMC/OrzMCProxy | `main` | `3cc949cdb2e7` |
-| `python` | OrzMC/OrzPythonMC | `main` | `65f24a5b17a7` |
-| `site` | OrzMC/OrzMCSite | `main` | `88e14b1d178b` |
+| `proxy` | OrzMC/OrzMCProxy | `main` | `087bb52129a1` |
+| `python` | OrzMC/OrzPythonMC | `main` | `95d50c05413a` |
+| `site` | OrzMC/OrzMCSite | `main` | `31d215f6400e` |
 | `swift/app` | OrzMC/OrzMCApp | `main` | `50b08a64c6c3` |
 | `swift/lib/ExarotonAPI` | OrzMC/ExarotonAPI | `main` | `4f5c1a28985d` |
-| `swift/lib/MojangAPI` | OrzMC/MojangAPI | `main` | `b4f0dd6c651b` |
+| `swift/lib/MojangAPI` | OrzMC/MojangAPI | `main` | `c5a0eadb4e83` |
 | `swift/lib/OrzAppUpdater` | OrzGeeker/OrzAppUpdater | `main` | `b23e0c414d78` |
-| `swift/lib/OrzMCKit` | OrzMC/OrzMCKit | `main` | `e96de486ff0b` |
-| `swift/lib/OrzSwiftKit` | OrzGeeker/OrzSwiftKit | `main` | `01dc67535939` |
-| `swift/lib/PaperMC` | OrzMC/PaperMC | `main` | `44ef06df0ca2` |
+| `swift/lib/OrzMCKit` | OrzMC/OrzMCKit | `main` | `bad15bda915a` |
+| `swift/lib/OrzSwiftKit` | OrzGeeker/OrzSwiftKit | `main` | `890eb6f35719` |
+| `swift/lib/PaperMC` | OrzMC/PaperMC | `main` | `14df3289ed74` |
 | `tools/DeathChest` | OrzMC/death-chest | `main` | `71d257127c7e` |
 | `tools/EzShops` | OrzMC/EzShops | `main` | `7fc73f750f2f` |
 | `tools/GetMeHome` | OrzMC/GetMeHome | `main` | `fdbe86df0ab0` |
