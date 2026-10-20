@@ -13,7 +13,7 @@
 | `proxy` | OrzMC/OrzMCProxy | `main` | `087bb52129a1` |
 | `python` | OrzMC/OrzPythonMC | `main` | `f8c6a67b55ae` |
 | `site` | OrzMC/OrzMCSite | `main` | `31d215f6400e` |
-| `swift/app` | OrzMC/OrzMCApp | `main` | `50b08a64c6c3` |
+| `swift/app` | OrzMC/OrzMCApp | `main` | `965a77e5dcf8` |
 | `swift/lib/ExarotonAPI` | OrzMC/ExarotonAPI | `main` | `4f5c1a28985d` |
 | `swift/lib/MojangAPI` | OrzMC/MojangAPI | `main` | `c5a0eadb4e83` |
 | `swift/lib/OrzAppUpdater` | OrzGeeker/OrzAppUpdater | `main` | `b23e0c414d78` |
@@ -24,8 +24,8 @@
 | `tools/EzShops` | OrzMC/EzShops | `main` | `7fc73f750f2f` |
 | `tools/GetMeHome` | OrzMC/GetMeHome | `main` | `fdbe86df0ab0` |
 | `tools/LoginSecurity` | OrzMC/LoginSecurity | `main` | `d45fbcf377eb` |
-| `tools/OrzMCBackup` | OrzMC/OrzMCBackup | `main` | `b0240890be56` |
-| `tools/rust-thanos` | OrzMC/rust-thanos | `main` | `2dce309fb70d` |
+| `tools/OrzMCBackup` | OrzMC/OrzMCBackup | `main` | `2d1060686c48` |
+| `tools/rust-thanos` | OrzMC/rust-thanos | `main` | `c4ffc4cb95dd` |
 | `tools/thanos` | aternosorg/thanos | `main` | `56772da33595` |
 | `webmc` | OrzMC/OrzWebMC | `main` | `e9a585ebcac3` |
 
