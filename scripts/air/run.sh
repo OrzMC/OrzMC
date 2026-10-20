@@ -14,6 +14,8 @@
 #   scripts/air/run.sh all                 # 同步 + build + test + accept
 #   scripts/air/run.sh sh '<命令>'          # 在远端同步目录里执行自定义命令
 #   scripts/air/run.sh app [参数…]          # 同步 swift/app + xcodebuild 构建 macOS app（免签名）
+#   scripts/air/run.sh app-ios               # 同上，但构建 **iOS 模拟器**目标
+#   scripts/air/run.sh app-test              # 同步 + 平台无关单测（swift test）
 #   scripts/air/run.sh app-clean            # 删远端 app 工作目录与 DerivedData
 #   scripts/air/run.sh clean               # 删除远端 .build
 #
@@ -105,8 +107,11 @@ app_dir_remote() { printf '%s' "${ORZMC_APP_REMOTE_DIR:-orzmc-build/app}"; }
 app_dd() { printf '%s' "${ORZMC_APP_DD:-orzmc-build/app-dd}"; }
 
 app_build() {
+    local dest="${ORZMC_APP_DEST:-platform=macOS}"
     local local_app remote_app dd
-    local_app="$(app_dir_local)"; remote_app="$(app_dir_remote)"; dd="$(app_dd)"
+    local_app="$(app_dir_local)"; remote_app="$(app_dir_remote)"
+    # 每个平台一份 DerivedData：共用一份会让 xcodebuild 互相失效、增量白丢。
+    if [[ "$dest" == *"iOS"* ]]; then dd="$(app_dd)-ios"; else dd="$(app_dd)"; fi
     [[ -d "$local_app" ]] || { echo "找不到 $local_app" >&2; exit 1; }
     need_host
     "${SSH[@]}" "$HOST" "mkdir -p $(dirname "$remote_app")"
@@ -118,20 +123,30 @@ app_build() {
     # HEAD 制：与 CI 一致，**删掉远端锁**再解析（否则旧 revision 会让新 API 报"找不到类型"）。
     # 只删远端副本里的，不动本地仓库文件。
     "${SSH[@]}" "$HOST" "rm -f \"$remote_app/OrzMC.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved\""
-    "${SSH[@]}" "$HOST" "cd \"$remote_app\" && xcodebuild -resolvePackageDependencies -scheme OrzMC -skipPackagePluginValidation -skipMacroValidation >/dev/null 2>&1 || true"
+    "${SSH[@]}" "$HOST" "cd \"$remote_app\" && xcodebuild -resolvePackageDependencies -scheme OrzMC -destination '$dest' -skipPackagePluginValidation -skipMacroValidation >/dev/null 2>&1 || true"
     "${SSH[@]}" "$HOST" "cd \"$remote_app\" && xcodebuild build \
         -scheme OrzMC \
-        -destination 'platform=macOS' \
+        -destination '$dest' \
         -derivedDataPath \"\$HOME/$dd\" \
         -skipPackagePluginValidation -skipMacroValidation \
         CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY='' \
         $* 2>&1 | tail -40; \
-        echo '产物: '\"\$(ls -d \"\$HOME/$dd/Build/Products/Debug/OrzMC.app\" 2>/dev/null || echo 未找到)\""
+        echo '产物: '\$(ls -d \"\$HOME/$dd/Build/Products\"/*/*.app 2>/dev/null || echo 未找到)"
+}
+
+# 平台无关单测（`Sources/*` 里的目标都能测，不需要模拟器）
+app_test() {
+    local local_app remote_app
+    local_app="$(app_dir_local)"; remote_app="$(app_dir_remote)"
+    need_host
+    rsync -az --delete --exclude '.git/' --exclude 'DerivedData/' --exclude 'build/' \
+        -e "ssh -o BatchMode=yes" "$local_app/" "$HOST:$remote_app/"
+    "${SSH[@]}" "$HOST" "cd \"$remote_app\" && swift test $* 2>&1 | tail -25"
 }
 
 app_clean() {
     need_host
-    "${SSH[@]}" "$HOST" "rm -rf \"\$HOME/$(app_dir_remote)\" \"\$HOME/$(app_dd)\""
+    "${SSH[@]}" "$HOST" "rm -rf \"\$HOME/$(app_dir_remote)\" \"\$HOME/$(app_dd)\" \"\$HOME/$(app_dd)-ios\""
     echo '已删除远端 app 工作目录与 DerivedData'
 }
 
@@ -156,6 +171,8 @@ shift || true
 case "$TASK" in
     env) env_report ;;
     app) app_build ;;
+    app-ios) ORZMC_APP_DEST='generic/platform=iOS Simulator' app_build ;;
+    app-test) app_test ;;
     app-clean) app_clean ;;
     sync) sync_tree ;;
     build)
@@ -184,7 +201,7 @@ case "$TASK" in
         ;;
     -h|--help) usage ;;
     *)
-        echo "未知子任务: $TASK（可用 env|app|app-clean|sync|build|test|accept|all|sh|clean）" >&2
+        echo "未知子任务: $TASK（可用 env|app|app-ios|app-test|app-clean|sync|build|test|accept|all|sh|clean）" >&2
         exit 2
         ;;
 esac

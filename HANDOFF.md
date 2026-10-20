@@ -208,8 +208,8 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - 车道已就位：`scripts/air/run.sh app`（增量 ~17s）。
 - 现状：GUI 已收敛到引擎（`launchClient`/`downloadClient` 共用、服务端四类型、结构化进度、托管 JRE，
   `#25`）、设置页可反向安装/查看 `orzmc` CLI（`#26`，`ORZMC_SURFACE=gui`）。
-- 待定范围（需先拍板再做）：① GUI 的「正版登录」界面要不要等 authlib-injector 方向定了再动；
-  ② GUI 是否接 `install.conf.surface`/多实例管理；③ iOS 侧（`OrzMC` 有 iOS target）要不要同步。
+- [x] `install.conf.surface` 接通（`#27`）；[x] iOS 进 CI + 平台分层（`#28`）。
+- 用户已定：**登录界面先不动**（等 authlib-injector 方向）。
 
 **C. 小加固**
 - [x] **`auth.json` 跨进程写锁**（`frontends.md` **F4.1**，2026-10-20）：`<stateDir>/auth.lock` 目录锁，
@@ -313,6 +313,31 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-20 — pi（swift/app：surface 接通 + iOS 进 CI + 平台分层）
+
+用户定了三件事：① 登录界面**先不动**（等 authlib-injector 方向）；② **GUI 要接 `install.conf.surface`**；
+③ iOS 与 macOS 功能不完全相同，**相同的收敛后迭代、不同的单独迭代**。
+
+**1. `install.conf.surface` 接通（`OrzMCApp#27`）**
+- 之前只"用一次"：安装时传 `ORZMC_SURFACE=gui`、界面上翻成一句文案。现在是一等公民：
+  状态区显示 surface / source（反推通道 Python CLI vs Swift CLI）/ `completion_file` / 记录落点 / 真身是否在；
+- **升级不再重跑安装器**：有真身时默认动作是 `orzmc update --yes` —— 它保留 `surface`/`source`，
+  所以"由终端安装"的记录不会被 GUI 静默改写成 `gui`；重装降为菜单里的次要入口（确认框明说会改写归属）；
+- **卸载** = `orzmc uninstall --yes`；真身缺失 → 告警 + 只给重装；旧记录缺 surface → 如实显示"未知"，不猜成 `cli`；
+- 判定逻辑落在**平台无关**的 `Sources/OrzMCLauncher/InstallRecordView.swift`（+4 单测），GUI 只留展示与进程调用。
+
+**2. iOS 进 CI + 平台分层（`OrzMCApp#28`）**
+- **真问题**：`ci.yml` 只构建 `platform=macOS` → **iOS 代码路径从没被构建过**（手工实测是绿的，但那是运气）。
+  改 matrix：macOS + iOS 模拟器（缓存 key 按平台分），`fail-fast: false`。
+- 新增 `docs/app-platform-split.md`（判定树）+ `scripts/check-platform-split.sh`（`Sources/*` 禁
+  `import AppKit`/`UIKit`），作为秒级 job 先跑。
+- 布局纠偏：`OrzMC/MobileHelper(iOS)/Protocol` → `Sources/OrzMCProtocol`（本来就是 iOS 专用 SwiftPM 目标）。
+- **收敛现状**：Exaroton 面板是真共用（一个多平台 target 编两遍）；版本目录/JRE 判定/版本过滤/
+  `install.conf` 语义是平台无关逻辑（`Sources/OrzMCLauncher`）；SLP/RCON/Query 是 iOS 专用独立目标。
+  **"共用"的边界在逻辑，不在 UI**。
+
+**3. air 车道扩展**：`app`（macOS）/`app-ios`（iOS 模拟器）/`app-test`（swift test）/`app-clean`。
 
 ### 2026-10-20 — pi（收口清理 + swift/app 迭代车道就位）
 

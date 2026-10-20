@@ -288,7 +288,9 @@ scripts/air/run.sh build          # 同步 + swift build --product orzmc   ~25s�
 scripts/air/run.sh test           # 同步 + swift test（90+ 例）           ~25s
 scripts/air/run.sh accept         # 同步 + release 构建 + CLI 验收 20 例   ~1m30s
 scripts/air/run.sh all            # 三者全跑
-scripts/air/run.sh app            # **Xcode 工程**（`swift/app`）免签名构建；增量约 17s（首轮 ~1m）
+scripts/air/run.sh app            # **Xcode 工程**（`swift/app`）macOS 免签名构建；增量约 17s（首轮 ~1m）
+scripts/air/run.sh app-ios        # 同上但构建 iOS 模拟器目标（约 1m，独立 DerivedData）
+scripts/air/run.sh app-test       # app 的平台无关单测（`swift test`）
 scripts/air/run.sh app-clean      # 删远端 app 工作目录 + DerivedData
 scripts/air/run.sh sh '<cmd>'     # 远端自定义命令
 ```

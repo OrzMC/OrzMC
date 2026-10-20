@@ -71,6 +71,18 @@
 > 不复制安装逻辑——因此 `surface=gui` 也意味着"这条记录由 GUI 触发安装"，
 > 而 `source` 仍指向真实发布通道（`OrzMC/OrzPythonMC` 或 `OrzMC/OrzMCKit`）。
 
+**GUI 侧的三个动作（normative，2026-10-20）**
+
+| 动作 | 走什么 | `surface` 结果 |
+|:--|:--|:--|
+| 首次安装 / 重装 | 官方安装器（`ORZMC_SURFACE=gui`） | 写 `gui`（这就是"谁装的"的更新，UI 需在确认框里说明） |
+| **升级** | 官方 `orzmc update --yes`（**不是**重跑安装器） | **保持原值**（含旧记录缺失时仍缺失），因此"由终端安装"的记录不会被静默改写成 `gui` |
+| 卸载 | 官方 `orzmc uninstall --yes` | 记录被删除 |
+
+- 有真身时 GUI **默认**给「升级」，重装是次要入口（放在菜单里）；真身缺失时只能重装。
+- GUI **只读** `install.conf`：`surface` 缺失/非法一律按"未知"展示（`origin unknown (legacy record)`），
+  不得猜测成 `cli`（与 F1 一致：不做文件推断）。
+
 ---
 
 ## 4. PATH 集成（Shell 自动识别，无 sudo）
