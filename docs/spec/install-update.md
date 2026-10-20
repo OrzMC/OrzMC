@@ -240,10 +240,28 @@ F1「PATH 上只有一个 `orzmc`」仍然成立：**只有 launcher 在 PATH �
 
 | 变量 | 值 | 行为 |
 |:--|:--|:--|
-| `ORZMC_RUNTIME` | 未设置 / `python` | 走 Python 实现（**当前默认**，存量行为不变） |
+| `ORZMC_RUNTIME` | `python` | **钉住** Python 实现（逃生阀，永远有效） |
 | `ORZMC_RUNTIME` | `swift` | 走 shim：解析/安装真身 → **转发** argv 与退出码 |
+| `ORZMC_RUNTIME` | 未设置 | 按下面的**默认判定**（D-M3-1，2026-10-20 生效） |
 
-切默认是单独的产品决策（D-M3-1），需要一版带「升级须知」的迁移窗口，不在本阶段。
+**默认判定（未设 `ORZMC_RUNTIME` 时，按顺序取自 `install.conf`）**
+
+| 顺序 | 条件 | 判定 | 理由 |
+|:--|:--|:--|:--|
+| 1 | 没有 `install.conf` | **`swift`** | 典型 `pip install` **新装**:直接给唯一实现,不引入第二套 |
+| 2 | `channel=wrapper` | **`swift`** | 用户主动跑过 `runtime install`/走过 shim,说明要的是真身 |
+| 3 | `source` 指向 `OrzMC/OrzMCKit` | **`swift`** | 原生 Swift 安装(见 R1) |
+| 4 | 其余(有 `install.conf` 且 `source` 指向 OrzPythonMC) | **`python`** | **存量零打扰**:一键安装器装的(含**新装**)暂仍走 Python——不因升级被悄悄换实现 |
+
+> 这就是 D-M3-1 的选择：**`pip` 新装直接单一实现；已有安装记录的一律不动**。
+> ⚠️ 注意第 4 条把「一键安装器」也算作存量：安装器目前装的是 **PyInstaller 二进制**，
+> 首次运行若再默认下载 Swift 真身等于让用户白下两遍。**解法在 D-M3-4**：把安装器改成直接装
+> Swift 二进制（`source=OrzMCKit` → 自动落到第 3 条），随后下线 PyInstaller 通道；
+> 在那之前，安装器用户想用单一实现就设 `ORZMC_RUNTIME=swift`。
+> 老用户想提前用上，设 `ORZMC_RUNTIME=swift`;想永久钉住 Python,设 `ORZMC_RUNTIME=python`。
+>
+> **Python 引擎的维护窗口（D-M3-2）**：自默认切换版（`orzmc-app 2.17.0`）发布起 **6 个月**内，
+> Python 实现只修**安全 / 数据损坏 / 无法启动**这三类问题，不再开发新功能；到期归档并移除判定第 4 条的豁免。
 
 **资产与校验**
 

@@ -145,6 +145,10 @@ class Sandbox:
                 "XDG_CONFIG_HOME": str(self.dir / "config"),
                 "XDG_CACHE_HOME": str(self.dir / "cache"),
                 # 稳定输出:关掉颜色/进度动画,固定宽度。
+                # 验收必须钉住 Python 实现：规范 §10.1 的「默认判定」会让**无 install.conf 的新装**
+                # 默认走 swift（首次要下载真身）——沙箱正是这种形状，不钉住就会联网下载。
+                # 默认判定本身由 `runtime/` 分组的用例显式覆盖。
+                "ORZMC_RUNTIME": "python",
                 "NO_COLOR": "1",
                 "TERM": "dumb",
                 "COLUMNS": "120",
@@ -493,12 +497,33 @@ def case_runtime_status(ctx: Context) -> None:
     assert isinstance(data, dict)
     for key in ("enabled", "installed", "path", "version", "source", "wrapper"):
         check(key in data, f"runtime status 缺少字段 {key}:{data}")
-    # 规范 install-update.md §10.1:默认**不**转发(存量行为不变),版本号分上下两套。
-    check(data["enabled"] is False, f"未设 ORZMC_RUNTIME 时不应启用转发:{data}")
+    # 沙箱里显式钉了 ORZMC_RUNTIME=python(见 Sandbox._clean_env),所以 enabled 必须是 False。
+    check(data["enabled"] is False, f"显式 ORZMC_RUNTIME=python 时不应启用转发:{data}")
     check(data["version"] == "", f"未安装时真身版本必须为空:{data}")
     check(bool(data["wrapper"]), f"launcher 版本(wrapper)必须上报:{data}")
     # 未知操作 -> E_USAGE(退出码 1),不是静默成功。
     expect_error(ctx.run("--json", "runtime", "bogus"), "runtime", "E_USAGE")
+
+
+@case("contract", "runtime-mode-switch")
+def case_runtime_mode_switch(ctx: Context) -> None:
+    """`ORZMC_RUNTIME` 显式值永远优先(规范 §10.1);`runtime` 命令自身不被转发。"""
+    if "runtime" not in _command_names(ctx):
+        return
+    for env_value, expected in (("swift", True), ("python", False)):
+        payload = expect_ok(
+            ctx.run("--json", "runtime", "status", env={"ORZMC_RUNTIME": env_value}),
+            "runtime",
+        )
+        data = payload["data"]
+        assert isinstance(data, dict)
+        check(
+            data["enabled"] is expected,
+            f"ORZMC_RUNTIME={env_value} 时 enabled 应为 {expected}:{data}",
+        )
+        # 版本号语义:真身版本与 launcher 版本分开报(§10.1)。
+        check(data["version"] == "", f"未安装真身时 version 必须为空:{data}")
+        check(bool(data["wrapper"]), f"launcher 版本必须上报:{data}")
 
 
 @case("contract", "non-interactive-never-blocks")
