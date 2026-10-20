@@ -347,6 +347,12 @@ dry-run 里 `build-windows (windows-11-arm, arm64)` **全绿**（zip 打包 + �
   Swift 已符合，**Python 实际返回 `E_RUNTIME`**（`AppInstaller` 抛 `RuntimeError`）——是 Python 侧要改，
   下次会话一并做（规格先行 + 两侧 + 验收）。
 
+**E. 顺手修掉一个指针缺陷**：`git ls-tree HEAD -- plugin` 竟是 `bd908b8`（**develop**）——
+`abed948`（2026-10-19「父仓库 CI 检出两个 harness 子模块」）把 plugin 指针一起改掉了，
+正是 `AGENTS.md` §5 反复警告的坑（本地 `plugin` 常检出 `develop`）。`f143fb1` 修过一次，这次是复发。
+已归位 `5eadd6e`（main），并刷新 `RELEASES.md` 基准组合（`python 95d50c0` / `OrzMCKit bad15bd` / `site 31d215f`）。
+👉 下次动 `ci.yml` 之类「看似只改父仓库自有文件」的提交时，**务必 `git add <明确路径>`**。
+
 **D. 父仓库层面**：`docs/windows-port.md` 新增 §3.5（arm64 三个坑与做法）、§4 前提表拆 x64/arm64；
 `docs/spec/frontends.md` 更新平台矩阵与证据链（并修掉 M2 已删除的 `scripts/accept_cli.py` 引用）；
 `docs/spec/parity.json` 的 `knownDrift` 改成「资产未发布」的准确说法（构建链路已验）。
