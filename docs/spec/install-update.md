@@ -263,6 +263,22 @@ F1「PATH 上只有一个 `orzmc`」仍然成立：**只有 launcher 在 PATH �
 - **版本号**：`orzmc --version` 报**真身**版本；launcher 版本只在 `orzmc runtime status --json` 里以
   `wrapper` 字段暴露（避免两套版本打架）。
 
+**与「原生安装」共存（优先级，normative）**
+
+同一台机器上可能同时存在两种真身来源：① 用户用 `install.sh` / `install.ps1` 装的**原生** Swift 版
+（在 `~/.local/bin`，`source` 指向 `OrzMC/OrzMCKit`）；② 本通道自管的副本（`<stateDir>/bin`）。
+
+| 规则 | 说明 |
+|---|---|
+| **R1 复用优先** | 若 `install.conf` 记录的真身 `source` 指向 `OrzMC/OrzMCKit`（或 `channel=wrapper`）**且文件可执行** → 直接 `exec` 它，**不再下载、不再写记录** |
+| **R2 绝不复用 Python 实现** | `source` 指向 `OrzPythonMC` 时不得复用——那会把命令转发回 Python，等于自己转自己 |
+| **R3 记录不覆盖** | 复用时不改写 `install.conf`；只有在**没有可用真身**、本通道自己下载并落盘时才写记录（`channel=wrapper`） |
+| **R4 记录失效则回退** | 记录里的 `binary` 不存在或不可执行 → 视为无真身，走「自己装一份」 |
+| **R5 单份优先** | `orzmc runtime install` 在 R1 成立时是 **no-op**（打印复用了哪份），不制造第二份 13–35 MB 副本 |
+
+> 这样 F1/F2/F3 仍成立：PATH 上只有一个 `orzmc`（launcher）；`install.conf` 仍是唯一事实；
+> `update` 仍只替换自己那份。`orzmc runtime status --json` 的 `reused` 字段直接暴露「是否复用了原生安装」。
+
 **管理命令（本阶段，Python 侧 lead）**
 
 | 命令 | 行为 |
