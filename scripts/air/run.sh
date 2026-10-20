@@ -123,7 +123,18 @@ app_build() {
     # HEAD 制：与 CI 一致，**删掉远端锁**再解析（否则旧 revision 会让新 API 报"找不到类型"）。
     # 只删远端副本里的，不动本地仓库文件。
     "${SSH[@]}" "$HOST" "rm -f \"$remote_app/OrzMC.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved\""
-    "${SSH[@]}" "$HOST" "cd \"$remote_app\" && xcodebuild -resolvePackageDependencies -scheme OrzMC -destination '$dest' -skipPackagePluginValidation -skipMacroValidation >/dev/null 2>&1 || true"
+    # 坑（CI 里也踩过）：SwiftPM 的**共享 bare 仓库缓存**里分支 ref 会落后，删了锁也没用——
+    # 解析仍用缓存里的旧 main，于是出现「文档/引擎明明有这个 API，却"找不到类型"」的假失败。
+    # 先把缓存里的分支 ref 刷新一遍，再解析。
+    # DerivedData 里还钉着旧的 checkout 与解析状态，也一并清掉（CI 也是这么干的）。
+    "${SSH[@]}" "$HOST" "rm -rf \"\$HOME/$dd/SourcePackages/checkouts/OrzMCKit\" \"\$HOME/$dd/SourcePackages/workspace-state.json\""
+    "${SSH[@]}" "$HOST" 'for repo in "$HOME"/Library/Caches/org.swift.swiftpm/repositories/OrzMCKit-*; do
+        [ -d "$repo" ] || continue
+        git -C "$repo" fetch --prune origin "+refs/heads/*:refs/heads/*" >/dev/null 2>&1 || true
+    done; true' 
+    # **必须带 `-derivedDataPath`**：不带的话解析走默认 DerivedData，那里另有陈旧状态，
+    # 结果就是「删了锁、清了 checkout，解析出来还是旧 revision」。
+    "${SSH[@]}" "$HOST" "cd \"$remote_app\" && xcodebuild -resolvePackageDependencies -scheme OrzMC -destination '$dest' -derivedDataPath \"\$HOME/$dd\" -skipPackagePluginValidation -skipMacroValidation >/dev/null 2>&1 || true"
     "${SSH[@]}" "$HOST" "cd \"$remote_app\" && xcodebuild build \
         -scheme OrzMC \
         -destination '$dest' \
