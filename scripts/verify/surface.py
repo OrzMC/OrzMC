@@ -292,6 +292,39 @@ def apply_deviations(report: dict[str, Any], deviations: dict[str, Any]) -> tupl
     return unexpected, declared
 
 
+def load_parity(manifest_path: Path) -> dict[str, Any]:
+    """读同目录的 `parity.json`（能力台账）；缺失时返回空（保持旧行为）。"""
+    path = manifest_path.parent / "parity.json"
+    try:
+        with path.open(encoding="utf-8") as handle:
+            data = json.load(handle)
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def drop_not_applicable(report: dict[str, Any], parity: dict[str, Any], implementation: str) -> list[str]:
+    """把台账里标 `na` 的命令从「实现缺失」里剔除。
+
+    台账（`parity.json`）是「这个能力该由谁实现」的唯一事实源：`runtime` 是 Python 侧的发行通道能力，
+    Swift 侧标 `na`（真身自己就是被转发方）。若这里不认 `na`，每加一个单侧命令都会让另一侧的
+    `--strict` 变红，逼着两边都写一份——正是并行期要避免的。
+
+    反向的约束仍在：若标了 `na` 却实现了它，`scripts/verify/parity.py`（读 capabilities）会报错。
+    """
+    commands = parity.get("commands") or {}
+    skipped: list[str] = []
+    remaining: list[str] = []
+    for name in report["missingCommands"]:
+        status = (commands.get(name) or {}).get(implementation)
+        if status == "na":
+            skipped.append(name)
+        else:
+            remaining.append(name)
+    report["missingCommands"] = remaining
+    return skipped
+
+
 def print_report(report: dict[str, Any]) -> None:
     impl = report["implementation"]
     total = issue_count(report)
@@ -443,12 +476,15 @@ def main() -> int:
         return 1
 
     report = compare(manifest, capabilities, args.implementation)
+    skipped_na = drop_not_applicable(report, load_parity(args.manifest), args.implementation)
     deviations = manifest.get("deviations", {}).get(args.implementation, {})
     unexpected, declared = apply_deviations(report, deviations)
     if args.json:
         print(json.dumps({"unexpected": unexpected, "declaredCount": declared}, ensure_ascii=False, indent=2))
     else:
         print_report(unexpected)
+        if skipped_na:
+            print(f"  · 台账标 na、本实现不提供（不算漂移）：{', '.join(skipped_na)}")
         if declared:
             print(f"  （已声明差异 {declared} 处，见 cli-surface.json `deviations.{args.implementation}`）")
     return 1 if args.strict and issue_count(unexpected) else 0

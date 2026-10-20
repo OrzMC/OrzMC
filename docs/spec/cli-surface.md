@@ -135,6 +135,16 @@ orzmc plugin [--search TEXT] [--list] [--output DIR] [--version VER] [--count N]
 | `mcp` | 无参数；stdio JSON-RPC server | **新增（见 §8.2）** |
 | `runtime` | `status\|install`；`--version`、`--yes` | **新增（见 `install-update.md` §10.1，M3）** |
 
+### 4.6 `runtime`（运行时分发，Python 侧 lead）
+
+`runtime` 是 M3 的**发行通道**能力（安装/升级 Swift 真身并转发命令），契约见
+[`install-update.md`](install-update.md) §10.1。
+
+- **只在 Python 侧实现**；Swift 侧在台账（`parity.json`）里标 `na` —— 它自己就是被转发方。
+- `scripts/verify/surface.py` 会**读台账**：标 `na` 的命令从「实现缺失」里剔除（否则每加一个单侧命令，
+  另一侧的 `--strict` 都会红，逼着两边各写一份）。反向约束仍在：标了 `na` 却实现了它，
+  `scripts/verify/parity.py` 读 capabilities 时会报错。
+
 ### 4.5 `completion`（补全契约，已定稿）
 
 ```
