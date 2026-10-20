@@ -211,6 +211,12 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
       与 Microsoft 设备码流程的关系（互斥？并存？）、错误码 `E_AUTH*` 的映射。
 - [ ] 规范落 `docs/spec/auth.md` 新章节后，再按「一个功能只在一侧写」推进（Swift lead）。
 
+**B2. Swift 资产自包含（并行期就该做，`docs/cli-comparison.md` §6.1）**
+- [ ] `orzmc-linux-*` 试 `swift build --static-swift-stdlib`；构建机从 ubuntu-24.04 降到 22.04
+      （glibc 2.38 → 2.35），在**干净** `ubuntu:24.04` 镜像里验（现在 Docker/Swift 运行时都没有也能跑）。
+- [ ] `release.yml` 的 `verify-linux` 去掉 `container: swift:6.0`（自带运行时 → 掩盖依赖问题），
+      改用 `ubuntu:24.04` + 装 `unzip curl`。**不修这条，Linux 用户会掉进"装了跑不起来"。**
+
 **C. 可选加固（非阻塞）**
 - `auth.json` 跨进程写锁（`frontends.md` §7 待补第 3 条）。
 - `runtime` 的 Rust-free 降级：真身损坏（魔数/校验失败）时自动 `.bak` 回滚。
@@ -306,6 +312,37 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-20 — pi（两套 CLI 实测对比 + 一个必须先修的硬伤）
+
+用户要求「按 6 平台对齐平替」评估两侧，产出 **`docs/cli-comparison.md`** + 可复跑脚本
+**`scripts/bench/cli.py`**（标准库、跨平台、离线）。核心数据：
+
+| 维度 | Python（官方资产） | Swift（官方资产） |
+|---|---|---|
+| `--version` 中位 | **934 ms**（CPU 874） | **13 ms**（CPU 10） |
+| `--json capabilities` | 938 ms | 28 ms |
+| 峰值 RSS | 37 MB | 4 MB |
+| 体积 | 15.5 MB 单文件 | 13.9 MB 单文件 |
+| `--version`（pip 源码形态） | 628 ms | — |
+
+- **Swift ≈ 25–70× 启动、≈9× 内存**；Python 慢的原因是 PyInstaller **onefile** 每次运行都解包到
+  `$TMPDIR/_MEI*`（CPU≈墙钟，不是等待）。
+- 迭代：Python 本地门禁 **10 s**（任意机器）/ 473 测试 vs Swift **25.7 s 且必须走 `ssh air`** / 98 测试；
+  Python CI `quality` 43 s、`test` 24 s；Swift `test` 100 s、`linux` 131 s、`conformance` 109 s、`windows` 618 s。
+- 发布：Python 整条 **2.7 min**、单腿 28–77 s；Swift **15.4 min**、Windows 腿 805–1037 s（工具链坑多）。
+
+**⚠️ 抓到一个必须先修的硬伤：Swift 的 Linux 资产不自包含**
+`orzmc-linux-x86_64` 动态依赖 `libswiftCore.so` / `libFoundation*.so` / `libdispatch.so` 等，
+且 **glibc 下限 2.38**（构建机 ubuntu-24.04）；干净 Ubuntu 上直接
+`libswiftCore.so: cannot open shared object file`。对比 Python 资产：只需 `libc/libdl/libpthread/libz`，
+**glibc ≥ 2.14**、macOS 10.13+。Windows 侧 Swift 是 **33 文件 zip**（exe+32 DLL，35 MB），Python 是单 exe。
+`verify-linux` 至今在 **`swift:6.0` 容器**里验（自带运行时）→ 等于没验到运行时依赖。
+
+**结论（写进文档）**：运行效率 Swift 完胜；独立可运行性 / 发布与迭代成本 Python 完胜。
+**并行期分工**：Swift 主体验（修好 Linux 自包含后），Python 作发行通道 + 兜底（`ORZMC_RUNTIME=python`）。
+**下一步（已列进 §4）**：① Swift Linux 试 `--static-swift-stdlib` 并把构建机降到 ubuntu-22.04（glibc 2.35）；
+② `verify-linux` 改干净 `ubuntu:24.04` 容器；③ 两条都绿后再评估 M3 阶段 2。
 
 ### 2026-10-20 — pi（M3 收口：默认切换 + 维护窗口 + PyInstaller 下线排期）
 
