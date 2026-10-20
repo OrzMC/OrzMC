@@ -36,7 +36,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 > **当前状态（2026-10-20）**
 > - **两套 CLI 并行**（用户决策：先并行，别冻结 Python）：`docs/two-cli-strategy.md` 定义规则，
 >   台账 `docs/spec/parity.json`，校验器 `scripts/verify/parity.py`（父仓库 CI + 两个子模块的 `ledger` job，三处都在跑）。
-> - **跨平台已齐（六类资产全部已发布）**：`OrzMCKit v0.18.0` 起有 `orzmc-windows-arm64.zip`，
+> - **跨平台已齐（六类资产全部已发布、Linux 已自包含）**：`OrzMCKit v0.19.0` 起 `orzmc-linux-*`
+>   静态链接 Swift 运行时（无 `libswift*` 依赖、glibc 2.35、体积 62–65 MB），`verify-linux` 改在干净
+>   `ubuntu:24.04` 里验。`OrzMCKit v0.18.0` 起有 `orzmc-windows-arm64.zip`，
 >   Windows 三个坑（工具链架构 / MSVC 库架构 / STL1000 工具集版本）的解法见 `docs/windows-port.md` §3.5。
 >   台账 `sharedArtifacts.knownDrift` 已**清空**。
 > - **一致性 79/79**（新增 `state-paths/*` 三例：两侧实际上报落点 vs `state-paths.json`）。
@@ -105,7 +107,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `76f0275` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.15.0 已发布（首个带 M3 runtime shim，opt-in）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；CI 修回归（release PR 重新上报必需检查）；`ledger` 台账校验 + 命令面 `--strict` |
 | `swift/app` | `efbb665` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
-| `swift/lib/OrzMCKit` | `cee4697` | **Swift 引擎 + `orzmc` CLI**；**`v0.18.0` 已发布 = 六类资产齐**（macOS×2 / Linux×2 / **windows-{x86_64,arm64}.zip**）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
+| `swift/lib/OrzMCKit` | `3fd3450` | **Swift 引擎 + `orzmc` CLI**；**`v0.19.0` 已发布**（六资产；**Linux 自包含**：静态链 Swift 运行时、glibc 2.35、62–65 MB）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
@@ -211,11 +213,13 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
       与 Microsoft 设备码流程的关系（互斥？并存？）、错误码 `E_AUTH*` 的映射。
 - [ ] 规范落 `docs/spec/auth.md` 新章节后，再按「一个功能只在一侧写」推进（Swift lead）。
 
-**B2. Swift 资产自包含（并行期就该做，`docs/cli-comparison.md` §6.1）**
-- [ ] `orzmc-linux-*` 试 `swift build --static-swift-stdlib`；构建机从 ubuntu-24.04 降到 22.04
-      （glibc 2.38 → 2.35），在**干净** `ubuntu:24.04` 镜像里验（现在 Docker/Swift 运行时都没有也能跑）。
-- [ ] `release.yml` 的 `verify-linux` 去掉 `container: swift:6.0`（自带运行时 → 掩盖依赖问题），
-      改用 `ubuntu:24.04` + 装 `unzip curl`。**不修这条，Linux 用户会掉进"装了跑不起来"。**
+**B2. ✅ Swift 资产自包含（2026-10-20 已修，`OrzMCKit v0.19.0`）**
+- [x] `build-linux` 改在 `swift:6.0-jammy`（glibc 2.35）+ `--static-swift-stdlib` + `-Xlinker -s`；
+      构建后断言 `ldd` 无 `libswift*`（探针矩阵确认 x64/arm64 都生效）。
+- [x] `verify-linux` 改**干净 `ubuntu:24.04`**（+binutils）：先断言自包含，再跑验收与安装器全链路
+      —— `v0.19.0` 实发在干净容器里全绿。
+- [x] 附带：自有依赖 `OrzSwiftLint` 加 `ORZSWIFTLINT_SKIP=1` 逃生阀（SwiftLint 预编译二进制要
+      GLIBC_2.38，在 jammy 上会中止构建），发布流水线用它构建产物，日常 CI 仍跑 lint。
 
 **C. 可选加固（非阻塞）**
 - `auth.json` 跨进程写锁（`frontends.md` §7 待补第 3 条）。
@@ -312,6 +316,31 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-20 — pi（修掉 Linux 自包含硬伤：静态链 + jammy 构建 + 干净容器验收）
+
+用户「修掉」→ 把 `docs/cli-comparison.md` §6.1 的两条硬伤修完并实发验证（**`OrzMCKit v0.19.0`**）。
+
+**探针先行**（`linux-static-probe.yml`，matrix = x64/arm64 × 动态/静态，跑完即删）：
+| 组合 | 结果 |
+|---|---|
+| 动态链 + jammy | ❌ 仍依赖 `libswiftCore.so` 等（只是 glibc 降到 2.35） |
+| **静态链 + jammy** | ✅ **无 `libswift*` 依赖**，`GLIBC_2.35`，能直接运行 |
+
+**路上三个坑**
+1. jammy 上构建被 **SwiftLint 预编译二进制**挡住：它要求 `GLIBC_2.38`/`GLIBCXX_3.4.32`，插件失败会
+   中止构建 → 给自有依赖 **OrzSwiftLint 0.0.10** 加 `ORZSWIFTLINT_SKIP=1` 逃生阀（仅发布构建用），
+   OrzSwiftKit 升依赖（#17）。
+2. 我把「自包含断言」插错 job（`Assert architecture` 在 macOS 与 linux 两处都有）→ macOS 上 `ldd` 失败；
+   容器 job 默认 shell 是 `sh`（无 `pipefail`）→ 都补 `shell: bash`。
+3. `verify-linux` 原用 `swift:6.0`（自带运行时）→ 等于没验依赖；改 **干净 `ubuntu:24.04` + binutils**。
+
+**结果**：`v0.19.0` 六资产发布；`orzmc-linux-*` 62–65 MB（比动态的 35 MB 大，静态 Foundation/ICU 的代价），
+无 `libswift*` 依赖、`GLIBC_2.35`、仍依赖系统 `libcurl4`；**`verify-linux` 在干净容器里全绿**
+（自包含断言 + 共享验收 + `install → verify → uninstall`）。Release notes + CHANGELOG 写了「升级须知」。
+
+**顺带修的一个真回归**：加 `runtime` 到 manifest 后 Swift CI 红（`surface.py` 不认台账的 `na`）→
+检查器改为读 `parity.json`，标 `na` 的命令从「缺失」里剔除（反向约束仍在：标 na 却实现会被 `parity.py` 抓）。
 
 ### 2026-10-20 — pi（两套 CLI 实测对比 + 一个必须先修的硬伤）
 

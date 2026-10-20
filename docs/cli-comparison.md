@@ -1,6 +1,6 @@
 # 两套 CLI 的实测对比（Swift 实现 vs Python 实现）
 
-> **状态**：生效中（一次性实测快照 + 可复跑脚本）· **最后更新**：2026-10-20
+> **状态**：生效中（实测快照 + 可复跑脚本；2026-10-20 更新：Linux 自包含已修）· **最后更新**：2026-10-20
 > **结论先说**：**没有全面更优的一方** —— Swift 在「运行时效率」上碾压（**25–70× 启动、~9× 内存**），
 > Python 在「独立可运行性 / 发布成本 / 迭代摩擦」上明显更好。**并行期按能力分工**（见 §7），
 > 但 Swift 侧有两个**硬伤必须先修**（§6.1：Linux 资产不自包含；`verify-linux` 在"自带运行时"的容器里验）。
@@ -36,7 +36,7 @@
 | `--json capabilities` | **938 ms**（CPU 878 ms） | **28 ms**（CPU 21 ms） | **≈34×** |
 | `--json list` | **904 ms**（CPU 844 ms） | **22 ms**（CPU 15 ms） | **≈41×** |
 | 峰值 RSS | **37 MB** | **4 MB** | ≈9× |
-| 体积 | 15.5 MB | 13.9 MB | 相当 |
+| 体积（macOS） | 15.5 MB | 13.9 MB | 相当（Linux 侧 Swift 为 62–65 MB，见 §3） |
 
 **为什么差这么多**：Python 资产是 PyInstaller **onefile** —— 每次运行都要把内嵌归档解到
 `$TMPDIR/_MEIxxxx` 再执行（实测运行期确实创建 `_MEI*` 目录，退出后清理）。CPU 时间几乎等于墙钟，
@@ -61,7 +61,7 @@
 | 平台 | Python 资产 | Swift 资产 |
 |---|---|---|
 | **macOS** | ✅ 单文件；`otool -L` 只有 `libSystem` + `libz`；**最低 macOS 10.13** | ⚠️ 单文件，但依赖**系统 Swift 运行时**（`/usr/lib/swift/libswiftCore.dylib` 等）；**最低 macOS 13.0** |
-| **Linux** | ✅ 单文件；只需要 `libc/libdl/libpthread/libz`；**glibc ≥ 2.14** | ❌ **不自包含**：需要 `libswiftCore.so` / `libFoundation*.so` / `libdispatch.so` / `libBlocksRuntime.so` / `libstdc++`，且 **glibc ≥ 2.38**（构建机是 ubuntu-24.04） |
+| **Linux** | ✅ 单文件；只需要 `libc/libdl/libpthread/libz`；**glibc ≥ 2.14** | ✅ **0.19.0 起自包含**：`--static-swift-stdlib` + jammy 构建 → 无 `libswift*` 依赖，**glibc ≥ 2.35**；仍依赖系统 `libcurl4`；体积 62–65 MB（静态 Foundation/ICU 的代价） |
 | **Windows** | ✅ 单个 `.exe`（16 MB） | ❌ **33 个文件的 zip**（35 MB，解压 100 MB）：exe + 32 个运行时 DLL（`Foundation.dll` / `_FoundationICU.dll` …） |
 
 **怎么确认的**
@@ -125,13 +125,19 @@ Swift 的依赖在**构建期**固化（用户侧零第三方，但换来的是 
 **解读**：Python 发布**便宜且稳**；Swift 发布**贵且脆**（今天新增 arm64 就踩了 3 个坑），
 而且 `verify-linux` 用自带运行时的容器验，**掩盖了 §3 的问题**。
 
-### 6.1 必须在 Swift 侧修的两件事（并行期就该做）
+### 6.1 ✅ 两件硬伤已修（2026-10-20，`OrzMCKit v0.19.0`）
 
-1. **Linux 资产自包含化**：试 `swift build --static-swift-stdlib`（Linux 上有效；Windows 已验证无效）；
-   同时把构建机换成 glibc 更老的发行版（`ubuntu-22.04`，glibc 2.35）以降低下限。
-   修完在**干净 ubuntu 24.04/22.04 镜像**里验一遍。
-2. **`verify-linux` 换成干净容器**：去掉 `container: swift:6.0`（那个镜像自带 Swift 运行时，
-   等于"在有运行时的环境里验运行时依赖"）→ 改用 `ubuntu:24.04`，装 `unzip`/`curl` 即可。
+| 问题 | 修法 | 验证 |
+|---|---|---|
+| Linux 资产动态依赖 Swift 运行时、glibc 要 2.38 | `build-linux` 改在 **`swift:6.0-jammy`**（glibc 2.35）里构建 + **`--static-swift-stdlib`** + 链接期 strip；构建后断言 `ldd` 无 `libswift*` | 探针矩阵（x64/arm64 × 动态/静态）确认静态链在 Linux 上真实生效；`v0.19.0` 资产实测只剩 `libc/libcurl/libstdc++/libgcc/libm`，**GLIBC_2.35** |
+| `verify-linux` 在自带运行时的 `swift:6.0` 镜像里验（等于没验） | 改用 **干净 `ubuntu:24.04`** + `binutils`：先断言 `ldd` 干净，再跑共享验收与安装器全链路 | `v0.19.0` 发布的 `verify-linux` **在干净容器里全绿**（含 `install → verify → uninstall`） |
+
+> 附带产物：SwiftLint 的预编译二进制要求 GLIBC_2.38（在 jammy 上跑不起来、且插件失败会中止构建），
+> 因此给自有依赖 `OrzSwiftLint` 加了 `ORZSWIFTLINT_SKIP=1` 逃生阀（仅发布流水线构建产物时使用，
+> 日常 CI 仍跑 lint）。
+>
+> **代价**：Linux 资产 35 MB → **62–65 MB**（静态链把 Foundation/ICU 也带了进来）。
+> 这是"能在干净系统上独立运行"换来的；对比 Python 的 18 MB 仍偏大，但已不再需要用户装运行时。
 
 ---
 
@@ -153,12 +159,12 @@ Swift 的依赖在**构建期**固化（用户侧零第三方，但换来的是 
 
 **综合判断（并行期）**：
 
-- **拿 Swift 当"产品默认实现"是对的**（用户体验：启动快、内存小、单文件、零第三方），
-  **前提是先把 Linux 自包含修好** —— 否则 Linux 用户会掉进"装了跑不起来"。
+- **拿 Swift 当"产品默认实现"是对的**（用户体验：启动快、内存小、单文件、零第三方）。
+  Linux 自包含**已修**（`0.19.0`：无 `libswift*` 依赖、glibc 2.35），代价是 Linux 体积 62–65 MB。
 - **拿 Python 当"发行通道 + 兜底实现"也是对的**（`ORZMC_RUNTIME=python` 逃生阀、老平台、
   干净/受限环境、发布成本低），尤其在 Swift Linux 资产还没自包含之前，**它是 Linux 的可靠退路**。
-- 因此**现阶段保持并行**（用户决定）是合理状态；等 §6.1 修完、Swift 三平台都自包含后，
-  再评估是否把 `pip` 新装的默认路径与安装器都指向 Swift（M3 阶段 2，已按"只对新装切"落地）。
+- 因此**现阶段保持并行**（用户决定）是合理状态：`pip` 新装已默认走 Swift（M3 阶段 1），
+  安装器仍装 Python 资产（D-M3-4 排期：改造安装器直接装 Swift 二进制 → 下线 PyInstaller 通道）。
 
 **一句话**：**运行效率 Swift 完胜；独立可运行性/发布与迭代成本 Python 完胜；
 现在的最优解是「Swift 主体验 + Python 兜底与发行」，而不是二选一。**
