@@ -81,12 +81,40 @@ install.ps1 -version v0.15.0 -dir E:\orzmc-verify\bin -no-modify-rc -no-completi
 install.conf                 → platform=windows-x86_64 / version=0.15.0 / surface=cli
 ```
 
+## 3.5 Windows **arm64**（2026-10-20，链路已打通）
+
+Windows arm64 是台账里最后一条挂账（`docs/spec/parity.json` → `sharedArtifacts.knownDrift`），
+也是 M3（Python 作发行通道）的前置条件。三个坑都是探针实测出来的（`gh workflow run ci.yml --ref <branch>`
+触发 `windows-arm64` job，一次跑完）：
+
+| 坑 | 现象 | 修法 |
+|---|---|---|
+| 工具链架构 | `compnerd/gha-setup-swift` 默认装 **amd64** 包 → 在 arm64 runner 上跑不起来 | 显式 `build_arch: arm64`（Swift 6.2 起 swift.org 提供 `Windows 10 arm64`） |
+| MSVC 库架构 | `lld-link: error: msvcrt.lib(exe_main.obj): machine type x64 conflicts with arm64` | runner 默认 `vcvarsall x64`；把 arm64 的 `INCLUDE`/`LIB` 铺进环境 |
+| 工具集版本 | `STL1000: Unexpected compiler version, expected Clang 20 or newer` | arm 镜像同时装 **VS 17 + VS 18**；VS18 的 STL 要 Clang 20+，Swift 6.2 是 Clang 19 → **选最老且带 `lib\arm64` 的工具集** |
+
+**为什么不直接 `vcvarsall.bat arm64`**（含 `ilammy/msvc-dev-cmd`）：这台 runner 的 PATH 极长，
+vcvarsall 内部展开 PATH 时撞 cmd 的 **8191 字符**上限，报
+`The input line is too long.` / `The syntax of the command is incorrect.` 且没有有用的错误上下文。
+
+**做法**：`.github/actions/msvc-arm64`（一个本地 composite action，两处复用）——
+用 `vswhere` 枚举安装 → 收集所有带 `lib\arm64` 的 MSVC 工具集 → 最老优先 → 导出
+`INCLUDE`/`LIB`/`VCToolsInstallDir`/`WindowsSdkDir`/`WindowsSDKVersion`/`UCRTVersion`，
+并把 `HostARM64\arm64`（无则 `HostX64\arm64`）加进 PATH。
+
+**产物与安装**：`orzmc-windows-arm64.zip`（同 x64 的 zip 形状）。下游**零改动**已有：
+`install.ps1` 把 `PROCESSOR_ARCHITECTURE=ARM64` 映射成 `arm64`；自升级按 `arch(arm64)` 运行时判定。
+
+**验证**：真机 `ssh win` 是 x64，arm64 只能靠 CI——`ci.yml` 的 `windows-arm64` job（手 dispatch、
+零常态成本）+ `release.yml` dry-run 的 `build-windows (windows-11-arm, arm64)` 腿。
+
 ## 4. 关键前提（必须写进 CI/发布）
 
 | 项 | 值 | 原因 |
 |---|---|---|
-| runner | **`windows-2022`** | `windows-2025` 的 VS 18 STL 要求 Clang 20+，当前 Swift 工具链不满足 |
-| Swift | **6.2** | 6.0 的 SwiftPM 在 Windows 上处理构建插件输出有缺陷（`missing inputs`） |
+| runner（x64） | **`windows-2022`** | `windows-2025` 的 VS 18 STL 要求 Clang 20+，当前 Swift 工具链不满足 |
+| runner（arm64） | **`windows-11-arm`** | 唯一的 Windows arm64 runner；其 MSVC 环境要靠 `.github/actions/msvc-arm64` 换到 arm64（见 §3.5） |
+| Swift | **6.2** | 6.0 的 SwiftPM 在 Windows 上处理构建插件输出有缺陷（`missing inputs`）；6.2 起才有 arm64 工具链 |
 | 安装器开关 | `update-sdk-modules: true` | 否则依赖的 `Package.swift` 都编译不了 |
 | 开发者模式 | `AllowDevelopmentWithoutDevLicense=1` | SwiftPM 需要建符号链接 |
 | 打包 | `orzmc.exe` + Swift 运行时 DLL → **zip** | 单 exe 在无 Swift 的机器上 `STATUS_DLL_NOT_FOUND` |
@@ -96,5 +124,5 @@ install.conf                 → platform=windows-x86_64 / version=0.15.0 / surf
 
 | 路线 | 剩余工作 | 估计 |
 |---|---|---|
-| **A. Windows 全量** | ☑ **已完成**（v0.15.0 起有 `orzmc-windows-x86_64.zip`，真机验证通过） | — |
+| **A. Windows 全量** | ☑ **已完成**（v0.15.0 起有 `orzmc-windows-x86_64.zip`，真机验证通过；arm64 链路 2026-10-20 打通，下一次发版出 `orzmc-windows-arm64.zip`） | — |
 | B. Windows 走 Python | 不需要了 | — |

@@ -169,7 +169,7 @@
 | 前端 | macOS | Linux | Windows | 说明 |
 |:--|:--|:--|:--|:--|
 | `python` CLI（`orzmc` / PyPI） | ✅ 已发布 | ✅ 已发布 | ✅ 已发布 | 6 平台资产已验证；**维护模式**（D14：不再新增功能） |
-| Swift CLI（`OrzMCKit` 的 `orzmc`） | ✅ 已发布（arm64/x86_64） | ✅ **已发布**（`orzmc-linux-{x86_64,arm64}`，v0.14.0 起；发布后自动验收） | ✅ **已发布**（`orzmc-windows-x86_64.zip`，v0.15.0 起；真机无 Swift 环境验证通过，见 [`../windows-port.md`](../windows-port.md)） | 收敛目标实现；判据见 `product-unification-plan.md` D14.1 |
+| Swift CLI（`OrzMCKit` 的 `orzmc`） | ✅ 已发布（arm64/x86_64） | ✅ **已发布**（`orzmc-linux-{x86_64,arm64}`，v0.14.0 起；发布后自动验收） | ✅ **已发布**（`orzmc-windows-x86_64.zip`，v0.15.0 起；真机无 Swift 环境验证通过）；**arm64** 链路 2026-10-20 已打通，资产随下一次发版 | 收敛目标实现；判据见 `product-unification-plan.md` D14.1 |
 | Swift GUI（`OrzMCApp`） | ✅ | — | — | SwiftUI，天然 Apple only |
 
 跨平台能力差异（Swift CLI 到 Linux/Windows 的已知边界）：
@@ -182,8 +182,12 @@
   音乐提取依赖系统 `unzip`，缺失则跳过该功能。
 
 **Linux 证据链（v0.14.0）**：`release.yml` 的 `verify-linux` 每次发版自动执行——下载真实
-`orzmc-linux-x86_64` → `sha256sum -c` → `scripts/accept_cli.py`（20/20）→ `install.sh`
-安装 → 版本/补全/`install.conf` 字段断言 → `uninstall --yes` 清理。
+`orzmc-linux-x86_64` → `sha256sum -c` → 父仓库 `scripts/accept/cli.py`（20/20，M2 起两侧只有一份）→
+`install.sh` 安装 → 版本/补全/`install.conf` 字段断言 → `uninstall --yes` 清理。
+
+**Windows arm64 证据链（2026-10-19/20）**：`ci.yml` 的 `windows-arm64` job（手动触发，零常态成本）
+把「`windows-11-arm` + Swift arm64 工具链 + MSVC arm64 库 + 构建 + 冒烟 + 单测」整条链跑通；
+技术前提与三个坑见 [`../windows-port.md`](../windows-port.md) §3.5。
 
 ### 7.1 GUI 前端（`OrzMCApp`）接入现状
 
