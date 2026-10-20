@@ -219,7 +219,9 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 7. **凡是"直接跑 `orzmc`"的 CI/脚本都要钉 `ORZMC_RUNTIME=python`**（默认已是 Python，但钉住能防止实验开关误开）。
 8. **Python 侧 ruff 禁全角标点**（RUF002/RUF003）。
 9. **`GITHUB_TOKEN` 建的 PR 不触发 `pull_request` 工作流** → release PR 没 checks 是常态，close/reopen 补触发。
-10. **Swift 的 Release 是 pre-release**：`releases/latest` 不会指向它；实验通道（`runtime`）已改为列 Release 取最新。
+10. **Swift 的 Release 全是 pre-release**：`releases/latest` 返回 **404**（历史 22 个也已转换）→
+    OrzMCKit 自带的 `install.sh`/`install.ps1` **必须显式给版本**；实验通道（`runtime`）已改为列 Release 取最新
+    （实测可拉到 pre-release 的 `0.19.0` 并安装）。
 
 > **★ 下一会话起点（2026-10-15 交接）**：本地 `--auth` 离线部分（阶段 A/B/C，三适配器 73/73）与
 > **`orzmc mcp` server（两端）均已完成**。真实登录 E2E 等办卡/注册后再做（待办 A）；
@@ -316,6 +318,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 | `ORZMC_RUNTIME=swift` | swift | 仍 swift（**实验开关**） |
 
 **Swift 侧**：`release.yml` 的 `gh release create/edit` 加 `--prerelease`（`releases/latest`、官网、安装器默认路径都不会指向它）；
+并把**历史 Release（22 个）一并转成 pre-release** → `repos/OrzMC/OrzMCKit/releases/latest` 现在返回 **404**（不再对外指向 Swift）；
 README 顶部加「实验性 / 不对外分发」提示、Install 小节提示需显式版本。
 **联动**：Python 的 `runtime` 实验通道改为**列 Release 取最新**（`releases/latest` 不再指向 pre-release），新增单测。
 
