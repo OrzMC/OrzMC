@@ -241,6 +241,16 @@ def expect_ok(result: Result, command: str) -> dict[str, object]:
     return payload
 
 
+def _logical(path: str) -> str:
+    """把原生分隔符归一成 `/` 再比较。
+
+    规范里的路径模板(`state-paths.json` / conformance fixture)一律用逻辑分隔符 `/`;
+    Windows 上的实现给出的绝对路径是 `\`(它要用它去写盘),两者只差分隔符,
+    所以断言前统一归一 —— 否则 CI 会因为"实现正确、写法不同"而红(2026-10-20 实测)。
+    """
+    return path.replace("\\", "/")
+
+
 def expect_error(result: Result, command: str, code: str | None = None) -> dict[str, object]:
     payload = envelope(result)
     check(payload["command"] == command, f"信封 command 应为 {command}:\n{result.describe()}")
@@ -563,12 +573,13 @@ def case_completion_paths_match_snapshot(ctx: Context) -> None:
     check(isinstance(unix_paths, dict) and unix_paths, f"state-paths.json 缺 unix.completion: {snapshot}")
     home = str(ctx.sandbox.home)
     for shell, template in unix_paths.items():
-        expected = str(template).replace("$HOME", home)
+        expected = _logical(str(template).replace("$HOME", home))
         result = ctx.run("--json", "completion", "install", env={"SHELL": f"/bin/{shell}"})
         payload = expect_ok(result, "completion")
         data = payload["data"]
         assert isinstance(data, dict)
-        check(data.get("path") == expected, f"{shell} 落点与 state-paths.json 不一致: {data.get('path')} != {expected}")
+        actual = _logical(str(data.get("path")))
+        check(actual == expected, f"{shell} 落点与 state-paths.json 不一致: {actual} != {expected}")
 
 
 @case("completion", "script-only-shells-are-unsupported")
