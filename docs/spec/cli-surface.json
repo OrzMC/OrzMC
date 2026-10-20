@@ -2,142 +2,518 @@
   "specVersion": "0.1",
   "description": "OrzMC CLI 命令面的机器可读 manifest（规范 cli-surface.md 的单一事实源；路线 A 第一步）。选项 `name` 为规范长名（选项 `--x`、位置参数为裸名），`aliases` 为兼容旧名，`short` 为短名（实现可不提供，校验器不强制）。",
   "globalOptions": [
-    { "name": "--verbose", "type": "boolean", "flag": true, "help": "输出调试日志" },
-    { "name": "--root-dir", "type": "string", "help": "游戏根目录(默认 ~/minecraft)" },
-    { "name": "--json", "type": "boolean", "flag": true, "help": "机器可读输出(信封见 §6.1)" },
-    { "name": "--version", "type": "boolean", "flag": true, "help": "打印工具版本并退出" },
-    { "name": "--help", "short": "-h", "type": "boolean", "flag": true, "help": "帮助" }
+    {
+      "name": "--verbose",
+      "type": "boolean",
+      "flag": true,
+      "help": "输出调试日志"
+    },
+    {
+      "name": "--root-dir",
+      "type": "string",
+      "help": "游戏根目录(默认 ~/minecraft)"
+    },
+    {
+      "name": "--json",
+      "type": "boolean",
+      "flag": true,
+      "help": "机器可读输出(信封见 §6.1)"
+    },
+    {
+      "name": "--version",
+      "type": "boolean",
+      "flag": true,
+      "help": "打印工具版本并退出"
+    },
+    {
+      "name": "--help",
+      "short": "-h",
+      "type": "boolean",
+      "flag": true,
+      "help": "帮助"
+    }
   ],
   "commands": [
     {
       "name": "client",
       "help": "启动客户端(缺文件自动下载即安装)",
       "options": [
-        { "name": "--version", "short": "-v", "type": "string", "help": "游戏版本" },
-        { "name": "--username", "short": "-u", "type": "string", "help": "玩家名" },
-        { "name": "--type", "short": "-t", "type": "string", "enum": ["vanilla", "fabric", "forge"], "default": "vanilla" },
-        { "name": "--min-mem", "short": "-m", "aliases": ["--minmem"], "type": "string", "default": "512M" },
-        { "name": "--max-mem", "short": "-x", "aliases": ["--maxmem"], "type": "string", "default": "2G" },
-        { "name": "--jvm-opts", "type": "string" },
-        { "name": "--extract-music", "type": "boolean", "flag": true },
-        { "name": "--refresh", "type": "boolean", "flag": true },
-        { "name": "--download-threads", "short": "-j", "type": "integer", "default": 16 },
-        { "name": "--root-dir", "type": "string" },
-        { "name": "--auth", "type": "boolean", "flag": true }
+        {
+          "name": "--version",
+          "short": "-v",
+          "type": "string",
+          "help": "游戏版本"
+        },
+        {
+          "name": "--username",
+          "short": "-u",
+          "type": "string",
+          "help": "玩家名"
+        },
+        {
+          "name": "--type",
+          "short": "-t",
+          "type": "string",
+          "enum": [
+            "vanilla",
+            "fabric",
+            "forge"
+          ],
+          "default": "vanilla"
+        },
+        {
+          "name": "--min-mem",
+          "short": "-m",
+          "aliases": [
+            "--minmem"
+          ],
+          "type": "string",
+          "default": "512M"
+        },
+        {
+          "name": "--max-mem",
+          "short": "-x",
+          "aliases": [
+            "--maxmem"
+          ],
+          "type": "string",
+          "default": "2G"
+        },
+        {
+          "name": "--jvm-opts",
+          "type": "string"
+        },
+        {
+          "name": "--extract-music",
+          "type": "boolean",
+          "flag": true
+        },
+        {
+          "name": "--refresh",
+          "type": "boolean",
+          "flag": true
+        },
+        {
+          "name": "--download-threads",
+          "short": "-j",
+          "type": "integer",
+          "default": 16
+        },
+        {
+          "name": "--root-dir",
+          "type": "string"
+        },
+        {
+          "name": "--auth",
+          "type": "boolean",
+          "flag": true
+        }
       ]
     },
     {
       "name": "server",
       "help": "部署并启动服务端",
       "options": [
-        { "name": "--version", "short": "-v", "type": "string" },
-        { "name": "--type", "short": "-t", "type": "string", "enum": ["vanilla", "paper", "fabric", "forge"], "default": "vanilla" },
-        { "name": "--min-mem", "short": "-m", "aliases": ["--minmem"], "type": "string", "default": "512M" },
-        { "name": "--max-mem", "short": "-x", "aliases": ["--maxmem"], "type": "string", "default": "2G" },
-        { "name": "--jvm-opts", "type": "string" },
-        { "name": "--server-args", "type": "string" },
-        { "name": "--nogui", "type": "boolean", "flag": true },
-        { "name": "--yes", "type": "boolean", "flag": true },
-        { "name": "--force-upgrade", "type": "boolean", "flag": true },
-        { "name": "--symlink", "type": "boolean", "flag": true },
-        { "name": "--force-download", "type": "boolean", "flag": true },
-        { "name": "--online-mode", "short": "-o", "type": "boolean", "flag": true },
-        { "name": "--demo", "type": "boolean", "flag": true },
-        { "name": "--print-jar-help", "type": "boolean", "flag": true, "help": "打印服务端 jar 的帮助信息(服务端加 --help)" },
-        { "name": "--kill-all", "short": "-k", "type": "boolean", "flag": true },
-        { "name": "--refresh", "type": "boolean", "flag": true },
-        { "name": "--download-threads", "short": "-j", "type": "integer", "default": 16 },
-        { "name": "--root-dir", "type": "string" }
+        {
+          "name": "--version",
+          "short": "-v",
+          "type": "string"
+        },
+        {
+          "name": "--type",
+          "short": "-t",
+          "type": "string",
+          "enum": [
+            "vanilla",
+            "paper",
+            "fabric",
+            "forge"
+          ],
+          "default": "vanilla"
+        },
+        {
+          "name": "--min-mem",
+          "short": "-m",
+          "aliases": [
+            "--minmem"
+          ],
+          "type": "string",
+          "default": "512M"
+        },
+        {
+          "name": "--max-mem",
+          "short": "-x",
+          "aliases": [
+            "--maxmem"
+          ],
+          "type": "string",
+          "default": "2G"
+        },
+        {
+          "name": "--jvm-opts",
+          "type": "string"
+        },
+        {
+          "name": "--server-args",
+          "type": "string"
+        },
+        {
+          "name": "--nogui",
+          "type": "boolean",
+          "flag": true
+        },
+        {
+          "name": "--yes",
+          "type": "boolean",
+          "flag": true
+        },
+        {
+          "name": "--force-upgrade",
+          "type": "boolean",
+          "flag": true
+        },
+        {
+          "name": "--symlink",
+          "type": "boolean",
+          "flag": true
+        },
+        {
+          "name": "--force-download",
+          "type": "boolean",
+          "flag": true
+        },
+        {
+          "name": "--online-mode",
+          "short": "-o",
+          "type": "boolean",
+          "flag": true
+        },
+        {
+          "name": "--demo",
+          "type": "boolean",
+          "flag": true
+        },
+        {
+          "name": "--print-jar-help",
+          "type": "boolean",
+          "flag": true,
+          "help": "打印服务端 jar 的帮助信息(服务端加 --help)"
+        },
+        {
+          "name": "--kill-all",
+          "short": "-k",
+          "type": "boolean",
+          "flag": true
+        },
+        {
+          "name": "--refresh",
+          "type": "boolean",
+          "flag": true
+        },
+        {
+          "name": "--download-threads",
+          "short": "-j",
+          "type": "integer",
+          "default": 16
+        },
+        {
+          "name": "--root-dir",
+          "type": "string"
+        }
       ]
     },
     {
       "name": "plugin",
       "help": "Hangar 搜索 / 下载服务端插件",
       "options": [
-        { "name": "--search", "type": "string" },
-        { "name": "--list", "type": "boolean", "flag": true },
-        { "name": "--output", "type": "string" },
-        { "name": "--version", "short": "-v", "type": "string" },
-        { "name": "--count", "type": "integer", "default": 3 }
+        {
+          "name": "--search",
+          "type": "string"
+        },
+        {
+          "name": "--list",
+          "type": "boolean",
+          "flag": true
+        },
+        {
+          "name": "--output",
+          "type": "string"
+        },
+        {
+          "name": "--version",
+          "short": "-v",
+          "type": "string"
+        },
+        {
+          "name": "--count",
+          "type": "integer",
+          "default": 3
+        }
       ]
     },
     {
       "name": "list",
       "help": "列出已安装版本",
       "options": [
-        { "name": "--root-dir", "type": "string" }
+        {
+          "name": "--root-dir",
+          "type": "string"
+        }
       ]
     },
     {
       "name": "remove",
       "help": "移除已安装版本",
       "options": [
-        { "name": "--version", "short": "-v", "type": "string", "required": true },
-        { "name": "--server", "type": "boolean", "flag": true },
-        { "name": "--type", "short": "-t", "type": "string", "enum": ["vanilla", "paper", "fabric", "forge"] },
-        { "name": "--yes", "type": "boolean", "flag": true },
-        { "name": "--root-dir", "type": "string" }
+        {
+          "name": "--version",
+          "short": "-v",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "--server",
+          "type": "boolean",
+          "flag": true
+        },
+        {
+          "name": "--type",
+          "short": "-t",
+          "type": "string",
+          "enum": [
+            "vanilla",
+            "paper",
+            "fabric",
+            "forge"
+          ]
+        },
+        {
+          "name": "--yes",
+          "type": "boolean",
+          "flag": true
+        },
+        {
+          "name": "--root-dir",
+          "type": "string"
+        }
       ]
     },
     {
       "name": "backup",
       "help": "备份服务端世界",
       "options": [
-        { "name": "--version", "short": "-v", "type": "string" },
-        { "name": "--type", "short": "-t", "type": "string", "enum": ["vanilla", "paper", "fabric", "forge"], "default": "vanilla" },
-        { "name": "--root-dir", "type": "string" }
+        {
+          "name": "--version",
+          "short": "-v",
+          "type": "string"
+        },
+        {
+          "name": "--type",
+          "short": "-t",
+          "type": "string",
+          "enum": [
+            "vanilla",
+            "paper",
+            "fabric",
+            "forge"
+          ],
+          "default": "vanilla"
+        },
+        {
+          "name": "--root-dir",
+          "type": "string"
+        }
       ]
     },
     {
       "name": "update",
       "help": "升级工具自身(非游戏版本)",
       "options": [
-        { "name": "--version", "short": "-v", "type": "string" },
-        { "name": "--check", "type": "boolean", "flag": true },
-        { "name": "--channel", "type": "string", "enum": ["release", "beta"], "default": "release", "help": "更新渠道" },
-        { "name": "--file", "type": "string" },
-        { "name": "--yes", "type": "boolean", "flag": true },
-        { "name": "--force", "type": "boolean", "flag": true }
+        {
+          "name": "--version",
+          "short": "-v",
+          "type": "string"
+        },
+        {
+          "name": "--check",
+          "type": "boolean",
+          "flag": true
+        },
+        {
+          "name": "--channel",
+          "type": "string",
+          "enum": [
+            "release",
+            "beta"
+          ],
+          "default": "release",
+          "help": "更新渠道"
+        },
+        {
+          "name": "--file",
+          "type": "string"
+        },
+        {
+          "name": "--yes",
+          "type": "boolean",
+          "flag": true
+        },
+        {
+          "name": "--force",
+          "type": "boolean",
+          "flag": true
+        }
       ]
     },
     {
       "name": "uninstall",
       "help": "卸载工具自身",
       "options": [
-        { "name": "--yes", "type": "boolean", "flag": true },
-        { "name": "--remove-root", "type": "boolean", "flag": true },
-        { "name": "--force", "type": "boolean", "flag": true },
-        { "name": "--root-dir", "type": "string" }
+        {
+          "name": "--yes",
+          "type": "boolean",
+          "flag": true
+        },
+        {
+          "name": "--remove-root",
+          "type": "boolean",
+          "flag": true
+        },
+        {
+          "name": "--force",
+          "type": "boolean",
+          "flag": true
+        },
+        {
+          "name": "--root-dir",
+          "type": "string"
+        }
       ]
     },
     {
       "name": "app",
       "help": "跨面:安装 / 打开 / 卸载 GUI 应用",
       "options": [
-        { "name": "action", "argument": true, "type": "string", "required": true, "enum": ["install", "open", "uninstall", "status"] },
-        { "name": "--channel", "type": "string", "enum": ["release", "appstore"], "default": "release" },
-        { "name": "--version", "short": "-v", "type": "string" },
-        { "name": "--yes", "type": "boolean", "flag": true }
+        {
+          "name": "action",
+          "argument": true,
+          "type": "string",
+          "required": true,
+          "enum": [
+            "install",
+            "open",
+            "uninstall",
+            "status"
+          ]
+        },
+        {
+          "name": "--channel",
+          "type": "string",
+          "enum": [
+            "release",
+            "appstore"
+          ],
+          "default": "release"
+        },
+        {
+          "name": "--version",
+          "short": "-v",
+          "type": "string"
+        },
+        {
+          "name": "--yes",
+          "type": "boolean",
+          "flag": true
+        }
+      ]
+    },
+    {
+      "name": "runtime",
+      "help": "运行时分发(M3):安装 / 查看 Swift 真身",
+      "options": [
+        {
+          "name": "action",
+          "argument": true,
+          "type": "string",
+          "required": true,
+          "enum": [
+            "status",
+            "install"
+          ]
+        },
+        {
+          "name": "--version",
+          "short": "-v",
+          "type": "string"
+        },
+        {
+          "name": "--yes",
+          "type": "boolean",
+          "flag": true
+        }
       ]
     },
     {
       "name": "completion",
       "help": "生成 / 安装 Shell 补全",
       "options": [
-        { "name": "target", "argument": true, "type": "string", "required": true, "enum": ["bash", "zsh", "fish", "powershell", "pwsh", "install"] }
+        {
+          "name": "target",
+          "argument": true,
+          "type": "string",
+          "required": true,
+          "enum": [
+            "bash",
+            "zsh",
+            "fish",
+            "powershell",
+            "pwsh",
+            "install"
+          ]
+        }
       ]
     },
-    { "name": "capabilities", "help": "打印机器可读的能力清单", "options": [] },
-    { "name": "mcp", "help": "本地 MCP server(stdio JSON-RPC 2.0)", "options": [] },
-    { "name": "version", "help": "打印工具版本", "options": [] }
+    {
+      "name": "capabilities",
+      "help": "打印机器可读的能力清单",
+      "options": []
+    },
+    {
+      "name": "mcp",
+      "help": "本地 MCP server(stdio JSON-RPC 2.0)",
+      "options": []
+    },
+    {
+      "name": "version",
+      "help": "打印工具版本",
+      "options": []
+    }
   ],
   "deviations": {
     "note": "收敛 backlog：manifest 是**目标**命令面；此处列出各实现当前**已声明**的差异（validator 默认忽略，--strict 仅对未声明漂移失败）。实现跟进后应逐条移除。当前 python/swift 两侧均无 CLI 选项漂移（客户端 fabric/forge 类型均已在引擎落地）。**枚举（enum）已纳入比对**：实现须在 capabilities 里上报实际支持的枚举值；未上报视为 unknown（只提示，不算漂移）。已知声明差异——`app --channel` 的 `appstore` 未实现（App Store 尚未上架，两侧均显式报 `E_UNSUPPORTED`）。",
     "python": {
-      "options": { "app": { "mismatches": [["--channel", "enum"]] } }
+      "options": {
+        "app": {
+          "mismatches": [
+            [
+              "--channel",
+              "enum"
+            ]
+          ]
+        }
+      }
     },
     "swift": {
-      "options": { "app": { "mismatches": [["--channel", "enum"]] } }
+      "options": {
+        "app": {
+          "mismatches": [
+            [
+              "--channel",
+              "enum"
+            ]
+          ]
+        }
+      }
     }
   }
 }

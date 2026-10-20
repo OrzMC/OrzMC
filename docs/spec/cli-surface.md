@@ -38,6 +38,7 @@
 | `update` | 升级工具自身（非游戏版本） | ✅ | ❌ |
 | `uninstall` | 卸载工具自身 | ✅ | ❌ |
 | `app` | **跨面**：安装 / 打开 / 卸载 GUI 应用 | ✅ (macOS) | ✅ (macOS) |
+| `runtime` | **运行时分发（M3）**：安装 / 查看 Swift 真身；`ORZMC_RUNTIME=swift` 时把命令转发给它 | ✅ 新增 | — `na`（真身自己就是被转发方） |
 | `completion` | 生成 / 安装 Shell 补全 | ✅ | ✅（bash/zsh/fish/powershell/pwsh + `install`） |
 | `capabilities` | 机器可读的命令 / 选项 / 退出码清单（AI 能力发现） | ✅ 新增 | ✅ 新增 |
 | `mcp` | 本地 MCP server（stdio JSON-RPC，把命令暴露为 AI tools） | ✅ 新增 | ✅ 新增 |
@@ -132,6 +133,7 @@ orzmc plugin [--search TEXT] [--list] [--output DIR] [--version VER] [--count N]
 | `completion` | `bash\|zsh\|fish\|powershell\|pwsh`（打印脚本）；`install`（按 `$SHELL` 落盘） | **见 §4.5** |
 | `capabilities` | —（`--json` 输出命令 / 选项 / 退出码清单） | **新增（见 §8.1）** |
 | `mcp` | 无参数；stdio JSON-RPC server | **新增（见 §8.2）** |
+| `runtime` | `status\|install`；`--version`、`--yes` | **新增（见 `install-update.md` §10.1，M3）** |
 
 ### 4.5 `completion`（补全契约，已定稿）
 

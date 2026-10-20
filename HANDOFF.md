@@ -40,6 +40,10 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 >   Windows 三个坑（工具链架构 / MSVC 库架构 / STL1000 工具集版本）的解法见 `docs/windows-port.md` §3.5。
 >   台账 `sharedArtifacts.knownDrift` 已**清空**。
 > - **一致性 79/79**（新增 `state-paths/*` 三例：两侧实际上报落点 vs `state-paths.json`）。
+> - **M3 阶段 1 已落地（opt-in）**：PyPI 的 `orzmc` 可作发行通道——`ORZMC_RUNTIME=swift` 时转发给 Swift 真身
+>   （首次自动下载 + SHA256 校验 + 落 `<stateDir>/bin/`），`orzmc runtime status|install` 管理真身。
+>   默认仍是 Python 实现；切默认待拍板（D-M3-1）。
+> - **正版登录：Mojang 第 2 次申请同样被拒（2026-10-20）** → 不再投第 3 次，转 authlib-injector / Yggdrasil。
 > - **验收判据只有一份**：父仓库 `scripts/accept/cli.py`，两侧 CI 稀疏检出调用。
 > - **迭代成本**：推前钩子 / `ssh air` 远端构建 / CI 跳过 release-please 与纯文档 push / `release.yml` dry-run。
 > - **最近发布**：`OrzMCKit v0.18.0`（六资产，首个带 Windows arm64）、`OrzPythonMC 2.14.0`。
@@ -78,7 +82,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **状态** | 🟢 一份规范 + 两套实现（Swift 为 lead）+ 三个前端；一致性 **79/79**；命令面两侧 0 偏差（`--strict` 进 CI）；能力台账三处校验全绿、**`knownDrift` 已清空**；**最近发布**：`OrzMCKit v0.18.0`（六资产，含 Windows arm64）、`OrzPythonMC 2.14.0` |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` + `docs/two-cli-strategy.md` + `docs/windows-port.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | **M3 需要维护者拍板 5 项**（`docs/two-cli-strategy.md` §5.1 的 D-M3-1..5）→ 拍板后开 shim 实施 PR。其余挂账：`--auth` 真实 E2E 仍被 **Mojang 白名单被拒（2026-10-17）** 阻塞。详见 §4「下一会话起点（2026-10-20 午后）」 |
+| **下一步** | **M3 阶段 2**：按 D-M3-1..5 拍板后决定是否把默认切到 `swift`（需升级须知 + 迁移窗口）。**正版登录改走 authlib-injector / Yggdrasil**（Mojang 两次拒绝，已停止申请）。详见 §4「下一会话起点（2026-10-20 M3）」 |
 
 ## 2. 状态快照（Repo State）
 
@@ -183,41 +187,41 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 4. 下一步（Next Actions，增量、非阻塞）
 
-### ★ 下一会话起点（2026-10-20 午后交接）
+### ★ 下一会话起点（2026-10-20 M3 交接）
 
-> 上一轮（本日第二段）把 **A/B/C/D 四件挂着的事全部处理完**：Windows arm64 资产已发布、
-> `orzmc app` 跨平台契约两侧对齐、`state.paths` 动态一致性落地、M3 评估成文。细节见 §5。
-> 本节只剩**要拍板**和**被外部阻塞**的事。
+> 本轮把 **M3 阶段 1** 落地（opt-in 转发通道）、**Windows arm64 资产发布**、**`orzmc app`/`state.paths` 契约**
+> 全部收口；Mojang 第 2 次申请被拒，正版登录改道。细节见 §5。
 
-**A. M3 需要维护者拍板 5 项**（`docs/two-cli-strategy.md` §5.1，评估已写完，不是待研究）
-- [ ] **D-M3-1 切换方式**：硬切（下个 major 直接换实现）vs 软切（先 `orzmc legacy` 默认 +
-      `ORZMC_RUNTIME=swift` 预演一版）。
-- [ ] **D-M3-2 旧 Python 引擎维护承诺**：安全修复保多久（建议「M3 发布后 6 个月」）。
-- [ ] **D-M3-3 真身落点**：`<状态目录>/bin/orzmc`（对 F1/F3 影响最小）vs `~/.local/bin/orzmc`（shim 改名）。
-- [ ] **D-M3-4**：PyPI 的 6 平台 PyInstaller `binary` 通道是否随 M3 下线（省一半发布矩阵）。
-- [ ] **D-M3-5**：`orzmc`（库）是否继续独立发版供第三方当库用。
-- 拍板后才有实施 PR（shim ≈300 行：找真身 → 校验 SHA256SUMS → `exec`；命令语义零落在 Python 侧）。
+**A. M3 阶段 2（要维护者拍板才能继续）**——评估与阶段 1 都在 `docs/two-cli-strategy.md` §5.1/§5.2
+- [ ] **D-M3-1**：是否把默认运行时从 `python` 切到 `swift`（软切已就绪：`ORZMC_RUNTIME=swift` 可先观察）。
+      切换必须配一版带「升级须知」的发版 + 迁移窗口。
+- [ ] **D-M3-2**：旧 Python 引擎的安全修复承诺期限（建议 M3 发布后 6 个月）。
+- [ ] **D-M3-3**：真身落点 `<stateDir>/bin/`（现方案，对 F1/F3 影响最小）是否就此定稿。
+- [ ] **D-M3-4**：PyPI 的 6 平台 PyInstaller `binary` 通道是否下线（省一半发布矩阵）。
+- [ ] **D-M3-5**：`orzmc`（库）是否继续独立发版给第三方当库用。
+- 拍板前**不要**动默认行为（阶段 1 刻意不碰）。
 
-**B. 被外部阻塞（我们能做的都做完了）**
-- `--auth` 真实账号 E2E：**Mojang 白名单被拒（2026-10-17）**，第 2 次 launcher-only 申请等邮件；
-  两周无回音按未通过处理 → 转 authlib-injector / Yggdrasil。
-- App Phase C（GUI 认证 UI）：维护者已定「等邮件再动」。
+**B. 正版登录（改道）**——Mojang 两次拒绝，规则已定：**不再投第 3 次**
+- [ ] 路线 A：**authlib-injector / Yggdrasil**（第三方认证服务器）。要先写规范：
+      令牌来源/存储（`auth.json` 已有 schema 可复用）、`client --auth` 的接线、
+      与 Microsoft 设备码流程的关系（互斥？并存？）、错误码 `E_AUTH*` 的映射。
+- [ ] 规范落 `docs/spec/auth.md` 新章节后，再按「一个功能只在一侧写」推进（Swift lead）。
 
-**C. 可选加固（非阻塞，按需）**
-- `auth.json` 的跨进程写锁（`frontends.md` §7 待补第 3 条）。
-- `orzmc legacy` 逃生阀若选软切，需要先定「旧实现如何与 share harness 共存」。
+**C. 可选加固（非阻塞）**
+- `auth.json` 跨进程写锁（`frontends.md` §7 待补第 3 条）。
+- `runtime` 的 Rust-free 降级：真身损坏（魔数/校验失败）时自动 `.bak` 回滚。
 
 **接手时最容易踩的坑（更新）**
 1. **git 钩子不入版本库**：新机器必须 `scripts/dev/install-hooks.sh`。
 2. **`ssh air` 会休眠**：`ssh air true` 超时 → 先唤醒；构建优先 `scripts/air/run.sh`（14–24 秒）。
-3. **`parity.json` 是硬约束**：改命令面/能力前先看 `lead`，只在一侧实现；`knownDrift` 现在为空，
-   新增必须带 `reason` + `review_by`。
-4. **别用「跳过工作流」省 CI**：分支保护的必需检查不上报 = PR 永久 BLOCKED。
-5. **dry-run 不要带旧 tag**：`release.yml` 用 `ref: inputs.tag || github.ref` checkout，带旧 tag 会
-   checkout 旧代码（新加的 composite action 就找不到）。发版 dry-run 一律不带 tag。
-6. **release-please 不为 `build:`/`docs:`/`ci:` 升版本**：要让某个「非 feat/fix」变更进版本，
-   用 `Release-As: X.Y.Z` footer（0.18.0 就是这么发的）。
-7. **Python 侧 ruff 禁全角标点**（RUF002/RUF003）——中文注释里用半角 `,` `(` `)` `:`。
+3. **`parity.json` 是硬约束**：新命令必须同时改 `cli-surface.json`（manifest）+ `parity.json`（台账），
+   否则 `surface.py --strict` 在子模块 CI 红（本轮 `runtime` 就是这样：父仓库那条得先合，子模块 PR 才能绿）。
+4. **别用「跳过工作流」省 CI**：必需检查不上报 = PR 永久 BLOCKED。
+5. **dry-run 不要带旧 tag**（`release.yml` 用 `inputs.tag || github.ref` checkout）。
+6. **release-please 不为 `build:`/`docs:`/`ci:`/`chore:` 升版本**：要发就加 `Release-As: X.Y.Z` footer。
+7. **Python 侧 ruff 禁全角标点**（RUF002/RUF003）：中文注释/docstring 用半角 `, ( ) : ;`。
+8. **GitHub 用 `GITHUB_TOKEN` 建的 PR 不触发 `pull_request` 工作流** → release PR 没有 checks 是常态，
+   用 close/reopen 补触发（或配 `RELEASE_PLEASE_TOKEN`）。
 
 > **★ 下一会话起点（2026-10-15 交接）**：本地 `--auth` 离线部分（阶段 A/B/C，三适配器 73/73）与
 > **`orzmc mcp` server（两端）均已完成**。真实登录 E2E 等办卡/注册后再做（待办 A）；
@@ -298,6 +302,36 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-20（傍晚）— pi（M3 阶段 1 落地：PyPI 作发行通道，opt-in）
+
+**背景**：Mojang 第 2 次申请（launcher-only）**同样被拒** → 按既定规则**不再投第 3 次**，正版登录转
+authlib-injector / Yggdrasil（记在 `docs/auth-application.md` 头部与 §4 待办 B）。空出的精力推进 M3。
+
+**做了什么（规范先行 → 实现 → 验收）**
+
+1. **规范**：`install-update.md` **§10.1 运行时分发（wrapper 通道）**——launcher/payload 两个角色
+   （对 F1「PATH 上只有一个 orzmc」的裁定）、`ORZMC_RUNTIME` 开关、`SHA256SUMS` 强校验、转发语义、
+   **版本号语义**（`--version` 报真身版本；launcher 版本只在 `runtime status` 的 `wrapper` 字段）、
+   `install.conf` 的 `channel=wrapper`。
+2. **实现**（`OrzPythonMC#80`，`orzmc/services/runtime.py`）：资产解析 → 下载 → SHA256 校验 →
+   原子落盘 `<stateDir>/bin/`（Windows 的 DLL 先落目标目录）→ `execv` 转发；
+   `orzmc runtime status|install` 管理命令；首次下载的进度/日志走 **stderr**（stdout 只留真身输出）。
+3. **台账/命令面**：`cli-surface.json` + `parity.json` 新增 `runtime`（python `lead` / swift `na`）；
+   共享 harness 加 `contract/runtime-status-shape`（只有实现该命令的一侧才跑）。
+4. **端到端实测（真实资产）**：`ORZMC_RUNTIME=swift orzmc --version` → 首次下载 `orzmc-macos-x86_64`
+   （13MB，SHA256 校验）→ 输出 **`orzmc 0.18.0`**（真身版本，不是 launcher 的 2.14.x）；
+   `install.conf` 写入 `binary=<真身>` / `channel=wrapper` / `source=github:OrzMC/OrzMCKit`。
+
+**当场抓出的三个 bug（都修了）**
+| 现象 | 根因 | 修法 |
+|---|---|---|
+| Windows zip 装完只有 exe，DLL 不见了 | 解包到临时 staging，随后整目录被删 | DLL 先 `os.replace` 到目标目录，exe 最后原子替换 |
+| 测试把文件写进宿主机真实 `~/AppData` | `default_state_dir(environ=...)` 仍 `expanduser("~")` 兜底 | **显式 environ 即权威**，不做宿主兜底 |
+| `ORZMC_RUNTIME=swift orzmc --version` 报 launcher 版本 | 转发判断只认「第一个位置参数是子命令」 | `--version`/`--help`/裸 `orzmc` 也转发（规范要求报真身版本） |
+
+**没做的事（刻意）**：不动默认运行行为、不下线 PyPI 的 6 平台 PyInstaller 资产、
+不做 D-M3-2..5 的任何取舍 —— 那些是产品决策，已列在 §4 待拍板。
 
 ### 2026-10-20（午后）— pi（A/B/C/D 四件挂着的事全部收口）
 

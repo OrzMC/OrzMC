@@ -469,6 +469,28 @@ def case_app_unsupported_outside_macos(ctx: Context) -> None:
         )
 
 
+@case("contract", "runtime-status-shape")
+def case_runtime_status(ctx: Context) -> None:
+    """运行时分发(M3):`runtime status` 的信封与**默认不转发**。
+
+    这个能力只在发行通道侧实现(台账 `parity.json`:python `lead` / swift `na`),
+    所以先看 capabilities 里有没有它——没有就跳过(Swift 侧不适用)。
+    """
+    if "runtime" not in _command_names(ctx):
+        return
+    payload = expect_ok(ctx.run("--json", "runtime", "status"), "runtime")
+    data = payload["data"]
+    assert isinstance(data, dict)
+    for key in ("enabled", "installed", "path", "version", "source", "wrapper"):
+        check(key in data, f"runtime status 缺少字段 {key}:{data}")
+    # 规范 install-update.md §10.1:默认**不**转发(存量行为不变),版本号分上下两套。
+    check(data["enabled"] is False, f"未设 ORZMC_RUNTIME 时不应启用转发:{data}")
+    check(data["version"] == "", f"未安装时真身版本必须为空:{data}")
+    check(bool(data["wrapper"]), f"launcher 版本(wrapper)必须上报:{data}")
+    # 未知操作 -> E_USAGE(退出码 1),不是静默成功。
+    expect_error(ctx.run("--json", "runtime", "bogus"), "runtime", "E_USAGE")
+
+
 @case("contract", "non-interactive-never-blocks")
 def case_no_blocking(ctx: Context) -> None:
     # stdin 是 DEVNULL:任何“等输入”的路径都必须立刻返回(规范 §7 红线)。

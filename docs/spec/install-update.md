@@ -220,6 +220,62 @@
 
 ---
 
+## 10.1 运行时分发（wrapper 通道，M3）
+
+> 目标（`docs/two-cli-strategy.md` §5.1 M3）：**PyPI 上的 `orzmc` 只做发行通道**——安装/升级
+> Swift 实现的真身并**转发**命令，功能语义仍然只有一份（Swift 侧）。
+
+**角色划分（对 F1 的裁定）**
+
+| 角色 | 路径 | 谁写 | 说明 |
+|:--|:--|:--|:--|
+| **launcher（shim）** | `${XDG_BIN_HOME:-$HOME/.local/bin}/orzmc`（Windows `%LOCALAPPDATA%\Programs\orzmc\orzmc.exe`） | `pip install orzmc-app` | PATH 上的入口；**不含任何命令语义** |
+| **payload（真身）** | `<stateDir>/bin/orzmc`（Windows `<stateDir>\bin\orzmc.exe`） | shim（首次运行或 `orzmc runtime install`） | 真正干活的 Swift 二进制 |
+| 安装记录 | `<stateDir>/install.conf` | 写 payload 的一方 | 记 `binary=<payload>`、`channel=wrapper`、`version=<真身版本>` |
+
+F1「PATH 上只有一个 `orzmc`」仍然成立：**只有 launcher 在 PATH 上**，payload 不在 PATH。
+两者是不同路径、不同职责，因此不构成"同时安装两份实现"。
+
+**开关（软切，默认关闭）**
+
+| 变量 | 值 | 行为 |
+|:--|:--|:--|
+| `ORZMC_RUNTIME` | 未设置 / `python` | 走 Python 实现（**当前默认**，存量行为不变） |
+| `ORZMC_RUNTIME` | `swift` | 走 shim：解析/安装真身 → **转发** argv 与退出码 |
+
+切默认是单独的产品决策（D-M3-1），需要一版带「升级须知」的迁移窗口，不在本阶段。
+
+**资产与校验**
+
+- 真身来自 **`OrzMC/OrzMCKit` 的 release**，资产名沿用 Swift 侧约定：
+  `orzmc-<os>-<arch>`（macOS/Linux）、`orzmc-windows-<arch>.zip`（Windows，含运行时 DLL）。
+- **必须**用同一 Release 的 `SHA256SUMS` 校验（缺失或校验失败 → `E_VERIFY`，不落盘）。
+- Windows 的 zip 解到 `<stateDir>/bin`，`orzmc.exe` 与 DLL 同行（缺 DLL 会 `STATUS_DLL_NOT_FOUND`）。
+- 落盘是**原子替换**（临时目录 + rename），失败不得破坏已有可用真身。
+
+**转发语义（`ORZMC_RUNTIME=swift` 时）**
+
+- argv **原样**透传（含全局选项位置、`--json`）；
+- stdin / stdout / stderr 直连，不改写内容（`--json` 信封由真身产出）；
+- 退出码**等价转发**（含 `130` 取消语义）；
+- 信号：POSIX 上 `execv` 直接用真身替换进程（最干净）；Windows 上 `subprocess` 转发并把 `Ctrl-C` 传下去；
+- 真身缺失且无网络 → `E_NETWORK`，提示手动安装或 `ORZMC_RUNTIME=python` 回退；
+- **版本号**：`orzmc --version` 报**真身**版本；launcher 版本只在 `orzmc runtime status --json` 里以
+  `wrapper` 字段暴露（避免两套版本打架）。
+
+**管理命令（本阶段，Python 侧 lead）**
+
+| 命令 | 行为 |
+|:--|:--|
+| `orzmc runtime status [--json]` | 报 `{enabled, installed, version, path, source}`；不联网 |
+| `orzmc runtime install [--version vX.Y.Z] [--yes]` | 下载 + 校验 + 落盘 + 写 `install.conf`（`channel=wrapper`） |
+
+- 台账（`docs/spec/parity.json`）：`runtime` 记为 **Python lead / Swift `na`**——它是发行通道的职责，
+  Swift 侧不需要等价实现（真身自己就是被转发方）。
+- 上线时**不**下线 PyPI 的 6 平台 PyInstaller 资产（D-M3-4 未拍板）。
+
+---
+
 ## 11. 吸收 Swift 的亮点
 
 | 亮点 | 出处 | 处理 |

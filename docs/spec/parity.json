@@ -86,6 +86,12 @@
       "lead": "swift",
       "python": "parity",
       "swift": "lead"
+    },
+    "runtime": {
+      "lead": "python",
+      "python": "lead",
+      "swift": "na",
+      "note": "运行时分发(M3):Python 侧作为发行通道,下载/校验 Swift 真身并转发命令。Swift 侧**不需要**等价实现——真身自己就是被转发方,故记 na。契约见 install-update.md §10.1。"
     }
   },
   "sharedArtifacts": {

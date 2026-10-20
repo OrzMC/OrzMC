@@ -1,12 +1,15 @@
 # Minecraft Java Edition Game Service API —— 申请材料（OrzMC / orzmc）
 
-> **状态**：**第 2 次提交（launcher-only 表述）— 已提交，待结果**｜ **最后更新**：2026-10-17
+> **状态**：**第 2 次申请同样被拒（2026-10-20）→ 停止申请，转 authlib-injector / Yggdrasil 路线**｜ **最后更新**：2026-10-20
 > **背景**：Mojang 要求第三方应用通过 *Java Edition Game Service API Review or Application Process* 才能使用
 > `login_with_xbox`（`aka.ms/AppRegInfo` → <https://help.minecraft.net/hc/en-us/articles/16254801392141-Java-Edition-Game-Service-API-Review-or-Application-Process>；
 > 实际提交入口 `aka.ms/mce-reviewappid` → <https://forms.cloud.microsoft/...>）。
 > 未获批时 `login_with_xbox` 返回 `403 Invalid app registration`（详见 [`spec/auth.md`](spec/auth.md) §10 与 [`../HANDOFF.md`](../HANDOFF.md) §4 待办 A）。
 >
-> **历史**：第 1 次 2026-10-16 提交 → **2026-10-17 被拒**（未进白名单；邮件未给原因，声明无申诉/咨询通道）。
+> **历史**：第 1 次 2026-10-16 提交 → **2026-10-17 被拒**（未进白名单；邮件未给原因，声明无申诉/咨询通道）；
+> 第 2 次（launcher-only 表述）2026-10-17 提交 → **2026-10-20 同样被拒**。
+> ⇒ **不再投第 3 次**（原定规则）。正版登录后续走 **authlib-injector / Yggdrasil**（路线 A），
+> 详见 [`spec/auth.md`](spec/auth.md) §10 与 [`HANDOFF.md`](../HANDOFF.md) §4。
 > **本次策略**：**只改材料表述与组织，不改产品行为、不改 Azure appID、不改技术实现** —— 主叙事收敛为「启动器」。
 > 🔒 **邮箱已脱敏**：原 Azure 账号 / 联系邮箱写在维护者私有记录中；公开仓库不保留真实地址。
 

@@ -80,7 +80,7 @@
 |---|---|---|---|
 | **M1** | 台账 + 校验器 + **三处 CI 门禁**（父仓库 `check.py`、两个子模块各自的 `ledger` job） | 不再"凭记忆决定两边改不改"；落后可见、可到期；**台账与真实 capabilities 双向对账** | ☑ 已完成 |
 | **M2** | **共享验收 harness** | ☑ **已完成（2026-10-19）**：`scripts/accept/cli.py` 一份，两侧 CI 稀疏检出父仓库调用；删除两份副本（842 + 724 行）；`--frozen` 表达冻结二进制专属用例 |
-| **M3** | **Python 作发行通道**：`orzmc` (PyPI) 负责装/升级 Swift 二进制并**转发**命令（自研 shim，非重写引擎） | 功能只有一份；PyPI/uvx 生态保留；Windows/Linux 用户拿到的就是 Swift 实现 | ☐ **已评估（2026-10-20）**：前置条件基本齐，建议方案 + 5 个待拍板项见 §5.1 |
+| **M3** | **Python 作发行通道**：`orzmc` (PyPI) 负责装/升级 Swift 二进制并**转发**命令（自研 shim，非重写引擎） | 功能只有一份；PyPI/uvx 生态保留；Windows/Linux 用户拿到的就是 Swift 实现 | 🟡 **阶段 1 已落地（2026-10-20，opt-in）**：`ORZMC_RUNTIME=swift` + `orzmc runtime status/install`；切默认待拍板（D-M3-1）。详见 §5.1 |
 
 ### 5.1 M3 评估（2026-10-20）
 
@@ -133,7 +133,22 @@
 - **D-M3-5**：`orzmc`（库）是否仍独立发版给第三方当库用（当前 `orzmc` 库与 app 双包发布）？
 
 **结论**：M3 技术上可行、前置基本就绪；真正的成本不在转发（那部分很小），而在
-①**规范三处冲突的裁定**、②**存量用户的迁移叙事**。建议按 D-M3-1..5 拍板后再开实施。
+①**规范三处冲突的裁定**、②**存量用户的迁移叙事**。
+
+### 5.2 阶段 1 已落地（2026-10-20，opt-in）
+
+按「先让 shim 可用可验证、不强制用户切换」推进（即 D-M3-1 的**软切**方向先走一步）：
+
+| 项 | 落地形态 |
+|---|---|
+| 规范 | `install-update.md` **§10.1**：launcher / payload 两个角色（F1 裁定）、`ORZMC_RUNTIME` 开关、`SHA256SUMS` 强校验、转发语义、版本号语义 |
+| PyPI CLI | `feat(runtime)`（`OrzPythonMC#80`）：`ORZMC_RUNTIME=swift` 时转发；`orzmc runtime status|install` 管理真身 |
+| 台账 | `parity.json`：`runtime` = python `lead` / swift `na`（真身自己就是被转发方） |
+| 验收 | 共享 harness `contract/runtime-status-shape`（只有实现该命令的一侧跑） |
+| 端到端 | 真实资产实测：`ORZMC_RUNTIME=swift orzmc --version` → 首次下载 `orzmc-macos-x86_64`（SHA256 校验）→ 输出**真身** `0.18.0`；`install.conf` 记 `channel=wrapper` |
+
+**仍然待拍板**：D-M3-1（是否把默认切到 `swift`，需要一版带「升级须知」的迁移窗口）、D-M3-2..5。
+阶段 1 **不动**默认行为、**不下线** PyPI 的 6 平台 PyInstaller 资产。
 
 ## 6. 反模式（并行期禁止）
 
