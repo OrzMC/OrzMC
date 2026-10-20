@@ -102,7 +102,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `05800af` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.15.0 已发布（首个带 M3 runtime shim，opt-in）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；CI 修回归（release PR 重新上报必需检查）；`ledger` 台账校验 + 命令面 `--strict` |
+| `python` | `a3f6c70` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.15.0 已发布（首个带 M3 runtime shim，opt-in）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；CI 修回归（release PR 重新上报必需检查）；`ledger` 台账校验 + 命令面 `--strict` |
 | `swift/app` | `efbb665` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
 | `swift/lib/OrzMCKit` | `cee4697` | **Swift 引擎 + `orzmc` CLI**；**`v0.18.0` 已发布 = 六类资产齐**（macOS×2 / Linux×2 / **windows-{x86_64,arm64}.zip**）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
@@ -302,6 +302,22 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-20（夜间）— pi（讲清 5 个待拍板点 + 修好 PyInstaller 验收链路）
+
+用户要求「详细说明待拍板的点」，核对事实时顺带发现 **PyInstaller 资产的验收从 M2 起就没真跑过**：
+
+| 层 | 问题 | 修法 |
+|---|---|---|
+| CI（python `binary` job） | 跑 `parent/scripts/accept/cli.py` 却**没检出父仓库** → 六腿常年报 404 | 补 `Checkout parent`（#83） |
+| 同上 | 命令用 `\` 续行，Windows runner 默认 shell 是 **pwsh**（续行是反引号）→ `ParserError` | 改单行（#85） |
+| 共享 harness | 补全落点断言直接比字符串 → Windows 的 `\` vs 规范模板的 `/` 假红 | 比较前归一成 `/`（`_logical()`） |
+
+修完后 `gh workflow run ci.yml -f full=true`：**binary 六腿 + installer 六腿全绿** —— 这是
+D-M3-4（是否下线 PyInstaller 通道）需要的基线证据：那条通道本身是好的，此前是**漏检**不是**坏**。
+
+另外把 5 个待拍板项的事实（代码量 / 资产体积 / 下载量 / 发布成本 / 共存风险）整理成对照表，
+写进回答里并在 `two-cli-strategy.md` §5.1 保留权威版本。
 
 ### 2026-10-20（傍晚）— pi（M3 阶段 1 落地：PyPI 作发行通道，opt-in）
 
