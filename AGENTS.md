@@ -288,6 +288,8 @@ scripts/air/run.sh build          # 同步 + swift build --product orzmc   ~25s�
 scripts/air/run.sh test           # 同步 + swift test（90+ 例）           ~25s
 scripts/air/run.sh accept         # 同步 + release 构建 + CLI 验收 20 例   ~1m30s
 scripts/air/run.sh all            # 三者全跑
+scripts/air/run.sh app            # **Xcode 工程**（`swift/app`）免签名构建；增量约 17s（首轮 ~1m）
+scripts/air/run.sh app-clean      # 删远端 app 工作目录 + DerivedData
 scripts/air/run.sh sh '<cmd>'     # 远端自定义命令
 ```
 
@@ -296,6 +298,9 @@ scripts/air/run.sh sh '<cmd>'     # 远端自定义命令
 - 依赖是 `branch: main`，默认用 `Package.resolved` 离线解析（`--only-use-versions-from-resolved-file`）；
   要拉依赖最新时用 `ORZMC_UPDATE_DEPS=1`。
 - `air` 会休眠：`ssh` 连不上时先唤醒机器（本机 `ssh air true` 报 `This system is locked` 即此因）。
+- **`air` 上有 Xcode 27.0** → `swift/app`（GUI）也能在远端构建：`scripts/air/run.sh app`。
+  该车道与 CI 一致地**删远端 `Package.resolved` 重新解析**（app 的锁钉着旧 `orzmcKit` revision，
+  不删会出现「新 API 找不到类型」的假失败），DerivedData 落在 `~/orzmc-build/app-dd` 保增量。
 - 本机仍保留**秒级/分钟级**轻量检查：`swift/lib/OrzMCKit/scripts/dev/local-build.sh lint|check`
   （跨平台静态检查 1s、语法检查 50s）。
 

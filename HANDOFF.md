@@ -204,6 +204,13 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
   以及它与现有 `--auth`（微软设备码）并存还是替代。
 - 定了范围就写 `docs/spec/auth.md` 新一节（服务器地址 + 复用 `auth.json` + `E_AUTH*`），Swift lead、Python 跟随。
 
+**A2. `swift/app`（GUI）迭代（用户 2026-10-20 指定下一阶段）**
+- 车道已就位：`scripts/air/run.sh app`（增量 ~17s）。
+- 现状：GUI 已收敛到引擎（`launchClient`/`downloadClient` 共用、服务端四类型、结构化进度、托管 JRE，
+  `#25`）、设置页可反向安装/查看 `orzmc` CLI（`#26`，`ORZMC_SURFACE=gui`）。
+- 待定范围（需先拍板再做）：① GUI 的「正版登录」界面要不要等 authlib-injector 方向定了再动；
+  ② GUI 是否接 `install.conf.surface`/多实例管理；③ iOS 侧（`OrzMC` 有 iOS target）要不要同步。
+
 **C. 小加固**
 - [x] **`auth.json` 跨进程写锁**（`frontends.md` **F4.1**，2026-10-20）：`<stateDir>/auth.lock` 目录锁，
       **两侧算法逐字一致**（mkdir 原子 / 陈旧 30s / 超时 10s → `E_AUTH_LOCKED`）；刷新改为「持锁 → 锁内重读 → 需要才刷」。
@@ -306,6 +313,32 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-20 — pi（收口清理 + swift/app 迭代车道就位）
+
+**1. 工作区与分支清理（全 21 子模块扫过）**
+- 未提交改动：**0 处**（父仓库与所有子模块）；
+- 44 个本地残留分支 / 24 个远端残留分支：全部核实为**已合并 PR**（其中 3 个 `git cherry` 报"未落地"是
+  squash 合并导致的 patch-id 误报，PR 状态均 `MERGED`）→ 已全部删除；
+- `plugin` 之前处于 detached HEAD（指向 `origin/main` 同一点）→ 已 `switch main` 归位；
+- 合并 **8 个已绿的 dependabot PR**：`OrzMCPlugin#533/#534`（目标是 `develop`，不影响父指针）、
+  `OrzMCBackup#54/#57/#58/#59/#60`、`rust-thanos#2` → bump `tools/OrzMCBackup`(`2d10606`)、`tools/rust-thanos`(`c4ffc4c`)。
+- **剩 3 个 PR 未动**（派生仓库、无 CI，需你定）：`LoginSecurity#1`（log4j 2.17.2→2.25.4，安全修复）、
+  `LoginSecurity#2`（sqlite-jdbc 3.7.2→3.41.2.2，跨大版本）、`EzShops#3`（mysql-connector-j 8.2.0）。
+
+**2. `swift/app` 迭代车道（关键：不然每轮迭代要等 4 分钟 CI）**
+- `scripts/air/run.sh` 新增 **`app` / `app-clean`**：rsync `swift/app` → air，`xcodebuild build`
+  （免签名），DerivedData 固定 `~/orzmc-build/app-dd` 保增量。实测**首轮 1m、增量 17s**；产物
+  `~/orzmc-build/app-dd/Build/Products/Debug/OrzMC.app`。
+- **踩到一个坑并已内建规避**：app 仓库里的 `OrzMC.xcodeproj/.../Package.resolved` 把 `orzmcKit` 钉在旧
+  revision（`1244125a`），直接 build 会报一片「`GameType` 没有 `fabric`」「找不到 `LaunchProgress`/`ManagedProcess`」
+  的**假失败**。CI 的做法是每次删锁重解析（HEAD 制），车道照做（只删远端副本，不动本地仓库文件）。
+- 顺带确认：app `main` 对 **OrzMCKit 0.20.0** 可正常编译（CI `workflow_dispatch` 也绿）。
+
+**3. 文档纠偏**
+- `frontends.md` §7.2 还写着「D14：Swift 收敛为唯一 CLI 方向」「Python 维护模式」——**已作废**的口径，
+  改为现行分发口径（Python 对外分发 / Swift pre-release 同步迭代 / GUI 正式分发）。
+- `AGENTS.md` §8.2 补 `air` 的 app 车道与那个 `Package.resolved` 坑。
 
 ### 2026-10-20 — pi（两项加固落地：auth.json 跨进程锁 + runtime 真身回滚）
 

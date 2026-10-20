@@ -1,6 +1,6 @@
 # 多前端与共享数据契约（N Frontends, One Dataset）
 
-> **状态**：草案 `specVersion 0.2`｜**最后更新**：2026-10-17
+> **状态**：草案 `specVersion 0.2`｜**最后更新**：2026-10-20（§7.2 分发口径跟随方向调整）
 > **定位**：定义「**规范唯一、数据唯一、前端多个**」的模型。Python CLI、Swift CLI、`OrzMCApp`(GUI)、
 > `orzmc mcp`、agent / CI 脚本，**都是同一套数据的不同前端**，不是各自独立的工具。
 > **上游**：[`../product-architecture.md`](../product-architecture.md) §1.2 / §3；
@@ -187,13 +187,18 @@
 | 落点可注入性 | `default_state_dir(environ=, is_windows=)` | `StatePaths.*(environment:, isWindows:)` | ✅ 两侧都能按平台求值（一致性用例因此可跨平台跑） |
 | 自升级渠道 | `OrzMC/OrzPythonMC` | `OrzMC/OrzMCKit` | ✅ 设计如此（两个发布通道，F3） |
 
-### 7.2 平台支持矩阵（D14：Swift 收敛为唯一 CLI 方向）
+### 7.2 平台支持矩阵（分发口径：2026-10-20 方向调整后）
+
+> **口径变更**：D14「Swift 收敛为唯一 CLI 方向」与「Python 维护模式」**均已作废**。
+> 现行：**Python = 实现主体 + 唯一对外分发**（PyPI + 6 平台 PyInstaller + 一键安装器）；
+> **Swift CLI = 与 Python 同步迭代、不对外分发**（Release 一律 pre-release、不宣传）。
+> 见 [`../two-cli-strategy.md`](../two-cli-strategy.md) §6。
 
 | 前端 | macOS | Linux | Windows | 说明 |
 |:--|:--|:--|:--|:--|
-| `python` CLI（`orzmc` / PyPI） | ✅ 已发布 | ✅ 已发布 | ✅ 已发布 | 6 平台资产已验证；**维护模式**（D14：不再新增功能） |
-| Swift CLI（`OrzMCKit` 的 `orzmc`） | ✅ 已发布（arm64/x86_64） | ✅ **已发布**（`orzmc-linux-{x86_64,arm64}`，v0.14.0 起；发布后自动验收） | ✅ **已发布 x64 + arm64**（`orzmc-windows-{x86_64,arm64}.zip`；x64 v0.15.0 起、arm64 v0.18.0 起；x64 真机无 Swift 环境验证通过） | 收敛目标实现；判据见 `product-unification-plan.md` D14.1 |
-| Swift GUI（`OrzMCApp`） | ✅ | — | — | SwiftUI，天然 Apple only |
+| `python` CLI（`orzmc` / PyPI） | ✅ **对外分发** | ✅ **对外分发** | ✅ **对外分发** | 6 平台资产已验证；**实现主体**，新功能在 `lead` 侧先写、另一侧跟随 |
+| Swift CLI（`OrzMCKit` 的 `orzmc`） | 可下载（pre-release） | 可下载（pre-release） | 可下载（pre-release） | **不对外分发**：保留用于维护者/实验者真机验证与 `ORZMC_RUNTIME=swift` 实验通道；命令面与行为仍须与 Python 对齐（`parity.json` 硬约束） |
+| Swift GUI（`OrzMCApp`） | ✅ 正式分发 | — | — | SwiftUI，天然 Apple only；与 CLI 共用引擎（`OrzMCKit`） |
 
 跨平台能力差异（Swift CLI 到 Linux/Windows 的已知边界）：
 
