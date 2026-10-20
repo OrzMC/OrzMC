@@ -293,6 +293,19 @@ F1「PATH 上只有一个 `orzmc`」仍然成立：**只有 launcher 在 PATH �
 > 这样 F1/F2/F3 仍成立：PATH 上只有一个 `orzmc`（launcher）；`install.conf` 仍是唯一事实；
 > `update` 仍只替换自己那份。`orzmc runtime status --json` 的 `reused` 字段直接暴露「是否复用了原生安装」。
 
+**真身损坏的回滚（normative）**
+
+真身是磁盘上的普通文件，可能被中断的写入 / 磁盘错误 / 用户误操作破坏。规定：
+
+| 场景 | 行为 |
+|---|---|
+| 安装时 | 落盘前把**旧真身**改名为 `<payload>.bak`（同一目录 rename，原子），再原子替换新文件；替换失败 → 用 `.bak` 还原 |
+| 运行前 | 读取真身**前 8 字节做魔数校验**（Mach-O / ELF / PE）；失败且 `.bak` 完好 → 把 `.bak` 提升回 `<payload>` 并继续（记一条 warn） |
+| 执行失败 | `exec`/启动报 `EACCES` / `ENOEXEC` / `STATUS_INVALID_IMAGE` 之类"文件本身不可执行" → 用 `.bak` 回滚并**重试一次**；仍失败才报错 |
+| 无可用回滚 | 明确报 `E_RUNTIME` 并提示 `orzmc runtime install` 重装（**不要**静默删文件、不要自动联网重下） |
+
+> 只在**实验通道**（`ORZMC_RUNTIME=swift`）生效：默认路径（Python 实现）不涉及真身文件。
+
 **管理命令（本阶段，Python 侧 lead）**
 
 | 命令 | 行为 |

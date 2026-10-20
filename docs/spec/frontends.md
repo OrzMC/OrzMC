@@ -73,6 +73,23 @@
 约束：**同一时刻应只有一个前端执行令牌刷新**——刷新会重写整份文件，后写者覆盖先写者；
 实现应"先重读再决定是否刷新"（避免 TOCTOU），不得假设自己持有最新内存副本。
 
+**F4.1 跨进程锁（normative，两侧算法必须逐字一致）**
+
+刷新是「读 → 联网换新令牌 → 写」，中间有网络耗时；仅靠"先重读"仍有窗口。因此规定一把
+**共享锁文件**，跨语言、跨平台实现完全相同（否则互不加锁）：
+
+| 项 | 规定 |
+|---|---|
+| 锁路径 | `<stateDir>/auth.lock`（**目录**，不是文件） |
+| 获取 | `mkdir(<lock>)` —— 在 POSIX 与 Windows 上都是**原子**的；成功即持有 |
+| 争用 | 已被占用时：若目录 `mtime` 距现在 **> 30s** 视为**陈旧**（持锁进程崩溃），删除后重试；否则退避 50ms 重试 |
+| 超时 | 最多等 **10s**；仍未拿到 → 返回 `E_AUTH_LOCKED`（**不要**在没锁的情况下刷新） |
+| 元信息 | 持有者在目录内写 `owner`（`pid=<pid>` 与 `since=<ISO8601>`），**仅供排查**，不参与判定 |
+| 释放 | 先删 `owner` 再 `rmdir`；释放失败只记日志（不抛），陈旧检测会兜底 |
+| 临界区 | **读 → 判断是否需刷新 → 刷新 → 写**，全程持锁；不要在网络请求之外提前释放 |
+
+`auth.json` 的写入仍必须**原子**（临时文件 + rename，`0600`），与锁叠加而非替代。
+
 **F5 游戏数据共享、运行独占**：`root/versions/<v>/...` 的**元数据**（version JSON、assets、libraries、
 `java/<major>`）可被多前端并发读写，因为写入是幂等的（sha1/hash 校验 + 唯一临时名 + 原子 rename）。
 但**运行时目录**（`client/profiles/<profile>/` 的 `options.txt`/`saves`/`logs`、
@@ -155,7 +172,8 @@
    与 Swift `Game.InstallManifest.surface` + `scripts/install.sh` 都读 `ORZMC_SURFACE`（缺省 `cli`）并写入；
    GUI 的「安装 CLI」入口以 `ORZMC_SURFACE=gui` 调用官方安装器。语义见 [`install-update.md`](install-update.md) §3.1。
    附带修掉一个真实 bug：Swift 安装器用 `orzmc version | awk` 取版本，会把多行合规声明写进 `version` 字段。
-3. **守卫并发写入**：`auth.json` 的"先重读再刷新"目前靠约定，尚未有跨进程锁。
+3. ~~**守卫并发写入**~~ ✅ **已落地（2026-10-21）**：`<stateDir>/auth.lock` 目录锁，算法见 **F4.1**
+   （两侧实现逐字一致：`mkdir` 原子获取 / 30s 陈旧检测 / 10s 超时 → `E_AUTH_LOCKED`）。
 
 **当前实现对照（Python `2.13.0` / Swift `0.18.0`）**
 
