@@ -205,6 +205,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - 定了范围就写 `docs/spec/auth.md` 新一节（服务器地址 + 复用 `auth.json` + `E_AUTH*`），Swift lead、Python 跟随。
 
 **A2. `swift/app`（GUI）迭代（用户 2026-10-20 指定下一阶段）**
+- [x] 代码审查 + 四步重构（P0 / 拆模型 / 视图瘦身 / 多实例），`OrzMCApp#29`。
 - 车道已就位：`scripts/air/run.sh app`（增量 ~17s）。
 - 现状：GUI 已收敛到引擎（`launchClient`/`downloadClient` 共用、服务端四类型、结构化进度、托管 JRE，
   `#25`）、设置页可反向安装/查看 `orzmc` CLI（`#26`，`ORZMC_SURFACE=gui`）。
@@ -313,6 +314,34 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-20 — pi（macOS 启动器按评估重构：P0 全修 + 拆上帝对象 + 多实例）
+
+对 macOS 侧做了代码审查（见对话），按结论四步走完，全部合在 `OrzMCApp#29`。
+
+**P0（用户可感）**
+1. **每秒一个 `ps` 子进程 → `kill(pid, 0)`**：旧链路 `BasicInfo` 1Hz `Timer` → `Shell.allRunningServerPids()`
+   （`ps` 全机搜 `nogui`）。既耗 CPU，又把**别人启动的**服务端算成自己的（`Stop All` 误杀）。
+2. **进程登记落盘**：`~/Library/Application Support/OrzMC/servers.json`（原子写），重启不失忆。
+3. **错误保留规范错误码**：`CodedError` + `LauncherError.wrap(_:fallbackCode:)` → UI 显示「人话 (E_VERIFY)」。
+4. **内存/客户端类型可配**：内存校验复用引擎 `MemorySpec`；**Fabric 客户端**以前根本装不出来
+   （`ClientInfo.type` 吃默认值）。
+
+**结构（Step 2–3）**：390 行 `GameModel` → 六个聚焦模型 + `AppModel` 组合根
+（`docs/app-launcher-architecture.md`）。顺带：进度收成单一 `LaunchProgressState`；`filtered` 改计算属性；
+`GameList` 不再在 body 里逐行 3 次 stat；`GameType`(client/server) 更名 `GameMode` 消除与引擎 `Game.GameType` 的歧义；
+删掉三个死文件（`LauncherServices.swift` / `New/RemoteServer.swift` / `VersionFilterService.swift`）。
+
+**多实例（Step 4）**：`settings.rootDir` 透传到 `ClientInfo`/`ServerInfo`/`GamePlan.*(root:)`/JRE 扫描；
+设置页可手填/选目录/回默认；改根自动重算"装了什么"并重置 JRE 与进程视图。
+
+**测试**：新增 5 个测试文件共 22 例（进度语义、安装扫描、进程登记落盘/探活、错误码映射、过滤规则），
+`swift test` 四包全绿；macOS + iOS 模拟器构建绿；平台分层校验绿。
+
+**工具坑（已修进 `scripts/air/run.sh app`）**：air 的 app 车道曾**静默用旧版 OrzMCKit** ——
+SwiftPM 缓存 bare repo 的 `main` 落后 + `-resolvePackageDependencies` 没带 `-derivedDataPath`
+（于是删锁也没用，解析走默认 DerivedData 里的旧状态），表现为「引擎里明明有的 API 报 cannot find in scope」。
+现在：刷新缓存分支 ref + 清 DerivedData 内 checkout/workspace-state + 解析带 `-derivedDataPath`。
 
 ### 2026-10-20 — pi（swift/app：surface 接通 + iOS 进 CI + 平台分层）
 
