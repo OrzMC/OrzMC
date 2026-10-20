@@ -81,7 +81,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | **D14 跨平台收敛已收口**（macOS / Linux / Windows x64+arm64 全有构建链路）；**两套 CLI 并行期治理**（台账 + 三处 CI 校验 + M2 共享验收脚本）；迭代成本治理（推前钩子 / air 远端构建 / dry-run 发布）；`--auth` 仍被 **Mojang 审核拒绝（2026-10-17）** 阻塞 |
-| **状态** | 🟢 一份规范 + 两套实现（Swift 为 lead）+ 三个前端；一致性 **79/79**；命令面两侧 0 偏差（`--strict` 进 CI）；能力台账三处校验全绿、**`knownDrift` 已清空**；**最近发布**：`OrzMCKit v0.18.0`（六资产，含 Windows arm64）、`OrzPythonMC 2.17.2` |
+| **状态** | 🟢 一份规范 + 两套实现（Swift 为 lead）+ 三个前端；一致性 **79/79**；命令面两侧 0 偏差（`--strict` 进 CI）；能力台账三处校验全绿、**`knownDrift` 已清空**；**最近发布**：`OrzMCKit v0.18.0`（六资产，含 Windows arm64）、`OrzPythonMC 2.18.0` |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` + `docs/two-cli-strategy.md` + `docs/windows-port.md` |
 | **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
 | **下一步** | **Python 作为主力正常迭代**（两套 CLI 继续同步对齐）；`M3` 已归档。待做：正版登录改走 authlib-injector / Yggdrasil（需先定范围）、`auth.json` 跨进程写锁、`runtime` 真身损坏回滚。详见 §4「下一会话起点（2026-10-20 方向调整）」 |
@@ -204,10 +204,14 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
   以及它与现有 `--auth`（微软设备码）并存还是替代。
 - 定了范围就写 `docs/spec/auth.md` 新一节（服务器地址 + 复用 `auth.json` + `E_AUTH*`），Swift lead、Python 跟随。
 
-**C. 小加固（各 ~0.5 天，可并行）**
-- `auth.json` 跨进程写锁（`frontends.md` §7 待补第 3 条）。
-- `runtime` 实验通道：真身损坏（魔数/校验失败）时自动回滚 `.bak` + 提示。
-- Swift Linux 体积（65 MB）继续探索压缩（`--gc-sections` / 评估去掉 ICU）；纯实验收益，不急。
+**C. 小加固**
+- [x] **`auth.json` 跨进程写锁**（`frontends.md` **F4.1**，2026-10-20）：`<stateDir>/auth.lock` 目录锁，
+      **两侧算法逐字一致**（mkdir 原子 / 陈旧 30s / 超时 10s → `E_AUTH_LOCKED`）；刷新改为「持锁 → 锁内重读 → 需要才刷」。
+      Python `OrzPythonMC#96`（2.18.0）、Swift `OrzMCKit#89`（0.20.0）。
+- [x] **`runtime` 真身损坏回滚**（`install-update.md` §10.1）：安装留 `.bak`、运行前魔数预检、执行失败回滚重试一次；
+      顺带修「自己的 payload 被误判可复用 → 永远无法升级」。
+- [ ] Swift Linux 体积（65 MB）继续探索压缩（`--gc-sections` / 评估去掉 ICU）；纯实验收益，不急。
+- [ ] （建议）跨语言并发冒烟：Python 与 Swift 各持锁一次，确认互斥真实生效（两侧算法一致但没做过联测）。
 
 **接手时最容易踩的坑（更新）**
 1. **git 钩子不入版本库**：新机器必须 `scripts/dev/install-hooks.sh`。
@@ -302,6 +306,33 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-20 — pi（两项加固落地：auth.json 跨进程锁 + runtime 真身回滚）
+
+**1. `auth.json` 跨进程写锁（`frontends.md` 新增 F4.1，normative）**
+刷新令牌是「读 → 联网换新 → 写」，而微软的 refresh token **轮换** —— 两个前端同时刷，后者覆盖前者，
+被覆盖的那份立刻失效 → **用户被登出**。规范把锁算法写死（两侧必须逐字一致，否则互不加锁）：
+
+| 项 | 规定 |
+|---|---|
+| 锁 | `<stateDir>/auth.lock` **目录**（`mkdir` 在 POSIX/Windows 都原子） |
+| 陈旧 | 目录 mtime > 30s → 视为持锁进程已崩，删除重试 |
+| 超时 | 最多等 10s → `E_AUTH_LOCKED`（**绝不**在没锁时刷新） |
+| 临界区 | 持锁 → **重读** → 需要才刷新 → 写 |
+
+- 为什么不用 `flock`：`flock` 与 `fcntl` 锁在 Linux/macOS 是**不同命名空间**，跨语言会出现"看起来加了锁、
+  其实互不可见"；Windows 没有 `flock`。`mkdir` 三平台语义一致。
+- 实现：Python `OrzPythonMC#96`（`infra/filelock.py`，`Authenticator.ensure()` 持锁+重读，7 单测）、
+  Swift `OrzMCKit#89`（`Game/Utils/FileLock.swift`，5 单测）。
+- 已发版：**`orzmc-app 2.18.0`**、**`OrzMCKit 0.20.0`**（后者 `prerelease=true` —— 新分发口径首次实跑验证）。
+
+**2. `runtime` 真身损坏回滚（`install-update.md` §10.1）**
+安装时旧真身改名 `.bak` → 原子替换（失败还原）；运行前对自己副本做**魔数预检**，坏且 `.bak` 完好 → 回滚并 warn；
+`exec` 报 `EACCES/ENOEXEC` 之类 → 回滚后**重试一次**，仍失败报 `E_RUNTIME` 并提示重装。
+**顺手修一个真 bug**：`runtime install` 把 `channel=wrapper`（自己的副本）也当"可复用"→ 永远无法升级；
+现在只对**别人装的**原生 Swift 安装 no-op。
+
+**已知待补**：跨语言并发联测（两侧算法一致，但还没有"Python 持锁 + Swift 抢锁"的实测）；已记入 §4 C。
 
 ### 2026-10-20 — pi（方向调整落地：Python 唯一对外分发，Swift 同步迭代但不分发）
 
