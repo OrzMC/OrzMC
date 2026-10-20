@@ -102,7 +102,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `a3f6c70` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.15.0 已发布（首个带 M3 runtime shim，opt-in）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；CI 修回归（release PR 重新上报必需检查）；`ledger` 台账校验 + 命令面 `--strict` |
+| `python` | `a4e65f4` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.15.0 已发布（首个带 M3 runtime shim，opt-in）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；CI 修回归（release PR 重新上报必需检查）；`ledger` 台账校验 + 命令面 `--strict` |
 | `swift/app` | `efbb665` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
 | `swift/lib/OrzMCKit` | `cee4697` | **Swift 引擎 + `orzmc` CLI**；**`v0.18.0` 已发布 = 六类资产齐**（macOS×2 / Linux×2 / **windows-{x86_64,arm64}.zip**）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
@@ -196,9 +196,12 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - [ ] **D-M3-1**：是否把默认运行时从 `python` 切到 `swift`（软切已就绪：`ORZMC_RUNTIME=swift` 可先观察）。
       切换必须配一版带「升级须知」的发版 + 迁移窗口。
 - [ ] **D-M3-2**：旧 Python 引擎的安全修复承诺期限（建议 M3 发布后 6 个月）。
-- [ ] **D-M3-3**：真身落点 `<stateDir>/bin/`（现方案，对 F1/F3 影响最小）是否就此定稿。
+- [x] ~~**D-M3-3** 真身落点~~ ✅ **已定（2026-10-20）**：混合方案——默认 `<stateDir>/bin/`，
+      但**优先复用已有原生 Swift 安装**（不下载第二份、不覆盖 `install.conf`）；R1–R5 见
+      `install-update.md` §10.1，实现见 `OrzPythonMC#86`。
 - [ ] **D-M3-4**：PyPI 的 6 平台 PyInstaller `binary` 通道是否下线（省一半发布矩阵）。
-- [ ] **D-M3-5**：`orzmc`（库）是否继续独立发版给第三方当库用。
+- [x] ~~**D-M3-5** `orzmc` 库是否继续发版~~ ✅ **已定（2026-10-20）**：继续发，但明确定位为
+      「供 Python 程序调用的能力库」——`orzmc-app` 才是产品主路径（README + pyproject 已写明）。
 - 拍板前**不要**动默认行为（阶段 1 刻意不碰）。
 
 **B. 正版登录（改道）**——Mojang 两次拒绝，规则已定：**不再投第 3 次**
@@ -302,6 +305,24 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-20（深夜）— pi（D-M3-3 / D-M3-5 落地，其余 3 条待拍板）
+
+用户选了「先把不改用户行为的两条做掉」。
+
+**D-M3-3 真身落点 = 混合方案**（`OrzPythonMC#86` + 规范 `install-update.md` §10.1 R1–R5）
+- 事实基础：同一台机器可能同时有 `install.sh` 装的**原生** Swift 版与 shim 自管副本；
+  旧行为会多存一份 13–35MB，并改写 `install.conf` 让原生版的 `update` 护栏拒写记录（记录漂移）。
+- 现在：**R1 复用优先**（`source` 指向 OrzMCKit 且可执行 → 直接 exec，不下载不写记录）、
+  **R2 绝不复用 Python 实现**（否则自己转自己）、R3 记录不覆盖、R4 失效回退、R5 `install` 复用时 no-op。
+- `runtime status --json` 新增 `reused`；端到端实测：伪造原生安装 → shim 直接 exec 它（退出码原样），全程无下载。
+
+**D-M3-5 库定位**：README 顶部 + 库的 `pyproject` description 写清「`orzmc-app` 是产品主路径，
+`orzmc`（库）供 Python 程序调用、新功能优先落 Swift、不承诺 API 稳定扩张」。
+
+**仍待拍板**：D-M3-1（默认是否切 swift；建议先 C 观察再 D 只对新装用户切）、
+D-M3-2（旧引擎维护期限，建议 6 个月）、D-M3-4（PyInstaller 6 平台资产是否下线，等 D-M3-1）。
+证据（代码量 / 资产体积 / 下载量 / 发布成本 / PyInstaller 验收现已全绿）已在回答与 §5.1 里。
 
 ### 2026-10-20（夜间）— pi（讲清 5 个待拍板点 + 修好 PyInstaller 验收链路）
 
