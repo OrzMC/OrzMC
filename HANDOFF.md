@@ -422,6 +422,17 @@ jar↔项目归一化前缀匹配（`ViaVersion` 不误配 `ViaBackwards`）、�
 （`ServerProperties`，8 例单测），不写死 `world`。排版：版本列表等宽数字 + 紧凑徽标；详情页标题层级、
 按钮三组（看/管｜生命周期｜删除）加细分隔线。
 
+**UI 修正轮（2026-10-21，`OrzMCApp#36`）**：
+- **侧边栏选中行里千万别用 `Color.accentColor`**：选中背景就是 accentColor，同色互相覆盖 →
+  版本号下面的 `Client`/`Paper` 标签直接隐身。行内元素一律用语义色（`.primary`/`.secondary`/`.tertiary`）；
+- **详情页一次只看一个实例**：顶部 segmented 切换器（装 2 个以上才出现，带 `●` 运行标记），
+  只渲染当前实例的目录 + 表头；默认聚焦"正在运行的"实例。四核心+客户端全装时不再一屏 5 段；
+- **控制台页也有四操作**（服务端）：启动/重启/停止/终止 + `Stopping…` 进行态；**客户端控制台只读**
+  （底部写明"the Minecraft client does not accept console commands"）；
+- **停止全部 = 优雅**：只对有句柄的实例送 `stop`；上个会话启动、无句柄的实例**不动**、只列名字；
+  「Terminate All」需用户显式选择；无句柄「终止」= `SIGTERM` → 10s → `SIGKILL`；
+  无句柄「重启」直接报错（否则会起第二份撞端口）。
+
 **工具坑（务必记住）**：`.pbxproj` 的 `/* Begin PBXFileReference section */` 标记一旦丢失，
 后加文件会只有 `PBXBuildFile` 条目而无 `PBXFileReference` → **Xcode 静默跳过该文件**，
 表现为「cannot find type X，而 X 明明就在磁盘上」。2016-10-21 踩过一次，已补回并加校验意识：
