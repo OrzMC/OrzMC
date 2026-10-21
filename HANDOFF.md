@@ -367,6 +367,13 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - **防连点**：`busyInstanceId` 期间该实例按钮全禁用 + 转圈；`perform` 里再 `guard` 一次；
 - 修 `AppModel.stopServer` 按 `versionId` 定位（原来用当前选中项，确认期间切版本会杀错实例）。
 
+**Paper 控制台命令无效（2026-10-21 用户实测后修）**：`PaperServer.start()` 的 jar 参数带了
+**`--noconsole`**（Paper 文档：*Disables the console*）→ Paper 完全不读 stdin，GUI/CLI 送的
+`list`/`say`/`help` 全被丢弃（Vanilla 没这个 flag，所以正常）；`stop` 也没人读 → 停服要等 60s 超时。
+修复：抽出 `PaperServer.launchArguments(onlineMode:)`，去掉 `--noconsole`，保留 `--nojline`（只关 JLine 行编辑）。
+**air 上真实 Paper 26.3 A/B 实测**：无 `--noconsole` → `There are 0 of a max of 20 players online` +
+`[Server] hello-from-console`；带 `--noconsole` → 两条均无输出。防回归 `PaperLaunchArgumentTests` 3 例。
+
 **工具坑（务必记住）**：`.pbxproj` 的 `/* Begin PBXFileReference section */` 标记一旦丢失，
 后加文件会只有 `PBXBuildFile` 条目而无 `PBXFileReference` → **Xcode 静默跳过该文件**，
 表现为「cannot find type X，而 X 明明就在磁盘上」。2016-10-21 踩过一次，已补回并加校验意识：
