@@ -359,6 +359,19 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 `ConsoleInstanceKey.softwareId` 更名 `instanceId`（服务端=核心名，客户端=`Client`）。
 测试：`ClientConsoleEndToEndTests`（假客户端收日志/`chat hello`/`quit` 退出）+ 注册表隔离用例。
 
+**详情页实例栏（2026-10-21 二次验收后改）**：
+- 布局：左「实例名 + 运行状态徽标」、右「控制台 / 停止 / 删除」图标按钮；
+- **客户端也有运行状态**（以 `版本#Client` 控制台挂载进程为准，游戏退出即 Stopped）；
+- **高危操作统一二次确认**（新增 `RiskyAction`）：删服务端/客户端文件（弹窗带路径 + 不可恢复）、
+  停止单个服务端（玩家会掉线）、菜单「Stop All Servers」（原来**无确认**直接执行）；
+- **防连点**：`busyInstanceId` 期间该实例按钮全禁用 + 转圈；`perform` 里再 `guard` 一次；
+- 修 `AppModel.stopServer` 按 `versionId` 定位（原来用当前选中项，确认期间切版本会杀错实例）。
+
+**工具坑（务必记住）**：`.pbxproj` 的 `/* Begin PBXFileReference section */` 标记一旦丢失，
+后加文件会只有 `PBXBuildFile` 条目而无 `PBXFileReference` → **Xcode 静默跳过该文件**，
+表现为「cannot find type X，而 X 明明就在磁盘上」。2016-10-21 踩过一次，已补回并加校验意识：
+新增 Swift 文件后要确认三处都在（fileRef / buildFile / Sources phase）。
+
 **待办**：CLI 侧本来就有终端，不需要控制台；GUI 若要"自动滚到底开关/日志导出"再说。
 
 ### 2026-10-20 — pi（macOS 启动器按评估重构：P0 全修 + 拆上帝对象 + 多实例）
