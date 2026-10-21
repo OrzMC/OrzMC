@@ -325,6 +325,8 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ### 2026-10-22 — Codex（UI 分支推送与 Air Git 接力）
 
+**完成记录**：app PR https://github.com/OrzMC/OrzMCApp/pull/37；父仓库接力 PR https://github.com/OrzMC/OrzMC/pull/39（均为草稿，未合并）。远端 app SHA 已核对为 b13b422a27cac5be8cc937fdf7dc16e00e3fc41c。Air 已删除 app 构建镜像、app-dd-ios、macOS 编译/索引/依赖缓存和旧 patch 交接包；macOS app-dd 从 3.2G 降为 193M，仅保留仍运行应用所需的 Build/Products，连同其他删除项约释放 5.4GB。新设备须拉取 feat/ui-refresh-handoff，不是仅拉 main。
+
 维护者授权提交推送，并清理 Air 旧临时文件。app 使用 feat/ui-refresh，父仓库使用 feat/ui-refresh-handoff 显式记录单一 app 指针；保留已有 UI 改动和三技能审查建议，未自动合并或发版。app 提交为 `23baf01`（UI 实现）、`b13b422`（设计/接力文档）；本轮 Air macOS/iOS 均 BUILD SUCCEEDED，单测 13/13、平台分层及父组合校验通过。Air 接力以 docs/air-ui-handoff-2026-10-22.md 的 Git 拉取步骤为准；旧构建镜像、iOS DerivedData、macOS 可再生成缓存及 patch 交接包在推送核验后清理；macOS app-dd/Build/Products 因仍有 OrzMC 进程使用而保留。
 
 ### 2026-10-21 — pi（macOS UI 梳理 + Settings 崩溃修复，**swift/app 待提交**）
