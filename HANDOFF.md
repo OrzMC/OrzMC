@@ -127,7 +127,8 @@ Windows 报 Cocoa 257/Win32 5），建议先修测试再发；⑦ `plugin` Depen
 
 > `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
 > 2026-10-22 全量指针：`swift/app fa571e7`、`OrzMCKit 6944afb`、`OrzSwiftKit 616212d`、`OrzAppUpdater b23e0c4`、
-> `MojangAPI c5a0ead`、`PaperMC 14df328`、`ExarotonAPI 4f5c1a2`、`python 5e70745`、`plugin 5eadd6e`（父仓库按 `main` 钉；
+> `MojangAPI c5a0ead`、`PaperMC 14df328`、`ExarotonAPI 4f5c1a2`、`python 5e70745`、`plugin 5eadd6e`、
+> `tools/rust-thanos b79defb`（父仓库按 `main` 钉；
 > 本地 `plugin` 常检出 `develop`，2026-10-22 起多一条 `211c203`「依赖安全告警处置」文档 —— **预期，不 bump**）。
 
 ### 2.3 验证 / 治理命令
@@ -363,6 +364,12 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
   自带 buffer 的 v3/v5/v6，msal-node 只用 v4，且 e2e 依赖不随 jar 分发）。
 - 新增 `plugin/docs/dev/dependency-security-alerts.md`（处置表 + 复核条件 + 核对命令）+ 索引入口 +
   AGENTS 指针，合入 `develop`（`211c203`）。**父仓库不 bump**：plugin 按 `main` 钉，等下一次里程碑 develop→main。
+
+**④ 顺手合掉两个可直合的依赖 PR（`rust-thanos` `#3`/`#4`）**
+- `#3` lz4_flex 0.11.5→0.11.6、`#4` time 0.3.44→0.3.55（都只动 `Cargo.lock`，CI 3 平台绿）→ squash 合并；
+- 合并后在本地补跑该仓库的完整门禁：`cargo check --locked` / `cargo test`（14 例）/ `cargo fmt --check` /
+  `cargo clippy --all-targets --all-features -D warnings` 全绿，main CI 绿；
+- 父仓库指针 bump 到 `b79defb`。
 
 ### 2026-10-22 — pi（本机 CLI 线：HTTP 状态错误不再误报「中途断开」+ 夜间验收复绿）
 
