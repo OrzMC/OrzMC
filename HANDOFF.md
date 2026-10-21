@@ -353,8 +353,11 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - 控制台标题 `Console — 1.21.5 Paper`；停服显示 `Stopped … (log is kept)`；
 - 测试 `ServerConsoleRegistryTests` 6 例（实例隔离 / 同 key 复用 / detach 保日志 / remove 只清自己）。
 
-**已知缺口**：客户端（Client）还没有控制台 —— 引擎 `ClientInfo` 没有日志观察者，
-要补需在 Kit 加 `onClientLog`（对称改动，未做）。
+**客户端控制台（2026-10-21 补齐）**：`ClientInfo.onClientLog`（`OrzMCKit#93`）+ GUI 侧
+`GUIClient.startWithProcess()` 返回进程句柄 → 客户端实例的控制台（键 `版本#Client`）与 4 种服务端同构：
+日志来自引擎、命令经 `ManagedProcess.send`、退出自动解绑并保留日志。
+`ConsoleInstanceKey.softwareId` 更名 `instanceId`（服务端=核心名，客户端=`Client`）。
+测试：`ClientConsoleEndToEndTests`（假客户端收日志/`chat hello`/`quit` 退出）+ 注册表隔离用例。
 
 **待办**：CLI 侧本来就有终端，不需要控制台；GUI 若要"自动滚到底开关/日志导出"再说。
 
