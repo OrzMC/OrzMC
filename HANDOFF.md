@@ -78,6 +78,8 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 ## 1. 当前焦点（Current Focus）
 
+> **2026-10-22 接力更新**：Swift app UI 刷新已获授权提交推送，app 分支 `feat/ui-refresh`，父仓库接力分支 `feat/ui-refresh-handoff`；尚未合并/发版。Air 拉取父仓库接力分支并初始化子模块后，先读 `swift/app/docs/air-ui-handoff-2026-10-22.md`。旧 patch 交接流程不再使用。
+
 | 项 | 内容 |
 |---|---|
 | **主题** | **macOS 启动器的服务端运维能力收口**（控制台命令 / 生命周期四操作 / 插件管理 / 目录与排版），**已由维护者验收通过**；底层仍是"一份规范 + 两套实现 + 三个前端" |
@@ -87,6 +89,8 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **下一步** | ① 正版登录改走 authlib-injector / Yggdrasil（**范围待维护者定**，GUI 登录界面暂不动）；② `auth.json` 跨进程锁的**跨语言真机对抢**实测（算法已一致，未实测并发）；③ 可选项：控制台「自动滚到底开关 / 日志导出」「日志条目跳到崩溃行」、Swift Linux 体积继续压缩 |
 
 ## 2. 状态快照（Repo State）
+
+> 最新接力分支：`feat/ui-refresh-handoff`；本轮仅 bump `swift/app` 到 `b13b422`（远端 app 分支 `feat/ui-refresh`）。以下历史表格不作为当前 Git 指针依据，实际以 `git ls-tree HEAD` 为准。
 
 ### 2.1 父仓库（OrzMC）
 
@@ -318,6 +322,43 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-22 — Codex（UI 分支推送与 Air Git 接力）
+
+维护者授权提交推送，并清理 Air 旧临时文件。app 使用 feat/ui-refresh，父仓库使用 feat/ui-refresh-handoff 显式记录单一 app 指针；保留已有 UI 改动和三技能审查建议，未自动合并或发版。app 提交为 `23baf01`（UI 实现）、`b13b422`（设计/接力文档）；本轮 Air macOS/iOS 均 BUILD SUCCEEDED，单测 13/13、平台分层及父组合校验通过。Air 接力以 docs/air-ui-handoff-2026-10-22.md 的 Git 拉取步骤为准；旧构建镜像、iOS DerivedData、macOS 可再生成缓存及 patch 交接包在推送核验后清理；macOS app-dd/Build/Products 因仍有 OrzMC 进程使用而保留。
+
+### 2026-10-21 — pi（macOS UI 梳理 + Settings 崩溃修复，**swift/app 待提交**）
+
+**结果**：完成 macOS 启动器 UI/交互全面梳理，并落地 P0/P1/P2 优化。
+
+1. **Settings 崩溃根因**（air 崩溃报告 `OrzMC-2026-10-21-195204.ips`）：
+   `Settings` 只注入了 `app.settings`，但 `SettingsView` 读 `@Environment(AppModel.self)`
+   → `EnvironmentValues.subscript` 断言（SIGTRAP）。修复为 `.environment(app)`，
+   并把 `AppModel` 提到 `OrzMCApp` 的 `@State`，保证主窗口 / Settings / 控制台窗口 / 远程窗口共享同一实例。
+2. **多窗口边界**：
+   - 主启动器 `WindowGroup` → `Window`，移除 File > New Window（复制 `AppModel` 会破坏进程登记/探活/控制台）；
+   - 新增 `WindowGroup(for: ConsoleTarget.self)`：控制台可 `Open in New Window`，共享同一份控制台缓冲；
+   - 新增 `Window(id:"remote")`：Exaroton 远程托管独立窗口，不再混进本机实例导航；
+   - 新增 Window > Show Main Window（⌘0）。已用 AppleScript 核对中文菜单：
+     无 File 菜单，`设置…` / `显示边栏` / `全部停止服务器…` / `显示主窗口` 均在。
+3. **信息架构**：侧边栏只负责版本列表 + 搜索/过滤/刷新；启动配置移到详情页顶部
+   `LaunchControls`（压成 3 行：版本+模式 / Java 状态 / 用户名或核心 + Start）；
+   详情页 Terminate/Delete 收进 `⋯` 菜单；文本框统一为“行标签 + 示例 prompt”，不再重复同一文案。
+4. **设计系统**：新增 `OrzMCTheme` / `OrzMCStatusBadge` / `OrzMCTag` / `OrzMCBanner` /
+   `.consoleSurface()`；设置页四页 `TabView` + 系统 Form/Section/LabeledContent；控制台深色模式修复。
+5. **交互修复**：控制台搜索 + 导出日志 + Follow；Exaroton 条件加载遮罩、`NavigationLink`、
+   sheet 副作用、日志上限 2000 行、加载 RAM 不再重复 changeRAM；插件管理改用 `NavigationStack` + `.searchable`；
+   外部链接走默认浏览器；删除未使用的 SwiftUIX / FeedbackToAuthor；
+   远程服务器列表/详情改为状态徽标 + 软件/玩家标签 + 地址行 + 指标标签，Actions 用 Start 主按钮 + Stop/Restart
+   `ControlGroup`，额度池使用大额度卡。
+6. **本地化**：`Localizable.xcstrings` 补齐 200+ zh-Hans 条目（静态 UI、设置、确认文案、状态）；
+   引擎错误长文案仍为英文（错误码已保留）。
+7. **顺带修复**：详情页 1.5s 只重算当前版本；侧边栏重复启动；停止全部忙碌标记；⌘C/⌘S 快捷键冲突。
+8. **验证**：`scripts/air/run.sh app`（macOS）与 `app-ios` 构建绿；`app-test` 绿；
+   `check-platform-split.sh` 绿。完整梳理与后续 P2 路线见
+   [`swift/app/docs/app-ui-design.md`](swift/app/docs/app-ui-design.md)；
+   Codex 交接文档与提示词见 [`swift/app/docs/ui-handoff.md`](swift/app/docs/ui-handoff.md)。
+9. **状态**：`swift/app` 有未提交改动（未开分支/未推送），父仓库暂不 bump 指针。
 
 ### 2026-10-21 — pi（服务端运维收口：控制台 / 生命周期 / 插件 / 目录，**验收通过**）
 
@@ -2624,3 +2665,15 @@ vanilla/paper、进度只有一个 `Double`、Java 状态读系统 JDK 并引导
 **遗留 / 下一步**
 - 
 ```
+
+
+### 2026-10-21 — Codex（启动器 UI 审查与交互复核补记）
+
+- `swift/app` 仍在 main 未提交，未开分支、推送或 bump；本轮修正用户名 LabeledContent、满缓冲 Follow 触发、控制台行数中文、联系作者 Link，以及迁移远程窗口时遗漏的错误/结果提示。
+- 全部修正后 air macOS/iOS 构建成功、平台无关单测 13/13、平台分层校验通过；最新产物 Settings 四页、控制台独立窗口/搜索/Follow 操作可达。
+- 当前焦点与后续验收以 `swift/app/docs/ui-handoff.md` §11 为准：视觉截图缺失；1200 宽被 air 桌面裁至 1129；中文仍有玩家数/目录说明遗漏，MOTD 含格式码；停止全部、在线/满缓冲控制台与实际导出写入待受控验收。未操作远程服务器生命周期或凭证。
+
+
+## 接力补充：2026-10-22 Swift app UI 转 Air
+
+app UI 仍在 main 的未提交工作树中，基准 fa571e70c632ef1e514158b7deb5711001f8d111；新增三技能审查与 Air 交接文档。继续任务先读 swift/app/docs/air-ui-handoff-2026-10-22.md。交接包已准备到 Air `/Users/joker/orzmc-handoff/2026-10-22-ui-review/`，含 tracked patch、untracked 文件和规则快照。不要仅 git pull，也不要在会被同步覆盖的 `~/orzmc-build/app` 构建镜像中保留唯一改动。未提交、未推送、父指针未变。
