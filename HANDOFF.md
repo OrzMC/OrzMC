@@ -94,7 +94,10 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 ② 正版登录改走 authlib-injector / Yggdrasil（**范围待维护者定**，GUI 登录界面暂不动）；③ `auth.json` 跨进程锁的
 **跨语言真机对抢**实测（算法已一致，未实测并发）；④ 可选：控制台「自动滚到底开关 / 日志导出」「日志条目跳到崩溃行」、
 Swift Linux 体积继续压缩；⑤ **Swift 侧 4xx 语义对齐**（`Transfer` 把非 206 当完整正文，会把 404 变成 size/hash 不符）——
-需 air 构建，归 Air 车道 |
+需 air 构建，归 Air 车道；⑥ `OrzMCKit` release **0.21.0**（`#92`）待决定是否发：其 `windows` job 因
+`FileLockTests.staleLockIsBroken` 红着（测试用 `setAttributes(.modificationDate)` 改**目录** mtime，
+Windows 报 Cocoa 257/Win32 5），建议先修测试再发；⑦ `plugin` Dependabot 红作业已按
+`docs/dev/dependency-security-alerts.md` 处置（0 open），明日定时任务应不再红，可顺手复核一次 |
 
 ## 2. 状态快照（Repo State）
 
@@ -114,7 +117,7 @@ Swift Linux 体积继续压缩；⑤ **Swift 侧 4xx 语义对齐**（`Transfer`
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `e217270` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.18.0 已发布（含 `auth.lock` 跨进程锁 + runtime 回滚）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；`ledger` 台账校验 + 命令面 `--strict`；**`fix(download)`（`#98`）**：`HttpStatusError` —— 4xx/5xx 不重试且保留 requests 原文，续传 416 且已取全按成功；`JavaEnv` 404 补「上游缺该平台构建」提示；验收 harness 的 `log_contains` 改去全部空白（rich 软换行不再切断标记）；根 `conftest.py` autouse 钉 `ORZMC_RUNTIME=python`；**`docs`（`#100`）**：CLI 验收脚本路径同步到父仓库 `scripts/accept/cli.py` |
+| `python` | `5e70745` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.18.0 已发布（含 `auth.lock` 跨进程锁 + runtime 回滚）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；`ledger` 台账校验 + 命令面 `--strict`；**`fix(download)`（`#98`）**：`HttpStatusError` —— 4xx/5xx 不重试且保留 requests 原文，续传 416 且已取全按成功；`JavaEnv` 404 补「上游缺该平台构建」提示；验收 harness 的 `log_contains` 改去全部空白（rich 软换行不再切断标记）；根 `conftest.py` autouse 钉 `ORZMC_RUNTIME=python`；**`docs`（`#100`）**：CLI 验收脚本路径同步到父仓库 `scripts/accept/cli.py`；**`docs`（`#101`）**：合规标记注释点明单一事实源在父仓库；**2.18.1 已发布**（PyPI 双包 + 6 资产 + Release notes） |
 | `swift/app` | `fa571e7` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
 | `swift/lib/OrzMCKit` | `6944afb` | **Swift 引擎 + `orzmc` CLI**；**`v0.19.0` 已发布**（六资产；**Linux 自包含**：静态链 Swift 运行时、glibc 2.35、62–65 MB）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
@@ -124,7 +127,8 @@ Swift Linux 体积继续压缩；⑤ **Swift 侧 4xx 语义对齐**（`Transfer`
 
 > `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
 > 2026-10-22 全量指针：`swift/app fa571e7`、`OrzMCKit 6944afb`、`OrzSwiftKit 616212d`、`OrzAppUpdater b23e0c4`、
-> `MojangAPI c5a0ead`、`PaperMC 14df328`、`ExarotonAPI 4f5c1a2`、`python e217270`、`plugin 5eadd6e`（父仓库按 `main` 钉）。
+> `MojangAPI c5a0ead`、`PaperMC 14df328`、`ExarotonAPI 4f5c1a2`、`python 5e70745`、`plugin 5eadd6e`（父仓库按 `main` 钉；
+> 本地 `plugin` 常检出 `develop`，2026-10-22 起多一条 `211c203`「依赖安全告警处置」文档 —— **预期，不 bump**）。
 
 ### 2.3 验证 / 治理命令
 
@@ -328,6 +332,37 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-22 — pi（远端 issue/PR 巡检后的三件事：合规标记口径 / 发布 2.18.1 / plugin 告警噪音）
+
+先做了一次全组织巡检（父仓库 + 21 子模块 + 被引用的 OrzGeeker 仓库）：open issue 11 条、open PR 10 条。
+按维护者指定的顺序处理了三件，其余（Swift/App 类、上游 thanos、内容类）留在 §1「下一步」或归 Air。
+
+**① 合规标记口径（`OrzMCApp#32` 关闭）**
+- 结论：**生成器没缺** —— `scripts/sync_compliance.py` + `docs/compliance/` 在父仓库，写穿 5 处标记块
+  + 3 个整文件，`--check` 一直绿。误报的成因是标记注释写成了**子仓库里不存在的相对路径**
+  （`scripts/sync_compliance.py; edit docs/compliance/`）。
+- 改 `GENERATED_NOTE` 指名父仓库 → 重新生成，父仓库 + 4 个子仓库各一笔：
+  `OrzPythonMC#101`、`OrzMCKit#97`、`OrzMCApp#38`、`OrzMCSite#8`，父仓库 `c36bc44`（脚本 + README + 四指针）。
+- 同步在 `.github#3`（组织级合规自查）留言纠正同一条误判，并给出「扩面覆盖 16 个仓库」的分期建议
+  （对外发布渠道优先；`LoginSecurity` 是上游 fork，建议不动 README）。
+
+**② 发布 `python` 2.18.1（把早上的下载修复真正交付）**
+- release PR `#99` 因 GITHUB_TOKEN 不触发工作流而没有检查（老坑）→ close/reopen 补触发 → 11 项检查绿 → squash 合并。
+- 流水线：tag `v2.18.1` → 6 平台 PyInstaller 资产 → PyPI 双包（`orzmc` / `orzmc-app` 均 2.18.1）→
+  Release 非 draft → 官网 pages 重新部署。**无需「升级须知」**（旧版只是错误文案误导，不涉及迁移）。
+- 父仓库指针 `43d0729` bump 到 `5e70745`。
+
+**③ `OrzMCPlugin` 的 Dependabot 每日红（`#535`）**
+- 根因不是依赖没修：**依赖图里残留了已删除的 `pom.xml` manifest**（2026-01-09 `6a246ce` 移除 Maven 构建，
+  之后只有 Gradle）→ security update 作业每次都 `pom.xml not found` → 必红且**无法用 PR 修**
+  （`dependabot.yml` 的 `ignore` 也只能阻止开 PR，作业照样失败）。
+- 处置（现 0 open）：maven 6 条 dismiss `not_used`（manifest 已不存在；实际依赖 log4j 2.26.1 / snakeyaml 2.7
+  均在已修版之上）；npm `uuid` 1 条 dismiss `tolerable_risk`（经 mineflayer→prismarine-auth→@azure/msal-node
+  传入，Dependabot 自报 `fix_available=false`，唯一修复会把 mineflayer 降级到 1.4.0；漏洞只在调用方
+  自带 buffer 的 v3/v5/v6，msal-node 只用 v4，且 e2e 依赖不随 jar 分发）。
+- 新增 `plugin/docs/dev/dependency-security-alerts.md`（处置表 + 复核条件 + 核对命令）+ 索引入口 +
+  AGENTS 指针，合入 `develop`（`211c203`）。**父仓库不 bump**：plugin 按 `main` 钉，等下一次里程碑 develop→main。
 
 ### 2026-10-22 — pi（本机 CLI 线：HTTP 状态错误不再误报「中途断开」+ 夜间验收复绿）
 
