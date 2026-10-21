@@ -387,6 +387,32 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 air 真机验证：`( echo list; echo say hi ) | orzmc server --type paper` → `There are 0 of a max of 20 players online`
 + `[Server] hello-from-cli`（修复前两条都没有）。现在 **Python CLI / Swift CLI / GUI 三面都能用控制台**。
 
+**服务端四操作生命周期（2026-10-21，`OrzMCApp#34`）**：以前「停止」= `kill <pid>`（SIGTERM 硬杀）。
+现在：**启动**（无确认）/ **重启**（优雅停 → 等退出 → 起，确认）/ **停止**（送控制台 `stop`，
+让服务端自己存档退出，超时才升级 SIGTERM→SIGKILL，确认）/ **终止**（立刻 SIGTERM→SIGKILL，
+可能丢存档，确认）。要点：
+- `AppModel` 持有本次运行启的**进程句柄**（`[ConsoleInstanceKey: ManagedProcess]`）——登记表只有 PID，
+  送不进 `stop`；进程退出监听里清句柄；
+- **App 重启后接管**以前启的服务端 → 句柄已丢 → `canStop = false`，只能「终止」（UI 灰掉停止按钮）；
+- `InstanceActivity`（starting/stopping/terminating/restarting）→ 状态徽标 + 全按钮禁用防连点；
+- 纯决策逻辑在 `Sources/OrzMCLauncher/InstanceLifecycle.swift`（6 例单测）；
+- OrzSwiftKit `0.0.20` 提供 `terminate()`（SIGTERM→SIGKILL）/`forceKill()`/`waitForExit(timeout:)`。
+  ⚠️ 方法别叫 `kill()`：同类型里的同名方法会抢全局 `kill(2)` 解析（实测编译报错）。
+
+**插件管理（2026-10-21，`OrzMCKit#96` + `OrzMCApp#34`）**：插件下载**并入 Plugins 目录条目**
+（`Manage Plugins` 面板），不再单列一条 `PluginsUpdate` 目录项、也不再"长按批量下 15 个到 update/"。
+目标目录按 **Paper 官方 update-folder 机制**：
+- 没装过 → `plugins/`（下次启动加载）；
+- 已装（更新） → `plugins/update/`（**下次重启时**服务端自动替换旧 jar）。
+引擎侧 `PluginInstaller`（`OrzMCKit`）：扫描生效中的 jar（忽略 `.jar.disabled`、不进 `update/`）、
+jar↔项目归一化前缀匹配（`ViaVersion` 不误配 `ViaBackwards`）、从文件名认版本、`state` 三态、
+`target(for:)` 决策；`PaperPlugin.installPlan(...)` 一次给出"装到哪 + 下载项"。10 例单测。
+面板只在点 `Check Updates` 时联网（15 次请求），`Update All` 顺序更新。
+
+**详情页目录实时感知（2026-10-21）**：以前只在切换版本时算一次目录状态 → 服务端自建的 `world/`、
+插件装出来的 `update/` 要切版本才看得见。现在详情页可见期间 `.task` 每 **1.5s** `refreshInstallStates()`
+（纯 `stat`，无网络/无子进程），视图消失自动取消。
+
 **工具坑（务必记住）**：`.pbxproj` 的 `/* Begin PBXFileReference section */` 标记一旦丢失，
 后加文件会只有 `PBXBuildFile` 条目而无 `PBXFileReference` → **Xcode 静默跳过该文件**，
 表现为「cannot find type X，而 X 明明就在磁盘上」。2016-10-21 踩过一次，已补回并加校验意识：
