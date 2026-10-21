@@ -16,6 +16,7 @@
 #   scripts/air/run.sh app [参数…]          # 同步 swift/app + xcodebuild 构建 macOS app（免签名）
 #   scripts/air/run.sh app-ios               # 同上，但构建 **iOS 模拟器**目标
 #   scripts/air/run.sh app-test              # 同步 + 平台无关单测（swift test）
+#   scripts/air/run.sh app-run [--ios]       # 在 air 上**打开**刚构建的 app（GUI 需 macOS 14+）
 #   scripts/air/run.sh app-clean            # 删远端 app 工作目录与 DerivedData
 #   scripts/air/run.sh clean               # 删除远端 .build
 #
@@ -155,6 +156,20 @@ app_test() {
     "${SSH[@]}" "$HOST" "cd \"$remote_app\" && swift test $* 2>&1 | tail -25"
 }
 
+# 在 air 上打开 app（GUI 只能跑在 macOS 14+ 的机器上；本机是 13 跑不了）。
+app_run() {
+    local remote_app dd app_path
+    remote_app="$(app_dir_remote)"; dd="$(app_dd)"
+    need_host
+    app_path=$("${SSH[@]}" "$HOST" "ls -d \"\$HOME/$dd/Build/Products\"/*/*.app 2>/dev/null | head -1")
+    if [[ -z "$app_path" ]]; then
+        echo "远端没有构建产物；先跑 scripts/air/run.sh app" >&2
+        exit 1
+    fi
+    printf '在 %s 上打开: %s\n' "$HOST" "$app_path"
+    "${SSH[@]}" "$HOST" "pkill -x OrzMC 2>/dev/null; open \"$app_path\"; sleep 3; pgrep -x OrzMC | head -1"
+}
+
 app_clean() {
     need_host
     "${SSH[@]}" "$HOST" "rm -rf \"\$HOME/$(app_dir_remote)\" \"\$HOME/$(app_dd)\" \"\$HOME/$(app_dd)-ios\""
@@ -184,6 +199,7 @@ case "$TASK" in
     app) app_build ;;
     app-ios) ORZMC_APP_DEST='generic/platform=iOS Simulator' app_build ;;
     app-test) app_test ;;
+    app-run) app_run ;;
     app-clean) app_clean ;;
     sync) sync_tree ;;
     build)
@@ -212,7 +228,7 @@ case "$TASK" in
         ;;
     -h|--help) usage ;;
     *)
-        echo "未知子任务: $TASK（可用 env|app|app-ios|app-test|app-clean|sync|build|test|accept|all|sh|clean）" >&2
+        echo "未知子任务: $TASK（可用 env|app|app-ios|app-test|app-run|app-clean|sync|build|test|accept|all|sh|clean）" >&2
         exit 2
         ;;
 esac
