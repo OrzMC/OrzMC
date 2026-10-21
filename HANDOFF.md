@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-10-21 by pi
+> **最后更新**：2026-10-22 by pi
 
 ---
 
@@ -78,13 +78,23 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 ## 1. 当前焦点（Current Focus）
 
+> **设备分工（2026-10-22 起）**：**Apple GUI / Swift 平台开发已交接给 Air**（工作区 `/Users/joker/Documents/OrzMC`，
+> 远端分支：父仓库 `feat/ui-refresh-handoff` + `swift/app` `feat/ui-refresh`，均保留、勿删勿合并回本机）。
+> **bot 本机只做 CLI 与其他可独立完成的迭代，默认不连 `air` / `win`**；`AGENTS.md` §8.1/§8.2 的远端构建流程
+> 是**历史记录**，不代表接手即要求自动连远端。本机接力说明在 `.git/bot-next-iteration.md`（仅本机保存）。
+
 | 项 | 内容 |
 |---|---|
-| **主题** | **macOS 启动器的服务端运维能力收口**（控制台命令 / 生命周期四操作 / 插件管理 / 目录与排版），**已由维护者验收通过**；底层仍是"一份规范 + 两套实现 + 三个前端" |
-| **状态** | 🟢 GUI：服务端控制台可收发命令（Paper `--noconsole` 已修）、四操作生命周期（启动/重启/停止/终止）三处可用（详情页 / 控制台 / 停止全部）、插件按 Paper `update-folder` 分流（`plugins/` vs `plugins/update/`）、常用目录与排版已整理；CLI：Swift `orzmc server` 继承终端 stdin（Python 一直可用），三前端控制台全通。一致性 **79/79**、能力台账三处校验全绿 |
+| **主题** | CLI 主线：**下载/传输层的错误语义**（HTTP 状态错误不再被当成网络抖动） |
+| **状态** | 🟢 `python` 已合 `fix(download)`（`#98`，HTTP 4xx/5xx 立即失败不再误报「中途断开」）；一致性 **79/79**、能力台账与父仓库组合校验全绿 |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` + `docs/two-cli-strategy.md` + `docs/windows-port.md` + `swift/app/docs/app-launcher-architecture.md` |
 | **当前基线** | 父仓库 `main`；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | ① 正版登录改走 authlib-injector / Yggdrasil（**范围待维护者定**，GUI 登录界面暂不动）；② `auth.json` 跨进程锁的**跨语言真机对抢**实测（算法已一致，未实测并发）；③ 可选项：控制台「自动滚到底开关 / 日志导出」「日志条目跳到崩溃行」、Swift Linux 体积继续压缩 |
+| **下一步** | ① **Windows ARM64 缺 Java 25**：Temurin 没有 `windows/aarch64` 的 25（21 有），要决定是否加**厂商回退**
+（Microsoft OpenJDK 有 `windows-aarch64` 25），否则该平台跑最新版只能用自装 Java（**需维护者拍板**）；
+② 正版登录改走 authlib-injector / Yggdrasil（**范围待维护者定**，GUI 登录界面暂不动）；③ `auth.json` 跨进程锁的
+**跨语言真机对抢**实测（算法已一致，未实测并发）；④ 可选：控制台「自动滚到底开关 / 日志导出」「日志条目跳到崩溃行」、
+Swift Linux 体积继续压缩；⑤ **Swift 侧 4xx 语义对齐**（`Transfer` 把非 206 当完整正文，会把 404 变成 size/hash 不符）——
+需 air 构建，归 Air 车道 |
 
 ## 2. 状态快照（Repo State）
 
@@ -104,7 +114,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `f8c6a67` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.15.0 已发布（首个带 M3 runtime shim，opt-in）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；CI 修回归（release PR 重新上报必需检查）；`ledger` 台账校验 + 命令面 `--strict` |
+| `python` | `e217270` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.18.0 已发布（含 `auth.lock` 跨进程锁 + runtime 回滚）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；`ledger` 台账校验 + 命令面 `--strict`；**`fix(download)`（`#98`）**：`HttpStatusError` —— 4xx/5xx 不重试且保留 requests 原文，续传 416 且已取全按成功；`JavaEnv` 404 补「上游缺该平台构建」提示；验收 harness 的 `log_contains` 改去全部空白（rich 软换行不再切断标记）；根 `conftest.py` autouse 钉 `ORZMC_RUNTIME=python`；**`docs`（`#100`）**：CLI 验收脚本路径同步到父仓库 `scripts/accept/cli.py` |
 | `swift/app` | `fa571e7` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
 | `swift/lib/OrzMCKit` | `6944afb` | **Swift 引擎 + `orzmc` CLI**；**`v0.19.0` 已发布**（六资产；**Linux 自包含**：静态链 Swift 运行时、glibc 2.35、62–65 MB）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
@@ -113,8 +123,8 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | `swift/lib/OrzSwiftKit` | `616212d` | `OrzGeeker/OrzSwiftKit`；**0.0.20**：`ManagedProcess` 的 `send`/`terminate`/`forceKill`/`waitForExit(timeout:)`、`run(inheritStandardInput:)` |
 
 > `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
-> 2026-10-21 全量指针：`swift/app fa571e7`、`OrzMCKit 6944afb`、`OrzSwiftKit 616212d`、`OrzAppUpdater b23e0c4`、
-> `MojangAPI c5a0ead`、`PaperMC 14df328`、`ExarotonAPI 4f5c1a2`、`python f8c6a67`、`plugin 5eadd6e`（父仓库按 `main` 钉）。
+> 2026-10-22 全量指针：`swift/app fa571e7`、`OrzMCKit 6944afb`、`OrzSwiftKit 616212d`、`OrzAppUpdater b23e0c4`、
+> `MojangAPI c5a0ead`、`PaperMC 14df328`、`ExarotonAPI 4f5c1a2`、`python e217270`、`plugin 5eadd6e`（父仓库按 `main` 钉）。
 
 ### 2.3 验证 / 治理命令
 
@@ -318,6 +328,44 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-22 — pi（本机 CLI 线：HTTP 状态错误不再误报「中途断开」+ 夜间验收复绿）
+
+**上下文**：按新设备分工开工（Apple GUI 归 Air；bot 本机只做 CLI 与可独立完成的迭代，不连 Air/Windows）。
+入手点不是新功能，而是 `OrzPythonMC` 上**挂了一周的夜间验收红**（issue #35，自 2026-10-15 起每晚追加一条）。
+
+**定位**：6 个平台里只有 `windows-11-arm` 失败，7 个 case 全挂在同一句
+「下载 Temurin JRE 25 (windows/aarch64) → 下载中途多次断开，已重试 4 次仍失败」。
+实测该 URL **就是 404**：Temurin 有 `windows/aarch64` 的 Java 21，**没有 25**（jre/jdk 都无）。
+
+**两个真 bug（各一半责任）**：
+1. **实现侧**：`HttpClient.stream_range` 把 `raise_for_status()` 抛的 `requests.HTTPError`（4xx/5xx）
+   当成「流式中途断连」续传重试 → 4 次无谓请求 + 统一报「中途断开」，真因被掩盖。
+   修：新增 `HttpStatusError(RuntimeError)`（带 `status`/`url`，消息保留 requests 原文），
+   4xx/5xx **立即失败**；唯一例外是续传回 **416 且本地已取全** → 按成功返回（那正是「下完了」）。
+   放弃续传时消息补上最后一次底层错误。`JavaEnv` 再对 404 补一句可执行提示（上游未发布该平台构建）。
+2. **判定侧**：harness `log_contains` 只把空白压成**一个空格** → rich 软换行把长 URL 切开、断点落在
+   标记内部时仍匹配不到 `UP(gap)` 标记。修：两侧都**去掉全部空白**再比（标记不依赖空格）。
+3. 顺带：新增根 `conftest.py` autouse 钉 `ORZMC_RUNTIME=python`。本机状态目录里存着
+   早前实验的 Swift 通道 → `main()` 把 argv 交给 Swift 真身、POSIX 下 `os.execv`，**把 pytest 进程整个换掉**：
+   退出码 1、无 traceback、无 summary，用例凭空消失（`test_usage_error_exit_code_is_one` 起整批没了）。
+   基线（stash 后）同样复现 ⇒ 与本次修复无关，是测试非封闭；CI 一直钉着这个变量，现在本地一致。
+
+**验证**：`python` `ruff`/`mypy`/`pytest`（485 passed, 3 skipped）/ 父仓库 `scripts/accept/cli.py`（25 passed）；
+PR `OrzPythonMC#98` 全检查绿后合并（`c78eff6`）。真机层面：本地用真实网络打那个 404 URL，
+确认一次请求即报 `404 Client Error: Not Found for url: …`（旧行为：4 次重试 + 错误文案）。
+随后手动 dispatch `acceptance.yml` on main（run `39674450183`）：**6 平台全绿**，
+`windows-11-arm` 7/7 判 `UP(gap)`（警告），issue #35 已在本条结论后关闭。
+
+**另一笔（文案漂移）**：`scripts/accept_cli.py` 早按 M2 收口到父仓库 `scripts/accept/cli.py`，但
+`python/{AGENTS,CONTRIBUTING,README}.md` 里 11 处仍写本仓库旧路径（照着敲直接 No such file，且漏 `--frozen`）→
+PR `OrzPythonMC#100`（纯文档）。
+
+**留给下一会话（需拍板 / 需远端）**：
+- **Windows ARM64 跑最新版要 Java 25，Temurin 不给**。加**厂商回退**（Microsoft OpenJDK 有
+  `windows-aarch64` 的 25）就能真跑；不加则该平台只能自装 Java。产品决定，未动。
+- **Swift 侧同构隐患（需 air 构建）**：`OrzSwiftKit/Transfer` 对非 206 响应一律当「完整正文」（含 404），
+  最终表现为 size/hash 不符而不是清楚的状态码错误；对齐 Python 需要远端构建验证，本机不做。
 
 ### 2026-10-21 — pi（服务端运维收口：控制台 / 生命周期 / 插件 / 目录，**验收通过**）
 
