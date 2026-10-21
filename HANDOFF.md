@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-10-20 by pi
+> **最后更新**：2026-10-21 by pi
 
 ---
 
@@ -80,11 +80,11 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 项 | 内容 |
 |---|---|
-| **主题** | **D14 跨平台收敛已收口**（macOS / Linux / Windows x64+arm64 全有构建链路）；**两套 CLI 并行期治理**（台账 + 三处 CI 校验 + M2 共享验收脚本）；迭代成本治理（推前钩子 / air 远端构建 / dry-run 发布）；`--auth` 仍被 **Mojang 审核拒绝（2026-10-17）** 阻塞 |
-| **状态** | 🟢 一份规范 + 两套实现（Swift 为 lead）+ 三个前端；一致性 **79/79**；命令面两侧 0 偏差（`--strict` 进 CI）；能力台账三处校验全绿、**`knownDrift` 已清空**；**最近发布**：`OrzMCKit v0.18.0`（六资产，含 Windows arm64）、`OrzPythonMC 2.18.0` |
-| **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` + `docs/two-cli-strategy.md` + `docs/windows-port.md` |
-| **当前基线** | 父仓库 `main`（以 `git ls-tree HEAD` 为准，不钉死哈希）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | **Python 作为主力正常迭代**（两套 CLI 继续同步对齐）；`M3` 已归档。待做：正版登录改走 authlib-injector / Yggdrasil（需先定范围）、`auth.json` 跨进程写锁、`runtime` 真身损坏回滚。详见 §4「下一会话起点（2026-10-20 方向调整）」 |
+| **主题** | **macOS 启动器的服务端运维能力收口**（控制台命令 / 生命周期四操作 / 插件管理 / 目录与排版），**已由维护者验收通过**；底层仍是"一份规范 + 两套实现 + 三个前端" |
+| **状态** | 🟢 GUI：服务端控制台可收发命令（Paper `--noconsole` 已修）、四操作生命周期（启动/重启/停止/终止）三处可用（详情页 / 控制台 / 停止全部）、插件按 Paper `update-folder` 分流（`plugins/` vs `plugins/update/`）、常用目录与排版已整理；CLI：Swift `orzmc server` 继承终端 stdin（Python 一直可用），三前端控制台全通。一致性 **79/79**、能力台账三处校验全绿 |
+| **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` + `docs/two-cli-strategy.md` + `docs/windows-port.md` + `swift/app/docs/app-launcher-architecture.md` |
+| **当前基线** | 父仓库 `main`；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
+| **下一步** | ① 正版登录改走 authlib-injector / Yggdrasil（**范围待维护者定**，GUI 登录界面暂不动）；② `auth.json` 跨进程锁的**跨语言真机对抢**实测（算法已一致，未实测并发）；③ 可选项：控制台「自动滚到底开关 / 日志导出」「日志条目跳到崩溃行」、Swift Linux 体积继续压缩 |
 
 ## 2. 状态快照（Repo State）
 
@@ -104,13 +104,17 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `76f0275` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.15.0 已发布（首个带 M3 runtime shim，opt-in）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；CI 修回归（release PR 重新上报必需检查）；`ledger` 台账校验 + 命令面 `--strict` |
-| `swift/app` | `efbb665` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
-| `swift/lib/OrzMCKit` | `3fd3450` | **Swift 引擎 + `orzmc` CLI**；**`v0.19.0` 已发布**（六资产；**Linux 自包含**：静态链 Swift 运行时、glibc 2.35、62–65 MB）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
-| `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzSwiftKit,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
+| `python` | `f8c6a67` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.15.0 已发布（首个带 M3 runtime shim，opt-in）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；CI 修回归（release PR 重新上报必需检查）；`ledger` 台账校验 + 命令面 `--strict` |
+| `swift/app` | `fa571e7` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
+| `swift/lib/OrzMCKit` | `6944afb` | **Swift 引擎 + `orzmc` CLI**；**`v0.19.0` 已发布**（六资产；**Linux 自包含**：静态链 Swift 运行时、glibc 2.35、62–65 MB）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
+| `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
+| `swift/lib/OrzSwiftKit` | `616212d` | `OrzGeeker/OrzSwiftKit`；**0.0.20**：`ManagedProcess` 的 `send`/`terminate`/`forceKill`/`waitForExit(timeout:)`、`run(inheritStandardInput:)` |
+
 > `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
+> 2026-10-21 全量指针：`swift/app fa571e7`、`OrzMCKit 6944afb`、`OrzSwiftKit 616212d`、`OrzAppUpdater b23e0c4`、
+> `MojangAPI c5a0ead`、`PaperMC 14df328`、`ExarotonAPI 4f5c1a2`、`python f8c6a67`、`plugin 5eadd6e`（父仓库按 `main` 钉）。
 
 ### 2.3 验证 / 治理命令
 
@@ -314,6 +318,34 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-21 — pi（服务端运维收口：控制台 / 生命周期 / 插件 / 目录，**验收通过**）
+
+**结果**：维护者验收通过。四轮改动合起来把"服务端在 GUI 里能不能好好管"这件事做完整了。
+
+1. **Paper 控制台命令无效**（`OrzMCKit#94`）：根因 `PaperServer.start()` 带了 `--noconsole`
+   （Paper 的 *Disables the console*）→ 完全不读 stdin。air 真实 Paper 26.3 A/B 实测：
+   去掉后 `list`/`say`/`stop` 全通；带 `--nojline` 保留（不加时 JLine 会打一条非 MC 格式告警进 GUI）。
+2. **Swift CLI 服务端收不到命令**（`OrzSwiftKit#19` 0.0.19 + `OrzMCKit#95`）：`ProcessRunner` 建了 stdin 管道
+   而 CLI 从不写 → 命令石沉。加 `inheritStandardInput`，CLI 让子进程继承终端 stdin（与 Python `Popen` 语义一致）。
+   真机验证：`| orzmc server --type paper` 发 `list`/`say` 有回应。
+3. **生命周期四操作 + 插件管理 + 目录**（`OrzMCApp#34`、`OrzMCKit#96`、`OrzSwiftKit#20` 0.0.20）：
+   - 启动/重启/停止（送 `stop` 优雅退出）/终止（SIGTERM→SIGKILL）；`InstanceActivity` + `…Availability` 防连点；
+     无句柄（上个会话启动的实例）只能终止，UI 灰掉停止；`InstanceLifecycleTests` 6 例；
+   - 插件下载/更新并入 **Plugins 目录条目**（`Manage Plugins` 面板），**新装 → `plugins/`、
+     更新 → `plugins/update/`**（Paper `update-folder`）；`PluginInstaller` 10 例；
+   - 详情页每 1.5s 复核目录存在性（服务端自建 `world/`、插件 `update/` 立即出现）。
+4. **UI 与体验修正**（`OrzMCApp#36`、`OrzMCKit` 常用目录 + `ServerProperties`、`OrzMCApp#35`）：
+   - 目录条目只留「图标 + 标题 + 一句说明 + 打开按钮」（路径进悬停提示）；
+   - 各核心常用目录（Paper: plugins+更新队列；Fabric/Forge: mods+config；全部: 根/世界/日志，
+     **世界目录读 `server.properties` 的 `level-name`**）；客户端 Game/Logs/Saves/Mods/ResourcePacks；
+   - **选中行里禁用 `Color.accentColor`**（与选中背景同色 → 标签隐身），改语义色；
+   - 详情页顶部实例切换器（装 2 个以上才出现），四核心+客户端不再铺一屏；
+   - 控制台页补四操作；客户端控制台只读；
+   - **停止全部改为优雅**：只对有句柄的实例送 `stop`，无句柄的**不动**并列出名字；「Terminate All」需显式选择；
+     无句柄「终止」= SIGTERM→10s→SIGKILL；无句柄「重启」直接报错（避免起第二份撞端口）。
+
+**遗留**：跨语言 `auth.lock` 真机对抢未测；正版登录改道仍待定范围。
 
 ### 2026-10-21 — pi（服务端控制台：日志 + 命令输入，跨三仓）
 
