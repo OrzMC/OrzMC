@@ -413,6 +413,15 @@ jar↔项目归一化前缀匹配（`ViaVersion` 不误配 `ViaBackwards`）、�
 插件装出来的 `update/` 要切版本才看得见。现在详情页可见期间 `.task` 每 **1.5s** `refreshInstallStates()`
 （纯 `stat`，无网络/无子进程），视图消失自动取消。
 
+**详情页目录条目与常用目录（2026-10-21，`OrzMCApp#35`）**：目录条目不显示路径（前缀人人一样又占地方），
+改成 **图标 + 标题 + 一句说明 + 右侧「打开」**，路径在悬停提示里、双击整行也能开；不存在的目录显示
+`not created yet` 灰标、打开按钮禁用。`Manage Plugins` 从 Plugins 行上移到 **section 表头**（拼图图标）。
+各核心的常用目录由 `GameDirectoryCatalog`（`Sources/OrzMCLauncher`，7 例单测）决定：
+全部服务端 = 根/世界/日志；Paper = + plugins/plugins-update；Fabric/Forge = + mods/config；Vanilla 只有三项；
+客户端 = Game/Logs/Saves/（Fabric）Mods/Resource Packs。**世界目录读 `server.properties` 的 `level-name`**
+（`ServerProperties`，8 例单测），不写死 `world`。排版：版本列表等宽数字 + 紧凑徽标；详情页标题层级、
+按钮三组（看/管｜生命周期｜删除）加细分隔线。
+
 **工具坑（务必记住）**：`.pbxproj` 的 `/* Begin PBXFileReference section */` 标记一旦丢失，
 后加文件会只有 `PBXBuildFile` 条目而无 `PBXFileReference` → **Xcode 静默跳过该文件**，
 表现为「cannot find type X，而 X 明明就在磁盘上」。2016-10-21 踩过一次，已补回并加校验意识：
