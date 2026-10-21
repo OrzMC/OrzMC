@@ -374,6 +374,19 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 **air 上真实 Paper 26.3 A/B 实测**：无 `--noconsole` → `There are 0 of a max of 20 players online` +
 `[Server] hello-from-console`；带 `--noconsole` → 两条均无输出。防回归 `PaperLaunchArgumentTests` 3 例。
 
+**`--nojline` 该不该留（2026-10-21 实测）**：**留**。同一 Paper 26.3 两组对比（都通过 stdin 管道喂命令）：
+`list`/`say`/`stop` **功能完全一致**；差别只有——不加时 Paper 走 JLine，会打一条
+`2026-10-21T…Z ServerMain WARN Advanced terminal features are not available in this environment`
+（非 MC 格式、不走 `[HH:mm:ss INFO]` 前缀），直接进 GUI 控制台像故障。`--nojline` 只关行编辑、
+不影响读 stdin；GUI 有自研命令历史，不需要 JLine。
+
+**CLI 服务端控制台（2026-10-21 补）**：`--noconsole` 修掉后暴露另一半——**Swift CLI 从来收不到服务端命令**
+（`ProcessRunner` 建了 stdin 管道，CLI 只 `waitForExit`、从不写；Python 侧因子进程继承终端所以一直能用）。
+修法：`OrzSwiftKit 0.0.19` 的 `run(inheritStandardInput:)` + `ManagedProcess.canSendCommands`；
+`ServerInfo.inheritStandardInput`（CLI `server` 传 `true`、GUI 保持 `false`）。
+air 真机验证：`( echo list; echo say hi ) | orzmc server --type paper` → `There are 0 of a max of 20 players online`
++ `[Server] hello-from-cli`（修复前两条都没有）。现在 **Python CLI / Swift CLI / GUI 三面都能用控制台**。
+
 **工具坑（务必记住）**：`.pbxproj` 的 `/* Begin PBXFileReference section */` 标记一旦丢失，
 后加文件会只有 `PBXBuildFile` 条目而无 `PBXFileReference` → **Xcode 静默跳过该文件**，
 表现为「cannot find type X，而 X 明明就在磁盘上」。2016-10-21 踩过一次，已补回并加校验意识：
