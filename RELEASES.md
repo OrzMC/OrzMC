@@ -3,7 +3,7 @@
 > 父仓库是产品组合的锚点：本文件记录 `main` 上一次基准组合的各子模块**记录指针**（gitlink）。
 > 更新：`python3 scripts/release/composition.py` 生成表格后粘贴至此；校验：`python3 scripts/verify/check.py`。
 
-## 基准组合（2026-10-20）
+## 基准组合（2026-10-21）
 
 | 子模块 | 仓库 | 分支 | 记录指针 |
 |---|---|---|---|
@@ -13,12 +13,12 @@
 | `proxy` | OrzMC/OrzMCProxy | `main` | `087bb52129a1` |
 | `python` | OrzMC/OrzPythonMC | `main` | `f8c6a67b55ae` |
 | `site` | OrzMC/OrzMCSite | `main` | `31d215f6400e` |
-| `swift/app` | OrzMC/OrzMCApp | `main` | `707110d736ce` |
+| `swift/app` | OrzMC/OrzMCApp | `main` | `fef3862d216b` |
 | `swift/lib/ExarotonAPI` | OrzMC/ExarotonAPI | `main` | `4f5c1a28985d` |
 | `swift/lib/MojangAPI` | OrzMC/MojangAPI | `main` | `c5a0eadb4e83` |
 | `swift/lib/OrzAppUpdater` | OrzGeeker/OrzAppUpdater | `main` | `b23e0c414d78` |
-| `swift/lib/OrzMCKit` | OrzMC/OrzMCKit | `main` | `2371a2574109` |
-| `swift/lib/OrzSwiftKit` | OrzGeeker/OrzSwiftKit | `main` | `02099422d933` |
+| `swift/lib/OrzMCKit` | OrzMC/OrzMCKit | `main` | `d1049600ee89` |
+| `swift/lib/OrzSwiftKit` | OrzGeeker/OrzSwiftKit | `main` | `a009122d5de4` |
 | `swift/lib/PaperMC` | OrzMC/PaperMC | `main` | `14df3289ed74` |
 | `tools/DeathChest` | OrzMC/death-chest | `main` | `71d257127c7e` |
 | `tools/EzShops` | OrzMC/EzShops | `main` | `7fc73f750f2f` |
