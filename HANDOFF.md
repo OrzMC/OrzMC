@@ -335,6 +335,15 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 2. `OrzGeeker/OrzSwiftKit` 的分支保护**要求 1 个 review**（与 OrzMC 组织的"admin 可绕过"不同）→ 用 `gh pr merge --admin`。
 3. 可移植性检查会拦测试里写死的 `/bin/sh` → 加进 `scripts/verify/portability.py` 的 `ABS_PATH_ALLOW`（附理由）。
 
+**验收（2026-10-21 追加）**：本机是 **macOS 13.7.8 / x86_64**，而 app 是 `MACOSX_DEPLOYMENT_TARGET = 14.0`
+→ **装回本机也起不来**（不是架构问题）。所以：
+- 自动验收：`ServerConsoleModel` 下沉到 `Sources/OrzMCLauncher`（依赖倒置成 `ServerConsoleProcess` 协议，
+  共用目标不引 JokerKits）+ `ServerConsoleEndToEndTests` 3 例（真子进程读命令、回 ANSI 日志、`stop` 退出、
+  退出后拒绝发送、半行 flush）→ 任何 `swift test` 环境都能跑（`OrzMCApp#33`）；
+- 人工验收：`scripts/air/run.sh app-run` 在 air 上打开（实测 pid 25003），清单见
+  `swift/app/docs/console-acceptance.md`（8 步：起服务端 → ⌘⇧L → `say hello` → ↑↓ 历史 → `op` → `stop` → Clear）。
+- SSH 会话**拿不到截图**（没有屏幕录制/辅助功能权限）→ 观感只能人眼看。
+
 **待办**：控制台目前只有 GUI；CLI 侧本来就有终端。若要给 GUI 加"自动滚到底开关/日志导出"再说。
 
 ### 2026-10-20 — pi（macOS 启动器按评估重构：P0 全修 + 拆上帝对象 + 多实例）
