@@ -344,7 +344,19 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
   `swift/app/docs/console-acceptance.md`（8 步：起服务端 → ⌘⇧L → `say hello` → ↑↓ 历史 → `op` → `stop` → Clear）。
 - SSH 会话**拿不到截图**（没有屏幕录制/辅助功能权限）→ 观感只能人眼看。
 
-**待办**：控制台目前只有 GUI；CLI 侧本来就有终端。若要给 GUI 加"自动滚到底开关/日志导出"再说。
+**按验收意见改（2026-10-21 追加）**：控制台原入口在导航条上（= 全局一个），与"支持四种核心、
+可同时多实例"矛盾。改为**一实例一控制台**（`OrzMCApp#34`）：
+- `ServerConsoleRegistry` 按 `ConsoleInstanceKey`（`版本#核心`，与进程登记表同构）各持一个模型；
+  `detach` 只解绑、**日志保留**；`remove` 仅在该实例文件被删时清空；
+- 入口搬到**每个服务端实例的 section 标题行**（运行中绿色实心终端图标），四种核心各自独立；
+  导航条的全局入口已移除；
+- 控制台标题 `Console — 1.21.5 Paper`；停服显示 `Stopped … (log is kept)`；
+- 测试 `ServerConsoleRegistryTests` 6 例（实例隔离 / 同 key 复用 / detach 保日志 / remove 只清自己）。
+
+**已知缺口**：客户端（Client）还没有控制台 —— 引擎 `ClientInfo` 没有日志观察者，
+要补需在 Kit 加 `onClientLog`（对称改动，未做）。
+
+**待办**：CLI 侧本来就有终端，不需要控制台；GUI 若要"自动滚到底开关/日志导出"再说。
 
 ### 2026-10-20 — pi（macOS 启动器按评估重构：P0 全修 + 拆上帝对象 + 多实例）
 
