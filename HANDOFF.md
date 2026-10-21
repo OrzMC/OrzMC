@@ -78,6 +78,8 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 ## 1. 当前焦点（Current Focus）
 
+> **设备分工（维护者 2026-10-22 指定）**：Apple GUI/Swift 平台开发与实机验收在 Air 的 `/Users/joker/Documents/OrzMC` 正式仓库接力。bot 的 `/Users/bot/OrzMC` 后续用于 CLI 及可在本机独立完成的迭代，默认不再依赖 Air/其他设备开展工作；需要例外时以维护者明确任务为准。EasyApple 两机均已配置共享技能。
+
 > **2026-10-22 接力更新**：Swift app UI 刷新已获授权提交推送，app 分支 `feat/ui-refresh`，父仓库接力分支 `feat/ui-refresh-handoff`；尚未合并/发版。Air 拉取父仓库接力分支并初始化子模块后，先读 `swift/app/docs/air-ui-handoff-2026-10-22.md`。旧 patch 交接流程不再使用。
 
 | 项 | 内容 |
@@ -322,6 +324,10 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-22 — Codex（Air 正式仓库与设备分工）
+
+维护者要求把父仓库接力分支放到 Air `~/Documents/OrzMC`，初始化 Swift 相关子模块，并让 app 检出 feat/ui-refresh。Apple UI 后续在该正式仓库继续；bot 后续用于 CLI 与本机可独立完成的工作。接力首先核对两个仓库 Git 状态，读取 app 的 air-ui-handoff-2026-10-22.md；已有未实施审查建议与视觉验收边界保持不变。
 
 ### 2026-10-22 — Codex（UI 分支推送与 Air Git 接力）
 
