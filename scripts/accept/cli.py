@@ -826,6 +826,14 @@ def build_cli(explicit: str | None, frozen_flag: bool) -> tuple[list[str], bool]
 
     命令串的形式让 Python 侧沿用 `uv run ... orzmc`、Swift 侧直接给二进制路径，
     脚本本身不需要知道实现来自哪个仓库。
+
+    ⚠️ **每个用例都从自己的沙箱目录启动**（`cwd=<case dir>`，HOME/XDG_* 也换掉了），
+    所以命令串里的**相对路径会按沙箱解析**：`--cli 'uv run --directory python orzmc'` /
+    `--cli 'uv run orzmc'` 都会 `No such file or directory`。给 **绝对路径**或
+    "可执行文件路径"（后者这里会 `resolve()` 成绝对路径，`--cli dist/orzmc` 就靠这个、
+    实测可用）；Python 源码模式推荐：
+
+    ``bin="$(uv run --all-packages python -c 'import shutil; print(shutil.which("orzmc"))')"``
     """
     if not explicit:
         raise SystemExit(

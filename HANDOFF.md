@@ -174,6 +174,21 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 | 本地联调 | `scripts/swift-dev.sh {sync,edit,status,unedit,xcode}` —— 把 `swift/lib/OrzMCKit` 的依赖本地覆盖到 `swift/lib/*`（开发态、不提交；app 的 Xcode 覆盖见 `xcode` 子命令） |
 | 不可用 | `swift-latest`/6.5-dev 工具链需 macOS 15；`swiftly` 在本机崩溃 |
 
+**本地能力矩阵（2026-10-22 实测，别把它读成「CLI 本地验证没了」）**
+
+CLI 迭代的主线是 **Python 实现**（`docs/two-cli-strategy.md` §6：唯一对外分发），它在**本机是全能的**；
+Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧，且一致性/命令面校验用 Python 适配器就能本地跑。
+
+| 想验证什么 | 本机能不能 | 命令（实测耗时） |
+|---|---|---|
+| Python CLI 行为（信封/退出码/取消/补全/MCP，25 例，真实进程） | ✅ | `bin="$(cd python && uv run --all-packages python -c 'import shutil; print(shutil.which("orzmc"))')"` 然后 `python3 scripts/accept/cli.py --cli "$bin"`（实测 64s）。⚠️ **不能**写 `--cli 'uv run orzmc'`：每个用例从自己的沙箱 cwd 启动，相对路径/无绝对入口必挂（`OrzPythonMC#102`） |
+| Python 单测 / lint / 类型 | ✅ | `uv run --directory python --all-packages pytest`（20s）、`ruff`、`mypy` |
+| 一致性 conformance（79 例） | ✅ | `scripts/conformance/run.py --adapter "uv run --directory python python orzmc/tests/conformance/adapter.py" --strict`（几十秒，**不需要 Swift**） |
+| 命令面 manifest / 能力台账 | ✅ | `scripts/verify/surface.py --self-check`、`scripts/verify/parity.py` |
+| Swift 代码的可移植性 / 语法 | ✅（秒级，不解析依赖） | `swift/lib/OrzMCKit/scripts/dev/local-build.sh lint`（0.6s）/ `check`（11s） |
+| Swift 整包 `swift build`/`swift test` | ❌ 本机不做 | CI `macos-15`（Swift 6.1.2）/ air（6.4） |
+| Swift 侧一致性适配器、Swift CLI 验收 | ❌ 需要先构建 | `OrzMCKit` CI 的 `conformance`/`cli-acceptance` job（权威） |
+
 ### 2.6 Swift 依赖（现为 `swift/lib/*` 子模块）
 
 > 2026-10-15 起这些仓库已作为父仓库子模块收拢到 `swift/lib/*`（路径/指针见 §2.2 与 `RELEASES.md`）。
@@ -381,6 +396,15 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
   Swift 6.1**。本机 6.0.3 工具链跑 `swift package resolve` 直接失败，6.5-dev 工具链在 macOS 13 上起不来，
   故 **「本机可单独编译 OrzSwiftKit」这条已作废**（§2.5 已改）。要恢复本机编译只有两条路：
   钉回 nio < 2.100（会与 dependabot 长期对抗）或本机升到 macOS 15+。CI/air（6.1.2 / 6.4）不受影响。
+
+**⑥ 顺带纠正一处文档坑 + 明确「本机能做什么」**
+- 发现上一笔 `OrzPythonMC#100` 写的示例 `--cli 'uv run orzmc'` **跑不起来**：harness 的每个用例都从
+  **自己的沙箱 cwd** 启动（HOME/XDG 也换掉），命令串里的相对路径按沙箱解析 → `No such file or directory`。
+  改为 CI 同款（`bin="$(uv run … shutil.which("orzmc"))"` + `--cli "$bin"`，25 例 64s 全过），`#102` 已合；
+  父仓库 `scripts/accept/cli.py` 的 `build_cli` docstring 补了这条 cwd 说明（行为不变）。
+- 在 §2.5 增「**本地能力矩阵**」：CLI 主线（Python）本机是全能的（行为验收 / 单测 / 一致性 79 例用
+  python adapter 也能本地跑 / 命令面与台账校验）；Swift 侧只少了整包编译，静态与语法检查照旧（0.6s / 11s）。
+  —— 避免把「OrzSwiftKit 不能本地编译」误读成「CLI 本地验证没了」。
 
 ### 2026-10-22 — pi（本机 CLI 线：HTTP 状态错误不再误报「中途断开」+ 夜间验收复绿）
 
