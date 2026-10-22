@@ -35,7 +35,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 >
 > **当前状态（2026-10-22）**
 > - 当前工作位于 Air 本机正式仓库 `/Users/joker/Documents/OrzMC`。后续 app/Swift GUI 迭代直接在本机进行；**不要使用 `ssh air` 或旧 `scripts/air/run.sh`**，后者已删除。Swift 检查入口为 `scripts/swift-check.sh`。
-> - 父仓库分支 `feat/ui-refresh-handoff`，相对 origin **ahead 6**；app 子模块分支 `feat/ui-refresh`，当前提交 `b13b422`，与 origin 同步。父仓库 PR #39 和 app PR #37 仍是 Draft，未合并/发版。
+> - 父仓库分支 `feat/ui-refresh-handoff`，与 origin 同步；app 子模块分支 `feat/ui-refresh` 当前提交 `c28c70a3`（已推送）。**父仓库 PR #39 已关闭**（指针会回退 app main 的 `d90d7af7`，见 §5），**app PR #37 仍为 Draft、CI 全绿**，未合并/发版。
 > - app UI 的逐项修改和未完成验收见 `swift/app/docs/ui-review-2026-10-22.md`、`swift/app/docs/air-ui-handoff-2026-10-22.md`。受控日志/远程动作/RAM 失败验证及窗口尺寸、亮暗、焦点视觉验收尚未完成。
 > - 新增项目 GitHub 迭代指南 `docs/github-iteration-workflow.md`，已从 `CONTRIBUTING.md` 与 `docs/README.md` 链接。建议流程：短分支、Draft PR、子模块先独立合并、父仓库再显式 bump。
 > - 当前父仓库与 app 都有大量未提交改动，另有 `tools/OrzMCBackup` 脏状态。**接手先检查，不要 pull、reset、clean、覆盖文件或提交。**
@@ -301,6 +301,12 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-22 — pi（提交推送 app 改动并关闭父仓库 PR #39）
+
+- app 子模块提交 `c28c70a3`（70 文件）并推送 `feat/ui-refresh`；父仓库 `0c1ff04`（HANDOFF）+ `0eff4bc`（只 bump swift/app 指针）推送 `feat/ui-refresh-handoff`。app PR #37 CI（split + macOS + iOS）全绿。
+- **关闭父仓库 PR #39**，原因（已写在该 PR 的说明里）：① 它把 `swift/app` 钉在 `c28c70a3`（`feat/ui-refresh`，基于 `fa571e70`），而父仓库 `main` 已钉 app `main` 的 `d90d7af7`（含 #38），**合并会让 app 指针回退**；② 其余 6 个子模块指针与 main 完全一致，全为空操作；③ 该 PR 没有可评审差异（app 真实改动在 PR #37），且 token 创建的 PR 不上报 checks。
+- **后续正确路径**：app PR #37 合并进 app `main` 后，父仓库开一个**只 bump `swift/app`** 的新 PR，指针指向 app `main` 的合并提交，并把本分支 HANDOFF 的文档内容一起带上（分支保留未删）。
 
 ### 2026-10-22 — pi（⌘↑/⌘↓ 真正滚到列表首/末）
 
