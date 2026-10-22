@@ -123,10 +123,10 @@ Windows 报 Cocoa 257/Win32 5），建议先修测试再发；⑦ `plugin` Depen
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
-| `swift/lib/OrzSwiftKit` | `616212d` | `OrzGeeker/OrzSwiftKit`；**0.0.20**：`ManagedProcess` 的 `send`/`terminate`/`forceKill`/`waitForExit(timeout:)`、`run(inheritStandardInput:)` |
+| `swift/lib/OrzSwiftKit` | `f35e4dc` | `OrzGeeker/OrzSwiftKit`；**0.0.20**：`ManagedProcess` 的 `send`/`terminate`/`forceKill`/`waitForExit(timeout:)`、`run(inheritStandardInput:)`；**`#1`**：`Package.resolved` 里 swift-nio 2.73→**2.104**、swift-system 1.3.2→1.8.1（都是 console-kit 的传递依赖）→ ⚠️ **构建工具链下限抬到 Swift 6.1**（见 §2.5） |
 
 > `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
-> 2026-10-22 全量指针：`swift/app fa571e7`、`OrzMCKit 6944afb`、`OrzSwiftKit 616212d`、`OrzAppUpdater b23e0c4`、
+> 2026-10-22 全量指针：`swift/app fa571e7`、`OrzMCKit 6944afb`、`OrzSwiftKit f35e4dc`、`OrzAppUpdater b23e0c4`、
 > `MojangAPI c5a0ead`、`PaperMC 14df328`、`ExarotonAPI 4f5c1a2`、`python 5e70745`、`plugin 5eadd6e`、
 > `tools/rust-thanos b79defb`（父仓库按 `main` 钉；
 > 本地 `plugin` 常检出 `develop`，2026-10-22 起多一条 `211c203`「依赖安全告警处置」文档 —— **预期，不 bump**）。
@@ -168,7 +168,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 |---|---|
 | 本地工具链 | `~/Library/Developer/Toolchains/swift-6.0.3-RELEASE.xctoolchain`（Swift 6.0.3，已装） |
 | 本地 SDK | 仅 macOS 12/13（CLT）→ **`OrzMCKit` 整包无法本地编译**（OpenAPIKit 需 macOS 14 API） |
-| 验证途径 | `OrzMCKit` CI（`macos-15`：`swift build`+`swift test`+`conformance`）；不依赖 OpenAPIKit 的包（`OrzSwiftKit` 的 kit）可本地编译 |
+| 验证途径 | `OrzMCKit` CI（`macos-15`：`swift build`+`swift test`+`conformance`）。⚠️ **2026-10-22 起 `OrzSwiftKit` 也不能在本机编译了**：其依赖图（swift-nio **2.104** / swift-system 1.8.1）自带 `swift-tools-version:6.1`，本机 6.0.3 工具链 `swift package resolve` 直接报 `is using Swift tools version 6.1.0 but the installed version is 6.0.3`；`swift-latest`/6.5-dev 工具链又因 built for macOS 15 在 macOS 13 上 dyld 起不来。⇒ Swift 侧本地只保留 `OrzMCKit/scripts/dev/local-build.sh lint\|check`（纯静态/语法，不解析依赖）；构建与测试一律走 CI 或 Air（Swift 6.1.2 / 6.4） |
 | **远程 Mac（`ssh air`）** | macOS 27 / Swift 6.4 / Xcode 27（arm64）——**可本地编译 OrzMCKit**（本机 SDK 太旧时的替代）。Swift 验证两条路：`ssh air` 本地编译 / `OrzMCKit` **CI**（`conformance` job 检出父仓库 fixtures 跑 `--strict`，权威）。构建目录 air `~/orzmc-build/{OrzMCKit,parent,OrzSwiftKit}`（`parent` 下放了 fixtures+conformance 供适配器跑） |
 | Air 上的 SwiftLint 坑 | 单独构建 `OrzSwiftKit` 时，新解析的 SwiftLint 在 Swift 6.4 下编译失败（`MemberImportVisibility`）；但 `OrzMCKit` 的 `.build` 用钉住版本可正常构建 |
 | 本地联调 | `scripts/swift-dev.sh {sync,edit,status,unedit,xcode}` —— 把 `swift/lib/OrzMCKit` 的依赖本地覆盖到 `swift/lib/*`（开发态、不提交；app 的 Xcode 覆盖见 `xcode` 子命令） |
@@ -370,6 +370,17 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 - 合并后在本地补跑该仓库的完整门禁：`cargo check --locked` / `cargo test`（14 例）/ `cargo fmt --check` /
   `cargo clippy --all-targets --all-features -D warnings` 全绿，main CI 绿；
 - 父仓库指针 bump 到 `b79defb`。
+
+**⑤ `OrzGeeker/OrzSwiftKit#1`（swift-nio 2.73 → 2.104）**
+- PR 原是 `CONFLICTING`（lock 与 main 的 `Package.resolved` 打架）→ 留言 `@dependabot rebase`，
+  dependabot 顺带把目标从 2.102 提到 **2.104.0**，并连带 swift-system 1.3.2→1.8.1（都是 console-kit 的传递依赖）。
+- 该仓库只有 `Package.resolved` 变更；**库的 lock 不影响下游解析**（SwiftPM 忽略依赖包的 `Package.resolved`），
+  所以消费侧（`OrzMCKit`/app）不受影响，价值在于我们自己的 CI 会提前跑新 nio。
+- CI `build-test`（macos-15）1m52s 绿 → `gh pr merge --admin`（OrzGeeker 组织要求 1 review，`--admin` 是既有惯例）。
+- ⚠️ **副作用（已实测）**：nio ≥ 2.100 的 manifest 是 `swift-tools-version:6.1` ⇒ **OrzSwiftKit 的构建下限抬到
+  Swift 6.1**。本机 6.0.3 工具链跑 `swift package resolve` 直接失败，6.5-dev 工具链在 macOS 13 上起不来，
+  故 **「本机可单独编译 OrzSwiftKit」这条已作废**（§2.5 已改）。要恢复本机编译只有两条路：
+  钉回 nio < 2.100（会与 dependabot 长期对抗）或本机升到 macOS 15+。CI/air（6.1.2 / 6.4）不受影响。
 
 ### 2026-10-22 — pi（本机 CLI 线：HTTP 状态错误不再误报「中途断开」+ 夜间验收复绿）
 
