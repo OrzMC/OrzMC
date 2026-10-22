@@ -59,7 +59,7 @@
 | **跨平台边界显式化** | `Game.PlatformTools`、`app` 非 macOS → `E_UNSUPPORTED` | 减少"跑起来才炸"的隐性问题 |
 | **发布链路容器适配** | `uname -m` 断言替代 `file`；容器内步骤 `shell: bash` | R6：容器环境差异提前修掉 |
 
-## 3.1 本机 Swift 6 工具链（2026-10-18 实测）
+## 3.1 旧开发设备瓶颈（历史：2015 i5 / macOS 13）
 
 按建议装了本机工具链（`swiftly`，免 sudo）：
 
@@ -69,7 +69,7 @@ export PATH="$HOME/Library/Developer/Toolchains/swift-6.0.3-RELEASE.xctoolchain/
 swift --version                 # Apple Swift version 6.0.3
 ```
 
-**结论：工具链可用，但这台机器仍无法做完整本机构建**，三点客观限制（`scripts/dev/local-build.sh` 会把它们打印成诊断）：
+当时的结论是旧机器无法完成 Swift 全量构建，原因如下（`scripts/dev/local-build.sh` 曾输出这些诊断）：
 
 | 限制 | 证据 | 影响 |
 |---|---|---|
@@ -86,28 +86,21 @@ swift --version                 # Apple Swift version 6.0.3
 | 空项目 no-op 构建 | **16.7 s** | user 仅 1.7 s → 这台机器 I/O/系统调用极慢 |
 | 本包冷构建（跑到 OpenAPIKit 失败处） | **35 分钟** | 依赖图全量编译 |
 
-因此本机只做**秒级/分钟级**反馈，全量构建交给 CI：
+当时的反馈与耗时记录：
 
 | 反馈层级 | 手段 | 实测耗时 |
 |---|---|---|
 | 平台写法错误 | 本机 `local-build.sh lint` / CI `portability` job | **~1 s** / **5 s** |
 | 语法错误 | 本机 `local-build.sh check`（`swiftc -parse` 80 文件） | **50 s** |
-| 完整构建 + 单测 + 验收 | **`ssh air`**（`scripts/air/run.sh accept`） | **24s（build）/ 25s（test）/ 1m33s（accept）** |
+| 完整构建 + 单测 + 验收 | 历史远端车道（2026-10-18） | **24s（build）/ 25s（test）/ 1m33s（accept）** |
 | 完整构建 + 单测 + 验收 | CI `linux` job（带缓存） | **2m02s** |
 | 完整构建 + 单测 + 验收 | CI macOS job | 1m07s–1m56s |
 
-> 想在本机打通全量构建的唯一现实路径：**释放磁盘 + 装 Xcode 16+ 或更新 CommandLineTools**（需管理员），
-> 或改用 Linux 容器（`scripts/dev/linux-build.sh`，需 docker/podman）把构建搬到 Linux 侧。
+这段只描述旧开发设备，不适用于当前 MacBook Air。当前 Swift 检查入口为 [`scripts/swift-check.sh`](../scripts/swift-check.sh)。
 
-## 3.2 远端构建（`ssh air`）——本轮的最终答案
+## 3.2 历史记录：远端构建车道（已退役）
 
-本机既然做不了全量构建，就把构建搬到达标的机器上。`air`（Apple Silicon M1 / 8 核 / Swift 6.4 / SDK 27 /
-剩余 24GB）已接入：**[`scripts/air/run.sh`](../scripts/air/run.sh)**。
-
-```bash
-scripts/air/run.sh build     # rsync 工作树 + swift build --product orzmc
-scripts/air/run.sh accept    # + release 构建 + CLI 验收
-```
+2026-10-22 起，本项目在当前 MacBook Air 本机迭代，不再通过 SSH、rsync 或远端构建镜像运行 Swift 检查。统一入口是 [`scripts/swift-check.sh`](../scripts/swift-check.sh)，它直接在当前工作树执行 SwiftPM/Xcode 命令。以下耗时数据仅作为旧设备与旧流程的历史记录。
 
 **实测（本轮真跑，2026-10-18）**：
 
@@ -121,14 +114,14 @@ scripts/air/run.sh accept    # + release 构建 + CLI 验收
 
 **同一件事的四条路径对比**：
 
-| 路径 | 时长 | 可行性 |
+| 路径（历史） | 时长 | 当时可行性 |
 |---|---|---|
 | 本机全量构建 | **不可行** | SDK 13.3 < 14（依赖要求） |
 | 本机 `check`（lint + 语法） | 50 s | ✅ 只能抓语法/平台写法 |
-| **`ssh air` 远端构建** | **24 s（增量）** | ✅ **日常主力** |
+| **`ssh air` 远端构建** | **24 s（增量）** | 已退役 |
 | CI（macOS / Linux，带缓存） | 1 m 07 s – 2 m 02 s | ✅ 合并前门禁 |
 
-**两个关键优化**（否则远端也要 1 分钟以上）：
+**当时的两个关键优化**（仅供历史参考）：
 1. 依赖是 `branch: main`，SwiftPM 每次解析都联网刷新 → 默认加
    `--only-use-versions-from-resolved-file`（要更新依赖时用 `ORZMC_UPDATE_DEPS=1`）：24 s vs 1 m 07 s。
 2. `rsync --delete` 但 **排除 `.build`** → 远端增量构建得以保留（否则每次都冷编译）。
@@ -202,7 +195,7 @@ scripts/air/run.sh accept    # + release 构建 + CLI 验收
    现实路径是**释放磁盘 + 装 Xcode 16+/更新 CLT**（需管理员），或改用 Linux 容器构建。
 2. **依赖侧改动走"可验证的 pin 刷新"**
    - 依赖是 `branch: main` 时，合并依赖仓库后**立刻**刷新 `Package.resolved`（本轮漏了一次，白跑一轮）。
-   - 建议加小脚本 `scripts/dev/bump-deps.sh`：拉三个依赖仓库的 main → 更新 `Package.resolved` → 打印 diff。
+   - 已落地：`scripts/dev/bump-deps.sh`（`--check` 只报告漂移；不带参数则改写分支钉到 `origin/main`、重解析 macOS/iOS 两套 DerivedData 并打印 diff）。建议接进 pre-push。
 3. **CI 分快慢车道**
    - 快车道（PR 必跑）：`portability.py` + `swift build --product orzmc`（不跑全 target、不跑 test）。
    - 慢车道（main / 影响面大时）：全量 build + test + conformance + cli-acceptance。

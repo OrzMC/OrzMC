@@ -301,6 +301,27 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-22 — pi（Swift CLI 装不上：根因 + 发版 + 依赖漂移）
+
+- **根因**：安装器/自升级都用 `releases/latest`，而 GitHub 该端点只指向正式版；OrzMCKit 按
+  `two-cli-strategy.md` §6 一律 pre-release → `releases/latest/download/<asset>` 恒 404。
+  GUI「重装 → Swift CLI」必失败；`orzmc update` 报「网络问题/限流」也是同一个坑。
+- **修复**（OrzMCKit **#98**，已合入）：`install.sh` / `install.ps1` 改为先问
+  REST `releases?per_page=1`（含预发布）再回退 latest；`SelfUpdate.latestTag()` 增加
+  `firstReleaseTag()` 回退。父仓库规范同步：`docs/spec/install-update.md` §6。
+- **发版**：release-please **#92** 合入 → **v0.21.0**（pre-release，7 个资产齐全）。
+  实测：安装器默认解析到 `最新发布: v0.21.0` 并装好；新二进制的 `orzmc update --yes`
+  回「已是最新版本 v0.21.0」（此前是 E_NETWORK）。
+- **依赖漂移**（`Package.resolved` 落后 main，R4/R7 同款）：新增 `scripts/dev/bump-deps.sh`
+  （`--check` 报漂移；带参数则改写分支钉 → 重解析 macOS/iOS 两套 DerivedData → 打印 diff）。
+  已刷新 OrzMCKit 6944afb5→771421cc、OrzSwiftKit 616212d0→f35e4dc3。
+- **需求形态对齐**：app 里 OrzSwiftKit 原写 `upToNextMajor 0.0.18`，但 OrzMCKit 自己声明
+  `branch: "main"`，SwiftPM 需求合一后分支优先 → 锁文件长期是分支钉。已把 app 侧也改成
+  `branch = main`，消除"声明版本号、锁文件却是分支"的错觉。
+- **依赖策略结论**：继续 HEAD 制（branch main）+ 锁文件纪律；**等 app 对外发版/接 Sparkle
+  时**再把 OrzMCKit 切成 `upToNextMinor`（标签是干净的 `vX.Y.Z`，SwiftPM 可解析）。
+- 未提交（app 工作区）：设置页优化（5 页 + 外观 + Java 区块 + 渐进披露），等维护者验收。
+
 ### 2026-10-22 — pi（详情页启动卡，维护者验收通过）
 
 - 启动区从窗口标题栏移回详情页内部，做成自定义「启动卡」：14pt 圆角 + 品牌色薄渐变 + 强调描边，

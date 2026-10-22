@@ -240,6 +240,14 @@ L3 产品伞 ──▶ 只做锁定与文档，不改任何实现代码
   正式版仍以规范路径的 SwiftPM 版本为准。
 - **版本策略（Q7 已决：HEAD 制）**：伞内引擎版本 = `OrzMCKit` 的 `main` HEAD。父仓库子模块与 `app` 的
   SwiftPM 依赖（`branch = main`）都跟随 HEAD、保持同步，**不再依赖 tag**（为快速迭代）。
+  - ⚠️ **锁文件是第二份事实源，必须跟着动**：分支依赖下 `Package.resolved` 钉住具体 commit，
+    依赖侧合并后不刷新 = 本机/CI 还在编旧提交（假阴性）。纪律：
+    `scripts/dev/bump-deps.sh --check` 报漂移 → `scripts/dev/bump-deps.sh` 刷新 →
+    **与子模块指针 bump 放在同一次提交**。
+  - 需求形态要跟依赖侧一致：`OrzMCKit` 自己声明 `OrzSwiftKit` 为 `branch: "main"`，
+    app 侧就不能只写版本号（SwiftPM 需求合一后分支优先），否则锁文件类型与声明永远对不上。
+  - **何时切版本号**：等 app 对外发版/接自动更新通道时，把 `OrzMCKit` 的需求改成
+    `upToNextMinor`（引擎已有干净的 `vX.Y.Z` 标签，SwiftPM 可解析），让"app X 用引擎 Y"可复现可回滚。
 - **依赖仓库均可直接改**：`OrzMC/*` 与 `OrzGeeker/*` 的 SwiftPM 依赖均属维护者自有；必要时可拉到本地修改，
   以**清晰的模块能力划分 + 跨模块配合**为目标（见 [`AGENTS.md` §7.1](../AGENTS.md)）。
 
