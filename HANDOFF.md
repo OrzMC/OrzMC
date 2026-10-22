@@ -320,7 +320,8 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
   `branch = main`，消除"声明版本号、锁文件却是分支"的错觉。
 - **依赖策略结论**：继续 HEAD 制（branch main）+ 锁文件纪律；**等 app 对外发版/接 Sparkle
   时**再把 OrzMCKit 切成 `upToNextMinor`（标签是干净的 `vX.Y.Z`，SwiftPM 可解析）。
-- 未提交（app 工作区）：设置页优化（5 页 + 外观 + Java 区块 + 渐进披露），等维护者验收。
+- 设置页优化（app `b3e62089`）：**维护者验收通过**——五页拆分（通用/客户端/服务器/命令行/关于）、
+  外观设置（NSApp.appearance）、Java 区块、渐进披露、消除重复标签与 CLI 教程式文案。
 
 ### 2026-10-22 — pi（详情页启动卡，维护者验收通过）
 
