@@ -301,6 +301,17 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-22 — pi（详情页启动卡，维护者验收通过）
+
+- 启动区从窗口标题栏移回详情页内部，做成自定义「启动卡」：14pt 圆角 + 品牌色薄渐变 + 强调描边，
+  与其他实例列表卡区分；一行展示 启动目标菜单 / 玩家名（仅客户端）/ Java 状态 / ▶ 启动客户端。
+- 启动目标合并成一个菜单（客户端 Vanilla·Fabric + 服务端 4 个核心）；玩家名占位「输入玩家名称」，
+  为空时描边转警告色；Java 状态可点击重扫。
+- 修 Java 需求异步到达不刷新的 bug（`VersionCatalogModel.onGameInfoLoaded` → `syncJavaRequirement`）。
+- 收起/展开全部移到客户端组标题行右侧；语义色新增 `controlFill` / `selectionFill`。
+- **维护者验收通过**，app 提交 `f8f88396` 已推送；CI 见 OrzMCApp#37。
+- 下一步候选（未开始）：详情页其他细化 / 提交 PR 评审。
+
 ### 2026-10-22 — pi（版本详情页：标题栏启动区 + 全实例分组 + 折叠）
 
 - 标题栏（`LaunchToolbar`）：模式 / 类型（服务端核心用下拉避免溢出）/ 启动设置 popover（玩家名、Java）/
@@ -330,7 +341,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
   （图标态、`.menuIndicator(.hidden)`，与相邻按钮同为圆/胶囊）；删除 `DetailViewTool.swift` 与 `.detailTool()`，
   **版本详情页不再有工具栏**，只保留启动配置 / 实例目录 / 控制台。
 - 第一版误放进侧边栏搜索行（第 4 个图标），已按维护者意见改到窗口工具栏；实测收起侧边栏后工具栏入口仍可见。
-- 维护者确认侧边栏调整完成，菜单项修正已提交（`d76f94e4`）。**当前焦点：版本详情页**——启动区已在标题栏、正文按类型分组（`aae26ffb`）；**下一步处理详情页标题区**。
+- 版本详情页本轮改造（全实例分组 + 折叠 + 启动卡）**维护者验收通过**（app `f8f88396`）；两个 PR 仍为 Draft，未合并/未发版。
 - 门禁：`app` / `app-ios` 构建通过，`app-test` 全绿，平台分层与 `git diff --check` 通过；
   96/1200pt、亮/暗自截图复核通过。已提交并推送（app `0ffaa31e`）。
 
