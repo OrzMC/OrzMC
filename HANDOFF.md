@@ -301,6 +301,24 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-22 — pi（UI 大改造合入 main + 全功能包本机验收）
+
+- **PR #37（feat/ui-refresh）转 Ready 评审并 squash 合入 app main**（`51b339d7`，92 文件 +11003/−2236）；
+  PR 描述整体重写（原文还写着"保留为草稿"，与合入状态不符）。
+- **本机打全功能包**：`SKIP_NOTARIZE=1 ./scripts/release-macos.sh` → `dist/macos/0.1.2-54/`
+  - `OrzMC.app` 18M（universal arm64+x86_64，Developer ID 签名 + hardened runtime，
+    内嵌 Sparkle.framework，min macOS 14.0，Release 里**没有** DEBUG 快照工具）
+  - `...zip` 7.0M / `...dmg` 7.7M；Gatekeeper 显示 `rejected / Unnotarized`（SKIP_NOTARIZE 预期）；
+    `generate_appcast` 因本机无 EdDSA 私钥（CI secret）失败，属预期
+- **顺手修打包脚本**（app PR **#39**，已合）：macOS 自带 `/bin/bash` 是 3.2，
+  `set -u` 下展开空数组会 `unbound variable` → 本机不设 `DEVELOPER_ID_KEYCHAIN` 时脚本直接死。
+  改成 `${arr[@]+"${arr[@]}"}`；`SKIP_NOTARIZE=1 /bin/bash ./scripts/release-macos.sh` 全新跑通
+  到 DMG 完成（只有 appcast 需要私钥）。
+- **本机验收**（合入后的主干）：主窗口（亮/暗）、版本列表与元数据、详情页启动卡 + 6 实例分组、
+  设置 5 页、外观=浅色（系统为深色时全局变浅，`NSApp.appearance` 生效）、菜单全中文
+  （关于/检查更新/帮助=使用文档+联系作者/游戏=跳转+启动+停止全部）、Release 包启动正常。
+- 父仓库指针更新：`swift/app` → app main `1b03401c`。
+
 ### 2026-10-22 — pi（Swift CLI 装不上：根因 + 发版 + 依赖漂移）
 
 - **根因**：安装器/自升级都用 `releases/latest`，而 GitHub 该端点只指向正式版；OrzMCKit 按
