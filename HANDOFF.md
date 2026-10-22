@@ -301,6 +301,15 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-22 — pi（菜单项修正：关于 / 检查更新 / 帮助）
+
+- 「关于 OrzMC」→「关于」（`replacing: .appInfo` + `orderFrontStandardAboutPanel`）；「Check for Updates...」
+  改为应用传入本地化标题（显示「检查更新…」，⌘U 不变）；帮助菜单用 `replacing: .help` 换掉系统
+  自动插入的死项「OrzMC 帮助」，改为「使用文档」+「联系作者」。
+- 顺手修「启动 客户端」的空格（`"Start %@"` 的 zh-Hans 改「启动%@」）。
+- 新增 DEBUG 自测开关 `--dump-menus` / `--test-about`；菜单已逐项核对无灰项、无英文残留。
+- app 提交 `d76f94e4` 已推送。**下一阶段焦点：版本详情页优化**（维护者专注此项）。
+
 
 ### 2026-10-22 — pi（外部链接移到侧边栏顶部）
 
@@ -309,7 +318,7 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
   （图标态、`.menuIndicator(.hidden)`，与相邻按钮同为圆/胶囊）；删除 `DetailViewTool.swift` 与 `.detailTool()`，
   **版本详情页不再有工具栏**，只保留启动配置 / 实例目录 / 控制台。
 - 第一版误放进侧边栏搜索行（第 4 个图标），已按维护者意见改到窗口工具栏；实测收起侧边栏后工具栏入口仍可见。
-- 维护者确认侧边栏调整完成，**下一阶段焦点：版本详情页**（启动面板/实例面板的排布、信息密度、玻璃层级）。
+- 维护者确认侧边栏调整完成；菜单项修正已提交（app `d76f94e4`）。**下一阶段焦点：版本详情页优化**（启动面板/实例面板的排布、信息密度、玻璃层级）。
 - 门禁：`app` / `app-ios` 构建通过，`app-test` 全绿，平台分层与 `git diff --check` 通过；
   96/1200pt、亮/暗自截图复核通过。已提交并推送（app `0ffaa31e`）。
 
