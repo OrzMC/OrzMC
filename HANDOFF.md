@@ -302,6 +302,17 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-22 — pi（外部链接移到侧边栏顶部）
+
+- 维护者意见：详情页右上角的「外部链接」不该在版本详情里，要放到**窗口最顶部**，与远程服务器入口、
+  侧边栏开关同一排。`LinkMenu` 从 `UI/Detail/` 移到 `UI/SideBar/`，挂进 `GameView` 的 `.toolbar`
+  （图标态、`.menuIndicator(.hidden)`，与相邻按钮同为圆/胶囊）；删除 `DetailViewTool.swift` 与 `.detailTool()`，
+  **版本详情页不再有工具栏**，只保留启动配置 / 实例目录 / 控制台。
+- 第一版误放进侧边栏搜索行（第 4 个图标），已按维护者意见改到窗口工具栏；实测收起侧边栏后工具栏入口仍可见。
+- 维护者确认侧边栏调整完成，**下一阶段焦点：版本详情页**（启动面板/实例面板的排布、信息密度、玻璃层级）。
+- 门禁：`app` / `app-ios` 构建通过，`app-test` 全绿，平台分层与 `git diff --check` 通过；
+  96/1200pt、亮/暗自截图复核通过。已提交并推送（app `0ffaa31e`）。
+
 ### 2026-10-22 — pi（提交推送 app 改动并关闭父仓库 PR #39）
 
 - app 子模块提交 `c28c70a3`（70 文件）并推送 `feat/ui-refresh`；父仓库 `0c1ff04`（HANDOFF）+ `0eff4bc`（只 bump swift/app 指针）推送 `feat/ui-refresh-handoff`。app PR #37 CI（split + macOS + iOS）全绿。
