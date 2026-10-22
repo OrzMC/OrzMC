@@ -139,7 +139,7 @@
 | 项 | 规范 |
 |:--|:--|
 | 语义 | `update` = 升级**工具自身**；`remove/list` = 游戏版本；`uninstall` = 卸载工具 |
-| 版本解析 | 首选 GitHub REST `releases/latest`；失败/限流回退**非 API 的 302** `releases/latest` 的 `Location` |
+| 版本解析 | 首选 GitHub REST `releases/latest`；**若仓库只有预发布**（`latest` 恒 404 —— 本仓库 Swift CLI 即此口径，见 `two-cli-strategy.md` §6）回退 REST `releases?per_page=1` 的首个 tag（含预发布）；再失败/限流回退**非 API 的 302** `releases/latest` 的 `Location` |
 | 指定版本 | `-v/--version vX.Y.Z`（完全绕过 API，限流回退） |
 | 校验 | 下载产物 magic 校验（ELF/Mach-O/PE；拒绝 HTML/JSON）+ sha256 |
 | 落地 | **分离助手在父进程退出后**替换（PyInstaller/Swift 运行中自替换不安全）；暂存 `<install_dir>/.orzmc-update.tmp` 同卷原子 rename |
