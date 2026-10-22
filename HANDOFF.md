@@ -12,17 +12,17 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-10-21 by pi
+> **最后更新**：2026-10-22 by pi（审查清单全量落地）
 
 ---
 
 ## 0. 接手速查（Session Start Checklist）
 
 ```bash
-git pull --recurse-submodules          # 拉到各设备一致状态
-git submodule update --init --recursive
-git status --porcelain                 # 有无未提交的父仓库/子模块变更
-git submodule status                   # 子模块指针是否符合预期
+git status --short --branch             # 先检查分支、未提交改动与 ahead/behind
+git -C swift/app status --short --branch # app 子模块也要单独检查
+git submodule status                    # 子模块指针与初始化状态
+# 只有工作区干净且确认目标分支后，才 fetch/pull；不要对有改动的接力工作树直接 pull
 python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致 + 一致性参考自检）
 ```
 
@@ -33,46 +33,22 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 > 再按需读 `docs/`。铁律：**代码改子模块、父仓库只 bump 指针**、**禁用 `git add -A`**、
 > 一次提交只 bump 一个子模块（同一产品级变更可合并 bump，见 AGENTS §2）。
 >
-> **当前状态（2026-10-20）**
-> - **两套 CLI 并行 + 同步迭代**（`docs/two-cli-strategy.md` 定义规则；§6 是分发口径），
->   台账 `docs/spec/parity.json`，校验器 `scripts/verify/parity.py`（父仓库 CI + 两个子模块的 `ledger` job，三处都在跑）。
-> - **跨平台已齐（六类资产全部已发布、Linux 已自包含）**：`OrzMCKit v0.19.0` 起 `orzmc-linux-*`
->   静态链接 Swift 运行时（无 `libswift*` 依赖、glibc 2.35、体积 62–65 MB），`verify-linux` 改在干净
->   `ubuntu:24.04` 里验。`OrzMCKit v0.18.0` 起有 `orzmc-windows-arm64.zip`，
->   Windows 三个坑（工具链架构 / MSVC 库架构 / STL1000 工具集版本）的解法见 `docs/windows-port.md` §3.5。
->   台账 `sharedArtifacts.knownDrift` 已**清空**。
-> - **一致性 79/79**（新增 `state-paths/*` 三例：两侧实际上报落点 vs `state-paths.json`）。
-> - **分发口径（2026-10-20 决定，见 `docs/two-cli-strategy.md` §6）**：
->   **Python 是实现主体、唯一对外分发渠道**（PyPI + 6 平台 PyInstaller 资产 + 一键安装器）；
->   **Swift 与 Python 同步迭代**（命令面/行为继续对齐、台账仍是硬约束），但**不对外分发**
->   （`release.yml` 一律发 pre-release、README 标注实验性）。
->   `2.15–2.17` 试过的「`pip` 新装默认走 Swift」已在 `2.17.2` **回退**（默认 Python、零下载）；
->   `ORZMC_RUNTIME=swift` 保留为实验开关。
-> - **正版登录：Mojang 两次拒绝（2026-10-17 / 10-20）** → 不再投第 3 次，转 authlib-injector / Yggdrasil（待定范围）。
-> - ⚠️ **别再把 release PR 整条跳过 CI**：`main` 的分支保护要求 `pr-title`/`quality`/`test (ubuntu-latest, x86_64)`，
->   工作流不跑 = 必需检查永不上报 = release PR **永久 BLOCKED**（2026-10-19 实测，python #75 只能 admin 绕过，已修）。
->
-> **请按顺序**
-> 1. `git pull --recurse-submodules && git submodule update --init --recursive`；
->    `python3 scripts/verify/check.py`（登记表 + 一致性 76 + manifest + **能力台账** + 合规）确认基线绿。
-> 2. **装推前钩子**（钩子不入版本库，新机器/新 clone 必须装）：`scripts/dev/install-hooks.sh`；
->    `scripts/dev/install-hooks.sh --check` 应显示 python / OrzMCKit 都已安装。
-> 3. `ssh air` 可能休眠：连不上先唤醒（`ssh air 'swift --version'` 超时即此因）。
->    日常构建用它：`scripts/air/run.sh test|accept`（增量 14–24 秒）。
-> 4. **推进顺序**（详见 §4「下一会话起点」）：
->    下一次 OrzMCKit 发版产出 `orzmc-windows-arm64.zip`（构建链路已验）→ `orzmc app` 非 macOS 文案/错误码对齐
->    （**Python 侧现在返回 `E_RUNTIME`，规范要 `E_UNSUPPORTED`**）→ `state.paths` 动态 conformance → 评估 M3。
-> 5. 改功能前先看 `docs/spec/parity.json`：确认该命令的 `lead` 是哪一侧，**不要两边都写**。
-> 6. 发版：`gh workflow run release.yml -f tag=vX.Y.Z -f dry-run=true` 绿了再正式 dispatch；
->    需要「升级须知」时按 `python/CONTRIBUTING.md`（release-please 会 force-push 分支，**合并后**用
->    `gh release edit` 同步到 Release notes）。
+> **当前状态（2026-10-22）**
+> - 当前工作位于 Air 本机正式仓库 `/Users/joker/Documents/OrzMC`。后续 app/Swift GUI 迭代直接在本机进行；**不要使用 `ssh air` 或旧 `scripts/air/run.sh`**，后者已删除。Swift 检查入口为 `scripts/swift-check.sh`。
+> - 父仓库分支 `feat/ui-refresh-handoff`，相对 origin **ahead 6**；app 子模块分支 `feat/ui-refresh`，当前提交 `b13b422`，与 origin 同步。父仓库 PR #39 和 app PR #37 仍是 Draft，未合并/发版。
+> - app UI 的逐项修改和未完成验收见 `swift/app/docs/ui-review-2026-10-22.md`、`swift/app/docs/air-ui-handoff-2026-10-22.md`。受控日志/远程动作/RAM 失败验证及窗口尺寸、亮暗、焦点视觉验收尚未完成。
+> - 新增项目 GitHub 迭代指南 `docs/github-iteration-workflow.md`，已从 `CONTRIBUTING.md` 与 `docs/README.md` 链接。建议流程：短分支、Draft PR、子模块先独立合并、父仓库再显式 bump。
+> - 当前父仓库与 app 都有大量未提交改动，另有 `tools/OrzMCBackup` 脏状态。**接手先检查，不要 pull、reset、clean、覆盖文件或提交。**
+> - 最近运行 `python3 scripts/verify/check.py`：登记表 21 个、一致性 79/79、manifest、能力台账均通过；整体仅因 `python/README.md`、`swift/lib/OrzMCKit/README.md`、`site/layouts/partials/site-footer.html` 合规文案漂移失败。本轮不处理这些无关漂移。
 
 然后按顺序读：
 
 1. [`AGENTS.md`](AGENTS.md) —— 规则（三条铁律、子模块登记表、协作流程；**§5 含「禁止 git add -A」**）
 2. **本文件** —— 当前状态与下一步
-3. [`docs/spec/README.md`](docs/spec/README.md)（规范）+ [`docs/swift-conformance-design.md`](docs/swift-conformance-design.md)（Swift 侧设计）
-4. [`docs/product-unification-plan.md`](docs/product-unification-plan.md)（方案/决策）
+3. 若继续 app UI，读 `swift/app/docs/air-ui-handoff-2026-10-22.md` 与 `swift/app/docs/ui-review-2026-10-22.md`。
+4. 若处理 GitHub 流程，读 [`docs/github-iteration-workflow.md`](docs/github-iteration-workflow.md)。
+
+**本机 Swift 检查**：`scripts/swift-check.sh env|app|app-ios|app-test`；不要调用旧 Air SSH 车道。
 
 **结束会话前**：更新本文件第 1 / 2 / 4 / 5 章，并 `git add HANDOFF.md` 提交。
 
@@ -80,15 +56,15 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 > **设备分工（维护者 2026-10-22 指定）**：Apple GUI/Swift 平台开发与实机验收在 Air 的 `/Users/joker/Documents/OrzMC` 正式仓库接力。bot 的 `/Users/bot/OrzMC` 后续用于 CLI 及可在本机独立完成的迭代，默认不再依赖 Air/其他设备开展工作；需要例外时以维护者明确任务为准。EasyApple 两机均已配置共享技能。
 
-> **2026-10-22 接力更新**：Swift app UI 刷新已获授权提交推送，app 分支 `feat/ui-refresh`，父仓库接力分支 `feat/ui-refresh-handoff`；尚未合并/发版。Air 拉取父仓库接力分支并初始化子模块后，先读 `swift/app/docs/air-ui-handoff-2026-10-22.md`。旧 patch 交接流程不再使用。
+> **2026-10-22 接力更新**：Swift app UI 刷新已推送到 app 分支 `feat/ui-refresh`，父仓库接力分支 `feat/ui-refresh-handoff`；PR #37/#39 尚未合并/发版。工作树已在 Air 本机正式仓库；继续前先检查本地未提交状态，不要再拉取/覆盖或使用旧 patch、SSH 构建流程。先读 `swift/app/docs/air-ui-handoff-2026-10-22.md`。
 
 | 项 | 内容 |
 |---|---|
-| **主题** | **macOS 启动器的服务端运维能力收口**（控制台命令 / 生命周期四操作 / 插件管理 / 目录与排版），**已由维护者验收通过**；底层仍是"一份规范 + 两套实现 + 三个前端" |
-| **状态** | 🟢 GUI：服务端控制台可收发命令（Paper `--noconsole` 已修）、四操作生命周期（启动/重启/停止/终止）三处可用（详情页 / 控制台 / 停止全部）、插件按 Paper `update-folder` 分流（`plugins/` vs `plugins/update/`）、常用目录与排版已整理；CLI：Swift `orzmc server` 继承终端 stdin（Python 一直可用），三前端控制台全通。一致性 **79/79**、能力台账三处校验全绿 |
+| **主题** | **Swift app UI 刷新与导航交互打磨**；父仓库 `feat/ui-refresh-handoff`、app `feat/ui-refresh`；PR 保持草稿，视觉验收未完成 |
+| **状态** | 🟡 维护者报的 4 条视觉问题（版本列表 / 顶部按钮区 / 启动区排布 / 输入框对齐）**已修**；A1–A25 / B1–B4 亦全部落地：并发接缝与回调代数、状态机纯逻辑化、可访问性与本地化键、布局自适应、body 去 IO、视图按类型拆文件。macOS/iOS 构建与测试全绿；**仅剩维护者桌面视觉验收与真实网络失败路径**。单主 `Window`、唯一 `AppModel`、语义色和本地化约定保留；未提交、未 bump 指针 |
 | **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` + `docs/two-cli-strategy.md` + `docs/windows-port.md` + `swift/app/docs/app-launcher-architecture.md` |
-| **当前基线** | 父仓库 `main`；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | ① 正版登录改走 authlib-injector / Yggdrasil（**范围待维护者定**，GUI 登录界面暂不动）；② `auth.json` 跨进程锁的**跨语言真机对抢**实测（算法已一致，未实测并发）；③ 可选项：控制台「自动滚到底开关 / 日志导出」「日志条目跳到崩溃行」、Swift Linux 体积继续压缩 |
+| **当前基线** | 父仓库分支 `feat/ui-refresh-handoff`（ahead 6）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
+| **下一步** | ① 维护者桌面会话验收本轮视觉改动：960/1200pt、深浅外观/提高对比度、Tab 焦点环、版本列表行高与「胶囊退文本」后的观感、启动区四行 `LabeledContent` 的对齐、`0 – 2G` 与远程令牌框的实际对齐、控制台 ∖菜单。② 通过后再决定是否合并 Draft PR。对照表见 `swift/app/docs/ui-review-2026-10-22.md`（第四轮一节），字段约定见 `swift/app/docs/app-ui-design.md`。 |
 
 ## 2. 状态快照（Repo State）
 
@@ -98,8 +74,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 项 | 值 |
 |---|---|
-| 分支 | `main`（跟随远端；子模块指针以 `git ls-tree HEAD` / `RELEASES.md` 为准） |
-| 工作区 | **干净**（2026-10-19 交接时 `git status` 无改动） |
+| 分支 | `feat/ui-refresh-handoff`（相对 `origin/feat/ui-refresh-handoff` ahead 6；勿强制同步或覆盖） |
+| 工作区 | **有未提交改动**：`AGENTS.md`、`CONTRIBUTING.md`、`HANDOFF.md`、`docs/README.md`、`docs/cli-comparison.md`、`docs/iteration-efficiency.md`、`scripts/dev/prepush.sh`；删除 `scripts/air/run.sh`；新增 `docs/github-iteration-workflow.md`、`scripts/swift-check.sh`；`swift/app` 与 `tools/OrzMCBackup` 子模块亦有改动。以实时 `git status` 为准，勿清理。 |
+| app 子模块（未提交） | `feat/ui-refresh` @ `b13b422` 之上：新增 11 个源码文件（`ExarotonSocketDelegate`/`ExarotonMemorySection`/`ConsoleHeader`/`ConsoleInputRow`/`ConsoleWindowView`/`ConsoleTarget`/`DetailInstance`/`DirectoryRow`/`FormSectionHeader`/`InstanceSection`/`PluginSheetTarget`）与 4 个纯逻辑件（`ConnectionEpoch`/`RemoteStreamPlan`/`RemoteActionGate`/`ServerMemoryState`/`ConsoleFollowState`）+ 5 个测试文件；`BasicInfo.swift` 由 626 行拆到 6 个文件。**未提交、未推送、未 bump 父仓库指针**。 |
 | 父仓库 CI | ✅ `.github/workflows/ci.yml` → `python3 scripts/verify/check.py` |
 | 已删除（历史） | `GEMINI.md`、`.cursor/rules/` |
 
@@ -324,6 +301,115 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-22 — pi（⌘↑/⌘↓ 真正滚到列表首/末）
+
+- 反馈"⌘↓ 只切选中项、列表没到底"。实测确认 `ScrollViewReader.scrollTo` 对懒加载 List 只按估算位置滚（加锚点/动画/补滚都不收敛）。
+- 新增 `VersionListScrollProbe`：按窗口坐标在视图树中找到 List 的 `NSScrollView` + `NSTableView`，用 `scrollRowToVisible` + 文档高度贴边、循环 5 轮收敛；中间行仍用 `scrollTo` 最小滚动。
+- 自测（`--test-keys` / `--test-keys-top`）：⌘↓ 后 `1.0` 完整可见且底部留白露出；⌘↑ 后 `26.3` 完整可见。
+- `app`/`app-ios` BUILD SUCCEEDED；`app-test` XCTest 107 + Swift Testing 13 全绿；平台分层与 `git diff --check` 通过。
+
+### 2026-10-22 — pi（快捷键返工：本地监听 + 单行输入框也让路）
+
+- 反馈"快捷键不生效"后自测发现两点：`.onKeyPress` 依赖列表焦点；而侧边栏焦点默认在搜索框，第一版监听把"编辑文本"整体放行 → 全部被跳过。
+- 改为 `NSEvent` 本地监听（`VersionListKeyboardNavigation`）：主窗口无 sheet 时，↑/↓ 走一格、⌘↑/⌘↓ 跳首末；**只有多行编辑器**才让开方向键，单行输入框里方向键归列表（事件 consume，不影响输入）。
+- 自测：投递 ↓/↓/⌘↓ 后选中项从 26.3 跳到 `1.0`，列表滚到底、详情标题同步；`--test-keys` 调试入口留在 DEBUG 构建里。
+- `app`/`app-ios` BUILD SUCCEEDED；`app-test` XCTest 107 + Swift Testing 13 全绿；平台分层与 `git diff --check` 通过。
+
+### 2026-10-22 — pi（时间戳到秒 + 版本列表键盘导航）
+
+- 侧边栏时间戳精确到秒，文案改为「版本信息更新于 今天 18:55:18」。
+- 键盘导航抽出 `VersionSelectionStepper`（纯函数，6 例测试）：↑/↓ 走一格且边界停住，⌘↑/⌘↓ 跳最新/最旧；⌘ 快捷键同时挂进 Game 菜单（不聚焦列表也能用）。
+- `app`/`app-ios` BUILD SUCCEEDED；`app-test` XCTest 101 + Swift Testing 13 全绿；平台分层与 `git diff --check` 通过。
+- 仍待维护者按一次方向键确认手感（截图无法验证按键）；未提交、未推送。
+
+### 2026-10-22 — pi（侧边栏一体化）
+
+- 去掉侧边栏的分隔线（搜索行下方、底部栏上方各一处）；更新时间从底部移到**搜索框与列表之间**，头部 = 搜索行 + 更新时间，无背景/描边，与列表共用侧边栏材质，读起来是一整块（`sidebarHeader`）。
+- `app`/`app-ios` BUILD SUCCEEDED；`app-test` XCTest 95 + Swift Testing 13 全绿；平台分层与 `git diff --check` 通过；960×593 深色自截图核对。
+
+### 2026-10-22 — pi（版本列表元数据 + 液态玻璃面板）
+
+- **版本行方案 B**：版本号 + 「最新/最新快照」徽标；副标题 `发布日期 · 已装内容（+N）`；日期用「今天/昨天/N 天前」，<8 天之外显示绝对日期（`VersionDateText`，6 例测试）。`manifest.latest` 接进 `VersionCatalogModel`。
+- **清单刷新时间**：`lastRefreshedAt` 持久化，侧边栏底部显示「清单更新于 今天 18:36」。
+- **筛选行放大** + 侧边栏可拖拽（260–520pt）。
+- **液态玻璃**：新增 `.orzMCPanel()`（macOS/iOS 26+ `glassEffect`，更老系统等效回退）；详情页从 `Form(.grouped)` 改为 `ScrollView` + 两块玻璃面板，对齐由 `Grid` 保证；实例面板末尾分隔线修正。
+- 验证：`app`/`app-ios` BUILD SUCCEEDED；`app-test` XCTest 95 + Swift Testing 13 全绿；平台分层与 `git diff --check` 通过；960×593 深色 + 1200×742 亮色自截图核对。
+- 仍未提交、未推送、未 bump 指针。
+
+### 2026-10-22 — pi（详情页启动面板重做：路径变浅 + 用 Grid 解决对不齐）
+
+维护者反馈「操作路径深、启动区总对不齐」。重做启动面板（页面结构仍是启动卡片 + 信息卡片）：
+
+- **主按钮上移到卡片标题栏右侧**（`启动客户端/启动服务端`），不用滚到底、不必先选完类型才看到启动；
+- **改用 `Grid` 固定 96pt 标签列**取代 `LabeledContent`（分段控件/菜单/输入框内边距不同是"对不齐"的根因）；服务端核心由菜单改为分段控件，一行全是同类选项片；
+- **行序 = 操作序**（模式+二级类型 → 玩家名 → Java），服务端保留「账户」行显示说明，面板不塌缩；
+- 截图核对 960×593 亮/暗 + 1200×742 深；`app`/`app-ios` BUILD SUCCEEDED、`app-test` XCTest 89 + Swift Testing 13 全绿、平台分层与 `git diff --check` 通过。
+- 仍未提交、未推送、未 bump 指针。
+
+### 2026-10-22 — pi（视觉第二轮：侧边栏搜索行 / 列表极简 / 启动区按模式重构）
+
+维护者按截图给出四条意见，全部落地；仍未提交、未推送、未 bump 指针。
+
+- **侧边栏**：新增 `SidebarSearchBar`（搜索框 + 只看正式版 + 刷新，两个单图标按钮同行），删除底部过滤栏与 `.searchable`；列表项只显示版本号（安装状态在行首图标 + 悬停提示）。
+- **启动区**：删除「版本」行（标题已有）；**新增客户端类型选择（Vanilla/Fabric）**——此前客户端换 Fabric 在启动区没有任何反馈；模式与类型/核心合并到一行，客户端 3 行 / 服务端 2 行，进度挪到 Start 左侧。
+- **详情页**：删除 5 路实例分段控件，改为按 `gameMode` 派生当前实例（客户端 → `版本#Client`，服务端 → 当前核心），切换模式/类型/核心时下方信息区即时跟随。
+- **验证**：自截图核对客户端与服务端两种模式的 1200×742 深色布局；`app`/`app-ios` BUILD SUCCEEDED；`app-test` XCTest 89 + Swift Testing 13 全绿；平台分层、`git diff --check` 通过。
+
+### 2026-10-22 — pi（自截图复核：视觉第一轮修正）
+
+维护者反馈"样式还是不满意"并授权我自己截图。`screencapture` 被 TCC 拒绝（无屏幕录制授权），改为调试构建内渲染自己的窗口：新增 `OrzMC/Launcher(MacOS)/Debug/WindowSnapshot.swift`（`#if DEBUG`；`--snapshot` 一次性 / `--snapshot-watch` 常驻请求式；支持 `size`/`appearance`/`settings`/`settingsTab`），Release 不编译。
+
+- **截图确认的真实问题**：macOS 分组 Form 的标签列撑到半行宽 → 标签与控件被拉到两端；`Form` 里空标题 `TextField` 仍占标签列 + 默认右对齐"值" → 输入框文字右对齐、位置偏移（就是维护者说的"文字对齐异常"）。
+- **处理**：新增 `OrzMCFieldRowStyle`（固定 96pt 标签列，主窗口/设置四页/远程详情统一）；字段一律 `.labelsHidden()` + 显式 `multilineTextAlignment`；启动区标题做成"卡片标题 + 分隔线"、Start 贴右下角紧凑宽度；侧边栏副标题改「类型 · 前两项 · +N」、未安装行单行；实例栏图标只保留"控制台运行中"用状态色；设置页路径行改单行布局、`@AppStorage` 记住分页。
+- **验证**：`app`/`app-ios` BUILD SUCCEEDED；`app-test` XCTest 89 + Swift Testing 13 全绿；平台分层与 `git diff --check` 通过；960/1200pt 深/浅截图对照通过（自测，非维护者验收）。
+- **约定更新**：`swift/app/docs/app-ui-design.md` 新增「字段与行布局约定」10 条 + §8.1 快照工具用法；`docs/ui-review-2026-10-22.md` 第五轮记录"看到的现象 → 根因 → 处理"。
+- 仍未提交、未推送、未 bump 指针；PR 仍 Draft。
+
+### 2026-10-22 — pi（视觉复审 B 轮：维护者报的 4 条 + V1–V3 落地）
+
+维护者反馈「版本列表不好看 / 顶部按钮区要改 / 启动区排布混乱 / 输入框文字对齐异常」，按 `apple-native-product-design` + `swiftui-pro` 定位并修正；仍未提交、未推送、未 bump 指针。
+
+- **版本列表**：图标改为居中（原来 `.firstTextBaseline` 装 SF Symbol 会低半格）、第二行固定最小高度（行高不再跳）、侧边栏不再用胶囊（类型/已装内容改次要文本）。
+- **顶部按钮区**：过滤+刷新从窗口工具栏搬到列表底部栏（`VersionFilterBar`，`.switch` 开关、加载不换图标），删除 `SideBarTool.swift` 与 `sideBarTool` 修饰器。
+- **启动区**：三行统一成 `LabeledContent`（Version / Mode / Username|Core / Java），Mode 恢复可见标签，Start 单独一行跨满宽度，加 `.focusSection()`。
+- **输入框**：内存字段改基线对齐 + 数值右对齐；控制台 `.plain` 字段补内边距与中心对齐；远程令牌恢复单行；路径/参数等宽改 `.body.monospaced()` 并去掉多余 `.labelsHidden()`。约定写进 `swift/app/docs/app-ui-design.md`（10 条）。
+- **V3**：控制台工具栏收敛为「生命周期 4 个 + 溢出菜单」；启动区/详情/设置四页加 `.focusSection()`；标签描边 0.35→0.5、错误/警告 banner 正文改主色；实例分段控件去掉与状态徽标重复的 `●`；设置窗口 560×480 → 600×560。
+- **验证**：`app`/`app-ios` BUILD SUCCEEDED（无新增警告）；`app-test` XCTest 89 + Swift Testing 13 全绿；平台分层与 `git diff --check` 通过；新构建已重启（无崩溃报告）。
+- **仍待维护者**：视觉与焦点环验收（本轮 4 项均属观感类，未经截图验证）。
+
+### 2026-10-22 — pi（UI/UX 审查清单 A1–A25 / B1–B4 全量落地）
+
+维护者要求把审查报告里的每条发现都处理掉。未提交、未推送、未 bump 指针，PR 仍为 Draft。
+
+- **并发/状态**：`startConnect` 显式 `callbackQueue: .main`；模型不再遵守 WebSocket 协议，改由新的 `ExarotonSocketDelegate`（`@MainActor`）转发；新增 `ConnectionEpoch` 丢弃上一条连接的迟到回调（修「离开详情后仍显示旧断线原因」）；`httpClient` getter → `makeClient() throws` + `clientOrReportError()`；`statusVersion` 取代 `Optional.publisher`；删除两个 3 秒定时器，改用 `RemoteStreamingPolicy`/`RemoteStreamPlan` 的 `reconcileStreams`（只发缺的流指令）。
+- **可访问性/本地化**：help 改 `LocalizedStringKey`（实例名进 `accessibilityValue`）、图标按钮补文字标签、Stepper 带标签、`%lld GB` 等 17 条 zh-Hans 文案、tag 字号与状态徽标换行、Copy 状态机 + `Task.sleep` 取代 GCD。
+- **布局**：模式选择器改 `minWidth`、设置页路径行 `ViewThatFits` 退化、路径错误随编辑清除、macOS 去掉无效 `.refreshable`、token 显示切换保焦点、控制台正文 `.caption` → `.subheadline`。
+- **性能/结构**：安装状态改用 `catalog.installStates`（新增 `hasServer(id:)`），目录清单与存在性移出 body；`BasicInfo.swift` 626 行拆成 6 个文件（新增 `InstanceSection` 等）；打开/删除目录失败不再被 `try?` 吞掉；内存编辑收进 `ExarotonMemorySection`；`@State` 全部 private。
+- **验证**：`app`/`app-ios` BUILD SUCCEEDED（无新增警告）；`app-test` XCTest 89 例 + Swift Testing 13 例全绿（本轮新增 8 例）；平台分层与 `git diff --check` 通过；启动一次新构建产物无崩溃报告。
+- **仍待维护者**：视觉验收（960/1200pt、亮暗/对比度、焦点环）、真实日志手感、真实 exaroton 失败/限速路径。详见 `swift/app/docs/ui-review-2026-10-22.md` 第三轮一节。
+
+
+### 2026-10-22 — pi（app 三项未结项收尾：Follow / 远程互斥与失败反馈 / RAM 失败语义）
+
+接手时保持维护者未提交改动不变，未 pull/reset/clean/commit/push，也未 bump 任何子模块指针。本轮把三个“只能靠人眼”的交互拍成**可单测的纯逻辑**，再在视图里接线：
+
+- **控制台 Follow**：新增 `Sources/OrzMCLauncher/ConsoleFollowState.swift`（跟随/暂停/未读/搜索四态）+ 8 例测试。上滚暂停并计数；**用户滚回底部自动恢复**（依据 `NSScrollView.didLiveScrollNotification`，程序滚动不触发）；搜索期间不跟随；结束搜索不自动恢复；「回到最新」= 退搜索+恢复跟随+滚动（滚动等状态生效后执行，Reduce Motion 不带动画）。
+- **远程动作互斥/失败反馈**：新增 `Sources/OrzMCRemoteHosting/RemoteActionGate.swift`（实例级在途互斥，生命周期动作与内存变更互斥，首次 `await` 前占用，结束即释放）+ 5 例测试；模型的 `pendingActions`/`pendingMemoryChanges` 改为由 `gate` 提供，换账号 `gate.reset()`。三个生命周期端点收敛到同一实现；成功只承诺“已提交请求”；失败不再弹全局确认框，改为动作区 `OrzMCBanner(.error)` + `Retry`（请求结束即可重发）。
+- **RAM 保存失败**：新增 `Sources/OrzMCRemoteHosting/ServerMemoryState.swift`（草稿/已确认/保存中）+ 7 例测试；失败时**确认值不变、草稿保留**，界面继续显示「Unsaved changes」并可重试/Revert；保存中拒绝重复提交；读取失败不再静默隐藏 Memory 行（`Unavailable` + `Retry`）；Stepper 重新编辑会清掉旧错误。新增 7 条 zh-Hans 文案。
+- **验证（本机 Air）**：`scripts/swift-check.sh app` 与 `app-ios` 均 `BUILD SUCCEEDED`；`app-test` XCTest 81 例 + Swift Testing 13 例全绿（Launcher 60 / RemoteHosting 16 / Protocol 4 / DesignSystem 1）；`check-platform-split.sh`、`git diff --check` 通过。启动一次本机构建产物冒烟后退出，无新增崩溃报告（本会话 AX 权限不可用，未断言窗口数量）。
+- **仍未做**：960/1200pt、亮暗与提高对比度、键盘焦点/焦点环、真实日志下的 Follow 手感、真实 exaroton 失败/限速路径（需 token 与额度）；截图一律由维护者在桌面会话操作。验收清单已写入 `swift/app/docs/ui-review-2026-10-22.md`（「收尾轮」一节）与 `swift/app/docs/console-acceptance.md`。PR #37/#39 仍为 Draft。
+
+### 2026-10-22 — Codex（交接给 pi：GitHub 迭代流程与 UI 后续）
+
+- 本轮新增 `docs/github-iteration-workflow.md`，并在 `CONTRIBUTING.md`、`docs/README.md` 建立入口。选择短分支 + Draft PR + 子模块独立合并 + 父仓库锁定组合；`git diff --check` 和本地 Markdown 链接核对通过。
+- `python3 scripts/verify/check.py` 的子模块登记表、一致性 79/79、manifest、能力台账通过；整体因三个既有合规文案漂移失败：`python/README.md`、`swift/lib/OrzMCKit/README.md`、`site/layouts/partials/site-footer.html`。未改动这些文件。
+- 交接时父仓库 `feat/ui-refresh-handoff` 相对 origin ahead 6；app `feat/ui-refresh` 在 `b13b422` 与 origin 同步。父仓库 `swift/app`、`tools/OrzMCBackup` 及多个父仓库文件均有未提交改动。不要 pull/reset/clean/覆盖，也不要把 app 子模块内部文件误加到父仓库。
+- app 后续仍按 `swift/app/docs/ui-review-2026-10-22.md` 完成受控验证和维护者桌面视觉验收；PR #37/#39 保持 Draft，不自动合并或发版。Swift 后续只走本机 `scripts/swift-check.sh`，不再使用 SSH Air。
+
+### 2026-10-22 — Codex（GitHub 项目迭代流程）
+
+新增 [`docs/github-iteration-workflow.md`](docs/github-iteration-workflow.md)，选定“短生命周期分支 + Draft PR 尽早验证 + 子模块独立合并 + 父仓库显式锁定组合”的 PR 优先流程。依据当前仓库结构、父仓库必需检查约束及 `swift/app` 的 macOS/iOS 双目标 CI，明确了跨仓互链、先合子模块再 bump、GUI 人工验收保持 Draft 的节奏；没有修改 GitHub 仓库设置、分支保护、PR 合并状态或发布状态。文档已加入 `CONTRIBUTING.md` 和 `docs/README.md` 入口。
 
 ### 2026-10-22 — Codex（Air 正式仓库与设备分工）
 
@@ -2685,3 +2771,26 @@ vanilla/paper、进度只有一个 `Double`、Java 状态读系统 JDK 并引导
 ## 接力补充：2026-10-22 Swift app UI 转 Air
 
 app UI 仍在 main 的未提交工作树中，基准 fa571e70c632ef1e514158b7deb5711001f8d111；新增三技能审查与 Air 交接文档。继续任务先读 swift/app/docs/air-ui-handoff-2026-10-22.md。交接包已准备到 Air `/Users/joker/orzmc-handoff/2026-10-22-ui-review/`，含 tracked patch、untracked 文件和规则快照。不要仅 git pull，也不要在会被同步覆盖的 `~/orzmc-build/app` 构建镜像中保留唯一改动。未提交、未推送、父指针未变。
+
+
+### 2026-10-22 — Codex：Air UI 页面与导航交互优化
+
+- app `feat/ui-refresh` 与父仓库 `feat/ui-refresh-handoff` 均已 fetch 核验与 origin 同步（0 ahead / 0 behind）；父 gitlink 仍 `b13b422`。本轮只改 app 子模块文档/代码与父 HANDOFF；`tools/OrzMCBackup` 既有脏状态保留。
+- 按审查次序修正本地控制台 Follow、Exaroton 动作防重入与反馈、游戏目录草稿提交、远程日志清空缓冲；并处理内嵌控制台导航、RAM 保存顺序、列表空/错态、等待/断线状态、中文目录说明/MOTD、AX 提示条标签。代码与逐项理由见 `swift/app/docs/ui-review-2026-10-22.md`。
+- Air 桌面读取最终构建的主窗口和 Settings/远程窗口 AX 树；验证四页设置、目录输入未提交/Escape 回滚、选版本更新详情、远程列表与离线详情。MOTD AX 文本不再含 `§` 样式码。没有真实远程生命周期操作，也没有代理截屏。
+- 新增远程控制台缓冲 2 项单测；app XCTest 的 51 个 Launcher 测试 + DesignSystem 1 项通过，RemoteHosting 测试包含新增回归。macOS/iOS 最终增量构建均 `BUILD SUCCEEDED`；`scripts/check-platform-split.sh`、`scripts/verify/check.py`、本地化 JSON、`git diff --check` 通过。
+- PR 保持草稿，无提交/推送/合并/发版。未完成项：真实日志/远程动作/RAM 失败受控验证，以及 960/1200pt 与亮暗/焦点视觉验收。
+
+### 2026-10-22 — Codex：Air app 界面部分验收
+
+- 使用 apple-native-product-design、swiftui-pro、swift-concurrency-pro；实时检查 Air Accessibility 树并交互验证控制台 Follow、设置路径草稿/回滚、Settings 四 pane 和 Remote 离线详情。细节及证据边界见 `swift/app/docs/ui-review-2026-10-22.md`。
+- 功能/AX 部分通过。发现 BasicInfo 动态帮助提示仍显示英文 `Open Client console`；未发现明显的定向并发问题。没有截图、VoiceOver、真实日志或远程动作验证。
+- 核实当前终端就在 MacBook Air (M1, macOS 27.0.1)，SSH `air` 别名未配置；`scripts/air/run.sh` 已退役，替换为 `scripts/swift-check.sh`。通过新脚本直接本机构建 macOS 与 iOS Simulator 均 `BUILD SUCCEEDED`（锁定依赖，DerivedData 在 `/tmp`）；app-test 73 项通过。`scripts/check-platform-split.sh` 与 app `git diff --check` 通过。视觉验收仍待维护者桌面截图与窗口尺寸、明暗、焦点检查。
+
+
+### 2026-10-22 — Swift 检查车道迁移到本机
+
+- 用户明确要求当前项目后续本机迭代，不再使用 `ssh air`，并清理相关逻辑与数据。新增 `scripts/swift-check.sh` 作为统一本机入口，覆盖 OrzMCKit build/test/accept、app macOS/iOS 构建、app-test 与打开构建产物；删除 `scripts/air/run.sh`，同步更新父仓库 AGENTS、pre-push 和活跃 app 操作文档。旧效率数据保留并标为历史。
+- 验证：本机环境探测通过；app-test 73 项通过；macOS/iOS Simulator 构建均成功；本机脚本语法、app 平台分层与 diff whitespace 检查通过。OrzMCKit CLI build/test/release 构建与共享验收均通过；133 + 1 项 Swift 测试通过，25/25 CLI acceptance 通过。编译输出含既有依赖/源码 lint 与 deprecation warnings。
+- 清理 `/Users/joker/orzmc-build` 中旧依赖镜像、CLI 镜像、状态数据约 7.1 GB，移除空 `/Users/joker/orzmc-handoff`。随后用户要求清除全部旧 app 实例并重建；通过 TERM 退出两个进程后，已彻底删除 `~/orzmc-build`、`/tmp/orzmc-ui-dd` 及旧 iOS DerivedData。新 macOS 与 iOS 构建产物位于 `~/Library/Developer/Xcode/DerivedData/OrzMC-local{,-ios}`，旧构建目录与 OrzMC 进程均确认不存在。
+- macOS/iOS 冷构建与 app-test（73 项）均完成通过；旧 app 进程已退出且没有自动再次启动。工作树保持未提交；`swift/app` 和 `tools/OrzMCBackup` 原有改动保留。
