@@ -301,6 +301,18 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-23 — pi（客户端状态彻底按卡片独立 + 批量删除 + 隐藏空卡片 + 去滚轮）
+
+- 用户报「启动 Fabric 后 Vanilla 的控制台图标也亮」→ 控制台键从按版本改为按类型
+  （`ConsoleInstanceKey.client(versionId:kind:)` / `ConsoleTarget.clientKind`）；
+  顺带修 `isCurrentInstanceRunning`（客户端）与 `removeClientConsole`。服务端本按核心键，无同类问题。
+- 详情页工具栏新增**删除全部实例**（`RiskyAction.deleteAllInstances`，确认框逐个列出目录；
+  客户端两种类型共用目录 → 路径去重）。
+- **不存在的实例不再占位**：只渲染根目录存在的卡片；全空显示 `ContentUnavailableView`。
+- 去掉鼠标滚轮切换启动目标（受焦点影响不稳定），⌘↩ / ⌘← / 快捷键页保留。
+- app PR #42 → main `c86bee7f`；实测：启动 Fabric 后只有 Fabric「运行中」+ 控制台高亮。
+- 注意：维护者测试期间 26.3 的 `client/` 目录已被删除，详情页因此显示空状态（不是 bug）。
+
 ### 2026-10-23 — pi（按卡片隔离状态 + Fabric 库下载 + 快捷键体系）
 
 - **Fabric 启动失败根因在引擎**：`downloadFabric()` 只写在 `Launcher`（CLI）上，
