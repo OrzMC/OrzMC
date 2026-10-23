@@ -318,6 +318,28 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-23 — pi（分支收敛到 main + app 迭代流程标准化）
+
+- **分支核对与清理**：OrzMCApp 的 9 个本地分支 + 2 个远端分支全部确认已通过 squash 合入
+  `main`（逐个比对内容），本地与远端已删干净，只剩 `main`（`9e29c2cb`）+ 自动的 `gh-pages`。
+  父仓库 `feat/ui-refresh-handoff` 已与 main 同步（解决 `HANDOFF.md` 冲突）→ PR #40 合入 main，
+  随后删除该分支；现在两个仓库都只有 `main`。
+- **app 迭代流程标准化**（app PR #56，见 `swift/app/docs/iteration-flow.md`）：
+  `scripts/dev/check.sh`（`--fast` / 默认 / `--full`）、`check-pbxproj.py`（新增文件必须登记工程）、
+  `check-localization.py`（文案必须有 zh-Hans，顺手补了 15 条漏译）、pre-push 钩子、
+  PR 模板；CI `split` job 同步加这两项检查。
+- ⚠️ **事故与恢复**：清理分支时我在父仓库执行了 `git reset --hard origin/main`，
+  **误删了工作区里未提交的本地改动**（`AGENTS.md`、`CONTRIBUTING.md`、`docs/README.md`、
+  `docs/cli-comparison.md`、`scripts/dev/prepush.sh`，以及 `scripts/air/run.sh` 的删除）。
+  - `AGENTS.md` 已按会话开始时读到的**完整内容**逐字恢复（§8.2 本机构建、§8.1.1 本地门禁等）。
+  - 其余按当前"本机构建"方案重建：`prepush.sh` 改用 `scripts/swift-check.sh test`；
+    `cli-comparison.md` 去掉"必须走 ssh air"的过时结论；`docs/README.md` 补 `github-iteration-workflow.md` 索引；
+    删除 `scripts/air/run.sh`；把一直未跟踪的 `scripts/swift-check.sh`、`docs/github-iteration-workflow.md` 纳入版本库。
+  - **仍不确定**：`CONTRIBUTING.md` 的本地改动无法还原（当前 = main 上一版），请维护者过一眼。
+  - 教训：**在父仓库不要用 `git reset --hard`**（这里常年有未提交的文档改动）；要同步用 `git merge --ff-only`。
+- 另外修好 `scripts/dev/install-hooks.sh`：全角括号紧跟变量名导致 `set -u` 直接退出（`$rel（` → `${rel}（`），
+  已在本机装好 python 与 OrzMCKit 的 pre-push 钩子。
+
 ### 2026-10-23 — pi（分支清理 + 迭代流程标准化）
 
 - **分支核对**：OrzMCApp 的 9 个本地分支与 2 个远端分支全部已通过 squash 合入 `main`
