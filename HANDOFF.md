@@ -301,6 +301,19 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-23 — pi（分支清理 + 迭代流程标准化）
+
+- **分支核对**：OrzMCApp 的 9 个本地分支与 2 个远端分支全部已通过 squash 合入 `main`
+  （逐一确认内容无误），本地与远端已清理；只剩 `main`（`9e29c2cb`）与自动生成的 `gh-pages`。
+  父仓库 `feat/ui-refresh-handoff` **尚未合入 main**（37 ahead / 9 behind），见下方待办。
+- **迭代流程标准化**（app PR #56）：
+  - `scripts/dev/check.sh` 一条命令跑门禁（`--fast` 静态 / 默认 单测+应用测试+macOS 构建 / `--full` +iOS+真 socket 联调）；
+  - 新增两个秒级静态检查并接进 CI `split`：`check-pbxproj.py`（新增文件是否登记工程）、
+    `check-localization.py`（文案是否都有 zh-Hans，顺手补了 15 条漏译）；
+  - `scripts/dev/install-hooks.sh` + `pre-push` 钩子（纯文档放行 / 源码跑 `--fast` / `PREPUSH_FULL=1` 全量 / `SKIP_PREPUSH=1` 逃生）；
+  - `docs/iteration-flow.md`（流程 + CI job 说明 + 快照验证 + 发版五步 + 已知坑表）、
+    `.github/pull_request_template.md`、README 加「开发」小节。
+
 ### 2026-10-23 — pi（玩家管理 + CI 真联调 + **发布 0.1.3**）
 
 - **玩家管理**：`PlayerListParser`（解析 RCON 的 list / whitelist list / banlist list，8 个单测）+
