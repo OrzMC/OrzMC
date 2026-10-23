@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-10-22 by pi（审查清单全量落地）
+> **最后更新**：2026-10-23 by pi（0.1.3 发布 + 迭代流程标准化）
 
 ---
 
@@ -54,17 +54,17 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 ## 1. 当前焦点（Current Focus）
 
-> **设备分工（维护者 2026-10-22 指定）**：Apple GUI/Swift 平台开发与实机验收在 Air 的 `/Users/joker/Documents/OrzMC` 正式仓库接力。bot 的 `/Users/bot/OrzMC` 后续用于 CLI 及可在本机独立完成的迭代，默认不再依赖 Air/其他设备开展工作；需要例外时以维护者明确任务为准。EasyApple 两机均已配置共享技能。
-
-> **2026-10-22 接力更新**：Swift app UI 刷新已推送到 app 分支 `feat/ui-refresh`，父仓库接力分支 `feat/ui-refresh-handoff`；PR #37/#39 尚未合并/发版。工作树已在 Air 本机正式仓库；继续前先检查本地未提交状态，不要再拉取/覆盖或使用旧 patch、SSH 构建流程。先读 `swift/app/docs/air-ui-handoff-2026-10-22.md`。
+> **设备分工（2026-10-22 维护者指定）**：Apple GUI/Swift 平台开发与实机验收在 Air 的
+> `/Users/joker/Documents/OrzMC` 正式仓库接力；bot 的 `/Users/bot/OrzMC` 用于 CLI 及可在本机独立完成的迭代。
+> EasyApple 两机均已配置共享技能。
 
 | 项 | 内容 |
 |---|---|
-| **主题** | **Swift app UI 刷新与导航交互打磨**；父仓库 `feat/ui-refresh-handoff`、app `feat/ui-refresh`；PR 保持草稿，视觉验收未完成 |
-| **状态** | 🟡 维护者报的 4 条视觉问题（版本列表 / 顶部按钮区 / 启动区排布 / 输入框对齐）**已修**；A1–A25 / B1–B4 亦全部落地：并发接缝与回调代数、状态机纯逻辑化、可访问性与本地化键、布局自适应、body 去 IO、视图按类型拆文件。macOS/iOS 构建与测试全绿；**仅剩维护者桌面视觉验收与真实网络失败路径**。单主 `Window`、唯一 `AppModel`、语义色和本地化约定保留；未提交、未 bump 指针 |
-| **关联方案** | `docs/spec/`（6 份）+ `docs/product-architecture.md` + `docs/product-unification-plan.md` + `docs/swift-conformance-design.md` + `docs/two-cli-strategy.md` + `docs/windows-port.md` + `swift/app/docs/app-launcher-architecture.md` |
-| **当前基线** | 父仓库分支 `feat/ui-refresh-handoff`（ahead 6）；子模块记录指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | ① 维护者桌面会话验收本轮视觉改动：960/1200pt、深浅外观/提高对比度、Tab 焦点环、版本列表行高与「胶囊退文本」后的观感、启动区四行 `LabeledContent` 的对齐、`0 – 2G` 与远程令牌框的实际对齐、控制台 ∖菜单。② 通过后再决定是否合并 Draft PR。对照表见 `swift/app/docs/ui-review-2026-10-22.md`（第四轮一节），字段约定见 `swift/app/docs/app-ui-design.md`。 |
+| **主题** | **OrzMCApp 0.1.3 已发布 + 迭代流程标准化**；父仓库 `feat/ui-refresh-handoff` 合入 `main` |
+| **状态** | 🟢 已发布 `0.1.3 (55)`：notarized（`spctl` = Notarized Developer ID）、universal（x86_64+arm64）、Sparkle appcast 已更新到 `main`。app 侧 `main` = `9e29c2cb`；本地/远端已合入分支全部清理 |
+| **关联方案** | `swift/app/docs/iteration-flow.md`（本地门禁 / CI job / 发版五步 / 已知坑）、`docs/spec/`（6 份）、`docs/product-architecture.md`、`docs/product-unification-plan.md`、`docs/two-cli-strategy.md` |
+| **当前基线** | 父仓库 `main`；子模块指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
+| **下一步** | ① 观察 0.1.3 线上反馈（Sparkle 自动更新是否触达 0.1.2 用户）；② 自建服务器加「状态变化通知」（在线↔离线）；③ 玩家名单在本地化服务端上的解析兜底；④ 发布流程补 dry-run 通道 |
 
 ## 2. 状态快照（Repo State）
 
@@ -87,17 +87,19 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
-| `python` | `f8c6a67` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.15.0 已发布（首个带 M3 runtime shim，opt-in）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；CI 修回归（release PR 重新上报必需检查）；`ledger` 台账校验 + 命令面 `--strict` |
+| `python` | `5e70745` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.18.0 已发布（含 `auth.lock` 跨进程锁 + runtime 回滚）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；`ledger` 台账校验 + 命令面 `--strict`；**`fix(download)`（`#98`）**：`HttpStatusError` —— 4xx/5xx 不重试且保留 requests 原文，续传 416 且已取全按成功；`JavaEnv` 404 补「上游缺该平台构建」提示；验收 harness 的 `log_contains` 改去全部空白（rich 软换行不再切断标记）；根 `conftest.py` autouse 钉 `ORZMC_RUNTIME=python`；**`docs`（`#100`）**：CLI 验收脚本路径同步到父仓库 `scripts/accept/cli.py`；**`docs`（`#101`）**：合规标记注释点明单一事实源在父仓库；**2.18.1 已发布**（PyPI 双包 + 6 资产 + Release notes） |
 | `swift/app` | `fa571e7` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
 | `swift/lib/OrzMCKit` | `6944afb` | **Swift 引擎 + `orzmc` CLI**；**`v0.19.0` 已发布**（六资产；**Linux 自包含**：静态链 Swift 运行时、glibc 2.35、62–65 MB）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
-| `swift/lib/OrzSwiftKit` | `616212d` | `OrzGeeker/OrzSwiftKit`；**0.0.20**：`ManagedProcess` 的 `send`/`terminate`/`forceKill`/`waitForExit(timeout:)`、`run(inheritStandardInput:)` |
+| `swift/lib/OrzSwiftKit` | `f35e4dc` | `OrzGeeker/OrzSwiftKit`；**0.0.20**：`ManagedProcess` 的 `send`/`terminate`/`forceKill`/`waitForExit(timeout:)`、`run(inheritStandardInput:)`；**`#1`**：`Package.resolved` 里 swift-nio 2.73→**2.104**、swift-system 1.3.2→1.8.1（都是 console-kit 的传递依赖）→ ⚠️ **构建工具链下限抬到 Swift 6.1**（见 §2.5） |
 
 > `git submodule status` 行首 `+` = 检出与记录不一致（plugin 正常）；`-` = 未初始化。
-> 2026-10-21 全量指针：`swift/app fa571e7`、`OrzMCKit 6944afb`、`OrzSwiftKit 616212d`、`OrzAppUpdater b23e0c4`、
-> `MojangAPI c5a0ead`、`PaperMC 14df328`、`ExarotonAPI 4f5c1a2`、`python f8c6a67`、`plugin 5eadd6e`（父仓库按 `main` 钉）。
+> 2026-10-22 全量指针：`swift/app fa571e7`、`OrzMCKit 6944afb`、`OrzSwiftKit f35e4dc`、`OrzAppUpdater b23e0c4`、
+> `MojangAPI c5a0ead`、`PaperMC 14df328`、`ExarotonAPI 4f5c1a2`、`python 5e70745`、`plugin 5eadd6e`、
+> `tools/rust-thanos b79defb`（父仓库按 `main` 钉；
+> 本地 `plugin` 常检出 `develop`，2026-10-22 起多一条 `211c203`「依赖安全告警处置」文档 —— **预期，不 bump**）。
 
 ### 2.3 验证 / 治理命令
 
@@ -136,11 +138,26 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 |---|---|
 | 本地工具链 | `~/Library/Developer/Toolchains/swift-6.0.3-RELEASE.xctoolchain`（Swift 6.0.3，已装） |
 | 本地 SDK | 仅 macOS 12/13（CLT）→ **`OrzMCKit` 整包无法本地编译**（OpenAPIKit 需 macOS 14 API） |
-| 验证途径 | `OrzMCKit` CI（`macos-15`：`swift build`+`swift test`+`conformance`）；不依赖 OpenAPIKit 的包（`OrzSwiftKit` 的 kit）可本地编译 |
+| 验证途径 | `OrzMCKit` CI（`macos-15`：`swift build`+`swift test`+`conformance`）。⚠️ **2026-10-22 起 `OrzSwiftKit` 也不能在本机编译了**：其依赖图（swift-nio **2.104** / swift-system 1.8.1）自带 `swift-tools-version:6.1`，本机 6.0.3 工具链 `swift package resolve` 直接报 `is using Swift tools version 6.1.0 but the installed version is 6.0.3`；`swift-latest`/6.5-dev 工具链又因 built for macOS 15 在 macOS 13 上 dyld 起不来。⇒ Swift 侧本地只保留 `OrzMCKit/scripts/dev/local-build.sh lint\|check`（纯静态/语法，不解析依赖）；构建与测试一律走 CI 或 Air（Swift 6.1.2 / 6.4） |
 | **远程 Mac（`ssh air`）** | macOS 27 / Swift 6.4 / Xcode 27（arm64）——**可本地编译 OrzMCKit**（本机 SDK 太旧时的替代）。Swift 验证两条路：`ssh air` 本地编译 / `OrzMCKit` **CI**（`conformance` job 检出父仓库 fixtures 跑 `--strict`，权威）。构建目录 air `~/orzmc-build/{OrzMCKit,parent,OrzSwiftKit}`（`parent` 下放了 fixtures+conformance 供适配器跑） |
 | Air 上的 SwiftLint 坑 | 单独构建 `OrzSwiftKit` 时，新解析的 SwiftLint 在 Swift 6.4 下编译失败（`MemberImportVisibility`）；但 `OrzMCKit` 的 `.build` 用钉住版本可正常构建 |
 | 本地联调 | `scripts/swift-dev.sh {sync,edit,status,unedit,xcode}` —— 把 `swift/lib/OrzMCKit` 的依赖本地覆盖到 `swift/lib/*`（开发态、不提交；app 的 Xcode 覆盖见 `xcode` 子命令） |
 | 不可用 | `swift-latest`/6.5-dev 工具链需 macOS 15；`swiftly` 在本机崩溃 |
+
+**本地能力矩阵（2026-10-22 实测，别把它读成「CLI 本地验证没了」）**
+
+CLI 迭代的主线是 **Python 实现**（`docs/two-cli-strategy.md` §6：唯一对外分发），它在**本机是全能的**；
+Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧，且一致性/命令面校验用 Python 适配器就能本地跑。
+
+| 想验证什么 | 本机能不能 | 命令（实测耗时） |
+|---|---|---|
+| Python CLI 行为（信封/退出码/取消/补全/MCP，25 例，真实进程） | ✅ | `bin="$(cd python && uv run --all-packages python -c 'import shutil; print(shutil.which("orzmc"))')"` 然后 `python3 scripts/accept/cli.py --cli "$bin"`（实测 64s）。⚠️ **不能**写 `--cli 'uv run orzmc'`：每个用例从自己的沙箱 cwd 启动，相对路径/无绝对入口必挂（`OrzPythonMC#102`） |
+| Python 单测 / lint / 类型 | ✅ | `uv run --directory python --all-packages pytest`（20s）、`ruff`、`mypy` |
+| 一致性 conformance（79 例） | ✅ | `scripts/conformance/run.py --adapter "uv run --directory python python orzmc/tests/conformance/adapter.py" --strict`（几十秒，**不需要 Swift**） |
+| 命令面 manifest / 能力台账 | ✅ | `scripts/verify/surface.py --self-check`、`scripts/verify/parity.py` |
+| Swift 代码的可移植性 / 语法 | ✅（秒级，不解析依赖） | `swift/lib/OrzMCKit/scripts/dev/local-build.sh lint`（0.6s）/ `check`（11s） |
+| Swift 整包 `swift build`/`swift test` | ❌ 本机不做 | CI `macos-15`（Swift 6.1.2）/ air（6.4） |
+| Swift 侧一致性适配器、Swift CLI 验收 | ❌ 需要先构建 | `OrzMCKit` CI 的 `conformance`/`cli-acceptance` job（权威） |
 
 ### 2.6 Swift 依赖（现为 `swift/lib/*` 子模块）
 
@@ -740,6 +757,101 @@ CI 缓存把问题藏住了，干净构建会失败）。#49 已关闭并折叠�
    [`swift/app/docs/app-ui-design.md`](swift/app/docs/app-ui-design.md)；
    Codex 交接文档与提示词见 [`swift/app/docs/ui-handoff.md`](swift/app/docs/ui-handoff.md)。
 9. **状态**：`swift/app` 有未提交改动（未开分支/未推送），父仓库暂不 bump 指针。
+
+### 2026-10-22 — pi（远端 issue/PR 巡检后的三件事：合规标记口径 / 发布 2.18.1 / plugin 告警噪音）
+
+先做了一次全组织巡检（父仓库 + 21 子模块 + 被引用的 OrzGeeker 仓库）：open issue 11 条、open PR 10 条。
+按维护者指定的顺序处理了三件，其余（Swift/App 类、上游 thanos、内容类）留在 §1「下一步」或归 Air。
+
+**① 合规标记口径（`OrzMCApp#32` 关闭）**
+- 结论：**生成器没缺** —— `scripts/sync_compliance.py` + `docs/compliance/` 在父仓库，写穿 5 处标记块
+  + 3 个整文件，`--check` 一直绿。误报的成因是标记注释写成了**子仓库里不存在的相对路径**
+  （`scripts/sync_compliance.py; edit docs/compliance/`）。
+- 改 `GENERATED_NOTE` 指名父仓库 → 重新生成，父仓库 + 4 个子仓库各一笔：
+  `OrzPythonMC#101`、`OrzMCKit#97`、`OrzMCApp#38`、`OrzMCSite#8`，父仓库 `c36bc44`（脚本 + README + 四指针）。
+- 同步在 `.github#3`（组织级合规自查）留言纠正同一条误判，并给出「扩面覆盖 16 个仓库」的分期建议
+  （对外发布渠道优先；`LoginSecurity` 是上游 fork，建议不动 README）。
+
+**② 发布 `python` 2.18.1（把早上的下载修复真正交付）**
+- release PR `#99` 因 GITHUB_TOKEN 不触发工作流而没有检查（老坑）→ close/reopen 补触发 → 11 项检查绿 → squash 合并。
+- 流水线：tag `v2.18.1` → 6 平台 PyInstaller 资产 → PyPI 双包（`orzmc` / `orzmc-app` 均 2.18.1）→
+  Release 非 draft → 官网 pages 重新部署。**无需「升级须知」**（旧版只是错误文案误导，不涉及迁移）。
+- 父仓库指针 `43d0729` bump 到 `5e70745`。
+
+**③ `OrzMCPlugin` 的 Dependabot 每日红（`#535`）**
+- 根因不是依赖没修：**依赖图里残留了已删除的 `pom.xml` manifest**（2026-01-09 `6a246ce` 移除 Maven 构建，
+  之后只有 Gradle）→ security update 作业每次都 `pom.xml not found` → 必红且**无法用 PR 修**
+  （`dependabot.yml` 的 `ignore` 也只能阻止开 PR，作业照样失败）。
+- 处置（现 0 open）：maven 6 条 dismiss `not_used`（manifest 已不存在；实际依赖 log4j 2.26.1 / snakeyaml 2.7
+  均在已修版之上）；npm `uuid` 1 条 dismiss `tolerable_risk`（经 mineflayer→prismarine-auth→@azure/msal-node
+  传入，Dependabot 自报 `fix_available=false`，唯一修复会把 mineflayer 降级到 1.4.0；漏洞只在调用方
+  自带 buffer 的 v3/v5/v6，msal-node 只用 v4，且 e2e 依赖不随 jar 分发）。
+- 新增 `plugin/docs/dev/dependency-security-alerts.md`（处置表 + 复核条件 + 核对命令）+ 索引入口 +
+  AGENTS 指针，合入 `develop`（`211c203`）。**父仓库不 bump**：plugin 按 `main` 钉，等下一次里程碑 develop→main。
+
+**④ 顺手合掉两个可直合的依赖 PR（`rust-thanos` `#3`/`#4`）**
+- `#3` lz4_flex 0.11.5→0.11.6、`#4` time 0.3.44→0.3.55（都只动 `Cargo.lock`，CI 3 平台绿）→ squash 合并；
+- 合并后在本地补跑该仓库的完整门禁：`cargo check --locked` / `cargo test`（14 例）/ `cargo fmt --check` /
+  `cargo clippy --all-targets --all-features -D warnings` 全绿，main CI 绿；
+- 父仓库指针 bump 到 `b79defb`。
+
+**⑤ `OrzGeeker/OrzSwiftKit#1`（swift-nio 2.73 → 2.104）**
+- PR 原是 `CONFLICTING`（lock 与 main 的 `Package.resolved` 打架）→ 留言 `@dependabot rebase`，
+  dependabot 顺带把目标从 2.102 提到 **2.104.0**，并连带 swift-system 1.3.2→1.8.1（都是 console-kit 的传递依赖）。
+- 该仓库只有 `Package.resolved` 变更；**库的 lock 不影响下游解析**（SwiftPM 忽略依赖包的 `Package.resolved`），
+  所以消费侧（`OrzMCKit`/app）不受影响，价值在于我们自己的 CI 会提前跑新 nio。
+- CI `build-test`（macos-15）1m52s 绿 → `gh pr merge --admin`（OrzGeeker 组织要求 1 review，`--admin` 是既有惯例）。
+- ⚠️ **副作用（已实测）**：nio ≥ 2.100 的 manifest 是 `swift-tools-version:6.1` ⇒ **OrzSwiftKit 的构建下限抬到
+  Swift 6.1**。本机 6.0.3 工具链跑 `swift package resolve` 直接失败，6.5-dev 工具链在 macOS 13 上起不来，
+  故 **「本机可单独编译 OrzSwiftKit」这条已作废**（§2.5 已改）。要恢复本机编译只有两条路：
+  钉回 nio < 2.100（会与 dependabot 长期对抗）或本机升到 macOS 15+。CI/air（6.1.2 / 6.4）不受影响。
+
+**⑥ 顺带纠正一处文档坑 + 明确「本机能做什么」**
+- 发现上一笔 `OrzPythonMC#100` 写的示例 `--cli 'uv run orzmc'` **跑不起来**：harness 的每个用例都从
+  **自己的沙箱 cwd** 启动（HOME/XDG 也换掉），命令串里的相对路径按沙箱解析 → `No such file or directory`。
+  改为 CI 同款（`bin="$(uv run … shutil.which("orzmc"))"` + `--cli "$bin"`，25 例 64s 全过），`#102` 已合；
+  父仓库 `scripts/accept/cli.py` 的 `build_cli` docstring 补了这条 cwd 说明（行为不变）。
+- 在 §2.5 增「**本地能力矩阵**」：CLI 主线（Python）本机是全能的（行为验收 / 单测 / 一致性 79 例用
+  python adapter 也能本地跑 / 命令面与台账校验）；Swift 侧只少了整包编译，静态与语法检查照旧（0.6s / 11s）。
+  —— 避免把「OrzSwiftKit 不能本地编译」误读成「CLI 本地验证没了」。
+
+### 2026-10-22 — pi（本机 CLI 线：HTTP 状态错误不再误报「中途断开」+ 夜间验收复绿）
+
+**上下文**：按新设备分工开工（Apple GUI 归 Air；bot 本机只做 CLI 与可独立完成的迭代，不连 Air/Windows）。
+入手点不是新功能，而是 `OrzPythonMC` 上**挂了一周的夜间验收红**（issue #35，自 2026-10-15 起每晚追加一条）。
+
+**定位**：6 个平台里只有 `windows-11-arm` 失败，7 个 case 全挂在同一句
+「下载 Temurin JRE 25 (windows/aarch64) → 下载中途多次断开，已重试 4 次仍失败」。
+实测该 URL **就是 404**：Temurin 有 `windows/aarch64` 的 Java 21，**没有 25**（jre/jdk 都无）。
+
+**两个真 bug（各一半责任）**：
+1. **实现侧**：`HttpClient.stream_range` 把 `raise_for_status()` 抛的 `requests.HTTPError`（4xx/5xx）
+   当成「流式中途断连」续传重试 → 4 次无谓请求 + 统一报「中途断开」，真因被掩盖。
+   修：新增 `HttpStatusError(RuntimeError)`（带 `status`/`url`，消息保留 requests 原文），
+   4xx/5xx **立即失败**；唯一例外是续传回 **416 且本地已取全** → 按成功返回（那正是「下完了」）。
+   放弃续传时消息补上最后一次底层错误。`JavaEnv` 再对 404 补一句可执行提示（上游未发布该平台构建）。
+2. **判定侧**：harness `log_contains` 只把空白压成**一个空格** → rich 软换行把长 URL 切开、断点落在
+   标记内部时仍匹配不到 `UP(gap)` 标记。修：两侧都**去掉全部空白**再比（标记不依赖空格）。
+3. 顺带：新增根 `conftest.py` autouse 钉 `ORZMC_RUNTIME=python`。本机状态目录里存着
+   早前实验的 Swift 通道 → `main()` 把 argv 交给 Swift 真身、POSIX 下 `os.execv`，**把 pytest 进程整个换掉**：
+   退出码 1、无 traceback、无 summary，用例凭空消失（`test_usage_error_exit_code_is_one` 起整批没了）。
+   基线（stash 后）同样复现 ⇒ 与本次修复无关，是测试非封闭；CI 一直钉着这个变量，现在本地一致。
+
+**验证**：`python` `ruff`/`mypy`/`pytest`（485 passed, 3 skipped）/ 父仓库 `scripts/accept/cli.py`（25 passed）；
+PR `OrzPythonMC#98` 全检查绿后合并（`c78eff6`）。真机层面：本地用真实网络打那个 404 URL，
+确认一次请求即报 `404 Client Error: Not Found for url: …`（旧行为：4 次重试 + 错误文案）。
+随后手动 dispatch `acceptance.yml` on main（run `39674450183`）：**6 平台全绿**，
+`windows-11-arm` 7/7 判 `UP(gap)`（警告），issue #35 已在本条结论后关闭。
+
+**另一笔（文案漂移）**：`scripts/accept_cli.py` 早按 M2 收口到父仓库 `scripts/accept/cli.py`，但
+`python/{AGENTS,CONTRIBUTING,README}.md` 里 11 处仍写本仓库旧路径（照着敲直接 No such file，且漏 `--frozen`）→
+PR `OrzPythonMC#100`（纯文档）。
+
+**留给下一会话（需拍板 / 需远端）**：
+- **Windows ARM64 跑最新版要 Java 25，Temurin 不给**。加**厂商回退**（Microsoft OpenJDK 有
+  `windows-aarch64` 的 25）就能真跑；不加则该平台只能自装 Java。产品决定，未动。
+- **Swift 侧同构隐患（需 air 构建）**：`OrzSwiftKit/Transfer` 对非 206 响应一律当「完整正文」（含 404），
+  最终表现为 size/hash 不符而不是清楚的状态码错误；对齐 Python 需要远端构建验证，本机不做。
 
 ### 2026-10-21 — pi（服务端运维收口：控制台 / 生命周期 / 插件 / 目录，**验收通过**）
 
