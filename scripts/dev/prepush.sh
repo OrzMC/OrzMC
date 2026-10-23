@@ -7,13 +7,13 @@
 #
 # 行为：
 #   * 只改文档（`*.md` / `docs/`）→ 直接放行（CI 也已跳过，见 `push.paths-ignore`）；
-#   * `OrzMCKit` → `scripts/air/run.sh test`（远端 M1，约 25 秒）+ 跨平台静态检查（1 秒）；
+#   * `OrzMCKit` → 跨平台静态检查（1 秒）+ `scripts/swift-check.sh test`（本机构建/单测）；
 #   * `OrzPythonMC` → `uv run pytest -q` + `scripts/verify` 类快检；
 #   * 其它仓库 / 无变更 → 放行。
 #
 # 逃生阀（都要求显式、且会打印提示）：
 #   SKIP_PREPUSH=1        跳过（急用；CI 仍会跑）
-#   ORZMC_PREPUSH_STRICT=0  远端不可达时**不阻断**（默认阻断，避免"本地测不了还硬推"）
+#   ORZMC_PREPUSH_STRICT=0  本机 Swift 检查失败时**不阻断**（默认阻断）
 #
 # 安装：scripts/dev/install-hooks.sh（写入各子模块的 pre-push）
 set -uo pipefail
@@ -64,18 +64,18 @@ case "$REPO_ROOT" in
         if ! run_or_warn "可移植性静态检查" python3 "$REPO_ROOT/scripts/verify/portability.py"; then
             exit 1
         fi
-        # 2) 远端 M1 构建 + 单测（约 25 秒）；远端不可达时按 STRICT 决定是否阻断
-        if ! out="$("$ROOT/scripts/air/run.sh" test 2>&1)"; then
+        # 2) 本机构建 + 单测（不再 rsync 到远端：`scripts/air/run.sh` 已删除）。
+        if ! out="$("$ROOT/scripts/swift-check.sh" test 2>&1)"; then
             printf '%s\n' "$out" | tail -5 >&2
             if [[ "${ORZMC_PREPUSH_STRICT:-1}" == "0" ]]; then
-                echo "⚠️  远端不可达，按 ORZMC_PREPUSH_STRICT=0 放行（CI 会复核）" >&2
+                echo "⚠️  本机 Swift 检查失败，按 ORZMC_PREPUSH_STRICT=0 放行（CI 会复核）" >&2
                 exit 0
             fi
-            echo "✘ 远端构建/单测未通过或不可达" >&2
+            echo "✘ 本机构建/单测未通过" >&2
             exit 1
         fi
         printf '%s\n' "$out" | grep -E "Test run with|Build complete" | tail -2
-        echo "✔ air 构建 + 单测通过"
+        echo "✔ 本机构建 + 单测通过"
         ;;
     "$ROOT/python")
         # 本机（老 i5 + 慢盘）跑 pytest 要 1 分 40 秒、单次 CLI 进程启动约 13 秒——

@@ -259,11 +259,11 @@ git diff --submodule <路径>
 
 ### 8.1.1 迭代成本纪律（2026-10 实测，见 `docs/iteration-efficiency.md`）
 
-- **推之前先本地验证**（已装成 git 钩子，见下）：`scripts/air/run.sh test`（约 25 秒）或 `check`（约 50 秒）。
+- **推之前先本地验证**（已装成 git 钩子，见下）：`scripts/swift-check.sh test`，以及 `swift/app` 的 `app-test` / `app`。
   一次性安装：`scripts/dev/install-hooks.sh`；核查：`scripts/dev/install-hooks.sh --check`。
-  钩子行为：纯文档改动放行；`OrzMCKit` 跑可移植性检查 + `air` 构建/单测（约 20–27 秒）；
+  钩子行为：纯文档改动放行；`OrzMCKit` 跑可移植性检查 + 本机 Swift 构建/单测；
   `python` 跑 `ruff`（本机 pytest 比 CI 还慢，`ORZMC_PREPUSH_TESTS=1` 才本地跑）。
-  逃生阀：`SKIP_PREPUSH=1`（会打印提示，CI 仍复核）；`ORZMC_PREPUSH_STRICT=0` 允许 `air` 不可达时放行。
+  逃生阀：`SKIP_PREPUSH=1`（会打印提示，CI 仍复核）；`ORZMC_PREPUSH_STRICT=0` 允许本机 Swift 检查失败时放行。
   ⚠️ git 钩子**不入版本库**（每个 clone 各一份），新机器/新 clone 必须跑一次安装器。
 - **攒改动一次推**：同一个小目标内不要"改一行 → 推 → 等 3 分钟"；一轮 PR CI 约 3.3 分钟。
 - **探针用 matrix 一次跑完**候选组合，不要串行 dispatch（本轮 Windows 探针 20 次本可 1–2 次）。
@@ -271,40 +271,24 @@ git diff --submodule <路径>
   （完整构建 + 打包 + 断言，但不发布、不改 Release；实测 10 分钟、零副作用）。绿了再正式 dispatch。
 - CI 已加固：跳过 release-please 分支、纯文档 push、非源码 push 的 Windows job。
 
-### 8.2 远端构建（`ssh air`）
+### 8.2 本机 Swift 构建与验收
 
-本机（macOS 13 + CLT 13.3 + 剩余磁盘 <10GB）**无法全量构建** Swift 包（依赖要 macOS 14+ SDK），
-Swift 相关的编译/测试/验收一律在 **`air`** 上做（Apple Silicon M1 / 8 核 / Swift 6.4 / SDK 27）。
-
-| 项 | 值 |
-|---|---|
-| SSH 主机 | `air`（`joker@192.168.0.26`，免密 key，**arm64**） |
-| 远端工作目录 | `~/orzmc-build/OrzMCKit`（`rsync --delete`，`.build` 保留 → 增量构建） |
-| 统一入口 | **[`scripts/air/run.sh`](scripts/air/run.sh)** |
+Swift CLI 与 app 的构建、测试和验收都在当前工作树直接运行，不通过 SSH，不 rsync 到独立构建镜像。统一入口为 [`scripts/swift-check.sh`](scripts/swift-check.sh)，Xcode DerivedData 默认位于 `~/Library/Developer/Xcode/DerivedData/OrzMC-local`。
 
 ```bash
-scripts/air/run.sh env            # 远端自检（swift / SDK / CPU / 磁盘）
-scripts/air/run.sh build          # 同步 + swift build --product orzmc   ~25s（增量）
-scripts/air/run.sh test           # 同步 + swift test（90+ 例）           ~25s
-scripts/air/run.sh accept         # 同步 + release 构建 + CLI 验收 20 例   ~1m30s
-scripts/air/run.sh all            # 三者全跑
-scripts/air/run.sh app            # **Xcode 工程**（`swift/app`）macOS 免签名构建；增量约 17s（首轮 ~1m）
-scripts/air/run.sh app-ios        # 同上但构建 iOS 模拟器目标（约 1m，独立 DerivedData）
-scripts/air/run.sh app-test       # app 的平台无关单测（`swift test`）
-scripts/air/run.sh app-clean      # 删远端 app 工作目录 + DerivedData
-scripts/air/run.sh sh '<cmd>'     # 远端自定义命令
+scripts/swift-check.sh env       # 本机 Swift / Xcode / SDK / 磁盘信息
+scripts/swift-check.sh build     # OrzMCKit CLI debug 构建
+scripts/swift-check.sh test      # OrzMCKit 单测
+scripts/swift-check.sh accept    # CLI release 构建 + 验收
+scripts/swift-check.sh all       # CLI build + test + accept
+scripts/swift-check.sh app       # app macOS 免签名构建
+scripts/swift-check.sh app-ios   # app iOS Simulator 构建
+scripts/swift-check.sh app-test  # app 平台无关单测
+scripts/swift-check.sh app-run   # 打开本机构建的 app
+scripts/swift-check.sh app-clean # 删除专用 Xcode DerivedData
 ```
 
-- **改依赖仓库时**（`MojangAPI` / `PaperMC` / `OrzSwiftKit`）加 `ORZMC_LOCAL_DEPS=1`：脚本会把本地
-  工作树同步过去并把**远端副本**的 `Package.swift` 改成 path 依赖（不改仓库、不要求先 push）。
-- 依赖是 `branch: main`，默认用 `Package.resolved` 离线解析（`--only-use-versions-from-resolved-file`）；
-  要拉依赖最新时用 `ORZMC_UPDATE_DEPS=1`。
-- `air` 会休眠：`ssh` 连不上时先唤醒机器（本机 `ssh air true` 报 `This system is locked` 即此因）。
-- **`air` 上有 Xcode 27.0** → `swift/app`（GUI）也能在远端构建：`scripts/air/run.sh app`。
-  该车道与 CI 一致地**删远端 `Package.resolved` 重新解析**（app 的锁钉着旧 `orzmcKit` revision，
-  不删会出现「新 API 找不到类型」的假失败），DerivedData 落在 `~/orzmc-build/app-dd` 保增量。
-- 本机仍保留**秒级/分钟级**轻量检查：`swift/lib/OrzMCKit/scripts/dev/local-build.sh lint|check`
-  （跨平台静态检查 1s、语法检查 50s）。
+默认从 `Package.resolved` 使用锁定依赖；显式更新依赖时使用 SwiftPM/Xcode 自身的依赖更新流程，再审查锁文件差异。不要复制工作树，也不要在同一仓库路径上使用 `rsync --delete`。
 
 ---
 
@@ -312,6 +296,7 @@ scripts/air/run.sh sh '<cmd>'     # 远端自定义命令
 
 - [`HANDOFF.md`](HANDOFF.md) —— **跨会话/跨设备交接文档**：当前焦点、状态快照、下一步、
   会话日志、待决策。每次会话结束前更新它。
+- 应用发版：`0.1.3 (55)` 已发布（notarized + Sparkle appcast），见上一条 session log。
 - [`docs/two-cli-strategy.md`](docs/two-cli-strategy.md) —— 两套 CLI 的关系与**分发口径**（§6，2026-10-20）：
   **Python 是实现主体、唯一对外分发**；**Swift 与 Python 同步迭代、但不对外分发**（Release 为 pre-release）。
 - [`docs/cli-comparison.md`](docs/cli-comparison.md) —— 两套实现的实测对比（启动/内存/独立运行/依赖/迭代/发布）

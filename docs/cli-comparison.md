@@ -100,7 +100,7 @@ Swift 的依赖在**构建期**固化（用户侧零第三方，但换来的是 
 
 | 维度 | Python 实现 | Swift 实现 |
 |---|---|---|
-| 本地门禁（一次全跑） | `pytest` **8.3 s** + `ruff` 0.2 s + `mypy` 1.6 s ≈ **10 s**，任意机器可跑 | `swift test` **25.7 s**（含 rsync 到远端），**本机 SDK 太旧，必须走 `ssh air`** |
+| 本地门禁（一次全跑） | `pytest` **8.3 s** + `ruff` 0.2 s + `mypy` 1.6 s ≈ **10 s**，任意机器可跑 | `swift test` 约 **30 s**（本机直接跑，见 `scripts/swift-check.sh test`；不再 rsync 到远端） |
 | 测试规模 | **473** 例 | **98** 例 |
 | 反馈回路摩擦 | 改一行 → 秒级跑 | 改一行 → 编译（平台相关，Windows 需 VS+Swift 6.2+dev mode） |
 | CI 单 job 中位耗时 | `quality` **43 s**、`test`（6 平台并行）**24 s**、`binary` 102 s、`installer` 55 s | `test` **100 s**、`linux` **131 s**、`conformance` **109 s**、`cli-acceptance` **77 s**、`ledger` **165 s**、`windows` **618 s**（源码变更才跑） |
