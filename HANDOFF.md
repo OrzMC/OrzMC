@@ -301,6 +301,20 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-23 — pi（服务器页清理 + 多档案 + 常用命令）
+
+- 远程托管页右上两个裸图标（刷新 / 账号）**功能正常但看不懂** → 挪进摘要卡，带文字「刷新」「账号」，
+  ⌘R 保留；工具栏清空。
+- **多台自建服务器**：`Sources/OrzMCLauncher/SelfHostedProfiles.swift`（模型 + 存取 + 旧格式迁移，9 个单测）；
+  页面顶部胶囊菜单切换/新增/编辑/删除（删除二次确认）；每台各自保留状态与控制台记录。
+  旧键 `orzmc.selfHosted.profile` 与旧 Keychain 账户自动迁移。
+- **常用命令**菜单（列出玩家/保存/广播/踢出/封禁/解封/OP/白名单），要参数的只填前缀；
+  玩家行加「踢出」「OP」快捷动作。
+- 修：错误文案里 `Int` 端口插值被加千位分隔符（`25,565`）→ 改用拼好的地址字符串。
+- 新增真 socket 联调：本地 Python RCON 假服务端拆两包，`ORZMC_LIVE_RCON=…` 跑
+  `testLiveRCONJoinsMultiplePackets` → 通过。
+- app PR #52 → main `a9060d5f`。⚠️ 期间 GitHub 连接不稳，`git push` 需加 `-c http.version=HTTP/1.1`。
+
 ### 2026-10-23 — pi（Esc 统一 + 「服务器」窗口 + RCON 多包）
 
 - **Esc 关闭规则定稿**：主窗口不关（留给取消搜索/退出编辑）；辅助窗口（设置/控制台/**服务器**）
