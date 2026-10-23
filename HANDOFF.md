@@ -301,6 +301,25 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-23 — pi（玩家管理 + CI 真联调 + **发布 0.1.3**）
+
+- **玩家管理**：`PlayerListParser`（解析 RCON 的 list / whitelist list / banlist list，8 个单测）+
+  模型 `refreshPlayerLists` / `performPlayerAction` + 界面「玩家」卡（在线/白名单/封禁三段，
+  每行给动作，底部可按名字加白/封禁）。
+- **真 socket 联调进 CI**：`scripts/test-servers/{slp_server,rcon_server}.py` + `run-live-tests.sh`，
+  CI 新增 `protocol-live` job。VarInt 那个 bug 的防线。
+- **应用层测试 target 终于被跑**：`OrzMCTests` 以前从未执行（引用了已删除的服务，早就编不过）。
+  已重写到当前 API，并新增 `SelfHostedServersModelTests`（假 RCON 流 + 注入密码 provider）。
+  `swift-check.sh app-test` 现在两套都跑；CI 在 macOS 格加了测试步骤。
+  踩坑：CI 步骤里不能调 `scripts/swift-check.sh`（那是**父仓库**的脚本）。
+- **发布 0.1.3 (55)**：`MARKETING_VERSION=0.1.3` / build `55`；新增
+  `docs/release-notes/0.1.3.md`（用户视角说明），`release-macos.sh` 自动按版本号找这份文件。
+  Release workflow 跑绿 → <https://github.com/OrzMC/OrzMCApp/releases/tag/0.1.3>，
+  appcast 已更新到 main（`81d0525d`）。
+  **核验**：zip 7.7M / dmg 8.9M，`spctl` = accepted "Notarized Developer ID"，
+  `lipo -archs` = x86_64 arm64，版本 0.1.3 (55)。
+- app PR #54、#55 → main；main HEAD `81d0525d`（appcast 提交）。
+
 ### 2026-10-23 — pi（测试连接 + VarInt 修复 + 清理死代码）
 
 - **修了一个藏很久的协议 bug**：`MCSLPPacket.readVarInt` 用 `UInt8` 左移 7 位，高位溢出丢失 →
