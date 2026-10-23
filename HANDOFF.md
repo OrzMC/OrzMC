@@ -301,6 +301,20 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-23 — pi（按卡片隔离状态 + Fabric 库下载 + 快捷键体系）
+
+- **Fabric 启动失败根因在引擎**：`downloadFabric()` 只写在 `Launcher`（CLI）上，
+  `GUIClient` 只 `download()+launch()` → loader 库从未下载。OrzMCKit **#99/#101**
+  把 `downloadFabric(onEvent:)` 提升到 `extension Client` 并 `public`；GUI 在下载阶段调用。
+  实测：`Loading Minecraft 26.3 with Fabric Loader 0.19.5`、主类 `KnotClient`、库落盘。
+- **状态/进度按卡片隔离**（app #41）：客户端按类型记活动/运行进程/进度
+  （`ConsoleInstanceKey.client(versionId:kind:)`）；服务端进度按实例写 `instanceProgress`，
+  卡片标题显示百分比，详情页顶部不再有全局进度。实测启动 Fabric 时 Vanilla 仍「已停止」。
+- **快捷键**：`Sources/OrzMCLauncher/AppShortcut.swift` 登记表 + `ShortcutStore`（UserDefaults 覆盖）；
+  ⌘↩ 启动、⌘← 控制台返回、目标胶囊滚轮切换；设置新增「快捷键」页（5 条可改 + 5 条系统固定）。
+- 提交流：OrzMCKit #99/#101 → 父仓库执行 `scripts/dev/bump-deps.sh` 刷锁 → app #41（`5b00d55b`）。
+- 待验：滚轮手感（合成事件不好验）、⌘← 在独立控制台窗口里的行为、快捷键录制后的冲突提示（尚未做）。
+
 ### 2026-10-23 — pi（详情页三个验收 bug 修复）
 
 - **Fabric 启动 = 原版**：GUI `GameLaunchService.startClient` 只传 `type:`、从未解析 `addon`；
