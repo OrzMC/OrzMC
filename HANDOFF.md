@@ -301,6 +301,16 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-23 — pi（⌘← 与 Esc 的语义收口）
+
+- 维护者澄清：**⌘← 只用于「详情页内的控制台页」返回详情**；独立控制台窗口用 **Esc** 关闭。
+- 实现：
+  - `BasicInfo` 在 `consoleTarget != nil`（页面推入）期间装监听，⌘← → `consoleTarget = nil`（pop）；
+  - `ConsoleWindowView` 去掉 ⌘←，改为 Esc 关闭；判定用「窗口可见」而非「是 key window」
+    （`openWindow(value:)` 实测不会把 key 交过去，`isKey=false`）；关闭走 `performClose` + `orderOut` 兜底；
+  - 文案 `Console page: back to detail`，设置页固定键表补 `Esc 关闭窗口`。
+- app PR #45 → main `ca5723b0`；实测：卡片 → 控制台页 → ⌘← 回详情；独立控制台 Esc 关闭（2→1）。
+
 ### 2026-10-23 — pi（快捷键与输入法/全局冲突排查 + Esc 关闭设置）
 
 - **快捷键失灵的真因**：监听器用 `modifierFlags.intersection(.deviceIndependentFlagsMask)` 判空，
