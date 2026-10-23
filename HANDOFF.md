@@ -301,6 +301,32 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-23 — pi（P1–P3 剩余项一次做完）
+
+一轮把 backlog 里剩下的五项清空（app 一个 PR #50 → main `9c856c00`）：
+
+1. **目录扫描移出主线程**：新增 `DetailInstanceScan`（纯逻辑 + 注入 IO，`scanInBackground` 用专用队列），
+   `BasicInfo.refreshInstances()` 改成「主线程组装描述 → 后台扫描 → 回主线程赋值」，body 里不再有文件 IO。
+   7 个新单测（含「后台结果 == 同步结果」）。
+2. **侧边栏 `+N`** → `\(n) more` → 中文「另 N 项」。
+3. **未安装实例的无意义动作**：逐处核查后确认已无残留（卡片按目录存在过滤；目录行/批量删除/全部停止/
+   CLI 的 Reveal 都已按存在性禁用）。本轮不再改。
+4. **远程服务器窗口统一**：列表改成「品牌摘要卡 + `orzMCPanel()` 服务器卡/额度池卡」，抽 `ExarotonServerCard`
+   供列表与详情「概览」共用；新增 `OrzMCDesignSystem/PointerHover.swift` 悬停反馈；全中文化
+   （section/统计标签/按钮/空态/窗口标题）。调试工具加 `--snapshot-watch` 的 `remote:true` / `clickRemote`
+   与 `--remote-detail`，终于能快照这个只能用菜单打开的次级窗口。
+5. **iOS 自建服务器最小闭环**：`OrzMC/Common/SelfHosted/`（profile + model + 视图 + 设置页）、
+   `KeychainStore`、协议层 `MCByteStream` / `MCReadBuffer` / `RaceWithTimeout` / `MCStatusSummary` /
+   `MCServerProbe`，iOS 首页变成「我的服务器 / 远程托管」两个 Tab。
+   顺手修了三个真 bug：读缓冲丢多余字节（表现为永远"检查中…"）、阻塞 IO 占并发线程（超时被拖成 8 秒）、
+   task group 竞速要等卡住的子任务。实测本机 Fabric：`26.3 / 0/20 / 2ms`。
+   文档：`swift/app/docs/ios-self-hosted.md`。
+
+⚠️ 过程中发现 **PR #49 漏把 `ExarotonServerCard.swift` 登记进 `project.pbxproj`**（本地增量构建 +
+CI 缓存把问题藏住了，干净构建会失败）。#49 已关闭并折叠进 #50，登记补齐；同时删除废弃的
+`MobileHelper(iOS)/App/Model.swift`、解除 `OrzMCProtocol` 的 ios-only 平台过滤、把 `MCSLPError` /
+`MCRCONError` 改 public。
+
 ### 2026-10-23 — pi（错误弹窗中文化）
 
 - `LauncherError` 增加 `codeHint`（按 `E_*` 给一句中文结论）与 `messageIsChinese`；
