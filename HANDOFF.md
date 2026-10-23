@@ -301,6 +301,20 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-23 — pi（Esc 统一 + 「服务器」窗口 + RCON 多包）
+
+- **Esc 关闭规则定稿**：主窗口不关（留给取消搜索/退出编辑）；辅助窗口（设置/控制台/**服务器**）
+  和弹层都能 Esc 关。统一实现 `EscapeClosesWindow`（`.escapeClosesWindow()`），替掉两处重复监听，
+  并给服务器窗口补上（以前完全没接）。控制台保留 `allowWhenNotKey`（#45 的原因）。
+  文档：`swift/app/docs/app-ui-design.md` §3.2.1。
+- **远程窗口 → 「服务器」窗口**：顶部分段控件切换「我的服务器 / 远程托管」，默认按是否配过自建地址决定。
+- **RCON 多包响应**：`runRCON` 第一包必读，之后 120ms 内还有数据继续读并拼接；
+  `MCByteStream.hasPendingInput(timeoutMilliseconds:)`；新增多包单测。
+- ⚠️ **补回上一轮丢失的改动**：PR #49/#50 只提交了「新建文件」，`ExarotonServerList` 卡片化、
+  详情「概览」卡、统计标签本地化、`--remote-detail` / `remote: true` 调试钩子都没进提交。
+  本轮全部重做并逐个验证（教训：提交前看 `git status`/`git show HEAD:path`，别只信构建通过）。
+- app PR #51 → main `aa76d128`。
+
 ### 2026-10-23 — pi（P1–P3 剩余项一次做完）
 
 一轮把 backlog 里剩下的五项清空（app 一个 PR #50 → main `9c856c00`）：
