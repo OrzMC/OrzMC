@@ -301,6 +301,21 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-23 — pi（详情页三个验收 bug 修复）
+
+- **Fabric 启动 = 原版**：GUI `GameLaunchService.startClient` 只传 `type:`、从未解析 `addon`；
+  引擎仅在 `addon != nil` 时下载 Fabric 库/换主类。已改为 Fabric 时 `FabricMeta.resolve` →
+  `ClientInfo(addon:)`。探针实测 `addonLibraries=7`（修复前 0）+ `cache/meta/fabric-profile` 落盘。
+- **启动客户端点亮全部服务端卡片**：`BasicInfo.isBusy()` 混了全局 `launch.isLaunching`；
+  改为按实例（`activities[key]`），客户端也按实例记活动，启动中显示「启动中…」。
+- **「当前」胶囊挤动状态徽标**：去掉胶囊 → 整卡 accent 描边高亮 + tooltip；徽标严格对齐。
+- 侧边栏安装徽标本地化（`Client` → 客户端，`%@ server` → `%@ 服务端`）。
+- app PR **#40** 已合入 main（`856000cb`）；快照/构建/单测/分层校验全绿。
+- 测试经验：反复 SIGTERM 后 macOS 状态恢复会让窗口不出现，快照/自动启动需加
+  `-ApplePersistenceIgnoreState YES`；另外 `print` 在 GUI 进程里是缓冲的，调试输出要用 stderr。
+- 待办顺序（P1→P3）见本轮对话：未安装实例禁用无意义动作、玩家名空提示、远程窗口样式统一、
+  `+N` 文案、无窗口自动重开；P2 目录扫描移出主线程、离屏 500×500 窗排查；P3 iOS 远控最小闭环。
+
 ### 2026-10-22 — pi（UI 大改造合入 main + 全功能包本机验收）
 
 - **PR #37（feat/ui-refresh）转 Ready 评审并 squash 合入 app main**（`51b339d7`，92 文件 +11003/−2236）；
