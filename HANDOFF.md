@@ -301,6 +301,14 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-23 — pi（错误弹窗中文化）
+
+- `LauncherError` 增加 `codeHint`（按 `E_*` 给一句中文结论）与 `messageIsChinese`；
+  「操作失败」弹窗改为：中文原始信息直接显示；英文原始信息则**第一行中文结论 + 第二行灰色原文(E_XXX)**。
+- 覆盖 E_USAGE / E_NETWORK / E_VERIFY / E_AUTH* / E_UNSUPPORTED* / E_IO / E_CANCELLED / E_RUNTIME / E_INTERNAL。
+- 既有 `LauncherErrorTests` 里追加 3 个用例（错误码覆盖、未知码、中英判定）；Launcher 单测 76 个全绿。
+- app PR #47 → main `b278c718`。
+
 ### 2026-10-23 — pi（二次确认弹窗中英混排清理）
 
 - 盘了全部 6 处确认/错误弹窗（删除服务端/客户端/全部、停止/重启/终止、全部停止、
