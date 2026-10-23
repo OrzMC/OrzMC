@@ -301,6 +301,21 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-23 — pi（测试连接 + VarInt 修复 + 清理死代码）
+
+- **修了一个藏很久的协议 bug**：`MCSLPPacket.readVarInt` 用 `UInt8` 左移 7 位，高位溢出丢失 →
+  字符串长度 ≥128 的响应全部解析失败（278 字节的 JSON 被读成 22），界面永远"检查中…"。
+  短包碰巧正常，所以之前单测全绿。修法：先转 `Int32` 再移位；新增 400 字符 MOTD 的回归用例。
+- **设置页「测试连接」**：保存前先 SLP 查状态；（RCON 打开且填了密码）再跑 `list` 验证密码，
+  失败给具体原因，不写任何存储。
+- **删掉老的同步实现**（−14 文件）：`MCSLP` / `MCRCON` / `MCQuery` + `MCServerInfo` /
+  `MCServerStatusInfo` / `MCSLPStatus` / 4 个无用 `Utils` 扩展；分包编解码保留。
+- 「服务器」窗口记住上次看的面（`orzmc.serversWindow.mode`）。
+- 验证：真 socket（本地 Python 假 SLP 服务端）+ 界面截图；app / app-ios / 33 组单测全绿。
+- app PR #53 → main `a8b9e9e0`。
+- ⚠️ 本轮曾因 `github.com:443` 被阻断卡住约 40 分钟（`api.github.com` 正常），
+  换 IP / HTTP1.1 / CONNECT 代理均无效，最后是网络自行恢复。**再遇到时直接等，别折腾 git 配置。**
+
 ### 2026-10-23 — pi（服务器页清理 + 多档案 + 常用命令）
 
 - 远程托管页右上两个裸图标（刷新 / 账号）**功能正常但看不懂** → 挪进摘要卡，带文字「刷新」「账号」，
