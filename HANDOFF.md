@@ -318,6 +318,23 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-23 — pi（状态通知 + 真机验收脚本）
+
+- **状态变化通知**（app #58 → `cf51fbb1`）：
+  `ServerStatusNotifier`（开关 `orzmc.selfHosted.notifyStatus`，**打开时才申请权限**，被拒自动回弹；
+  每台服务器 60 秒节流；删除服务器时清历史）+ `ServerStatusChangeDetector` 纯逻辑
+  （只在**真的翻转**时报事件，首次观测不报——否则每次启动都误报）。5 个单测。
+  只在在线↔离线时报；**不报"某玩家上线"**（轮询拿不到可靠事件流）。
+- **真机验收脚本**（无需改 App 代码）：
+  - `scripts/dev/verify-real-server.py`：只用 SLP + RCON 连真实服务端，打印**原始回复**与解析结果；
+  - `scripts/dev/accept-real-server.sh`：定位 `versions/<v>/server/server.properties`，
+    `--patch` 写入 `enable-rcon`/`rcon.port`/`rcon.password`（**先备份**、密码沿用或随机生成），
+    `--wait N` 等服务端起来后自动检查；**不启动/不停止**服务端。
+  - 两个脚本已用假 SLP/RCON 服务端跑通全链路（patch → 备份 → 等待 → 检查）。
+- ⚠️ 待人工执行：给真实 26.3 服务端打开 RCON 并重启后，跑
+  `./scripts/dev/accept-real-server.sh --version 26.3 --wait 240`，
+  把 `whitelist list` / `banlist list` 的**原文**贴回来，确认解析器兼容。
+
 ### 2026-10-23 — pi（本地验收：macOS + iOS + 假服务端）
 
 验收环境：`scripts/test-servers/` 的假 SLP(25566) + 假 RCON(25575)，DEBUG 钩子提供 RCON 密码。
