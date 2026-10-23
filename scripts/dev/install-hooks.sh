@@ -43,7 +43,7 @@ for rel in "${TARGETS[@]}"; do
                 echo "✔ 已安装: $rel"
                 installed=$((installed + 1))
             else
-                echo "✘ 未安装: $rel（跑 scripts/dev/install-hooks.sh）"
+                echo "✘ 未安装: ${rel}（跑 scripts/dev/install-hooks.sh）"
                 missing=$((missing + 1))
             fi
             ;;
