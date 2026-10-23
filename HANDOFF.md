@@ -318,6 +318,30 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-23 — pi（本地验收：macOS + iOS + 假服务端）
+
+验收环境：`scripts/test-servers/` 的假 SLP(25566) + 假 RCON(25575)，DEBUG 钩子提供 RCON 密码。
+
+**通过项**
+- 「服务器」窗口 · 我的服务器：状态卡（在线/26.3/2-20 名玩家/MOTD/更新时间）、
+  玩家卡三个页签（在线 alice·bob / 白名单 Remove·OP / 封禁 carol（griefing）·Unban）、
+  控制台卡（常用命令 / 清空 / 输入 / 发送）。
+- 设置页「测试连接」：`✓ 26.3 · 2/20 · RCON OK`（SLP + RCON 双验证，不落盘）。
+- 失败路径：连不上 → `连不上 127.0.0.1:25999，请检查地址、端口和网络。`（端口无千位分隔）。
+- Esc 关闭「服务器」窗口：投递前 2 个可见窗口 → 投递后 1 个。
+- macOS 主窗口 26.3 详情（客户端 Vanilla / 服务器 Fabric 两张卡）、设置 6 页渲染正常。
+- iOS：我的服务器（在线 + 在线(2) alice·bob）、离线错误文案；底部两个 Tab 正常。
+
+**验收发现并修掉的问题**（app PR #57 → main `55c106a8`）
+1. 状态卡显示 2/20 名玩家，玩家卡却「在线（0）」——名单只从 RCON 来。改为优先 RCON、
+   拿不到则回退 SLP 的 `players.sample`；RCON 不可用时在线名单只读。
+2. 合成鼠标事件到不了次级窗口的 SwiftUI 控件 → 新增 DEBUG 验收钩子：
+   `--players-tab` / `--selfhosted-settings` / `ORZMC_DEMO_RUN_TEST` / `ORZMC_DEMO_RCON_PASSWORD`
+   （写法见 `swift/app/docs/iteration-flow.md`）。
+
+**未覆盖**：真实 Minecraft 服务端上的 RCON（本机服务器未开 rcon）、远程托管（需要真实 exaroton Token）、
+玩家动作按钮的实际点击（靠 `SelfHostedServersModelTests` 的假流用例覆盖）。
+
 ### 2026-10-23 — pi（分支收敛到 main + app 迭代流程标准化）
 
 - **分支核对与清理**：OrzMCApp 的 9 个本地分支 + 2 个远端分支全部确认已通过 squash 合入
