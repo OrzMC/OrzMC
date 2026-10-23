@@ -301,6 +301,20 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-23 — pi（快捷键与输入法/全局冲突排查 + Esc 关闭设置）
+
+- **快捷键失灵的真因**：监听器用 `modifierFlags.intersection(.deviceIndependentFlagsMask)` 判空，
+  把方向键/Esc 自带 `.function`／`.numericPad` 也算作修饰键 → 判定永不成立。
+  统一改走 `ShortcutEvents.modifiers(of:)`（只映射 ⌘⌥⌃⇧）。
+- 输入法拼写（marked text）时不再抢键；「正在输入文本」只让开无修饰方向键与 ⌘←（文本语义），
+  ⌘T/⌘F 这类 ⌘ 组合在输入时仍然生效。
+- 设置窗口 Esc 关闭：`.onExitCommand` 无效（第一响应者为空）→ 本地监听 + `WindowReader` +
+  `performClose`（SwiftUI Settings 窗口会忽略 close 时兜底 `orderOut`）。
+- 设置页「快捷键」新增「优先级与冲突」说明（应用内优先 / 输入法让位 / 系统与其它 App 的全局热键先拦截）。
+- 新增 `ShortcutEvents`（IME/文本编辑/sheet/修饰键/键码匹配）与 `WindowReader` 两个共用件；
+  四个监听器（列表方向键、⌘T、⌘F、⌘←）全部改用它们。
+- app PR #44 → main；实测 Esc 关设置（2→1）、⌘← 关控制台、⌘T/⌘F 正常。
+
 ### 2026-10-23 — pi（客户端卡片按类型 + ⌘← 修复 + ⌘T/⌘F）
 
 - **客户端卡片按类型出现**：新增 `ClientKindMarkers`（`<client>/.orzmc/client-kinds/<Kind>`），
