@@ -301,6 +301,20 @@ python3 scripts/release/composition.py     # 生成发版组合表（更新 RELE
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-10-23 — pi（客户端卡片按类型 + ⌘← 修复 + ⌘T/⌘F）
+
+- **客户端卡片按类型出现**：新增 `ClientKindMarkers`（`<client>/.orzmc/client-kinds/<Kind>`），
+  启动时打标记，详情页只显示标记过的类型；旧安装按 fabric-loader / 客户端 jar 兼容推断。
+  修「启动 Vanilla 后 Fabric 卡也出现」（两者共用同一个 client 目录）。
+- **⌘← 控制台返回不生效**：零尺寸隐藏按钮在独立 Window 里不参与键盘分发 → 改为本地监听 + `performClose`；
+  匹配改用键码（合成/输入法事件里 `charactersIgnoringModifiers` 可能为空）。
+  ⚠️ 顺带修掉一个**必崩**问题：控制台/远程两个 scene 没注入 `ShortcutStore`，打开控制台即
+  `Fatal error: No Observable object of type ShortcutStore found`（已补 `.environment(shortcuts)`）。
+- 新增 **⌘T** 切换启动目标、**⌘F** 聚焦版本筛选（回车/Esc 交还焦点；启动时不再抢焦点），
+  两条都进 `AppShortcut` 与设置页「快捷键」。
+- app PR #43 → main；实测 ⌘T/⌘F/⌘← 全部生效。
+- 备注：测试期间 26.2 / 26.3 的 `client/` 目录已被删除（误触删除按钮），下次启动会重新下载。
+
 ### 2026-10-23 — pi（客户端状态彻底按卡片独立 + 批量删除 + 隐藏空卡片 + 去滚轮）
 
 - 用户报「启动 Fabric 后 Vanilla 的控制台图标也亮」→ 控制台键从按版本改为按类型
