@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-10-23 by pi（0.1.3 发布 + 迭代流程标准化）
+> **最后更新**：2026-10-25 by pi（远程托管状态中心收口 + 交接）
 
 ---
 
@@ -33,38 +33,38 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 > 再按需读 `docs/`。铁律：**代码改子模块、父仓库只 bump 指针**、**禁用 `git add -A`**、
 > 一次提交只 bump 一个子模块（同一产品级变更可合并 bump，见 AGENTS §2）。
 >
-> **当前状态（2026-10-22）**
-> - 当前工作位于 Air 本机正式仓库 `/Users/joker/Documents/OrzMC`。后续 app/Swift GUI 迭代直接在本机进行；**不要使用 `ssh air` 或旧 `scripts/air/run.sh`**，后者已删除。Swift 检查入口为 `scripts/swift-check.sh`。
-> - 父仓库分支 `feat/ui-refresh-handoff`，与 origin 同步；app 子模块分支 `feat/ui-refresh` 当前提交 `c28c70a3`（已推送）。**父仓库 PR #39 已关闭**（指针会回退 app main 的 `d90d7af7`，见 §5），**app PR #37 仍为 Draft、CI 全绿**，未合并/发版。
-> - app UI 的逐项修改和未完成验收见 `swift/app/docs/ui-review-2026-10-22.md`、`swift/app/docs/air-ui-handoff-2026-10-22.md`。受控日志/远程动作/RAM 失败验证及窗口尺寸、亮暗、焦点视觉验收尚未完成。
-> - 新增项目 GitHub 迭代指南 `docs/github-iteration-workflow.md`，已从 `CONTRIBUTING.md` 与 `docs/README.md` 链接。建议流程：短分支、Draft PR、子模块先独立合并、父仓库再显式 bump。
-> - 当前父仓库与 app 都有大量未提交改动，另有 `tools/OrzMCBackup` 脏状态。**接手先检查，不要 pull、reset、clean、覆盖文件或提交。**
-> - 最近运行 `python3 scripts/verify/check.py`：登记表 21 个、一致性 79/79、manifest、能力台账均通过；整体仅因 `python/README.md`、`swift/lib/OrzMCKit/README.md`、`site/layouts/partials/site-footer.html` 合规文案漂移失败。本轮不处理这些无关漂移。
-
-然后按顺序读：
-
-1. [`AGENTS.md`](AGENTS.md) —— 规则（三条铁律、子模块登记表、协作流程；**§5 含「禁止 git add -A」**）
-2. **本文件** —— 当前状态与下一步
-3. 若继续 app UI，读 `swift/app/docs/air-ui-handoff-2026-10-22.md` 与 `swift/app/docs/ui-review-2026-10-22.md`。
-4. 若处理 GitHub 流程，读 [`docs/github-iteration-workflow.md`](docs/github-iteration-workflow.md)。
-
-**本机 Swift 检查**：`scripts/swift-check.sh env|app|app-ios|app-test`；不要调用旧 Air SSH 车道。
-
-**结束会话前**：更新本文件第 1 / 2 / 4 / 5 章，并 `git add HANDOFF.md` 提交。
+> **本轮焦点：OrzMCApp iOS/远程托管体验收尾 + 多供应商预研。待办与优先级见
+> [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（P0→P2 排好了，直接从那三个 P1 小活开工）。**
+>
+> **当前状态（2026-10-25 深夜）**
+> - 工作目录 `/Users/joker/Documents/OrzMC`（Air 本机正式仓库）；**不要用 `ssh air` / 旧 `scripts/air/run.sh`**（已删）。
+> - 父仓库 `main` = `76c2028`；`swift/app` `main` = `b790cc8e`（PR #89）。**不要 `git reset --hard`**（父仓库常有未提交文档），用 `git merge --ff-only`。
+> - Swift 构建/测试入口：父仓库 `scripts/swift-check.sh`（`app` / `app-ios` / `app-test` / `all`），app 内门禁 `swift/app/scripts/dev/check.sh`（`--fast` / `--ios` / `--ui`）。
+> - 远程托管**状态同步已收敛**：`ExarotonStatusCenter.swift` = 唯一写入口 `publishStatus` + 订阅 `statusEvents()`；
+>   轮询判据是"WebSocket 是否安静"（`RemoteStatusRefreshPolicy`，WS 30s 无消息 → 轮询接管）。改动前先读
+>   [`swift/app/docs/remote-status-source.md`](swift/app/docs/remote-status-source.md)。
+> - 状态徽章只有一个实现 `OrzMCStatusBadge`（`Sources/OrzMCDesignSystem/StatusBadge.swift`），旋转图标是
+>   `TimelineView` 时间驱动（**不要**改回 `@State` + `repeatForever`，那条路重建后会停）。
+> - 真机验收链路：`swift/app/scripts/dev/run-ios-ui-tests.sh [--device <UDID>]`；真实服务器/账号凭据在
+>   `swift/app/scripts/dev/uitest-secrets.env`（**gitignore，永不入库**），`UI_TEST_RCON=1` 才跑 RCON 用例。
+>   真机装包：`swift/app/scripts/dev/install-ios-device.sh`，必须在 Terminal.app 里跑（后台会话钥匙串锁）。
+> - iPhone SE3 真机 UDID `00008110-0001712226A0401E`；模拟器 `OrzMC-UI` = `571ACD8A-64EB-4427-B803-D41836EB2B9F`
+>   。
+> - 机型/供应商：远程托管目前只有 **Exaroton**；下一步预研 **MCSManager**（多供应商 + 多实例），
+>   设计草案见 backlog 的 P2-7。
+> - 发版：**暂不发版**，维护者要求"问题都修完、界面调好之后统一发版"（目标 0.1.4）。
 
 ## 1. 当前焦点（Current Focus）
 
-> **设备分工（2026-10-22 维护者指定）**：Apple GUI/Swift 平台开发与实机验收在 Air 的
-> `/Users/joker/Documents/OrzMC` 正式仓库接力；bot 的 `/Users/bot/OrzMC` 用于 CLI 及可在本机独立完成的迭代。
-> EasyApple 两机均已配置共享技能。
-
 | 项 | 内容 |
 |---|---|
-| **主题** | **OrzMCApp 0.1.3 已发布 + 迭代流程标准化**；父仓库 `feat/ui-refresh-handoff` 合入 `main` |
-| **状态** | 🟢 已发布 `0.1.3 (55)`：notarized（`spctl` = Notarized Developer ID）、universal（x86_64+arm64）、Sparkle appcast 已更新到 `main`。app 侧 `main` = `9e29c2cb`；本地/远端已合入分支全部清理 |
-| **关联方案** | `swift/app/docs/iteration-flow.md`（本地门禁 / CI job / 发版五步 / 已知坑）、`docs/spec/`（6 份）、`docs/product-architecture.md`、`docs/product-unification-plan.md`、`docs/two-cli-strategy.md` |
-| **当前基线** | 父仓库 `main`；子模块指针见 §2.2；发版组合见 [`RELEASES.md`](RELEASES.md) |
-| **下一步** | ① 观察 0.1.3 线上反馈（Sparkle 自动更新是否触达 0.1.2 用户）；② 自建服务器加「状态变化通知」（在线↔离线）；③ 玩家名单在本地化服务端上的解析兜底；④ 发布流程补 dry-run 通道 |
+| **主题** | **OrzMCApp 远程托管体验收尾（P0/P1）→ 控制台渲染与多供应商预研（P2）** |
+| **状态** | 🟢 远程托管功能验收通过（启动/停止/控制台/内存/封禁列表/状态同步均已在真机+模拟器验证）；剩余为体验与架构项 |
+| **待办看板** | [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（P0-1 错误弹窗 → P1-2/3/4/5 → P2-6 终端渲染 → P2-7 多供应商） |
+| **当前基线** | 父仓库 `main` = `76c2028`；`swift/app` `main` = `b790cc8e` |
+| **已知坑** | ① 真机 UI 测试必须 Terminal.app + 解锁 + 已装开发签名；② 降级依赖 pin 后要 `scripts/dev/purge-package-cache.sh <包名>`；③ 模拟器旧 test runner 会沿用旧包（runner 已自动卸载） |
+| **下一步** | 按 backlog 顺序推进：P0-1 → (P1-2 + P1-3 + P1-4 一个 PR) → P1-5 → P2-6 → P2-7；全部完成后统一发 0.1.4 |
+| **开放决策** | 暂无阻塞；P2-7 的多供应商 UI 形态（分组 vs provider 过滤）待维护者拍板 |
 
 ## 2. 状态快照（Repo State）
 
@@ -318,6 +318,29 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-25 — pi（远程托管状态中心 + 真机反馈收口 + 交接）
+
+**做完了**
+- 真机/模拟器验收出的四类问题全部修完并合入：内存「还原」按钮失效（Form 行按钮合并）、
+  封禁名单被解析成一段文本（Paper 的 `banlist` 回复**没有换行**，改为按 `was banned by` 结构切）、
+  状态来源不一致（新增 `RemoteStatusCenter`：`publishStatus` 唯一入口 + `statusEvents()` 订阅）、
+  徽章旋转图标退出重进后停止（改 `TimelineView` 时间驱动，删掉重复的 `ExarotonServerStatusView`）。
+- **SDK 侧找到真 bug**：`OrzMC/ExarotonAPI` 的 `ServerStatus` 漏了 `9 = TRANSFERRING`，
+  导致 WS 的 `status` 消息整条解码失败、状态更新被丢弃 → 已修并发 **0.0.10**（app 依赖已升）。
+  证据：只读探针在真实账号上跑通启停，HTTP 与 WS 状态序列完全一致；status=9 解码会抛错。
+- 轮询判据修正：旧实现用 `isLive`（含 `readyServerID`），WS 掉线后 `readyServerID` 不清空 →
+  轮询被永久跳过 → 状态卡在「加载中」。现在以"WS 是否安静（30s）"为准。
+- 新增 UI 自动化：`testStatusBadgeKeepsSpinningAfterReentering`（截徽章像素比差异，已验证能抓住旧 bug）、
+  `testMemoryRevertRestoresValue`、`testConsoleInputNotCoveredByTabBar`、`testSnapshotRemoteConsole`。
+- 工具：`scripts/dev/purge-package-cache.sh`（升级 pin 后清 SwiftPM 缓存）。
+
+**尚未做（下一会话从这里开始）**
+- 维护者新反馈的 8 项，已按优先级写进 [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)：
+  P0 远程托管错误弹窗（原始 NSError + 取消当错误）、P1 控制台空态位置 / 内存行布局 / 服务器菜单三项 /
+  iOS 应用图标缺失、P2 统一终端渲染（ANSI）、P2 多供应商（Exaroton + MCSM）与多实例预研。
+- 发版保持暂停，等这批体验项做完统一出 0.1.4。
+
 ### 2026-10-23 — pi（状态通知 + 真机验收脚本）
 
 - **状态变化通知**（app #58 → `cf51fbb1`）：
