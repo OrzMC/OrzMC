@@ -38,6 +38,8 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 > [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 的 P2-7（开头就是"已拍板 + 开工顺序"）。
 >
 > **当前状态（2026-10-25 收工；0.1.5 已发布）**
+> - **先跑 `./scripts/dev/boot-check.sh`**（只读自检；换设备或隔了几天用 `--fetch`）——
+>   它检查父仓库是否落后、子模块是否初始化、指针在不在本地、组合校验是否通过，并直接给出要跑的命令。
 > - 工作目录 `/Users/joker/Documents/OrzMC`（Air 本机正式仓库）；**不要用 `ssh air` / 旧 `scripts/air/run.sh`**（已删）。
 > - 父仓库 `main` 与 `swift/app` `main` 均已推送干净（app = `79ac5963`，含 0.1.5 发版与 P2-7 计划）。
 >   **不要 `git reset --hard`**（父仓库常有未提交文档），用 `git merge --ff-only`。

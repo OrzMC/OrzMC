@@ -119,6 +119,13 @@ def check_compliance() -> bool:
 
 
 def check_remote() -> bool:
+    """子模块记录指针是否**已推到远端**。
+
+    不能用 `git ls-remote <url> <sha>`：ls-remote 只列 ref（分支/标签），
+    传一个提交 SHA 进去永远匹配不到 —— 于是所有"钉在非 tip 提交"的子模块都会被误报
+    （2026-10-25 实测：21 个子模块里 10 个假失败）。正确做法：在子模块里 fetch 之后
+    问一句「这个提交在远端某个分支上吗」（`git branch -r --contains`）。
+    """
     status = subprocess.run(
         ["git", "submodule", "status"],
         cwd=REPO, capture_output=True, text=True,
@@ -135,12 +142,22 @@ def check_remote() -> bool:
         ).stdout.strip()
         if not url:
             continue
-        found = subprocess.run(
-            ["git", "ls-remote", url, sha],
+        worktree = REPO / path
+        if not worktree.is_dir():
+            fail(f"子模块 {path} 未初始化，无法校验远端指针（先 git submodule update --init）")
+            ok = False
+            continue
+        # 先确保对象库里有远端最新（离线时忽略失败，用本地已有的远端引用判断）。
+        subprocess.run(
+            ["git", "-C", str(worktree), "fetch", "--all", "--prune", "--quiet"],
             capture_output=True, text=True,
-        ).stdout
-        if not found.strip():
-            fail(f"子模块 {path} 指针 {sha[:8]} 不在远端：{url}")
+        )
+        contained = subprocess.run(
+            ["git", "-C", str(worktree), "branch", "-r", "--contains", sha],
+            capture_output=True, text=True,
+        ).stdout.strip()
+        if not contained:
+            fail(f"子模块 {path} 指针 {sha[:8]} 不在任何远端分支上：{url}")
             ok = False
     if ok:
         print("[ok] 所有子模块指针均存在于远端")
