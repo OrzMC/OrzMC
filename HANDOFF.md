@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-10-25 by pi（远程托管状态中心收口 + 交接）
+> **最后更新**：2026-10-25 by pi（0.1.4 发版）
 
 ---
 
@@ -33,12 +33,12 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 > 再按需读 `docs/`。铁律：**代码改子模块、父仓库只 bump 指针**、**禁用 `git add -A`**、
 > 一次提交只 bump 一个子模块（同一产品级变更可合并 bump，见 AGENTS §2）。
 >
-> **本轮焦点：OrzMCApp iOS/远程托管体验收尾 + 多供应商预研。待办与优先级见
-> [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（P0→P2 排好了，直接从那三个 P1 小活开工）。**
+> **本轮焦点：0.1.4 已发布；下一步 P2-7 多供应商（Exaroton + MCSManager）。待办与设计见
+> [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 的 P2-7。**
 >
-> **当前状态（2026-10-25 深夜）**
+> **当前状态（2026-10-25 深夜，0.1.4 已发布）**
 > - 工作目录 `/Users/joker/Documents/OrzMC`（Air 本机正式仓库）；**不要用 `ssh air` / 旧 `scripts/air/run.sh`**（已删）。
-> - 父仓库 `main` = `76c2028`；`swift/app` `main` = `b790cc8e`（PR #89）。**不要 `git reset --hard`**（父仓库常有未提交文档），用 `git merge --ff-only`。
+> - 父仓库 `main` 见 `git log -1`（本轮已含 0.1.4 的 bump）；`swift/app` `main` = `8bc96ed1`（0.1.4 发版 + appcast 更新）。**不要 `git reset --hard`**（父仓库常有未提交文档），用 `git merge --ff-only`。
 > - Swift 构建/测试入口：父仓库 `scripts/swift-check.sh`（`app` / `app-ios` / `app-test` / `all`），app 内门禁 `swift/app/scripts/dev/check.sh`（`--fast` / `--ios` / `--ui`）。
 > - 远程托管**状态同步已收敛**：`ExarotonStatusCenter.swift` = 唯一写入口 `publishStatus` + 订阅 `statusEvents()`；
 >   轮询判据是"WebSocket 是否安静"（`RemoteStatusRefreshPolicy`，WS 30s 无消息 → 轮询接管）。改动前先读
@@ -50,21 +50,28 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 >   真机装包：`swift/app/scripts/dev/install-ios-device.sh`，必须在 Terminal.app 里跑（后台会话钥匙串锁）。
 > - iPhone SE3 真机 UDID `00008110-0001712226A0401E`；模拟器 `OrzMC-UI` = `571ACD8A-64EB-4427-B803-D41836EB2B9F`
 >   。
-> - 机型/供应商：远程托管目前只有 **Exaroton**；下一步预研 **MCSManager**（多供应商 + 多实例），
->   设计草案见 backlog 的 P2-7。
-> - 发版：**暂不发版**，维护者要求"问题都修完、界面调好之后统一发版"（目标 0.1.4）。
+> - 机型/供应商：远程托管目前只有 **Exaroton**；下一步做 **MCSManager**（多供应商 + 多实例）。
+>   维护者已拍板三条：① MCSM 新建独立 OpenAPI 依赖（与 `ExarotonAPI` 同构）；
+>   ② API 之上加抽象层统一服务端交互与事件；③ 能下沉的尽量下沉到 `Sources/*`。
+>   UI 形态：**按供应商分组**（不做 provider 过滤）。
+> - 控制台渲染已统一（P2-6）：解析在 `Sources/OrzMCFoundation/ConsoleText.swift`，
+>   渲染在 `Sources/OrzMCDesignSystem/ConsoleText.swift`，规则见
+>   [`swift/app/docs/console-rendering.md`](swift/app/docs/console-rendering.md)。
+> - 发版：**0.1.4 (56) 已发布**（2026-10-25，notarized + Sparkle appcast）。
+>   下次发版前照旧：改 `Config.xcconfig` 版本/build、写 `docs/release-notes/<版本>.md`、
+>   PR 合入后 `gh workflow run release-app.yml --ref main`（该 workflow 无 dry-run 输入）。
 
 ## 1. 当前焦点（Current Focus）
 
 | 项 | 内容 |
 |---|---|
-| **主题** | **OrzMCApp 远程托管体验收尾（P0/P1）→ 控制台渲染与多供应商预研（P2）** |
-| **状态** | 🟢 远程托管功能验收通过（启动/停止/控制台/内存/封禁列表/状态同步均已在真机+模拟器验证）；剩余为体验与架构项 |
-| **待办看板** | [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（P0-1 错误弹窗 → P1-2/3/4/5 → P2-6 终端渲染 → P2-7 多供应商） |
-| **当前基线** | 父仓库 `main` = `76c2028`；`swift/app` `main` = `b790cc8e` |
+| **主题** | **P2-7 多供应商（Exaroton + MCSManager）+ 多实例**；0.1.4 已发布 |
+| **状态** | 🟢 P0-1 / P1-2/3/4/5 / P2-6 全部完成并随 **0.1.4 (56)** 发版（notarized + Sparkle appcast 已验证）；剩 P2-7 |
+| **待办看板** | [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（只剩 P2-7；P0/P1/P2-6 已标 ✅） |
+| **当前基线** | `swift/app` `main` = `8bc96ed1`（0.1.4 发版 + appcast）；父仓库 `main` 见 `git log -1` |
 | **已知坑** | ① 真机 UI 测试必须 Terminal.app + 解锁 + 已装开发签名；② 降级依赖 pin 后要 `scripts/dev/purge-package-cache.sh <包名>`；③ 模拟器旧 test runner 会沿用旧包（runner 已自动卸载） |
-| **下一步** | 按 backlog 顺序推进：P0-1 → (P1-2 + P1-3 + P1-4 一个 PR) → P1-5 → P2-6 → P2-7；全部完成后统一发 0.1.4 |
-| **开放决策** | 暂无阻塞；P2-7 的多供应商 UI 形态（分组 vs provider 过滤）待维护者拍板 |
+| **下一步** | P2-7 第 1 步：MCSM 独立 OpenAPI 依赖（`openapi.yml` + generator plugin + apikey middleware）+ `docs/remote-hosting-providers.md` 抽象层设计 |
+| **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
 ## 2. 状态快照（Repo State）
 
@@ -88,7 +95,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `5e70745` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.18.0 已发布（含 `auth.lock` 跨进程锁 + runtime 回滚）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；`ledger` 台账校验 + 命令面 `--strict`；**`fix(download)`（`#98`）**：`HttpStatusError` —— 4xx/5xx 不重试且保留 requests 原文，续传 416 且已取全按成功；`JavaEnv` 404 补「上游缺该平台构建」提示；验收 harness 的 `log_contains` 改去全部空白（rich 软换行不再切断标记）；根 `conftest.py` autouse 钉 `ORZMC_RUNTIME=python`；**`docs`（`#100`）**：CLI 验收脚本路径同步到父仓库 `scripts/accept/cli.py`；**`docs`（`#101`）**：合规标记注释点明单一事实源在父仓库；**2.18.1 已发布**（PyPI 双包 + 6 资产 + Release notes） |
-| `swift/app` | `fa571e7` | `OrzMCApp`；有构建校验 CI；GUI 共用引擎 `launchClient`/`downloadClient`（Phase 4） |
+| `swift/app` | `8bc96ed1` | `OrzMCApp`；**0.1.4 (56) 已发布**（notarized + Sparkle appcast）；本轮含 P0-1 错误弹窗、P1 界面收口、iOS 图标、P2-6 控制台 ANSI 渲染 |
 | `swift/lib/OrzMCKit` | `6944afb` | **Swift 引擎 + `orzmc` CLI**；**`v0.19.0` 已发布**（六资产；**Linux 自包含**：静态链 Swift 运行时、glibc 2.35、62–65 MB）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
@@ -319,7 +326,37 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
-### 2026-10-25 — pi（远程托管状态中心 + 真机反馈收口 + 交接）
+### 2026-10-25 — pi（backlog 全清 + 0.1.4 发版）
+
+**做完了**（四条支线各一个 PR，全部 CI 四项绿、squash 合并；父仓库逐个 bump 指针）
+- **P0-1 远程托管错误弹窗**（#90）：新增 `RemoteHostingErrorText`（取消 → `nil` 不弹窗；
+  离线/401·403/5xx/兜底各一句中文），额度池、内存、生命周期动作、WS 流操作全部改走它；
+  单测 9 例 + UI 用例「真实账号连进出额度池 20 轮零弹窗」。
+- **P1-2/3/4 界面收口**（#91）：空态移出 `ScrollView`（`defaultScrollAnchor(.bottom)` 是占位贴底的根因）；
+  内存行去掉 `LabeledContent` 改 `HStack`；服务器菜单去掉编辑/删除、选中态「勾+加粗+着色」、
+  热区移进 label。三个新 UI 用例（空态用**像素**判定位置——Form 会合并行内无障碍元素，量 frame 判不出来）。
+- **P1-5 iOS 图标**（#92）：根因是 `AppIcon-iOS.appiconset` 一个 png 都没有。改成 macOS/iOS
+  共用 `AppIcon`（universal 1024 单尺寸条目），删空集；1024 图重新导出为**无 alpha**。
+- **P2-6 控制台 ANSI 渲染**（#93）：`OrzMCFoundation.ConsoleTextParser`（纯逻辑，20 例单测）
+  + `OrzMCDesignSystem.ConsoleLineText`（按亮暗模式调色，AttributedString，不用 WebView），
+  三处控制台共用；`RemoteConsoleBuffer` 支持一条消息多行。文档 `swift/app/docs/console-rendering.md`。
+  坑：Swift 把 `"\r\n"` 当成**一个** Character，必须按 Unicode 标量遍历。
+- **0.1.4 发版**（#94 → `8bc96ed1`）：`Config.xcconfig` 0.1.4 (56) + `docs/release-notes/0.1.4.md`
+  （面向用户，**无**需手动处理事项）；`Release App` workflow 成功。
+  产物已核验：dmg/zip 内 app 均 0.1.4 (56)、Developer ID + hardened runtime、
+  `stapler validate` / `spctl` = Notarized Developer ID；`products/appcast.xml` 含 0.1.4 的
+  `edSignature`，`SUFeedURL` 指向 main 的 appcast。
+
+**还没做 / 下一步**
+- **P2-7 多供应商**：维护者已拍板——① MCSM 走**独立 OpenAPI 依赖**（与 `ExarotonAPI` 同构）；
+  ② API 之上加抽象层统一服务端交互与事件；③ 能下沉的尽量下沉到 `Sources/*` 复用；
+  ④ UI **按供应商分组**。第 1 步：`Sources/MCSMAPI`（openapi.yml + generator plugin +
+  `X-Request-API-Key` middleware）+ `docs/remote-hosting-providers.md`。
+- ⚠️ 交付提醒：`swift/app/scripts/dev/uitest-secrets.env` 里的 RCON 密码**等于公开的服务器名**，
+  `check-secrets.py` 因此拦过一次新增字面量（已绕开），建议轮换。
+- ⚠️ iOS 端没有分发链路（Release App workflow 只构建 macOS）；要在真机/TestFlight 发 0.1.4 需另跑归档。
+
+
 
 **做完了**
 - 真机/模拟器验收出的四类问题全部修完并合入：内存「还原」按钮失效（Form 行按钮合并）、
