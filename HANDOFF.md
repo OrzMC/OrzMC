@@ -29,7 +29,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 ## 0.1 接力提示词（**维护者不用复制** —— `AGENTS.md` §0 会让新会话自己读到这里）
 
-> 你在 `OrzMC` 父仓库（产品伞，21 个子模块）。**先读 `AGENTS.md`（规则）+ `HANDOFF.md`（状态）**，
+> 你在 `OrzMC` 父仓库（产品伞，22 个子模块）。**先读 `AGENTS.md`（规则）+ `HANDOFF.md`（状态）**，
 > 再按需读 `docs/`。铁律：**代码改子模块、父仓库只 bump 指针**、**禁用 `git add -A`**、
 > 一次提交只 bump 一个子模块（同一产品级变更可合并 bump，见 AGENTS §2）。
 >
@@ -60,6 +60,10 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 > - 供应商抽象层（P2-7 第 1 步）：`Sources/OrzMCRemoteHosting/RemoteHostingProvider.swift`；
 >   exaroton 适配器 `OrzMC/Common/ExarotonUI/Model/ExarotonHostingProvider.swift`（界面还没消费它，行为不变）。
 >   状态中心的键是 `RemoteInstanceID`（供应商 + 原始 ID），**不要**退回裸字符串 id。
+> - MCSM 客户端（P2-7 第 3 步）：**新子模块** `swift/lib/MCSManagerAPI`（`OrzMC/MCSManagerAPI`）；
+>   `Sources/MCSMAPI/openapi.yml` 是**按官方 apidoc 手写的最小 spec**（官方没有机器可读 OpenAPI），
+>   改端点要同步 spec + README；本机可 `swift test --package-path swift/lib/MCSManagerAPI` 验证。
+>   ⚠️ 面板需在设置里打开 API Key 功能，否则带 key 的请求一律 403。
 >   实例的键是 `RemoteInstanceID`（供应商 + 原始 ID），**不要**退回裸字符串 id。
 > - 状态徽章只有 `OrzMCStatusBadge`（`Sources/OrzMCDesignSystem/StatusBadge.swift`），旋转图标是
 >   `TimelineView` 时间驱动（**不要**改回 `@State` + `repeatForever`）。
@@ -87,11 +91,11 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | **P2-7 多供应商（Exaroton + MCSManager）+ 多实例**；0.1.5 已发布 |
-| **状态** | 🟢 P0-1 / P1-2/3/4/5 / P2-6 全部完成，**0.1.5 (57)** 热修已发布；**P2-7 第 1–2 步 ✅**（供应商抽象层 + 供应商无关状态中心），剩第 3–5 步 |
+| **状态** | 🟢 P0-1 / P1-2/3/4/5 / P2-6 全部完成，**0.1.5 (57)** 热修已发布；**P2-7 第 1–3 步 ✅**（供应商抽象层 + 供应商无关状态中心 + MCSManagerAPI 新库），剩第 4–5 步 |
 | **待办看板** | [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（只剩 P2-7；P0/P1/P2-6 已标 ✅） |
-| **当前基线** | `swift/app` `main` = `218ff8e6`（P2-7 第 1–2 步：供应商抽象层 + `RemoteStatusCenter` 下沉）；父仓库 `main` 见 `git log -1` |
+| **当前基线** | `swift/app` `main` = `218ff8e6`；**新增子模块** `swift/lib/MCSManagerAPI` = `b63c4b5`（22 个子模块）；父仓库 `main` 见 `git log -1` |
 | **已知坑** | ① 真机 UI 测试必须 Terminal.app + 解锁 + 已装开发签名；② 降级依赖 pin 后要 `scripts/dev/purge-package-cache.sh <包名>`；③ 模拟器旧 test runner 会沿用旧包（runner 已自动卸载） |
-| **下一步（下次开工就从这里开始）** | **P2-7 第 3 步：新建 `OrzMC/MCSManagerAPI`**（独立 OpenAPI 依赖：`openapi.yml` + generator build plugin + `X-Request-API-Key` 中间件，先只做「列实例 + 实例状态」两个端点 + 单测），然后接第 4 步（app 侧只读适配）。⚠️ **这是跨仓库动作（新建仓库 + 选定 MCSM 的 OpenAPI 来源），开工前先跟维护者确认**；做法可照 `swift/lib/ExarotonAPI`（同构）。 |
+| **下一步（下次开工就从这里开始）** | **P2-7 第 4 步：app 侧 MCSM 只读适配** —— `swift/app/Package.swift` 加 `MCSMAPI` 依赖；新增 `ExarotonServerModel` 之外的 MCSManager 模型（列实例 + 按 `RemoteStatusRefreshPolicy` 轮询状态，无 WS）；凭据进 Keychain（沿用 `SelfHostedCredentials`/`KeychainStore` 写法：面板 URL + apikey）；远程托管页按供应商分组（`RemoteHostingGrouping`）。验收：填 URL + apikey 后能看到实例与状态变化，切/删账号不影响别家轮询 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
 ## 2. 状态快照（Repo State）
@@ -119,6 +123,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | `swift/app` | `218ff8e6` | `OrzMCApp`；**0.1.5 (57) 已发布**（notarized + Sparkle appcast）；**P2-7 第 1–2 步 ✅**：`Sources/OrzMCRemoteHosting` 供应商抽象层（`ProviderKind` / `RemoteInstanceID` / `RemoteInstanceSummary` / `RemoteHostingProvider` / 分组 / 闭包适配器）+ **供应商无关的 `RemoteStatusCenter`**（快照/订阅/刷新节律 + `RemoteStatusRefreshPolicy` 下沉）；app 侧只剩 `ExarotonHostingProvider` 与 `ExarotonServerModel+StatusCenter` 两个接缝；设计见 `swift/app/docs/remote-hosting-providers.md`、`remote-status-source.md` |
 | `swift/lib/OrzMCKit` | `6944afb` | **Swift 引擎 + `orzmc` CLI**；**`v0.19.0` 已发布**（六资产；**Linux 自包含**：静态链 Swift 运行时、glibc 2.35、62–65 MB）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
+| `swift/lib/MCSManagerAPI` | `b63c4b5` | **新建**（P2-7 第 3 步，`OrzMC/MCSManagerAPI`）：MCSManager 面板 API 客户端（OpenAPI 生成）；只覆盖节点列表 / 实例列表（含状态）/ 实例详情；`APIKeyMiddleware` 注 `X-Request-API-Key`；详见 §2.6 |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
 | `swift/lib/OrzSwiftKit` | `f35e4dc` | `OrzGeeker/OrzSwiftKit`；**0.0.20**：`ManagedProcess` 的 `send`/`terminate`/`forceKill`/`waitForExit(timeout:)`、`run(inheritStandardInput:)`；**`#1`**：`Package.resolved` 里 swift-nio 2.73→**2.104**、swift-system 1.3.2→1.8.1（都是 console-kit 的传递依赖）→ ⚠️ **构建工具链下限抬到 Swift 6.1**（见 §2.5） |
@@ -143,6 +148,8 @@ python3 scripts/verify/surface.py --implementation python \
   --command "uv run --directory python orzmc --json capabilities"
 python3 scripts/conformance/run.py --list  # 列出一致性样例（当前 76）
 python3 scripts/release/composition.py     # 生成发版组合表（更新 RELEASES.md 用）
+# Swift 依赖仓库各自的门禁（本机工具链能编）：
+swift test --package-path swift/lib/MCSManagerAPI   # MCSManager API 客户端（秒级，不联网）
 ```
 
 ### 2.4 远程真机验证环境（Windows）
@@ -198,6 +205,7 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 | `swift/lib/MojangAPI` | `main`（`0f11294`） | 元数据；平台 macOS 13 / iOS 16（D12）；**版本 JSON 可选磁盘缓存（原始字节，`configurePackageCache`）**；**CI 加缓存 + 修重复触发；联网用例门控 `ORZMC_NETWORK_SMOKE`（离线确定性）** |
 | `swift/lib/PaperMC` | `main`（`19ae5af`） | Paper/Hangar |
 | `swift/lib/ExarotonAPI` | `main`（`1eea571`，tag `0.0.9`） | Exaroton API 客户端 |
+| `swift/lib/MCSManagerAPI` | `main`（`b63c4b5`） | **新建（2026-10-25，P2-7 第 3 步）**：MCSManager 面板 API 客户端；官方无 OpenAPI，`Sources/MCSMAPI/openapi.yml` 按官方 apidoc 手写最小子集（节点列表 / 实例列表 / 实例详情）；`APIKeyMiddleware` 注 `X-Request-API-Key`；`swift test` 9 条（请求拼装 + 官方示例 JSON 解码）；`scripts/check-apidoc-drift.sh` 防官方端点改名 |
 | `swift/lib/OrzAppUpdater` | tag `0.0.3`（`b23e0c4`） | 平台 macOS 13；被 app 以 tag 依赖 |
 
 ## 3. 待决策 / 开放问题
@@ -346,6 +354,41 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-25 — pi（P2-7 第 3 步：新建 OrzMC/MCSManagerAPI）
+
+**维护者拍板（本轮开工前确认）**：① 仓库 public，名字 `OrzMC/MCSManagerAPI`；
+② OpenAPI 来源用**官方仓库 apidoc**；③ 凭据沿用 `SelfHostedCredentials`/`KeychainStore` 的做法。
+
+**做了什么**
+1. 先查证：官方**没有**机器可读的 OpenAPI/Swagger（`MCSManager/Documentation` 只有 markdown，
+   MCSManager/UI/Daemon 里也搜不到 swagger），所以 spec 是按官方 apidoc **手写的最小可用子集**，
+   并在 `openapi.yml` 头部与 README 里写清依据的文档 commit（`287c3936`）与鉴权实现参考（`ad4f903a`）。
+2. 新建仓库 `OrzMC/MCSManagerAPI`（public，MIT，CI 与 `ExarotonAPI` 同构：macos-26 + Xcode 26 + `swift test`）：
+   - `Sources/MCSMAPI/openapi.yml`：`GET /api/service/remote_services`、
+     `GET /api/service/remote_service_instances`、`GET /api/instance`；
+     `required` 保守（只有依赖的字段必填，其余可选），列表项不含 `processInfo`/`space`（官方文档如此）；
+   - `APIKeyMiddleware`：`X-Request-API-Key` + 官方要求的 `X-Requested-With` / `Accept`；
+   - `MCSMClient.make(serverURL:apiKey:transport:)`：去尾部斜杠、默认 URLSession、可注入假 transport；
+   - 9 条测试：请求拼装（路径/查询参数/鉴权头，**零网络**）、官方文档示例 JSON 解码、中间件；
+   - `scripts/check-apidoc-drift.sh`：拉官方 markdown 检查我们声明的端点还在不在（CI 里跑，**不阻塞**）。
+3. 父仓库：作为**第 22 个子模块**收进 `swift/lib/MCSManagerAPI`（`.gitmodules` + `AGENTS.md` 登记表 +
+   `verify/check.py` 全绿）；AGENTS/HANDOFF 里的「21 个子模块」改成 22。
+
+**踩到的坑（记下来省下次）**
+- swift-openapi-generator 把 `protocol` 属性名映射成 **`_protocol`**（Swift 关键字），测试里别写 `.protocol`；
+- `HTTPRequest.path` 是 **`String?` 且含查询串**（没有 `request.query`）→ 断言要用
+  `URLComponents(string: path)?.queryItems`；
+- 测试目标第一次跑会报 "target has overlapping sources"，因为 `Tests/<target>` 目录还不存在
+  （SwiftPM 退回去扫 `Sources/`）——先建目录/文件再 build。
+
+**验证**
+- 本机 `swift test`（9 条全绿）、`/api` 端点漂移检查 3/3 通过
+- 父仓库 `python3 scripts/verify/check.py`：登记表 22 个子模块一致
+
+**留给下一个会话**
+- **下一件事：P2-7 第 4 步**（app 侧 MCSM 只读适配）—— 详细口径见 §1「下一步」。
+- 需要真机/真面板验收时：`deploy/` 里有 MCSManager 的 docker compose；面板必须打开 API Key 功能。
 
 ### 2026-10-25 — pi（P2-7 第 2 步：状态中心泛化，已合入）
 

@@ -74,3 +74,7 @@
 	path = swift/lib/OrzAppUpdater
 	url = https://github.com/OrzGeeker/OrzAppUpdater.git
 	branch = main
+[submodule "swift/lib/MCSManagerAPI"]
+	path = swift/lib/MCSManagerAPI
+	url = https://github.com/OrzMC/MCSManagerAPI.git
+	branch = main
