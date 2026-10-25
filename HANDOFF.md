@@ -69,7 +69,8 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 >   脚本已支持 manual signing，命令见 `docs/ios-release.md`）；② 把 API key 角色提到 Admin。
 >   今天不配 secret 也能用的：本机 Terminal.app 里
 >   `./scripts/release-ios.sh --export app-store-connect --upload`。
-> - 发版：**0.1.4 (56) 已发布**（2026-10-25，notarized + Sparkle appcast）。
+> - 发版：**0.1.5 (57) 已发布**（2026-10-25，notarized + Sparkle appcast；修复 0.1.4 的
+>   删除确认框崩溃与远程控制台不显示日志）。上一版 0.1.4 (56) 也仍在 GitHub Release。
 >   下次发版前照旧：改 `Config.xcconfig` 版本/build、写 `docs/release-notes/<版本>.md`、
 >   PR 合入后 `gh workflow run release-app.yml --ref main`（该 workflow 无 dry-run 输入）。
 
@@ -78,9 +79,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | **P2-7 多供应商（Exaroton + MCSManager）+ 多实例**；0.1.4 已发布 |
-| **状态** | 🟢 P0-1 / P1-2/3/4/5 / P2-6 全部完成并随 **0.1.4 (56)** 发版（notarized + Sparkle appcast 已验证）；剩 P2-7 |
+| **状态** | 🟢 P0-1 / P1-2/3/4/5 / P2-6 全部完成，**0.1.5 (57)** 热修已发布（notarized + Sparkle appcast 已验证）；剩 P2-7 |
 | **待办看板** | [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（只剩 P2-7；P0/P1/P2-6 已标 ✅） |
-| **当前基线** | `swift/app` `main` = `9a907ef4`（0.1.4 发版 + iOS 发版链路 + manual signing + 装包退出码修复）；父仓库 `main` 见 `git log -1` |
+| **当前基线** | `swift/app` `main` = `c58ed602`（0.1.4 发版 + iOS 发版链路 + manual signing + 装包退出码修复）；父仓库 `main` 见 `git log -1` |
 | **已知坑** | ① 真机 UI 测试必须 Terminal.app + 解锁 + 已装开发签名；② 降级依赖 pin 后要 `scripts/dev/purge-package-cache.sh <包名>`；③ 模拟器旧 test runner 会沿用旧包（runner 已自动卸载） |
 | **下一步** | P2-7 第 1 步：MCSM 独立 OpenAPI 依赖（`openapi.yml` + generator plugin + apikey middleware）+ `docs/remote-hosting-providers.md` 抽象层设计 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
@@ -107,7 +108,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `5e70745` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.18.0 已发布（含 `auth.lock` 跨进程锁 + runtime 回滚）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；`ledger` 台账校验 + 命令面 `--strict`；**`fix(download)`（`#98`）**：`HttpStatusError` —— 4xx/5xx 不重试且保留 requests 原文，续传 416 且已取全按成功；`JavaEnv` 404 补「上游缺该平台构建」提示；验收 harness 的 `log_contains` 改去全部空白（rich 软换行不再切断标记）；根 `conftest.py` autouse 钉 `ORZMC_RUNTIME=python`；**`docs`（`#100`）**：CLI 验收脚本路径同步到父仓库 `scripts/accept/cli.py`；**`docs`（`#101`）**：合规标记注释点明单一事实源在父仓库；**2.18.1 已发布**（PyPI 双包 + 6 资产 + Release notes） |
-| `swift/app` | `9a907ef4` | `OrzMCApp`；**0.1.4 (56) 已发布**（notarized + Sparkle appcast）；含 P0-1 错误弹窗、P1 界面收口、iOS 图标、P2-6 控制台 ANSI 渲染、iOS 归档/TestFlight/装包链路 |
+| `swift/app` | `c58ed602` | `OrzMCApp`；**0.1.4 (56) 已发布**（notarized + Sparkle appcast）；含 P0-1 错误弹窗、P1 界面收口、iOS 图标、P2-6 控制台 ANSI 渲染、iOS 归档/TestFlight/装包链路 |
 | `swift/lib/OrzMCKit` | `6944afb` | **Swift 引擎 + `orzmc` CLI**；**`v0.19.0` 已发布**（六资产；**Linux 自包含**：静态链 Swift 运行时、glibc 2.35、62–65 MB）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
@@ -337,6 +338,15 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-25 — pi（0.1.5 热修发版）
+
+- 维护者真机验收两个修复通过后发版：版本 `0.1.5 (57)`、新增 `docs/release-notes/0.1.5.md`
+  （面向用户：两个修复 + **无需手动处理**）、PR #100 合入后跑 `Release App`。
+- 产物核验：GitHub Release `0.1.5`（zip/dmg/appcast）；dmg `stapler validate` 通过、
+  `spctl` = Notarized Developer ID；`products/appcast.xml` 已含 0.1.5 (57) 的 `edSignature`。
+- 本机 `/Applications/OrzMC.app` 已换成**官方 0.1.5 dmg**（Release + 公证），iPhone SE3 也升到 0.1.5 (57)。
+- 父仓库 bump `swift/app` → `c58ed602`；`RELEASES.md` 追加 0.1.5 基准组合表。
 
 ### 2026-10-25 — pi（验收揪出 0.1.4 的两个回归，已修）
 
