@@ -80,7 +80,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **主题** | **P2-7 多供应商（Exaroton + MCSManager）+ 多实例**；0.1.4 已发布 |
 | **状态** | 🟢 P0-1 / P1-2/3/4/5 / P2-6 全部完成并随 **0.1.4 (56)** 发版（notarized + Sparkle appcast 已验证）；剩 P2-7 |
 | **待办看板** | [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（只剩 P2-7；P0/P1/P2-6 已标 ✅） |
-| **当前基线** | `swift/app` `main` = `4956ee21`（0.1.4 发版 + iOS 发版链路 + manual signing + 装包退出码修复）；父仓库 `main` 见 `git log -1` |
+| **当前基线** | `swift/app` `main` = `9a907ef4`（0.1.4 发版 + iOS 发版链路 + manual signing + 装包退出码修复）；父仓库 `main` 见 `git log -1` |
 | **已知坑** | ① 真机 UI 测试必须 Terminal.app + 解锁 + 已装开发签名；② 降级依赖 pin 后要 `scripts/dev/purge-package-cache.sh <包名>`；③ 模拟器旧 test runner 会沿用旧包（runner 已自动卸载） |
 | **下一步** | P2-7 第 1 步：MCSM 独立 OpenAPI 依赖（`openapi.yml` + generator plugin + apikey middleware）+ `docs/remote-hosting-providers.md` 抽象层设计 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
@@ -107,7 +107,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `5e70745` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.18.0 已发布（含 `auth.lock` 跨进程锁 + runtime 回滚）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；`ledger` 台账校验 + 命令面 `--strict`；**`fix(download)`（`#98`）**：`HttpStatusError` —— 4xx/5xx 不重试且保留 requests 原文，续传 416 且已取全按成功；`JavaEnv` 404 补「上游缺该平台构建」提示；验收 harness 的 `log_contains` 改去全部空白（rich 软换行不再切断标记）；根 `conftest.py` autouse 钉 `ORZMC_RUNTIME=python`；**`docs`（`#100`）**：CLI 验收脚本路径同步到父仓库 `scripts/accept/cli.py`；**`docs`（`#101`）**：合规标记注释点明单一事实源在父仓库；**2.18.1 已发布**（PyPI 双包 + 6 资产 + Release notes） |
-| `swift/app` | `4956ee21` | `OrzMCApp`；**0.1.4 (56) 已发布**（notarized + Sparkle appcast）；含 P0-1 错误弹窗、P1 界面收口、iOS 图标、P2-6 控制台 ANSI 渲染、iOS 归档/TestFlight/装包链路 |
+| `swift/app` | `9a907ef4` | `OrzMCApp`；**0.1.4 (56) 已发布**（notarized + Sparkle appcast）；含 P0-1 错误弹窗、P1 界面收口、iOS 图标、P2-6 控制台 ANSI 渲染、iOS 归档/TestFlight/装包链路 |
 | `swift/lib/OrzMCKit` | `6944afb` | **Swift 引擎 + `orzmc` CLI**；**`v0.19.0` 已发布**（六资产；**Linux 自包含**：静态链 Swift 运行时、glibc 2.35、62–65 MB）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
@@ -337,6 +337,33 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-25 — pi（验收揪出 0.1.4 的两个回归，已修）
+
+**1) macOS：点删除按钮必崩（#98）**
+- 崩溃报告 `~/Library/Logs/DiagnosticReports/OrzMC-2026-10-25-153739.ips`：
+  `String.init(localized:)` → `__CFSTRING_IS_CALLING_OUT_TO_AN_OBJECT_FORMAT_ARGUMENT`
+  → `objc_opt_respondsToSelector(0x2)`，栈顶是 `View.alert(_:isPresented:presenting:…)`。
+- 根因：`RiskyAction.deleteAllInstances` 正文英文键是 `All %lld instance folders (%@)…`，
+  zh-Hans 译文写成 `会永久删除 %@ 的全部 %lld 个实例目录…`（**顺序反了**）→
+  `String(localized:)` 按译文顺序取参数，第一个 `%@` 拿到 Int → 崩。
+- 修：译文改成保持顺序（`全部 %lld 个实例目录（%@）`）。**并加守卫**：
+  `check-localization.py` 现在校验"键与译文占位符的数量/类型/顺序一致"（以前带插值的键直接跳过），
+  实测能抓住这次的原始错误。
+
+**2) iOS：远程控制台一直停在占位（#99，P2-6 回归）**
+- 根因：`ConsoleTextParser.lines(in:)` 把单独 `\r` 当"行内覆盖"，直接丢掉前半行；
+  **exaroton 的 console 流每行都以 `\r` 结尾** → `"line…\r"` 被整行丢弃 → 缓冲区永远为空。
+- 修：`\r` 语义改成"取最后一个非空分段"（`"Done\r"`→`"Done"`，`"10%\r50%"`→`"50%"` 不变），
+  `lines(in:)` 与 `parse(_:)` 两层都改；补 4 条回归测试（含缓冲区级、带颜色的行）。
+
+**已装好的验收件**
+- 本机 `/Applications/OrzMC.app`：Release + Developer ID 签名（本地构建、未公证），含两个修复。
+- iPhone SE3（`00008110-0001712226A0401E`）：Release 开发签名包，main `9a907ef4`，含两个修复。
+- ⚠️ 磁盘一度只剩 1GB（`lipo: No space left on device`），已清掉 4 个废弃的
+  `~/Library/Developer/Xcode/DerivedData/OrzMC-*`（约 8GB）。
+
+**建议**：0.1.4 是**带崩溃的已发布版本**，修完应尽快出 **0.1.5**（等维护者点头）。
 
 ### 2026-10-25 — pi（真机装 0.1.4 开发包）
 
