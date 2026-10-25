@@ -57,6 +57,13 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 > - 控制台渲染已统一（P2-6）：解析在 `Sources/OrzMCFoundation/ConsoleText.swift`，
 >   渲染在 `Sources/OrzMCDesignSystem/ConsoleText.swift`，规则见
 >   [`swift/app/docs/console-rendering.md`](swift/app/docs/console-rendering.md)。
+> - iOS 链路（2026-10-25 补齐）：归档/导出/装真机看
+>   [`swift/app/docs/ios-release.md`](swift/app/docs/ios-release.md)。
+>   `scripts/release-ios.sh`（archive → ipa，可 `--upload` 传 TestFlight、`--install` 装真机）、
+>   `scripts/dev/install-ios-device.sh`（`--release` / `--ipa` / `--app`）、
+>   `Release iOS` workflow（`export` 默认 `debugging`，`upload` 默认 false）。
+>   ⚠️ **CI 直传 TestFlight 目前被权限挡住**（API key 角色不足 → 云签名建不了分发证书）；
+>   今天可用的是：本机 Terminal.app 里 `./scripts/release-ios.sh --export app-store-connect --upload`。
 > - 发版：**0.1.4 (56) 已发布**（2026-10-25，notarized + Sparkle appcast）。
 >   下次发版前照旧：改 `Config.xcconfig` 版本/build、写 `docs/release-notes/<版本>.md`、
 >   PR 合入后 `gh workflow run release-app.yml --ref main`（该 workflow 无 dry-run 输入）。
@@ -68,7 +75,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **主题** | **P2-7 多供应商（Exaroton + MCSManager）+ 多实例**；0.1.4 已发布 |
 | **状态** | 🟢 P0-1 / P1-2/3/4/5 / P2-6 全部完成并随 **0.1.4 (56)** 发版（notarized + Sparkle appcast 已验证）；剩 P2-7 |
 | **待办看板** | [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（只剩 P2-7；P0/P1/P2-6 已标 ✅） |
-| **当前基线** | `swift/app` `main` = `8bc96ed1`（0.1.4 发版 + appcast）；父仓库 `main` 见 `git log -1` |
+| **当前基线** | `swift/app` `main` = `08d901ab`（0.1.4 发版 + iOS 发版链路）；父仓库 `main` 见 `git log -1` |
 | **已知坑** | ① 真机 UI 测试必须 Terminal.app + 解锁 + 已装开发签名；② 降级依赖 pin 后要 `scripts/dev/purge-package-cache.sh <包名>`；③ 模拟器旧 test runner 会沿用旧包（runner 已自动卸载） |
 | **下一步** | P2-7 第 1 步：MCSM 独立 OpenAPI 依赖（`openapi.yml` + generator plugin + apikey middleware）+ `docs/remote-hosting-providers.md` 抽象层设计 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
@@ -95,7 +102,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `5e70745` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.18.0 已发布（含 `auth.lock` 跨进程锁 + runtime 回滚）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；`ledger` 台账校验 + 命令面 `--strict`；**`fix(download)`（`#98`）**：`HttpStatusError` —— 4xx/5xx 不重试且保留 requests 原文，续传 416 且已取全按成功；`JavaEnv` 404 补「上游缺该平台构建」提示；验收 harness 的 `log_contains` 改去全部空白（rich 软换行不再切断标记）；根 `conftest.py` autouse 钉 `ORZMC_RUNTIME=python`；**`docs`（`#100`）**：CLI 验收脚本路径同步到父仓库 `scripts/accept/cli.py`；**`docs`（`#101`）**：合规标记注释点明单一事实源在父仓库；**2.18.1 已发布**（PyPI 双包 + 6 资产 + Release notes） |
-| `swift/app` | `8bc96ed1` | `OrzMCApp`；**0.1.4 (56) 已发布**（notarized + Sparkle appcast）；本轮含 P0-1 错误弹窗、P1 界面收口、iOS 图标、P2-6 控制台 ANSI 渲染 |
+| `swift/app` | `08d901ab` | `OrzMCApp`；**0.1.4 (56) 已发布**（notarized + Sparkle appcast）；含 P0-1 错误弹窗、P1 界面收口、iOS 图标、P2-6 控制台 ANSI 渲染、iOS 归档/TestFlight/装包链路 |
 | `swift/lib/OrzMCKit` | `6944afb` | **Swift 引擎 + `orzmc` CLI**；**`v0.19.0` 已发布**（六资产；**Linux 自包含**：静态链 Swift 运行时、glibc 2.35、62–65 MB）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
@@ -326,6 +333,35 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 
+### 2026-10-25 — pi（补 iOS 归档 / TestFlight / 真机装包）
+
+**做完了**
+- `swift/app/scripts/release-ios.sh`（新）：`archive` → `-exportArchive` 出 ipa →
+  可选 `--upload`（altool 传 TestFlight）/ `--install`（交 `install-ios-device.sh --release` 装真机）。
+  导出方式取 Xcode 新名（`debugging`/`release-testing`/`app-store-connect`，老名自动映射）；
+  ExportOptions 由脚本生成并 lint（`manageAppVersionAndBuildNumber=false`）；
+  签名两条路：本机钥匙串（automatic）或 ASC API key 云签名（`-authenticationKey*`）；
+  导出后当场校验 ipa（bundle/版本/签名/图标）。
+- `install-ios-device.sh` 扩展 `--release` / `--app <app>` / `--ipa <ipa>`（解包安装，不重复构建）。
+- `.github/workflows/release-ios.yml`（`Release iOS`）：`export` 默认 `debugging`、
+  `upload` 默认 **false**（true 会真的产生 TestFlight 构建并通知测试员）。
+- `swift/app/docs/ios-release.md`（新）+ `docs/iteration-flow.md` §4.2 / README 补入口。
+
+**实测结论（重要）**
+- CI `export=debugging` ✅（#40163544468）：云签名拿到 `Apple Development: Created via API` +
+  Team 描述文件，产物 ipa 核验通过（0.1.4 (56)、`com.joker.OrzMC.iOS`、图标在包里、
+  描述文件有效到 2027-10-25）。
+- CI `export=app-store-connect` ❌（#40163232403）：archive 成功，export 报
+  `Cloud signing permission error` / `No signing certificate "iOS Distribution" found` /
+  `No profiles for 'com.joker.OrzMC.iOS' were found`。**API key 角色不足**，云签名建不了分发证书。
+  三条出路：① 本机 Terminal.app 里导出+上传（钥匙串里已有 Apple Distribution，今天就能用）；
+  ② 把 ASC API key 提到 Admin；③ CI 里塞分发证书+描述文件（manual signing，脚本尚未实现）。
+- 坑：bash 里 `$VAR` 紧跟中文全角括号会被当成变量名的一部分（`unbound variable`），
+  脚本里统一改成 `${VAR}`。
+
+**流程提醒**：这条文档补正是直接 push 到 app `main` 的（只改默认值 + 文档），
+没走 PR —— 下次类似改动仍按"分支 → PR → squash"来。
+
 ### 2026-10-25 — pi（backlog 全清 + 0.1.4 发版）
 
 **做完了**（四条支线各一个 PR，全部 CI 四项绿、squash 合并；父仓库逐个 bump 指针）
@@ -354,7 +390,7 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
   `X-Request-API-Key` middleware）+ `docs/remote-hosting-providers.md`。
 - ⚠️ 交付提醒：`swift/app/scripts/dev/uitest-secrets.env` 里的 RCON 密码**等于公开的服务器名**，
   `check-secrets.py` 因此拦过一次新增字面量（已绕开），建议轮换。
-- ⚠️ iOS 端没有分发链路（Release App workflow 只构建 macOS）；要在真机/TestFlight 发 0.1.4 需另跑归档。
+- ✅ iOS 链路补齐（见下一条会话日志）：归档/导出/装真机可用；**CI 直传 TestFlight 仍缺分发证书权限**。
 
 
 
