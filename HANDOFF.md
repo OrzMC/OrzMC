@@ -27,7 +27,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 ```
 
 
-## 0.1 接力提示词（新会话直接复制这段）
+## 0.1 接力提示词（**维护者不用复制** —— `AGENTS.md` §0 会让新会话自己读到这里）
 
 > 你在 `OrzMC` 父仓库（产品伞，21 个子模块）。**先读 `AGENTS.md`（规则）+ `HANDOFF.md`（状态）**，
 > 再按需读 `docs/`。铁律：**代码改子模块、父仓库只 bump 指针**、**禁用 `git add -A`**、
@@ -82,7 +82,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **待办看板** | [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（只剩 P2-7；P0/P1/P2-6 已标 ✅） |
 | **当前基线** | `swift/app` `main` = `79ac5963`（0.1.4 发版 + iOS 发版链路 + manual signing + 装包退出码修复）；父仓库 `main` 见 `git log -1` |
 | **已知坑** | ① 真机 UI 测试必须 Terminal.app + 解锁 + 已装开发签名；② 降级依赖 pin 后要 `scripts/dev/purge-package-cache.sh <包名>`；③ 模拟器旧 test runner 会沿用旧包（runner 已自动卸载） |
-| **下一步** | P2-7 第 1 步：在 `Sources/OrzMCRemoteHosting` 定稿 `RemoteHostingProvider` / `ProviderKind` / `RemoteInstanceSummary`（先只挂 exaroton 适配器，行为不变），再按 backlog 的 5 步走 |
+| **下一步（下次开工就从这里开始）** | **P2-7 第 1 步**：在 `swift/app/Sources/OrzMCRemoteHosting` 定稿 `RemoteHostingProvider` / `ProviderKind` / `RemoteInstanceSummary` 三个接口（先只挂 exaroton 适配器，**行为不变**、不加新 UI），补单测；完成后在 backlog 里把第 1 步标 ✅。清单与红线见 [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 的 P2-7 开头（"已拍板 + 建议开工顺序"）。 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
 ## 2. 状态快照（Repo State）
