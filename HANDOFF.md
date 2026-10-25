@@ -363,6 +363,11 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 - ⚠️ 磁盘一度只剩 1GB（`lipo: No space left on device`），已清掉 4 个废弃的
   `~/Library/Developer/Xcode/DerivedData/OrzMC-*`（约 8GB）。
 
+**其它**
+- ⚠️ `protocol-live` 偶发失败：`testLiveRCONJoinsMultiplePackets`（假 RCON 多包拼接）
+  报 `There are 2 of a max of 20 players online:`，`gh run rerun --failed` 后即绿 —— 是**测试自身**的
+  时序抖动，不是产品代码问题（本轮 2 次里出现 1 次）。
+
 **建议**：0.1.4 是**带崩溃的已发布版本**，修完应尽快出 **0.1.5**（等维护者点头）。
 
 ### 2026-10-25 — pi（真机装 0.1.4 开发包）
