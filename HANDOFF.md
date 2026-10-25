@@ -80,7 +80,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **主题** | **P2-7 多供应商（Exaroton + MCSManager）+ 多实例**；0.1.4 已发布 |
 | **状态** | 🟢 P0-1 / P1-2/3/4/5 / P2-6 全部完成并随 **0.1.4 (56)** 发版（notarized + Sparkle appcast 已验证）；剩 P2-7 |
 | **待办看板** | [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（只剩 P2-7；P0/P1/P2-6 已标 ✅） |
-| **当前基线** | `swift/app` `main` = `075bb246`（0.1.4 发版 + iOS 发版链路 + manual signing）；父仓库 `main` 见 `git log -1` |
+| **当前基线** | `swift/app` `main` = `4956ee21`（0.1.4 发版 + iOS 发版链路 + manual signing + 装包退出码修复）；父仓库 `main` 见 `git log -1` |
 | **已知坑** | ① 真机 UI 测试必须 Terminal.app + 解锁 + 已装开发签名；② 降级依赖 pin 后要 `scripts/dev/purge-package-cache.sh <包名>`；③ 模拟器旧 test runner 会沿用旧包（runner 已自动卸载） |
 | **下一步** | P2-7 第 1 步：MCSM 独立 OpenAPI 依赖（`openapi.yml` + generator plugin + apikey middleware）+ `docs/remote-hosting-providers.md` 抽象层设计 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
@@ -107,7 +107,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `5e70745` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.18.0 已发布（含 `auth.lock` 跨进程锁 + runtime 回滚）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；`ledger` 台账校验 + 命令面 `--strict`；**`fix(download)`（`#98`）**：`HttpStatusError` —— 4xx/5xx 不重试且保留 requests 原文，续传 416 且已取全按成功；`JavaEnv` 404 补「上游缺该平台构建」提示；验收 harness 的 `log_contains` 改去全部空白（rich 软换行不再切断标记）；根 `conftest.py` autouse 钉 `ORZMC_RUNTIME=python`；**`docs`（`#100`）**：CLI 验收脚本路径同步到父仓库 `scripts/accept/cli.py`；**`docs`（`#101`）**：合规标记注释点明单一事实源在父仓库；**2.18.1 已发布**（PyPI 双包 + 6 资产 + Release notes） |
-| `swift/app` | `075bb246` | `OrzMCApp`；**0.1.4 (56) 已发布**（notarized + Sparkle appcast）；含 P0-1 错误弹窗、P1 界面收口、iOS 图标、P2-6 控制台 ANSI 渲染、iOS 归档/TestFlight/装包链路 |
+| `swift/app` | `4956ee21` | `OrzMCApp`；**0.1.4 (56) 已发布**（notarized + Sparkle appcast）；含 P0-1 错误弹窗、P1 界面收口、iOS 图标、P2-6 控制台 ANSI 渲染、iOS 归档/TestFlight/装包链路 |
 | `swift/lib/OrzMCKit` | `6944afb` | **Swift 引擎 + `orzmc` CLI**；**`v0.19.0` 已发布**（六资产；**Linux 自包含**：静态链 Swift 运行时、glibc 2.35、62–65 MB）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
@@ -337,6 +337,18 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-25 — pi（真机装 0.1.4 开发包）
+
+- 按维护者要求**只装开发签名包，不做分发**。后台会话拿不到钥匙串，用
+  `open -a Terminal <x.command>` 把命令投递到图形会话执行、轮询日志（HANDOFF 里记的老办法）。
+- 结果：iPhone SE3（`00008110-0001712226A0401E`）装上 **OrzMC 0.1.4 (56)**（Release 配置、开发签名），
+  `devicectl device process launch` 后进程在跑。Debug 配置用 `install-ios-device.sh`（不加 `--release`）。
+- 顺手修掉一个真 bug（#97 → app `4956ee21`）：`install-ios-device.sh` 的 EXIT trap
+  在没走 `--ipa/--app` 时返回 1 → **装包成功却报 exit 1**（`release-ios.sh --install` 会被 `set -e` 打断）。
+  修完在真机上复测 `EXIT=0`。
+- 分发（TestFlight）按维护者要求**暂不做**；要开时按 `swift/app/docs/ios-release.md` 的
+  「方式 A」加 3 个 secret，或把 ASC API key 提到 Admin。
 
 ### 2026-10-25 — pi（iOS 分发签名：把本机那一步搬进 CI）
 
