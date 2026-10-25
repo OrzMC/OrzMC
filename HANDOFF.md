@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-10-25 by pi（0.1.4 发版）
+> **最后更新**：2026-10-25 by pi（P2-7 第 1 步：供应商抽象层）
 
 ---
 
@@ -33,15 +33,16 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 > 再按需读 `docs/`。铁律：**代码改子模块、父仓库只 bump 指针**、**禁用 `git add -A`**、
 > 一次提交只 bump 一个子模块（同一产品级变更可合并 bump，见 AGENTS §2）。
 >
-> **本轮焦点：P2-7 多供应商（Exaroton + MCSManager）—— 从第 1 步开工。**
+> **本轮焦点：P2-7 多供应商（Exaroton + MCSManager）—— 第 1 步 ✅，从第 2 步开工。**
 > 待办、维护者拍板四条、建议的 5 步顺序都在
-> [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 的 P2-7（开头就是"已拍板 + 开工顺序"）。
+> [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 的 P2-7（开头就是"已拍板 + 开工顺序"）；
+> 抽象层的分层与不变量见 [`swift/app/docs/remote-hosting-providers.md`](swift/app/docs/remote-hosting-providers.md)。
 >
-> **当前状态（2026-10-25 收工；0.1.5 已发布）**
+> **当前状态（2026-10-25；0.1.5 已发布，P2-7 第 1 步已合入）**
 > - **先跑 `./scripts/dev/boot-check.sh`**（只读自检；换设备或隔了几天用 `--fetch`）——
 >   它检查父仓库是否落后、子模块是否初始化、指针在不在本地、组合校验是否通过，并直接给出要跑的命令。
 > - 工作目录 `/Users/joker/Documents/OrzMC`（Air 本机正式仓库）；**不要用 `ssh air` / 旧 `scripts/air/run.sh`**（已删）。
-> - 父仓库 `main` 与 `swift/app` `main` 均已推送干净（app = `79ac5963`，含 0.1.5 发版与 P2-7 计划）。
+> - 父仓库 `main` 与 `swift/app` `main` 均已推送干净（app = `30a5eeec`，含 0.1.5 发版、P2-7 计划与第 1 步供应商抽象层）。
 >   **不要 `git reset --hard`**（父仓库常有未提交文档），用 `git merge --ff-only`。
 >   父仓库里 `tools/OrzMCBackup` 显示为 `m`（子模块内部有本地改动）**是历史遗留，别动它、别 bump**。
 > - **0.1.5 (57) 已发布**（notarized + Sparkle appcast）；本机 `/Applications/OrzMC.app` 与
@@ -51,9 +52,13 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 >   UI 自动化 `swift/app/scripts/dev/run-ios-ui-tests.sh [--device <UDID>]`。
 >   ⚠️ `protocol-live` 偶发失败（假 RCON 多包拼接用例），`gh run rerun --failed` 即绿，别急着改产品代码。
 > - **远程状态只有一条路**：`ExarotonStatusCenter.swift` = 唯一写入口 `publishStatus` + 订阅 `statusEvents()`；
->   轮询判据是"WebSocket 是否安静 30 秒"（`RemoteStatusRefreshPolicy`），**不要再用 `isLive` 当判据**。
->   做 P2-7 第 2 步（泛化成 `RemoteStatusCenter`）前先读
->   [`swift/app/docs/remote-status-source.md`](swift/app/docs/remote-status-source.md)。
+>   轮询判据是"WebSocket 是否安静 30 秒"（`RemoteStatusRefreshPolicy`，已在 `Sources/OrzMCRemoteHosting`），
+>   **不要再用 `isLive` 当判据**。做 P2-7 第 2 步（泛化成 `RemoteStatusCenter`）前先读
+>   [`swift/app/docs/remote-status-source.md`](swift/app/docs/remote-status-source.md)
+>   与 [`swift/app/docs/remote-hosting-providers.md`](swift/app/docs/remote-hosting-providers.md)（分层 + 不变量）。
+> - 供应商抽象层（P2-7 第 1 步）：`Sources/OrzMCRemoteHosting/RemoteHostingProvider.swift`；
+>   exaroton 适配器 `OrzMC/Common/ExarotonUI/Model/ExarotonHostingProvider.swift`（界面还没消费它，行为不变）。
+>   实例的键是 `RemoteInstanceID`（供应商 + 原始 ID），**不要**退回裸字符串 id。
 > - 状态徽章只有 `OrzMCStatusBadge`（`Sources/OrzMCDesignSystem/StatusBadge.swift`），旋转图标是
 >   `TimelineView` 时间驱动（**不要**改回 `@State` + `repeatForever`）。
 > - 控制台渲染已统一（P2-6）：解析 `Sources/OrzMCFoundation/ConsoleText.swift`、渲染
@@ -79,12 +84,12 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 项 | 内容 |
 |---|---|
-| **主题** | **P2-7 多供应商（Exaroton + MCSManager）+ 多实例**；0.1.4 已发布 |
-| **状态** | 🟢 P0-1 / P1-2/3/4/5 / P2-6 全部完成，**0.1.5 (57)** 热修已发布（notarized + Sparkle appcast 已验证）；剩 P2-7 |
+| **主题** | **P2-7 多供应商（Exaroton + MCSManager）+ 多实例**；0.1.5 已发布 |
+| **状态** | 🟢 P0-1 / P1-2/3/4/5 / P2-6 全部完成，**0.1.5 (57)** 热修已发布；**P2-7 第 1 步（供应商抽象层）✅**，剩第 2–5 步 |
 | **待办看板** | [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（只剩 P2-7；P0/P1/P2-6 已标 ✅） |
-| **当前基线** | `swift/app` `main` = `79ac5963`（0.1.4 发版 + iOS 发版链路 + manual signing + 装包退出码修复）；父仓库 `main` 见 `git log -1` |
+| **当前基线** | `swift/app` `main` = `30a5eeec`（P2-7 第 1 步：供应商抽象层 + exaroton 适配器）；父仓库 `main` 见 `git log -1` |
 | **已知坑** | ① 真机 UI 测试必须 Terminal.app + 解锁 + 已装开发签名；② 降级依赖 pin 后要 `scripts/dev/purge-package-cache.sh <包名>`；③ 模拟器旧 test runner 会沿用旧包（runner 已自动卸载） |
-| **下一步（下次开工就从这里开始）** | **P2-7 第 1 步**：在 `swift/app/Sources/OrzMCRemoteHosting` 定稿 `RemoteHostingProvider` / `ProviderKind` / `RemoteInstanceSummary` 三个接口（先只挂 exaroton 适配器，**行为不变**、不加新 UI），补单测；完成后在 backlog 里把第 1 步标 ✅。清单与红线见 [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 的 P2-7 开头（"已拍板 + 建议开工顺序"）。 |
+| **下一步（下次开工就从这里开始）** | **P2-7 第 2 步**：把 `ExarotonStatusCenter` 泛化成与供应商无关的 `RemoteStatusCenter`（`publishStatus` / `statusEvents()` / `RemoteStatusRefreshPolicy` 上移；**不要动**"WS 是否安静 30 秒"判据）。先读 [`swift/app/docs/remote-status-source.md`](swift/app/docs/remote-status-source.md) 与 [`swift/app/docs/remote-hosting-providers.md`](swift/app/docs/remote-hosting-providers.md)；完成后把 backlog 第 2 步标 ✅。 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
 ## 2. 状态快照（Repo State）
@@ -109,7 +114,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `5e70745` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.18.0 已发布（含 `auth.lock` 跨进程锁 + runtime 回滚）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；`ledger` 台账校验 + 命令面 `--strict`；**`fix(download)`（`#98`）**：`HttpStatusError` —— 4xx/5xx 不重试且保留 requests 原文，续传 416 且已取全按成功；`JavaEnv` 404 补「上游缺该平台构建」提示；验收 harness 的 `log_contains` 改去全部空白（rich 软换行不再切断标记）；根 `conftest.py` autouse 钉 `ORZMC_RUNTIME=python`；**`docs`（`#100`）**：CLI 验收脚本路径同步到父仓库 `scripts/accept/cli.py`；**`docs`（`#101`）**：合规标记注释点明单一事实源在父仓库；**2.18.1 已发布**（PyPI 双包 + 6 资产 + Release notes） |
-| `swift/app` | `79ac5963` | `OrzMCApp`；**0.1.4 (56) 已发布**（notarized + Sparkle appcast）；含 P0-1 错误弹窗、P1 界面收口、iOS 图标、P2-6 控制台 ANSI 渲染、iOS 归档/TestFlight/装包链路 |
+| `swift/app` | `30a5eeec` | `OrzMCApp`；**0.1.5 (57) 已发布**（notarized + Sparkle appcast）；**P2-7 第 1 步 ✅**：`Sources/OrzMCRemoteHosting` 供应商抽象层（`ProviderKind` / `RemoteInstanceID` / `RemoteInstanceSummary` / `RemoteHostingProvider` / 分组 / 闭包适配器）+ app 侧 `ExarotonHostingProvider`（只映射，行为不变）；设计见 `swift/app/docs/remote-hosting-providers.md` |
 | `swift/lib/OrzMCKit` | `6944afb` | **Swift 引擎 + `orzmc` CLI**；**`v0.19.0` 已发布**（六资产；**Linux 自包含**：静态链 Swift 运行时、glibc 2.35、62–65 MB）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
@@ -339,6 +344,36 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-25 — pi（P2-7 第 1 步：供应商抽象层，已合入）
+
+**本轮做了什么**
+1. 按 §1 的"下一步"开工：在 `swift/app/Sources/OrzMCRemoteHosting` 定稿供应商抽象层
+   （`ProviderKind` / `RemoteInstanceID` / `RemoteInstanceSummary` / `RemoteHostingProvider` /
+   `RemoteHostingGrouping` / `ClosureRemoteHostingProvider` / `RemoteHostingError`），
+   把旧的 `RemoteServerHosting` / `RemoteServerIdentifier` / `RemoteServerSummary` 合并掉（避免两套并行抽象）。
+2. app 侧加 `ExarotonHostingProvider`（`servers` → 摘要，状态取唯一来源 `effectiveStatus(for:)`；
+   动作转发现有 start/stop/restart，`false` 转成 `actionFailed`）。**只做映射，行为不变、无新 UI。**
+3. 新增 `swift/app/docs/remote-hosting-providers.md`（分层 / 不变量 / 三条红线 / 5 步进度），
+   backlog P2-7 第 1 步标 ✅。
+4. 测试：10 条包测（命名空间 / 分组 / 去重 / 闭包适配器 / 错误透传）+ 7 条 app 测试
+   （映射、静态地址优先、无 id 跳过，拒绝别家实例、gate 占用时报 actionFailed）。
+5. 顺带修 `swift/app/scripts/dev/{install-hooks.sh,check.sh}`：`$name（…）`「变量紧跟中文标点」
+   在部分 shell 下被当成变量名的一部分 → `--check` 直接 unbound variable；统一改成 `${name}`。
+   之后按 §8.1.1 给这个子模块 clone **装了 pre-push 钩子**（之前没装）。
+
+**验证**
+- `swift/app/scripts/dev/check.sh`（静态检查 + 包单测 + `OrzMCTests` + macOS 构建）✅
+- `swift/app/scripts/dev/check.sh --ios` ✅
+- PR #101 四项 CI 全绿（split / protocol-live / build macOS / build iOS）→ squash 合并
+- ⚠️ 本地磁盘只剩 ~7GB：已删掉可再生的 `DerivedData/OrzMC-local-release`（2.4G）与 `OrzMC-device`（2.6G）。
+
+**留给下一个会话**
+- `swift/app` `main` = `30a5eeec`，父仓库已 bump 指针；工作区干净（只剩 `tools/OrzMCBackup` 的历史 `m`）。
+- **下一件事：P2-7 第 2 步** —— `ExarotonStatusCenter` → 供应商无关的 `RemoteStatusCenter`
+  （`publishStatus` / `statusEvents()` 上移；`RemoteStatusRefreshPolicy` 已经在 `OrzMCRemoteHosting` 里了，
+  只需把它与状态中心接上；**"WS 是否安静 30 秒"这个判据不要动**）。
+- 第 3 步要新建 `OrzMC/MCSManagerAPI` 仓库（独立 OpenAPI 依赖），属于跨仓库动作，开工前先确认。
 
 ### 2026-10-25 — pi（收工交接：P2-7 新会话开工准备）
 
