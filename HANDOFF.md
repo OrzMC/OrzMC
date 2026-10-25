@@ -64,10 +64,15 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 >   `Sources/MCSMAPI/openapi.yml` 是**按官方 apidoc 手写的最小 spec**（官方没有机器可读 OpenAPI），
 >   改端点要同步 spec + README；本机可 `swift test --package-path swift/lib/MCSManagerAPI` 验证。
 >   ⚠️ 面板需在设置里打开 API Key 功能，否则带 key 的请求一律 403。
-> - MCSM 只读接入（第 4 步，app 侧）：`OrzMC/Common/MCSManager/`（凭据/接口/实现/模型）+ 
->   `OrzMC/Common/MCSManagerUI/MCSManagerSection.swift`（远程托管页里的一组：面板卡 + 实例行 + 添加面板）。
->   界面验收钩子 `ORZMC_DEMO_MCSM_FAKE=1`；⚠️ **别在 SwiftUI 容器上设 `accessibilityIdentifier`**
->   （会下发给子元素并覆盖子元素自己的 identifier，UI 测试会查不到）。
+> - MCSM 只读接入（第 4 步，app 侧）：`OrzMC/Common/MCSManager/`（凭据/接口/实现/模型）+
+>   `OrzMC/Common/MCSManagerUI/`（`MCSManagerSection` 面板卡/实例行；`MCSManagerPanelEditor` 增/改面板）。
+>   两个 DEBUG 钩子：`ORZMC_DEMO_MCSM_FAKE=1`（假面板）、`ORZMC_DEMO_MCSM_DIAGNOSE=1`
+>   （**无界面**拉一遍所有面板 → 写 `Caches/orzmc-mcsm-<id>.json`（含分支轨迹）→ 退出；
+>   macOS 无屏幕录制权限、iPhone SE 上 MCSM 分组在折叠线下，靠它验收）。
+>   ⚠️ **别在 SwiftUI 容器上设 `accessibilityIdentifier`**（会下发给子元素并覆盖子元素自己的 identifier）。
+> - ⚠️ MCSM 面板 **10.18.0 的响应坑**（已适配，改 spec 时别踩回去）：
+>   ① `GET /api/auth` 被包了一层 `{status,data:{…}}`；② `loginTime`/`registerTime` 是**字符串**；
+>   ③ 错误响应 `Content-Type: text/plain`（body 是 JSON 文本）。
 >   实例的键是 `RemoteInstanceID`（供应商 + 原始 ID），**不要**退回裸字符串 id。
 > - 状态徽章只有 `OrzMCStatusBadge`（`Sources/OrzMCDesignSystem/StatusBadge.swift`），旋转图标是
 >   `TimelineView` 时间驱动（**不要**改回 `@State` + `repeatForever`）。
@@ -95,9 +100,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | **P2-7 多供应商（Exaroton + MCSManager）+ 多实例**；0.1.5 已发布 |
-| **状态** | 🟢 P0-1 / P1-2/3/4/5 / P2-6 全部完成，**0.1.5 (57)** 热修已发布；**P2-7 第 1–4 步 ✅**（抽象层 + 状态中心 + MCSManagerAPI + MCSM 只读接入含界面），剩第 5 步（动作/命令） |
+| **状态** | 🟢 P0-1 / P1-2/3/4/5 / P2-6 完成，**0.1.5 (57)** 已发布；**P2-7 第 1–4 步 ✅ 且双端真机验收通过**（管理员 + 普通用户两种 key 都能列实例），剩第 5 步（动作/命令） |
 | **待办看板** | [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（只剩 P2-7；P0/P1/P2-6 已标 ✅） |
-| **当前基线** | `swift/app` `main` = `b6bcb486`（P2-7 第 1–4 步）；**新增子模块** `swift/lib/MCSManagerAPI` = `b63c4b5`（22 个子模块）；父仓库 `main` 见 `git log -1` |
+| **当前基线** | `swift/app` `main` = `6c812dae`；`swift/lib/MCSManagerAPI` = `b263b82`（tag 0.2.3，22 个子模块）；父仓库 `main` 见 `git log -1` |
 | **已知坑** | ① 真机 UI 测试必须 Terminal.app + 解锁 + 已装开发签名；② 降级依赖 pin 后要 `scripts/dev/purge-package-cache.sh <包名>`；③ 模拟器旧 test runner 会沿用旧包（runner 已自动卸载） |
 | **下一步（下次开工就从这里开始）** | **P2-7 第 5 步：MCSM 动作与控制台** —— ① `swift/lib/MCSManagerAPI` 加 3 个端点（`/api/protected_instance/open|stop|restart`、`/api/protected_instance/command`，均带 `uuid`+`daemonId`）+ 单测；② `MCSManagerModel` 的 `hostingProvider` 把 `actionNotSupported` 换成真实动作（沿用 `RemoteActionGate` 的互斥语义）；③ 实例行加动作按钮（`RemoteServerListPolicy.canPerform` 决定可用性）。验收：界面上能启动/停止 MCSM 实例，状态随后自动刷新 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
@@ -124,10 +129,10 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 |---|---|---|
 | `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
 | `python` | `5e70745` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.18.0 已发布（含 `auth.lock` 跨进程锁 + runtime 回滚）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；`ledger` 台账校验 + 命令面 `--strict`；**`fix(download)`（`#98`）**：`HttpStatusError` —— 4xx/5xx 不重试且保留 requests 原文，续传 416 且已取全按成功；`JavaEnv` 404 补「上游缺该平台构建」提示；验收 harness 的 `log_contains` 改去全部空白（rich 软换行不再切断标记）；根 `conftest.py` autouse 钉 `ORZMC_RUNTIME=python`；**`docs`（`#100`）**：CLI 验收脚本路径同步到父仓库 `scripts/accept/cli.py`；**`docs`（`#101`）**：合规标记注释点明单一事实源在父仓库；**2.18.1 已发布**（PyPI 双包 + 6 资产 + Release notes） |
-| `swift/app` | `b6bcb486` | `OrzMCApp`；**0.1.5 (57) 已发布**（notarized + Sparkle appcast）；**P2-7 第 1–4 步 ✅**：供应商抽象层（`ProviderKind`/`RemoteInstanceID`/`RemoteHostingProvider`/分组/闭包适配器）+ 供应商无关 `RemoteStatusCenter`（30 秒判据未动）+ **MCSManager 只读接入**（`OrzMC/Common/MCSManager/`：Keychain 凭据、`MCSManagerPanelAPI`、`MCSManagerModel`；界面 `MCSManagerSection` 按供应商分组、可增删面板、状态徽章）；设计见 `swift/app/docs/remote-hosting-providers.md`、`remote-status-source.md` |
+| `swift/app` | `6c812dae` | `OrzMCApp`；**0.1.5 (57) 已发布**；**P2-7 第 1–4 步 ✅ 且双端验收通过**：供应商抽象层 + 供应商无关 `RemoteStatusCenter` + **MCSManager 只读接入**（Keychain 凭据、`MCSManagerPanelAPI`、`MCSManagerModel`、按 `permission` 选入口、可**编辑**面板、测试连接、`ORZMC_DEMO_MCSM_DIAGNOSE` 验收钩子）；设计见 `swift/app/docs/remote-hosting-providers.md` |
 | `swift/lib/OrzMCKit` | `6944afb` | **Swift 引擎 + `orzmc` CLI**；**`v0.19.0` 已发布**（六资产；**Linux 自包含**：静态链 Swift 运行时、glibc 2.35、62–65 MB）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
-| `swift/lib/MCSManagerAPI` | `b63c4b5` | **新建**（P2-7 第 3 步，`OrzMC/MCSManagerAPI`）：MCSManager 面板 API 客户端（OpenAPI 生成）；只覆盖节点列表 / 实例列表（含状态）/ 实例详情；`APIKeyMiddleware` 注 `X-Request-API-Key`；详见 §2.6 |
+| `swift/lib/MCSManagerAPI` | `b263b82` | **新建**（P2-7 第 3 步）：MCSManager 面板 API 客户端（OpenAPI 生成）；tag **0.2.3**（403 同时声明 `text/plain`、`/api/auth` 兼容外壳、去掉字符串时间戳字段）；14 条测试；`scripts/check-apidoc-drift.sh` 防官方端点改名 |
 | `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
 | `swift/lib/OrzSwiftKit` | `f35e4dc` | `OrzGeeker/OrzSwiftKit`；**0.0.20**：`ManagedProcess` 的 `send`/`terminate`/`forceKill`/`waitForExit(timeout:)`、`run(inheritStandardInput:)`；**`#1`**：`Package.resolved` 里 swift-nio 2.73→**2.104**、swift-system 1.3.2→1.8.1（都是 console-kit 的传递依赖）→ ⚠️ **构建工具链下限抬到 Swift 6.1**（见 §2.5） |
@@ -358,6 +363,50 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-26 — pi（P2-7 第 4 步收尾：MCSM 双端真机验收通过 + 面板可编辑）
+
+**维护者给的关键信息**：手机上配的是**普通用户** key、macOS 上是**管理员** key；面板网页里能看到 2 台实例。
+
+**根因（两个响应格式坑叠加，跟权限判断无关）**
+1. `GET /api/auth` 在面板 **10.18.0** 上被包了一层 `{status, data:{…用户对象…}}`；
+   spec 只声明"裸用户对象"（字段全可选）→ 外壳解成空对象 → `permission = nil / instances = 0`
+   → 普通用户永远「没有实例」（管理员只是靠节点端点兜住了）；
+2. `data.loginTime` / `registerTime` 是**字符串**（`"2026-10-24 16:26:49"`），spec 按 int64
+   → **整条响应解码失败**，连 `permission` 都拿不到，界面只显示「面板返回了错误（HTTP 200）」；
+3. 另外错误响应是 `Content-Type: text/plain`（body 是 JSON 文本）→ 只声明 `application/json`
+   会把面板那句「密钥不正确」丢掉。
+
+**改动（MCSManagerAPI 0.2.1 → 0.2.3 / app PR #105–#109）**
+- 按 `permission` 选入口：管理员走节点端点，普通用户走 `GET /api/auth?advanced=true`；
+  `permission` 缺失时先试管理员端点、403 且有实例就回退；
+- 403/500 同时声明 `text/plain`；`/api/auth` 兼容外壳；删掉不用的字符串时间戳字段；
+- 403 转述**面板原话**（「面板拒绝了这个 API Key：密钥不正确」）；MCSM 请求 20 秒超时；
+- 面板可**编辑**（Key 留空=不修改）+ 表单优化（就地校验、**测试连接**、macOS 尺寸、iOS `.large`）；
+- 无界面验收钩子 `ORZMC_DEMO_MCSM_DIAGNOSE=1`（拉一遍 → 写 Caches json（含分支轨迹）→ 退出）。
+
+**双端验收结果（同一台面板 mcs.jokerhub.cn / 10.18.0）**
+
+| 端 | 面板 | 轨迹 | 实例 |
+|---|---|---|---|
+| macOS | 测试服管理员 | `permission=10` → 节点路径 | FoliaMC / PaperMC（在线） |
+| macOS | 测试服普通用户 | `permission=1` → `/api/auth` 路径 | FoliaMC / PaperMC（在线） |
+| iPhone SE3 | 测试服普通用户 | `permission=1` → `/api/auth` 路径 | FoliaMC / PaperMC（在线） |
+| iPhone SE3 | 测试服管理员 | `permission=10` → 节点路径 | FoliaMC / PaperMC（在线） |
+
+手机截图确认：MCSManager 分组显示 4 台实例（2 面板 × 2 实例）、徽章「在线」、玩家数 0/0。
+
+**环境状态**
+- `/Applications/OrzMC.app` = 开发签名版（Apple Development），官方 0.1.5 备份在
+  `~/Applications-backup/OrzMC-official-0.1.5.app`；
+- iPhone SE3 上是同一份 Debug 开发包（0.2.3 依赖 + 诊断钩子）；
+- 本机 `~/Library/Caches/orzmc-mcsm-*.json` 是 macOS 端的诊断快照（勿提交）。
+
+**留给下一个会话**
+- **下一件事：P2-7 第 5 步**（MCSM 动作 + 控制台命令）。⚠️ 注意普通用户的动作端点
+  (`/api/protected_instance/open|stop|restart`) 要 `uuid` + `daemonId`，我们已经有 `daemon/uuid` 键。
+- 维护者可继续手动验收：macOS 上「远程托管 → MCSManager」应看到两组面板共 4 台实例；
+  改面板信息走 `⋯ → 编辑面板`（Key 留空=不修改）。
 
 ### 2026-10-25 — pi（P2-7 第 3–4 步：MCSManagerAPI 新库 + MCSM 只读接入，已合入）
 
