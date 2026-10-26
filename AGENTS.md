@@ -300,8 +300,10 @@ git diff --submodule <路径>
   而 `OrzMCKit` 是 `swift-tools-version:6.0` → 拿 CI 的 artifact 上去跑：
   `gh run download <run-id> --name orzmc-x86_64-macos13 --dir /tmp/x && scp /tmp/x/orzmc-x86_64 pro:~/orzmc-smoke/`
 - GUI（`OrzMC.app`）**在 13 上跑不了**（minos 14.0，`dyld: built for macOS 14.0 which is newer than running OS`）——这是预期，不是 bug。
-- 这台机器是维护者自用，**不要**跑会长期占资源的任务（例如完整下载并启动 Minecraft）；
-  需要时先问。
+- 完整客户端冒烟**可行**（2026-10-26 实测）：`~/orzmc-smoke/bin/orzmc client -v 1.20.1 -u guest \
+  --root-dir "$HOME/orzmc-smoke/minecraft"` —— 离线 `guest` 启动约 1.5 分钟、866 MB、无需登录；
+  跑完记得退出游戏进程（`kill <pid>`）并清理目录。
+- 这台机器是维护者自用，跑长任务前先说一声。
 
 ---
 

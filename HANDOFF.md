@@ -1,4 +1,4 @@
-# HANDOFF.md — OrzMC 跨会话 / 跨设备交接文档| **下一步** | 平台分层已落地并**在 Intel 真机（macOS 13.7.8）验过**（`docs/platform-support.md` §3.1）：CLI 能跑、GUI 按预期拒绝。剩最后一块：**真正启动 Minecraft**（验 JRE 选 `x64`、natives 是 `x86_64`），需要正版登录 + 图形会话（§6 第 4–5 步）。其它可选见 P2-7 收尾项 |
+# HANDOFF.md — OrzMC 跨会话 / 跨设备交接文档| **下一步** | 平台支持**全链路验完**（`docs/platform-support.md` §3.1：macOS 13.7.8 Intel 上安装器 → Python CLI → JRE `x64` / natives `x86_64` → **进主菜单**；GUI 按设计不可用）。回到产品线：P2-7 剩余可选项（MCSM `kill`/异步停、控制台换 WS 流）或 `swift/app/docs/backlog-2026-10-25.md` |
 
 > **用途**：任何 AI 智能体或维护者在**新会话 / 新设备**接手父仓库工作时，先读
 > [`AGENTS.md`](AGENTS.md)（规则）+ 本文件（状态）+ 进行中方案，即可无损恢复上下文。
@@ -383,8 +383,13 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
    真机只跑 CI 产物；为此给 `OrzMCKit` 的 `platform` job 加了 **artifact 上传**（PR #103）。
 2. GUI 的 Intel 切片是真存在的（`lipo` 双架构），只是 minos 14.0 —— 所以"Intel 支持"与"Ventura 支持"是两件事。
 
-**仍未验**：真正启动 Minecraft（JRE 选 `x64`、natives `x86_64`）—— 需要正版登录 + 图形会话；
-这台是维护者自用机，没擅自跑长时间下载。列入 `docs/platform-support.md` §6 第 4–5 步。
+**补跑（同一会话内，维护者要求）**：`orzmc client -v 1.20.1 -u guest --root-dir ~/orzmc-smoke/minecraft`
+- 日志 `下载 Temurin JRE 17 (mac/x64)` → `file java` = **x86_64**，Temurin 17.0.20.1；
+- `versions/1.20.1/client/natives/` 的 `liblwjgl/libglfw/libopenal.dylib` 全是 **x86_64**；
+- 窗口 **`Minecraft 1.20.1`**（854×508）出现，`OpenAL initialized`、纹理图集全建、CPU ~30% → **进主菜单**；
+- 体积 866 MB（JRE 109 + 游戏 757），启动约 1.5 分钟；离线 `guest` 无需正版登录；
+- 无用日志两项：`Failed to verify authentication 401`（离线启动预期）、`screencapture` 抓 GL 窗口是黑图（不影响判定）。
+- 游戏进程已 `kill`，`~/orzmc-smoke` 保留（含下载物，可 `rm -rf`）。
 
 **环境**：验证目录 `~/orzmc-smoke`（36 MB，`bin/orzmc` Python CLI + `orzmc-swift-main`）；
 真机信息也登记进 `AGENTS.md` §8.1.2（含"只能跑不能编"与"别跑长任务"的提醒）。

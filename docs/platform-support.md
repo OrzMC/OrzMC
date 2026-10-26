@@ -95,6 +95,7 @@ Intel 相关的运行时证据（代码层面）：
 | **逻辑层**（Swift CLI，旧版） | 本机已有真身 `~/.local/state/orzmc/bin/orzmc` 0.18.0 | ✅ `x86_64`、`minos 13.0`、`--version`/`capabilities`/`list`/`app status` 正常 |
 | 逻辑层（Swift CLI，**main 构建**） | 下载 CI `orzmc-x86_64-macos13` artifact（`ci` 的 `platform` job）→ scp 上去跑 | ✅ 0.21.0、`x86_64`、`minos 13.0`，`--version` **21ms** |
 | **GUI** | 官方 0.1.5 包 | ⛔ **启动失败（符合预期）**：`dyld: … (built for macOS 14.0 which is newer than running OS)` |
+| **分发层 · 真正启动游戏** | `orzmc client -v 1.20.1 -u guest --root-dir …` | ✅ **进到主菜单**：`下载 Temurin JRE 17 (mac/x64)` → 窗口 `Minecraft 1.20.1`（854×508）、`OpenAL initialized`、纹理图集全建、CPU ~30% |
 
 **顺带确认的两件事**
 
@@ -103,8 +104,18 @@ Intel 相关的运行时证据（代码层面）：
    而 `OrzMCKit` 是 `swift-tools-version:6.0` → 真机没有可用工具链。
    所以真机验证一律用 CI 的 `platform` job 产物（artifact `orzmc-x86_64-macos13`，保留 14 天）。
 
-**仍未验证（需要正版登录 + 图形会话）**：真正启动 Minecraft（即 JRE 选中 `x64`、natives 是 `x86_64`）。
-这两条目前只有代码路径 + 单测覆盖，列入 §6 冒烟清单第 4–5 步。
+**启动细节（1.20.1 vanilla，离线 `guest`）**
+
+| 项 | 值 |
+|---|---|
+| JRE | 日志 `下载 Temurin JRE 17 (mac/x64)`；`file java` → **`Mach-O 64-bit executable x86_64`**；`java -version` → Temurin 17.0.20.1 |
+| natives | `versions/1.20.1/client/natives/` 里 `liblwjgl.dylib` / `libglfw.dylib` / `libopenal.dylib` 全是 **`x86_64`** |
+| 体积 / 耗时 | 合计 866 MB（JRE 109 MB + 游戏 757 MB）；从启动到窗口出现约 **1.5 分钟**（千兆内网） |
+| 渲染 | `Backend library: LWJGL 3.3.1`、`OpenAL initialized on device CoreAudio Default`、各纹理图集创建成功 |
+| 已知无害项 | `Failed to verify authentication … 401`（离线 `guest` 启动的预期日志）、`screencapture` 抓 GL 窗口得到黑图（不影响判定，用窗口标题 + CPU + 日志作证） |
+
+**结论：Intel + macOS 13 这条路径**（安装器 → 分发层 → JRE/natives 选架构 → 进游戏）**全链路跑通**。
+GUI 在这台机器上按设计不可用（§4）。
 
 ## 4. 为什么不做「GUI 降到 macOS 13」
 
@@ -140,16 +151,16 @@ GUI 的最小系统是 **14.0**，硬性卡点是 **Observation 宏**（`@Observ
 | Intel 编译通过（CLI） | CI `swift/lib/OrzMCKit` 的 `platform` job（`swift build --arch x86_64`） | ✅ 已跑绿（`x86_64 产物架构 = x86_64`） |
 | Intel 编译（本机复跑） | `./scripts/dev/check-platforms.sh --arch`（需 Rosetta：`softwareupdate --install-rosetta --agree-to-license`） | ⚠️ 本机无 Rosetta → 本地跳过（CI 已覆盖） |
 | Intel 运行时行为（CLI/GUI 能不能起） | 真机 `ssh pro`（MacBookPro12,1 / macOS 13.7.8） | ✅ 已验：CLI 正常、GUI 按预期拒绝（§3.1） |
-| Intel 运行时行为（真正启动游戏：JRE `x64` / natives `x86_64`） | 需正版登录 + 图形会话，见 §6 第 4–5 步 | ❌ **未验** |
+| Intel 运行时行为（真正启动游戏：JRE `x64` / natives `x86_64`） | 真机 `ssh pro` 跑 `orzmc client -v 1.20.1 -u guest`（离线，无需登录） | ✅ **已验**：JRE/ natives 均 `x86_64`，进到主菜单（§3.1） |
 | 发布包是 Universal | `./scripts/dev/check-platforms.sh` 的分发审计（读已发布 `.app` 的 `lipo -archs`） | ✅ 0.1.5 已验 |
 
 ---
 
 ## 6. Intel 冒烟清单（有一台 Intel Mac 时照着做，约 20 分钟）
 
-> 已有真机：`ssh pro`（MacBookPro12,1 / macOS 13.7.8 / 16 GB）。已验证部分见 §3.1；
-> 下面第 4–5 步（真正启动游戏）**还没有**做过 —— 需要正版登录与图形会话。
-> 验证目录约定：`~/orzmc-smoke`（用完可 `rm -rf ~/orzmc-smoke`）。
+> 已有真机：`ssh pro`（MacBookPro12,1 / macOS 13.7.8 / 16 GB）。**第 1–6 步已在 2026-10-26 全部跑过**，
+> 结论见 §3.1（离线 `guest` 即可，不需要正版登录；`--root-dir` 指到 `~/orzmc-smoke/minecraft` 收敛）。
+> 验证目录约定：`~/orzmc-smoke`（含 866 MB 下载物，用完可 `ssh pro 'rm -rf ~/orzmc-smoke'`）。
 
 以官方 Release 包为例（`OrzMC_x.y.z.dmg`）：
 
