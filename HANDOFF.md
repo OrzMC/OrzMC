@@ -102,7 +102,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **主题** | **0.1.6 已发布**（MCSManager 面板支持）；下一步进入「MCSM 体验补齐」（B1 控制台 WS 流 / B2 kill） |
 | **状态** | 🟢 backlog 全部完成，**0.1.6 (58) 已发布并核验**（Universal `x86_64 arm64` / minos 14.0 / Developer ID 公证 accepted / appcast 已回写）。产物：`OrzMC_0.1.6_58_*.dmg|zip` |
 | **待办看板** | [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（只剩 P2-7；P0/P1/P2-6 已标 ✅） |
-| **当前基线** | `swift/app` `main` = `4eb10ebf`（0.1.6 已发）；`swift/lib/MCSManagerAPI` = `7428340`（tag 0.3.1）；`swift/lib/OrzMCKit` = `f004baa`（22 个子模块）；父仓库 `main` 见 `git log -1` |
+| **当前基线** | `swift/app` `main` = `9ad2e452`（0.1.6 已发 + DX 三项落地）；`swift/lib/MCSManagerAPI` = `7428340`（tag 0.3.1）；`swift/lib/OrzMCKit` = `f004baa`（22 个子模块）；父仓库 `main` 见 `git log -1` |
 | **已知坑** | ① 真机 XCUITest **当前不可用**：`OrzMCUITests-Runner` 启动即退（`exit code 74 before establishing connection`），重装 runner/App 无效，设备已解锁、Developer Mode 已开 → 疑似 Xcode 27 runner 签名/profile 问题，待单独排查；发版前用 `check.sh --ui`（模拟器 8 用例）+ 手动真机验收替代。② 真机 UI 测试必须 Terminal.app + 解锁 + 已装开发签名；② 降级依赖 pin 后要 `scripts/dev/purge-package-cache.sh <包名>`；③ 模拟器旧 test runner 会沿用旧包（runner 已自动卸载） |
 | **下一步（下次开工就从这里开始）** | **B1：MCSM 控制台换成面板的实时流**（`POST /api/protected_instance/stream_channel` 拿 channel → 连面板 WS），把现在的 **3 秒轮询**换掉；先做 1–2h 调研（面板 WS 协议/鉴权/断线重连），再实现。B2（`kill` 强杀 + 异步停止进度）可与 B1 同主题。⚠️ 真机 XCUITest 目前跑不起来（runner 启动即退 exit 74，见「已知坑」），发版前用 `--ui` 模拟器套件 + 手动真机验收 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
@@ -363,6 +363,38 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-26（六）— pi（真机 XCUITest 排查 + 迭代耗时复盘）
+
+**① 真机 XCUITest（`exit 74`）排查进展 —— 真因已定位，卡在设备重启后解锁**
+
+| 步骤 | 结果 |
+|---|---|
+| 复现 | `OrzMCUITests-Runner … exited with code 74 before establishing connection` |
+| 排除锁屏 | `lockState` → `passcodeRequired: false`；`devicectl` 截图确认屏幕亮着、已解锁 |
+| 排除签名 | runner = `Apple Development: zhizhou wang (X3C2MG74H2)`，profile 有效到 2027-10-18 |
+| 排除我们自己的 xctestrun 补丁 | 用**干净 `xcodebuild test`**（全新 DerivedData、不打补丁）同样失败 |
+| **真因** | runner 起来 19 秒后：`Connection peer refused channel request for "dtxproxy:XCTestDriverInterface:XCTestManager_IDEInterface"` → `Exiting due to IDE disconnection`。即宿主机 ↔ 设备 `testmanagerd` 的 **DTX 握手被设备拒绝**，与工程/签名无关 |
+| 已试无效 | 重装 runner/App、彻底 uninstall、`devicectl process launch`（能起） |
+| 本轮动作 | 已 `devicectl device reboot`（经典修复）；**重启后设备 `unavailable`，iOS 要求在设备上解锁一次才恢复信任 → 等维护者解锁后复测** |
+| 若仍失败 | 设备 iOS **27.0.1** 比本机 Xcode **27.0.0** 新 → 升级 Xcode 到 27.0.1+ |
+
+⚠️ 期间我直接 `xcodebuild` 会在 CodeSign 处报 `errSecInternalComponent`（非交互 shell 拿不到钥匙串私钥）
+—— 真机构建/测试**必须**经 Terminal.app，这也是自动化只剩"轮询日志"的原因（见 ②的 O3）。
+
+**② 迭代耗时复盘（`swift/app/docs/iteration-cost-2026-10-26.md` 新增）**
+
+实测：一次「功能 + 真机验收 + 发版」墙钟 **1.5–2 小时**，其中**纯等待构建/CI ≈ 40–60 分钟**。
+六个根因：① 同一份代码要构建 6–8 次（本地 6 个 DerivedData + CI 每次删 `Package.resolved` HEAD 解析）；
+② 升依赖就 `Couldn't check out revision`（本轮 4 次）；③ 真机 UI 不可用→截图+诊断钩子；
+④ 真机签名只能走 Terminal；⑤ DerivedData 13 GB 撞过一次磁盘满（整次构建报废）；⑥ 发版无演练档。
+
+**本轮落地（已随 PR #115 合并）**：
+`scripts/dev/refresh-package.sh`（秒级刷新依赖缓存，替代手工 fetch+删 checkout）、
+`check.sh` 磁盘预检、CI `intel` 只在需要时跑、`release-app.yml` 加 `dry_run`。
+
+**待做 O1–O6（写进文档，供下次挑）**：收敛 DerivedData（-10 min/功能）、PR 用锁定依赖（6.8→4–5 min）、
+`run-ios-ui-tests.sh --detach`、发版一键脚本、`check.sh --changed`、DerivedData 定期清理。
 
 ### 2026-10-26（五）— pi（**0.1.6 (58) 发布**：MCSManager 面板支持）
 
