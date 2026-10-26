@@ -99,12 +99,12 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 项 | 内容 |
 |---|---|
-| **主题** | **P2-7 多供应商（Exaroton + MCSManager）+ 多实例** —— 已完成；当前待**发版 0.1.6** |
-| **状态** | 🟢 backlog 全部完成（P0-1 / P1-2/3/4/5 / P2-6 / **P2-7 第 1–5 步**）；工作树 `main` 比已发布的 `0.1.5 (57)` **多 15 个提交**（MCSM 多供应商 + 动作/控制台 + 面板增删改），两端真机都验过 → **待发 0.1.6** |
+| **主题** | **0.1.6 已发布**（MCSManager 面板支持）；下一步进入「MCSM 体验补齐」（B1 控制台 WS 流 / B2 kill） |
+| **状态** | 🟢 backlog 全部完成，**0.1.6 (58) 已发布并核验**（Universal `x86_64 arm64` / minos 14.0 / Developer ID 公证 accepted / appcast 已回写）。产物：`OrzMC_0.1.6_58_*.dmg|zip` |
 | **待办看板** | [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（只剩 P2-7；P0/P1/P2-6 已标 ✅） |
-| **当前基线** | `swift/app` `main` = `aa22c90a`；`swift/lib/MCSManagerAPI` = `7428340`（tag 0.3.1）；`swift/lib/OrzMCKit` = `f004baa`（22 个子模块）；父仓库 `main` 见 `git log -1` |
-| **已知坑** | ① 真机 UI 测试必须 Terminal.app + 解锁 + 已装开发签名；② 降级依赖 pin 后要 `scripts/dev/purge-package-cache.sh <包名>`；③ 模拟器旧 test runner 会沿用旧包（runner 已自动卸载） |
-| **下一步（下次开工就从这里开始）** | **发 0.1.6**（`swift/app` 已积累 15 个提交未发）。流程见 `swift/app/docs/iteration-flow.md` §5：① `Config.xcconfig` 版本号 0.1.5(57) → **0.1.6(58)**；② 写用户视角 `docs/release-notes/0.1.6.md`（MCSM 面板支持：**普通用户 key 也能用**、可增删改面板、实例可启停/重启、点实例行看控制台并直接发命令；**需要手动做的**：无，但要在面板打开 API Key 功能、面板需 10.x）；③ `./scripts/dev/check.sh --full`；④ `gh workflow run release-app.yml`；⑤ 核验产物（`codesign` / `lipo -archs` 期望 `x86_64 arm64` / `spctl`）；⑥ 父仓库 bump + `RELEASES.md` |
+| **当前基线** | `swift/app` `main` = `4eb10ebf`（0.1.6 已发）；`swift/lib/MCSManagerAPI` = `7428340`（tag 0.3.1）；`swift/lib/OrzMCKit` = `f004baa`（22 个子模块）；父仓库 `main` 见 `git log -1` |
+| **已知坑** | ① 真机 XCUITest **当前不可用**：`OrzMCUITests-Runner` 启动即退（`exit code 74 before establishing connection`），重装 runner/App 无效，设备已解锁、Developer Mode 已开 → 疑似 Xcode 27 runner 签名/profile 问题，待单独排查；发版前用 `check.sh --ui`（模拟器 8 用例）+ 手动真机验收替代。② 真机 UI 测试必须 Terminal.app + 解锁 + 已装开发签名；② 降级依赖 pin 后要 `scripts/dev/purge-package-cache.sh <包名>`；③ 模拟器旧 test runner 会沿用旧包（runner 已自动卸载） |
+| **下一步（下次开工就从这里开始）** | **B1：MCSM 控制台换成面板的实时流**（`POST /api/protected_instance/stream_channel` 拿 channel → 连面板 WS），把现在的 **3 秒轮询**换掉；先做 1–2h 调研（面板 WS 协议/鉴权/断线重连），再实现。B2（`kill` 强杀 + 异步停止进度）可与 B1 同主题。⚠️ 真机 XCUITest 目前跑不起来（runner 启动即退 exit 74，见「已知坑」），发版前用 `--ui` 模拟器套件 + 手动真机验收 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
 ## 2. 状态快照（Repo State）
@@ -363,6 +363,35 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-26（五）— pi（**0.1.6 (58) 发布**：MCSManager 面板支持）
+
+**为什么发**：backlog 全部清空，`main` 比 0.1.5 多 15 个提交（MCSM 多供应商 + 动作/控制台 + 面板增删改 + 两个真实面板坑），
+两端真机都验过 —— 不发版等于这些工作没人能用。
+
+**过程**
+1. `Config.xcconfig` 0.1.5(57) → **0.1.6(58)**（build 号严格递增，Sparkle 靠它判新旧）；
+2. 写用户视角 `docs/release-notes/0.1.6.md`（怎么加面板 / 面板侧两个前提 / 两种 key 各看到什么 /
+   面板可改可删 / 动作 / 控制台 / **需要手动做的事：没有** / 已知问题）；
+3. `check.sh --full` 全绿（静态 + 包单测 + 应用 73 条 + macOS/iOS 构建 + 真 socket 联调）；
+4. `check.sh --ui` 模拟器 UI 全绿（8 用例）；
+5. PR #114 → CI 5 job 全绿（含 `intel` x86_64 门禁）→ squash 合并；
+6. `gh workflow run release-app.yml` → **success**（约 15 分钟）。
+
+**产物核验（不只看绿）**
+
+| 项 | 结果 |
+|---|---|
+| Release | `0.1.6`：`OrzMC_0.1.6_58_20261026_125009.dmg`（9 MB）/ `.zip`（8 MB）+ `appcast.xml` |
+| 架构 | `x86_64 arm64`；Sparkle 也 Universal |
+| minos | `14.0`（与平台分层一致） |
+| 签名/公证 | `Developer ID Application: Zhizhou Wang (2N62934Y28)`；`spctl` → **accepted / Notarized Developer ID** |
+| appcast | 流水线已回写 `main`（0.1.6 在 0.1.5 之上） |
+
+**真机 XCUITest 踩到一个环境问题（未解决，已记「已知坑」）**：`OrzMCUITests-Runner` 启动即退
+（`exit code 74 before establishing connection`）。已排除：设备已解锁（`devicectl device info lockState`
+→ `passcodeRequired: false`）、Developer Mode 已开、重装 runner 与 App 均无效。
+发版前用模拟器 UI 套件 + 手动真机验收替代；下轮单独排查（疑似 Xcode 27 runner 的签名/profile）。
 
 ### 2026-10-26（四）— pi（Intel + macOS 13 真机验证）
 
