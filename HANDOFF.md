@@ -102,8 +102,8 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **主题** | **0.1.6 已发布**（MCSManager 面板支持）；下一步进入「MCSM 体验补齐」（B1 控制台 WS 流 / B2 kill） |
 | **状态** | 🟢 backlog 全部完成，**0.1.6 (58) 已发布并核验**（Universal `x86_64 arm64` / minos 14.0 / Developer ID 公证 accepted / appcast 已回写）。产物：`OrzMC_0.1.6_58_*.dmg|zip` |
 | **待办看板** | [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（只剩 P2-7；P0/P1/P2-6 已标 ✅） |
-| **swift/app 基线** | `swift/app` `main` = `fdc688fe`（0.1.6 已发 + DX 六项：预检/依赖刷新/磁盘/收敛 DerivedData/PR 锁依赖/回收脚本）；`swift/lib/MCSManagerAPI` = `7428340`（tag 0.3.1）；`swift/lib/OrzMCKit` = `f004baa`（22 个子模块）；父仓库 `main` 见 `git log -1` |
-| **已知坑** | ① 真机 XCUITest **当前不可用**：定因为 **Xcode 27.0（iOS SDK 27.0）< 设备 iOS 27.0.1**，设备 `testmanagerd` 拒绝 DTX 通道（`exit 74`）；重启/解锁/重装/干净 DerivedData 均无效 → **需把 Xcode 升到 27.0.1+**（或设备降到 27.0）。`run-ios-ui-tests.sh --device` 已加预检：不兼容时 3 秒报错并给修法；在升级前用 `--simulator`（同一套 8 用例）。② 真机构建/测试必须经 Terminal.app（非交互 shell 报 `errSecInternalComponent`）。③ 升 `Package.resolved` 版本后若报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`（秒级）。④ 降级依赖 pin 后要 `scripts/dev/purge-package-cache.sh <包名>`；⑤ 模拟器旧 test runner 会沿用旧包（runner 已自动卸载）。 |
+| **swift/app 基线** | `swift/app` `main` = `edf4f243`（0.1.6 已发 + DX 九项：O1–O6 全完成 + 真机 UI 恢复 + `--detach`/发版脚本/`--changed`）；`swift/lib/MCSManagerAPI` = `7428340`（tag 0.3.1）；`swift/lib/OrzMCKit` = `f004baa`（22 个子模块）；父仓库 `main` 见 `git log -1` |
+| **已知坑** | ① **真机 XCUITest 可用**：必须**插数据线**（Wi-Fi 下会 `DTX 握手被拒/exit 74`；首次还需设备允许「自动化模式」，保持解锁亮屏）；`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。 |
 | **下一步（下次开工就从这里开始）** | **B1：MCSM 控制台换成面板的实时流**（`POST /api/protected_instance/stream_channel` 拿 channel → 连面板 WS），把现在的 **3 秒轮询**换掉；先做 1–2h 调研（面板 WS 协议/鉴权/断线重连），再实现。B2（`kill` 强杀 + 异步停止进度）可与 B1 同主题。⚠️ 真机 XCUITest 目前跑不起来（runner 启动即退 exit 74，见「已知坑」），发版前用 `--ui` 模拟器套件 + 手动真机验收 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
@@ -363,6 +363,30 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-26（八）— pi（真机 UI 真因纠正 + O3/O4/O5 完成）
+
+**真机 XCUITest 真因纠正**：维护者提示"是不是没插数据线"——正是。
+`Transport Type: localNetwork`（Wi-Fi）下 runner 会 `DTX 握手被拒 → exit 74`；插线（`wired`）后：
+
+```
+Test Case '…testMCSManagerSectionShowsInstancesAndStatus' passed (20.162 seconds)
+Test Suite 'RemotePanelsUITests' passed …  ** TEST EXECUTE SUCCEEDED **
+```
+
+全套 8 用例（4 个按设计 skip）真机全绿。我此前"Xcode 27.0 < iOS 27.0.1 版本不匹配"的定因**是错的**，
+已把 `run-ios-ui-tests.sh` 的预检降级为**只警告不阻断**，并新增「连接方式不是 `wired` → 提示插数据线」。
+（插线后首次仍报 `Timed out while enabling automation mode`，保持解锁亮屏重跑即过。）
+
+**O3/O4/O5 落地**
+- `run-ios-ui-tests.sh --detach`：自己在 Terminal 里重跑并等结果，一条命令拿到退出码 + 末尾日志（实测跑通真机全量）；
+- `scripts/dev/release.sh --version X.Y.Z [--plan]`：版本递增（`sort -V`）+ notes 存在且 ≥400 字节 +
+  main/clean/同步检查 → 升 `Config.xcconfig`（build 自动 +1）→ `--fast`/`--full`/`--ui`/真机 UI → 建 PR → 打印后续三步；
+  `--plan` 已验证正常路径与两个负例（版本倒退、缺 notes 均拒绝）；
+- `check.sh --changed`：纯文档/`*.xcstrings` → 只跑静态；纯测试 → 包单测 + 应用测试；其它 → 默认档（保守）。
+
+至此迭代复盘清单 **O1–O6 全部完成**：本地 `check.sh` 2–4 min → ~50 s、PR `build` 6.8 → 3.4 min、
+DerivedData 8→2 个、真机 UI 恢复且一条命令可跑、发版前半段全自动。
 
 ### 2026-10-26（七）— pi（迭代优化第二轮：O1/O2/O6 落地，实测提速）
 
