@@ -118,6 +118,27 @@ def check_compliance() -> bool:
     return True
 
 
+def check_platforms() -> bool:
+    """平台分层一致性：GUI = macOS 14，逻辑层（CLI/库）= macOS 13，发布包 Universal。
+
+    只跑 `--declarations-only`（纯文本审计，Linux 也能跑）；产物层面的 minos / lipo
+    检查要 macOS 工具，交给 `./scripts/dev/check-platforms.sh`（本地）与
+    `swift/lib/OrzMCKit` 的 CI。规则与理由见 `docs/platform-support.md`。
+    """
+    script = REPO / "scripts" / "dev" / "check-platforms.sh"
+    proc = subprocess.run(
+        ["bash", str(script), "--declarations-only"],
+        capture_output=True, text=True,
+    )
+    out = (proc.stdout + proc.stderr).strip()
+    if proc.returncode != 0:
+        fail("平台分层被破坏（逻辑层/CLI 必须 macOS 13，GUI 必须 macOS 14，见 docs/platform-support.md）")
+        print(out[-2000:])
+        return False
+    print("[ok] 平台分层一致（GUI = macOS 14，逻辑层/CLI = macOS 13）")
+    return True
+
+
 def check_remote() -> bool:
     """子模块记录指针是否**已推到远端**。
 
@@ -175,6 +196,7 @@ def main() -> int:
         check_surface_manifest(),
         check_parity_ledger(),
         check_compliance(),
+        check_platforms(),
     ]
     if args.remote:
         results.append(check_remote())
