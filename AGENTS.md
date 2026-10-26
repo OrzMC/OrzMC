@@ -284,6 +284,25 @@ git diff --submodule <路径>
 - ⚠️ **`E:\orzmc` 是生产部署目录**（caddy / cloudflared / database / mcsmanager）——**绝对不要动**。
 - 真机验证的结论/关键命令记入 [`HANDOFF.md`](HANDOFF.md)。
 
+### 8.1.2 远程真机验证（Intel Mac / macOS 13）
+
+需要验证 **Intel 芯片** 或 **macOS 13（Ventura）下限**时用这台机器（平台分层见
+[`docs/platform-support.md`](docs/platform-support.md)）。
+
+| 项 | 值 |
+|---|---|
+| SSH 主机 | `pro`（`bot@192.168.0.35`，免密 key） |
+| 机型 / 系统 | MacBookPro12,1（i5-5257U，16 GB）/ **macOS 13.7.8** |
+| **收敛工作根** | **`~/orzmc-smoke`**（`bin/` 放 Python CLI，`orzmc-swift-main` 放 CI 产出的 Swift CLI） |
+| 清理 | `ssh pro 'rm -rf ~/orzmc-smoke'` |
+
+- ⚠️ **只能在上面"跑"产物，不能"编"**：Ventura 最高 Xcode 15（Swift 5.10），
+  而 `OrzMCKit` 是 `swift-tools-version:6.0` → 拿 CI 的 artifact 上去跑：
+  `gh run download <run-id> --name orzmc-x86_64-macos13 --dir /tmp/x && scp /tmp/x/orzmc-x86_64 pro:~/orzmc-smoke/`
+- GUI（`OrzMC.app`）**在 13 上跑不了**（minos 14.0，`dyld: built for macOS 14.0 which is newer than running OS`）——这是预期，不是 bug。
+- 这台机器是维护者自用，**不要**跑会长期占资源的任务（例如完整下载并启动 Minecraft）；
+  需要时先问。
+
 ---
 
 ### 8.1.1 迭代成本纪律（2026-10 实测，见 `docs/iteration-efficiency.md`）

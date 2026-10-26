@@ -1,4 +1,4 @@
-# HANDOFF.md — OrzMC 跨会话 / 跨设备交接文档| **下一步** | 平台分层已落地（见 `docs/platform-support.md`）：**Intel 已支持**（GUI US 切片 CI 跑绿）、**逻辑层/CLI 钉 macOS 13**（CI 断言 minos=13.0）。剩下一件需要硬件的：**Intel 真机冒烟**（取一台 Intel Mac 按 §6 清单跑 7 步，结论记 §5）。其它可选见 §1 上文的 P2-7 收尾项 |
+# HANDOFF.md — OrzMC 跨会话 / 跨设备交接文档| **下一步** | 平台分层已落地并**在 Intel 真机（macOS 13.7.8）验过**（`docs/platform-support.md` §3.1）：CLI 能跑、GUI 按预期拒绝。剩最后一块：**真正启动 Minecraft**（验 JRE 选 `x64`、natives 是 `x86_64`），需要正版登录 + 图形会话（§6 第 4–5 步）。其它可选见 P2-7 收尾项 |
 
 > **用途**：任何 AI 智能体或维护者在**新会话 / 新设备**接手父仓库工作时，先读
 > [`AGENTS.md`](AGENTS.md)（规则）+ 本文件（状态）+ 进行中方案，即可无损恢复上下文。
@@ -363,6 +363,31 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-26（四）— pi（Intel + macOS 13 真机验证）
+
+**维护者给了真机**：`ssh pro` = **MacBookPro12,1**（i5-5257U / 16 GB）/ **macOS 13.7.8** —— 正是
+"卡在 Ventura 的 Intel Mac"这个目标机型，于是直接把 §6 清单跑了。
+
+**结果**
+
+| 层 | 内容 | 结果 |
+|---|---|---|
+| 分发层（Python CLI） | 官方一键安装器 | ✅ 自动选 `orzmc-macos-x86_64`（`Mach-O x86_64`）；`--version` 2.18.1 / `capabilities` / `list` 正常，启动 ~1.2s |
+| 逻辑层（Swift CLI 旧版） | 机器上已有的真身 0.18.0 | ✅ `x86_64` / `minos 13.0` / `list` / `app status` 正常 |
+| 逻辑层（Swift CLI **main**） | CI artifact `orzmc-x86_64-macos13`（`OrzMCKit` 的 `platform` job）→ scp → 跑 | ✅ 0.21.0 / `x86_64` / `minos 13.0`，`--version` 21ms |
+| GUI | 官方 0.1.5 包（`x86_64 arm64`） | ⛔ 按预期起不来：`dyld: built for macOS 14.0 which is newer than running OS` |
+
+**两个新事实（已写进文档）**
+1. **Ventura 上不能构建逻辑层**：最高 Xcode 15（Swift 5.10）< `swift-tools-version:6.0` →
+   真机只跑 CI 产物；为此给 `OrzMCKit` 的 `platform` job 加了 **artifact 上传**（PR #103）。
+2. GUI 的 Intel 切片是真存在的（`lipo` 双架构），只是 minos 14.0 —— 所以"Intel 支持"与"Ventura 支持"是两件事。
+
+**仍未验**：真正启动 Minecraft（JRE 选 `x64`、natives `x86_64`）—— 需要正版登录 + 图形会话；
+这台是维护者自用机，没擅自跑长时间下载。列入 `docs/platform-support.md` §6 第 4–5 步。
+
+**环境**：验证目录 `~/orzmc-smoke`（36 MB，`bin/orzmc` Python CLI + `orzmc-swift-main`）；
+真机信息也登记进 `AGENTS.md` §8.1.2（含"只能跑不能编"与"别跑长任务"的提醒）。
 
 ### 2026-10-26（三）— pi（平台支持：Intel 已支持 + 逻辑层钉 macOS 13）
 

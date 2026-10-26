@@ -74,6 +74,38 @@ Intel 相关的运行时证据（代码层面）：
 
 ---
 
+### 3.1 真机实测（Intel + macOS 13）
+
+维护者提供的真机（SSH 别名 `pro`）：
+
+| 项 | 值 |
+|---|---|
+| 机型 | **MacBookPro12,1**（13" 2015） |
+| CPU | Intel Core i5-5257U @ 2.70GHz（Broadwell，双核） |
+| 内存 | 16 GB |
+| 系统 | **macOS 13.7.8**（22H730） |
+| SSH | `ssh pro`（`bot@192.168.0.35`），验证用目录 `~/orzmc-smoke` |
+
+**结果（2026-10-26）**
+
+| 层 | 验证内容 | 结果 |
+|---|---|---|
+| **分发层**（Python CLI） | 官方一键安装器 `curl … install.sh \| sh --dir … --no-completion --no-modify-rc` | ✅ 自动选中 **`orzmc-macos-x86_64`**（`file` → `Mach-O 64-bit executable x86_64`） |
+| 分发层 | `orzmc --version` / `--json capabilities` / `list`（2.18.1） | ✅ 启动 ~1.2s，全部正常 |
+| **逻辑层**（Swift CLI，旧版） | 本机已有真身 `~/.local/state/orzmc/bin/orzmc` 0.18.0 | ✅ `x86_64`、`minos 13.0`、`--version`/`capabilities`/`list`/`app status` 正常 |
+| 逻辑层（Swift CLI，**main 构建**） | 下载 CI `orzmc-x86_64-macos13` artifact（`ci` 的 `platform` job）→ scp 上去跑 | ✅ 0.21.0、`x86_64`、`minos 13.0`，`--version` **21ms** |
+| **GUI** | 官方 0.1.5 包 | ⛔ **启动失败（符合预期）**：`dyld: … (built for macOS 14.0 which is newer than running OS)` |
+
+**顺带确认的两件事**
+
+1. **GUI 的 Intel 切片是真的**：0.1.5 包 `lipo -archs` = `x86_64 arm64`（只是 minos 14.0，Ventura 起不来）。
+2. **逻辑层在 13 上只能"跑"，不能"编"**：Ventura 最高装 Xcode 15（Swift 5.9/5.10），
+   而 `OrzMCKit` 是 `swift-tools-version:6.0` → 真机没有可用工具链。
+   所以真机验证一律用 CI 的 `platform` job 产物（artifact `orzmc-x86_64-macos13`，保留 14 天）。
+
+**仍未验证（需要正版登录 + 图形会话）**：真正启动 Minecraft（即 JRE 选中 `x64`、natives 是 `x86_64`）。
+这两条目前只有代码路径 + 单测覆盖，列入 §6 冒烟清单第 4–5 步。
+
 ## 4. 为什么不做「GUI 降到 macOS 13」
 
 GUI 的最小系统是 **14.0**，硬性卡点是 **Observation 宏**（`@Observable`，要求 macOS 14）：
@@ -102,16 +134,22 @@ GUI 的最小系统是 **14.0**，硬性卡点是 **Observation 宏**（`@Observ
 
 | 要验的 | 怎么做 | 现状 |
 |---|---|---|
-| 逻辑层能在 macOS 13 上构建/运行 | `swift build --package-path swift/lib/OrzMCKit --product orzmc`，然后 `otool -l` 看 `minos 13.0`；在 Ventura 机器/虚拟机上直接跑 | ✅ 构建与 minos 已验；**Ventura 实机运行未验** |
+| 逻辑层能在 macOS 13 上**运行** | 用 CI 产物：`gh run download <run> --name orzmc-x86_64-macos13` → scp 到真机 → `orzmc --version` | ✅ **Intel 真机已验**（0.18.0 与 main 的 0.21.0，见 §3.1） |
+| 逻辑层能在 macOS 13 上**构建** | 需要 Swift 6 工具链；Ventura 只能装 Xcode 15（Swift 5.10） | ❌ 不可行（`swift-tools-version:6.0`）；构建在 CI（Xcode 26）完成 |
 | Intel 编译通过（GUI） | CI `swift/app` 的 `intel` job（`-destination arch=x86_64`） | ✅ 已跑绿（`BUILD SUCCEEDED`） |
 | Intel 编译通过（CLI） | CI `swift/lib/OrzMCKit` 的 `platform` job（`swift build --arch x86_64`） | ✅ 已跑绿（`x86_64 产物架构 = x86_64`） |
 | Intel 编译（本机复跑） | `./scripts/dev/check-platforms.sh --arch`（需 Rosetta：`softwareupdate --install-rosetta --agree-to-license`） | ⚠️ 本机无 Rosetta → 本地跳过（CI 已覆盖） |
-| Intel 运行时行为 | 见 §6 冒烟清单，需一台 Intel Mac（或云 Mac） | ❌ **无机器，未验** |
+| Intel 运行时行为（CLI/GUI 能不能起） | 真机 `ssh pro`（MacBookPro12,1 / macOS 13.7.8） | ✅ 已验：CLI 正常、GUI 按预期拒绝（§3.1） |
+| Intel 运行时行为（真正启动游戏：JRE `x64` / natives `x86_64`） | 需正版登录 + 图形会话，见 §6 第 4–5 步 | ❌ **未验** |
 | 发布包是 Universal | `./scripts/dev/check-platforms.sh` 的分发审计（读已发布 `.app` 的 `lipo -archs`） | ✅ 0.1.5 已验 |
 
 ---
 
 ## 6. Intel 冒烟清单（有一台 Intel Mac 时照着做，约 20 分钟）
+
+> 已有真机：`ssh pro`（MacBookPro12,1 / macOS 13.7.8 / 16 GB）。已验证部分见 §3.1；
+> 下面第 4–5 步（真正启动游戏）**还没有**做过 —— 需要正版登录与图形会话。
+> 验证目录约定：`~/orzmc-smoke`（用完可 `rm -rf ~/orzmc-smoke`）。
 
 以官方 Release 包为例（`OrzMC_x.y.z.dmg`）：
 
