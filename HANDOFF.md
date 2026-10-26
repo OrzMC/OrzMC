@@ -102,7 +102,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **主题** | **0.1.6 已发布**（MCSManager 面板支持）；下一步进入「MCSM 体验补齐」（B1 控制台 WS 流 / B2 kill） |
 | **状态** | 🟢 backlog 全部完成，**0.1.6 (58) 已发布并核验**（Universal `x86_64 arm64` / minos 14.0 / Developer ID 公证 accepted / appcast 已回写）。产物：`OrzMC_0.1.6_58_*.dmg|zip` |
 | **待办看板** | [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（只剩 P2-7；P0/P1/P2-6 已标 ✅） |
-| **当前基线** | `swift/app` `main` = `2a4251c4`（0.1.6 已发 + DX 三项 + 真机 UI 预检）；`swift/lib/MCSManagerAPI` = `7428340`（tag 0.3.1）；`swift/lib/OrzMCKit` = `f004baa`（22 个子模块）；父仓库 `main` 见 `git log -1` |
+| **swift/app 基线** | `swift/app` `main` = `fdc688fe`（0.1.6 已发 + DX 六项：预检/依赖刷新/磁盘/收敛 DerivedData/PR 锁依赖/回收脚本）；`swift/lib/MCSManagerAPI` = `7428340`（tag 0.3.1）；`swift/lib/OrzMCKit` = `f004baa`（22 个子模块）；父仓库 `main` 见 `git log -1` |
 | **已知坑** | ① 真机 XCUITest **当前不可用**：定因为 **Xcode 27.0（iOS SDK 27.0）< 设备 iOS 27.0.1**，设备 `testmanagerd` 拒绝 DTX 通道（`exit 74`）；重启/解锁/重装/干净 DerivedData 均无效 → **需把 Xcode 升到 27.0.1+**（或设备降到 27.0）。`run-ios-ui-tests.sh --device` 已加预检：不兼容时 3 秒报错并给修法；在升级前用 `--simulator`（同一套 8 用例）。② 真机构建/测试必须经 Terminal.app（非交互 shell 报 `errSecInternalComponent`）。③ 升 `Package.resolved` 版本后若报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`（秒级）。④ 降级依赖 pin 后要 `scripts/dev/purge-package-cache.sh <包名>`；⑤ 模拟器旧 test runner 会沿用旧包（runner 已自动卸载）。 |
 | **下一步（下次开工就从这里开始）** | **B1：MCSM 控制台换成面板的实时流**（`POST /api/protected_instance/stream_channel` 拿 channel → 连面板 WS），把现在的 **3 秒轮询**换掉；先做 1–2h 调研（面板 WS 协议/鉴权/断线重连），再实现。B2（`kill` 强杀 + 异步停止进度）可与 B1 同主题。⚠️ 真机 XCUITest 目前跑不起来（runner 启动即退 exit 74，见「已知坑」），发版前用 `--ui` 模拟器套件 + 手动真机验收 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
@@ -363,6 +363,22 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-26（七）— pi（迭代优化第二轮：O1/O2/O6 落地，实测提速）
+
+维护者决定「暂时不升 Xcode，先做优化」，于是把复盘清单里最省时间的三项做完（PR #117）：
+
+| 措施 | 实测 |
+|---|---|
+| **O1 收敛 DerivedData**：`run-macos-signed.sh` → `OrzMC-local`、`install-ios-device.sh` → `OrzMC-local-ios`（都与 `check.sh` 共用） | 先签名构建再 `check.sh` → **49.9 s**（原 2–4 min）；目录 **8 个/6.8 GB → 2 个/4.2 GB**；签名 `Apple Development` 与真机安装均照常 |
+| **O2 CI：PR 用锁定依赖**（`Resolve package dependencies` 只在非 PR 跑；main 仍 HEAD 解析） | PR `build (macOS)` **6.8 → 3.4 min**、`build (iOS)` 6.8 → 5.7 min；main 上 `build` 4 min / `intel` 5.2 min |
+| **O6 `reclaim-space.sh`**（新，默认 dry-run） | 清掉 6 个残留目录，回收约 2.5 GB |
+
+**累计**：一次功能迭代的纯等待从 **40–60 min → 约 25–35 min**。
+剩下待做：**O3**（UI 测试 `--detach`，把 Terminal 依赖自动化）、**O4**（发版一键脚本）、**O5**（`check.sh --changed`）。
+
+**真机 XCUITest**：仍不可用（Xcode 27.0 < iOS 27.0.1）；已在 `run-ios-ui-tests.sh --device` 加 3 秒预检，
+等维护者升级 Xcode 后即可恢复，届时把预检当作"版本不匹配"的守门人。
 
 ### 2026-10-26（六）— pi（真机 XCUITest 排查 + 迭代耗时复盘）
 
