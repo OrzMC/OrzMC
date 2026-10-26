@@ -1,4 +1,4 @@
-# HANDOFF.md — OrzMC 跨会话 / 跨设备交接文档| **下一步** | P2-7 已收尾（第 1–5 步全绿）。可选：① MCSM `kill`（强杀）/`stop_asynchronous`；② 控制台改为 WebSocket 流（面板 `stream_channel`，现在是 3 秒轮询 `outputlog`）；③ 回到 P2-7 之外的待办（见 `swift/app/docs/backlog-2026-10-25.md`） |
+# HANDOFF.md — OrzMC 跨会话 / 跨设备交接文档| **下一步** | 平台分层已落地（见 `docs/platform-support.md`）：**Intel 已支持**（GUI US 切片 CI 跑绿）、**逻辑层/CLI 钉 macOS 13**（CI 断言 minos=13.0）。剩下一件需要硬件的：**Intel 真机冒烟**（取一台 Intel Mac 按 §6 清单跑 7 步，结论记 §5）。其它可选见 §1 上文的 P2-7 收尾项 |
 
 > **用途**：任何 AI 智能体或维护者在**新会话 / 新设备**接手父仓库工作时，先读
 > [`AGENTS.md`](AGENTS.md)（规则）+ 本文件（状态）+ 进行中方案，即可无损恢复上下文。
@@ -363,6 +363,33 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-26（三）— pi（平台支持：Intel 已支持 + 逻辑层钉 macOS 13）
+
+**维护者问**：能不能支持 macOS 13 和 Intel 芯片。**拍板**：按折中方案落地 ——
+GUI 保持 macOS 14（`@Observable` 要求），**逻辑层（CLI/库）钉在 macOS 13**。
+
+**分析结论（写进 `docs/platform-support.md`）**
+- **Intel：本来就支持**。0.1.5 官方包 `lipo -archs` = `x86_64 arm64`；JRE 按架构取
+  （Adoptium `x64`/`aarch64`）、MC natives 按 `os.arch` 过滤、自升级资产按 `#if arch` 选。
+- **macOS 13：GUI 不支持**，硬阻塞是 Observation 宏（16 个 `@Observable` 类、23 处
+  `@Environment(X.self)`、19 处 `.environment(model)`、全仓 0 处 `ObservableObject`）；
+  其余是 9 处 14-only UI + 3 处预览。改造估 1–2 周，收益只覆盖 2017 款及更老的 Intel Mac
+  （它们的 CLI 已可用）→ 不做，清单留在文档 §7。
+
+**落地的东西**
+- `docs/platform-support.md`：三层矩阵、证据（含 CI 首次跑绿记录）、Intel 冒烟清单（7 步）、
+  "降到 13"的代价清单、维护约定。
+- `scripts/dev/check-platforms.sh`：不需要 Rosetta/Intel 真机的门禁 ——
+  声明审计（逻辑层必须 ≤13、GUI 必须 14、不许写死 `ARCHS`/`EXCLUDED_ARCHS`）+
+  产物审计（`otool -l` 读 `minos`）+ 分发审计（发布包必须 Universal）；
+  `--arch` 做 x86_64 交叉编译（无 Rosetta 时明确跳过）。
+- 父仓库 CI：`scripts/verify/check.py` 接 `--declarations-only`（ubuntu 也能跑）。
+- `swift/app` CI 新增 **`intel` job**：`-destination 'platform=macOS,arch=x86_64'` → `BUILD SUCCEEDED`（3m18s）。
+- `swift/lib/OrzMCKit` CI 新增 **`platform` job**：`声明下限: macOS 13` / `orzmc minos = 13.0` /
+  `x86_64 产物架构 = x86_64`（4m02s）。两个 job 里都先确保 Rosetta（runner 实测**已预装**）。
+
+**仍然缺的一块**：**Intel 真机运行**（编译已过，跑起来没验）→ 有 Intel Mac 时按 `docs/platform-support.md` §6 走一遍。
 
 ### 2026-10-26（续）— pi（P2-7 第 5 步：MCSM 动作 + 控制台，收尾）
 

@@ -50,8 +50,18 @@
 | `MACOSX_DEPLOYMENT_TARGET` | `14.0` ✅ |
 | `ARCHS` / `EXCLUDED_ARCHS` / `VALID_ARCHS` | 均**未写死** → Release 走 `ARCHS_STANDARD` = arm64 + x86_64 ✅ |
 | `scripts/release-macos.sh` | 只有 `ARCHIVE_ONLY_ACTIVE_ARCH` 开关（默认不设）✅ |
-| 构建 `orzmc` | `lipo -archs` = arm64；`otool -l` → **`minos 13.0`** ✅ |
+| 构建 `orzmc`（本机） | `lipo -archs` = arm64；`otool -l` → **`minos 13.0`** ✅ |
 | 官方发布包 `OrzMC-official-0.1.5.app` | `lipo -archs` = **`x86_64 arm64`**，`minos 14.0` ✅ |
+
+**CI 门禁（2026-10-26 已生效并首次跑绿）**
+
+| 仓库 | job | 断言 | 首次结果 |
+|---|---|---|---|
+| `swift/app` | `intel` | `xcodebuild build -destination 'platform=macOS,arch=x86_64'` | ✅ **`BUILD SUCCEEDED`**（3m18s）→ **GUI 的 Intel 切片能编过** |
+| `swift/lib/OrzMCKit` | `platform` | 声明下限 = 13 / native `minos` ≤ 13 / `swift build --arch x86_64` | ✅ `声明下限: macOS 13`、`orzmc minos = 13.0`、`x86_64 产物架构 = x86_64`（4m02s） |
+| 父仓库 | `verify`（ubuntu） | `scripts/dev/check-platforms.sh --declarations-only` | ✅ 分层一致（GUI 14 / 逻辑层 ≤13 / 无写死 ARCHS） |
+
+> runner 上 **Rosetta 2 已预装**（日志里是 `Rosetta 已安装`）；两个 job 都保留了"缺失就装"的分支。
 
 Intel 相关的运行时证据（代码层面）：
 
@@ -93,7 +103,9 @@ GUI 的最小系统是 **14.0**，硬性卡点是 **Observation 宏**（`@Observ
 | 要验的 | 怎么做 | 现状 |
 |---|---|---|
 | 逻辑层能在 macOS 13 上构建/运行 | `swift build --package-path swift/lib/OrzMCKit --product orzmc`，然后 `otool -l` 看 `minos 13.0`；在 Ventura 机器/虚拟机上直接跑 | ✅ 构建与 minos 已验；**Ventura 实机运行未验** |
-| Intel 编译通过 | `./scripts/dev/check-platforms.sh --arch`（需 Rosetta：`softwareupdate --install-rosetta --agree-to-license`）；或 CI 的 `intel` job | ⚠️ 本机无 Rosetta → 本地跳过；CI 已加 job |
+| Intel 编译通过（GUI） | CI `swift/app` 的 `intel` job（`-destination arch=x86_64`） | ✅ 已跑绿（`BUILD SUCCEEDED`） |
+| Intel 编译通过（CLI） | CI `swift/lib/OrzMCKit` 的 `platform` job（`swift build --arch x86_64`） | ✅ 已跑绿（`x86_64 产物架构 = x86_64`） |
+| Intel 编译（本机复跑） | `./scripts/dev/check-platforms.sh --arch`（需 Rosetta：`softwareupdate --install-rosetta --agree-to-license`） | ⚠️ 本机无 Rosetta → 本地跳过（CI 已覆盖） |
 | Intel 运行时行为 | 见 §6 冒烟清单，需一台 Intel Mac（或云 Mac） | ❌ **无机器，未验** |
 | 发布包是 Universal | `./scripts/dev/check-platforms.sh` 的分发审计（读已发布 `.app` 的 `lipo -archs`） | ✅ 0.1.5 已验 |
 
