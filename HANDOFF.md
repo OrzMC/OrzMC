@@ -99,12 +99,12 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 项 | 内容 |
 |---|---|
-| **主题** | **0.1.6 已发布**（MCSManager 面板支持）；下一步进入「MCSM 体验补齐」（B1 控制台 WS 流 / B2 kill） |
-| **状态** | 🟢 backlog 全部完成，**0.1.6 (58) 已发布并核验**（Universal `x86_64 arm64` / minos 14.0 / Developer ID 公证 accepted / appcast 已回写）。产物：`OrzMC_0.1.6_58_*.dmg|zip` |
+| **主题** | **B1 已完成**：MCSM 控制台换成面板实时流（轮询降为兜底）；下一步 **B2（`kill` 强杀 + 异步停止进度）** 或 0.1.7 发版 |
+| **状态** | 🟢 B1 已合入（`swift/lib/MCSManagerAPI` **0.4.0** + `swift/app` PR #120）。0.1.6 (58) 是当前已发布版本；B1 未发版 |
 | **待办看板** | [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（只剩 P2-7；P0/P1/P2-6 已标 ✅） |
-| **swift/app 基线** | `swift/app` `main` = `edf4f243`（0.1.6 已发 + DX 九项：O1–O6 全完成 + 真机 UI 恢复 + `--detach`/发版脚本/`--changed`）；`swift/lib/MCSManagerAPI` = `7428340`（tag 0.3.1）；`swift/lib/OrzMCKit` = `f004baa`（22 个子模块）；父仓库 `main` 见 `git log -1` |
-| **已知坑** | ① **真机 XCUITest 可用**：必须**插数据线**（Wi-Fi 下会 `DTX 握手被拒/exit 74`；首次还需设备允许「自动化模式」，保持解锁亮屏）；`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。 |
-| **下一步（下次开工就从这里开始）** | **B1：MCSM 控制台换成面板的实时流**（`POST /api/protected_instance/stream_channel` 拿 channel → 连面板 WS），把现在的 **3 秒轮询**换掉；先做 1–2h 调研（面板 WS 协议/鉴权/断线重连），再实现。B2（`kill` 强杀 + 异步停止进度）可与 B1 同主题。⚠️ 真机 XCUITest 目前跑不起来（runner 启动即退 exit 74，见「已知坑」），发版前用 `--ui` 模拟器套件 + 手动真机验收 |
+| **swift/app 基线** | `swift/app` `main` = `5e33e74f`（0.1.6 已发 + DX 九项 + **B1 实时流**）；`swift/lib/MCSManagerAPI` = `1206aba`（tag **0.4.0**）；`swift/lib/OrzMCKit` = `f004baa`（22 个子模块）；父仓库 `main` 见 `git log -1` |
+| **已知坑** | ① **真机 XCUITest 可用**：必须**插数据线**（Wi-Fi 下会 `DTX 握手被拒/exit 74`；首次还需设备允许「自动化模式」，保持解锁亮屏）；`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机已知失败**：`testStatusBadgeKeepsSpinningAfterReentering` 在 iPhone SE3 / iOS 27.0.1 上必失败（像素哈希判动画，模拟器绿，**app `main` 上同样失败**，与本轮改动无关，待单独跟）。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`。 |
+| **下一步（下次开工就从这里开始）** | **B2：MCSM `kill`（强杀）+ 异步停止进度**（`POST /api/protected_instance/kill`；面板停止是异步的，需要在过渡态里显示进度/超时提示）。可与 B1 同主题一起发 0.1.7。真机 UI 用 `run-ios-ui-tests.sh --device <UDID> --detach`（**必须插数据线**）；已知设备侧问题见 §0.1 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
 ## 2. 状态快照（Repo State）
@@ -363,6 +363,36 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-27（九）— pi（B1：MCSM 控制台实时流）
+
+**协议调研**（`MCSManager/MCSManager` 源码 `panel/src/app/routers/instance_operate_router.ts` +
+`frontend/src/hooks/useTerminal.ts`）：`POST /api/protected_instance/stream_channel` → `{addr, password, prefix}`，
+then socket.io（Engine.IO v4）：`stream/auth {data:{password}}` → `{data:true}`，之后 `instance/stdout {data:{text}}`。
+面板有 `dataPlane=direct|proxy` 两种模式；**我们的面板是 direct**（返回节点地址 `wss://mcs-node.jokerhub.cn:443`，公网可达）。
+
+**落地**
+- `swift/lib/MCSManagerAPI` **0.4.0**（PR #1）：新 product `MCSMStream`（帧编解码 + 地址解析 + 客户端，
+  零依赖）＋ spec 加 `stream_channel`；20 条测试，含**测试内起真 WebSocket 服务端**的端到端用例；
+  另加 `LiveStreamTests`（默认跳过，`ORZMC_MCSM_LIVE_*` 启用）对真面板跑一遍。
+- `swift/app` PR #120：控制台流优先、轮询兜底；`ConsoleTextBuffer`（增量 + 按行裁剪）；
+  `MCSManagerModel.probeStream()` + `ORZMC_DEMO_MCSM_STREAM_PROBE=1` 无界面自检。
+
+**踩到的坑（都进了注释/测试）**
+1. `/socket.io/` 的**尾部斜杠不能少**：少了被反代 404，表现成 `-1011 Websocket handshake failure`；
+2. **必须回 pong**（Engine.IO v4 由服务端 ping），否则 20~25 秒被踢；
+3. 口令**一次性** → 客户端收 `makeEndpoint` 闭包，重连重新申请；
+4. `@frozen` 生成枚举里 `case .undocumented(let code, _)` 在**测试构建**下报
+   `'_' can only appear in a pattern…`（`build` 不报）→ 改用 `@unknown default:`。
+
+**验证**
+- 真面板（macOS，`ORZMC_DEMO_MCSM_STREAM_PROBE=1`）：`ready=true`，`/list` 回显 + 结果实时到达；
+- app 单测 73 → 79；`swift test`（MCSManagerAPI）全绿；模拟器 UI 全套绿；
+- **真机 UI：`testStatusBadgeKeepsSpinningAfterReentering` 必失败** —— 已用 app `main`（改动前）
+  复现同样失败，判定为**设备侧/既有问题**，与 B1 无关。
+
+**顺带修的 DX**：`--detach` 之前丢参数（解析后才拼命令行）→ 解析前存 `ORIGINAL_ARGS`；
+`UI_ONLY_TESTING`；`check-secrets.py` 短口令按词边界匹配（`jokerhub` 在域名里被误报）。
 
 ### 2026-10-26（八）— pi（真机 UI 真因纠正 + O3/O4/O5 完成）
 
