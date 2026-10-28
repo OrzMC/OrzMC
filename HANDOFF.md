@@ -99,12 +99,12 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 项 | 内容 |
 |---|---|
-| **主题** | **B1 已完成**：MCSM 控制台换成面板实时流（轮询降为兜底）；下一步 **B2（`kill` 强杀 + 异步停止进度）** 或 0.1.7 发版 |
-| **状态** | 🟢 B1 已合入（`swift/lib/MCSManagerAPI` **0.4.0** + `swift/app` PR #120）。0.1.6 (58) 是当前已发布版本；B1 未发版 |
+| **主题** | **B1 + B2 已完成**（实时流、强杀 + 停止进度）；MCSM 体验补齐告一段落 → 下一步 **0.1.7 发版**（或回产品主线挑新主题） |
+| **状态** | 🟢 B1/B2 均已合入（`MCSManagerAPI` **0.5.0** + `swift/app` PR #120/#122）。0.1.6 (58) 仍是当前已发布版本；B1+B2 未发版 |
 | **待办看板** | [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（只剩 P2-7；P0/P1/P2-6 已标 ✅） |
-| **swift/app 基线** | `swift/app` `main` = `5e33e74f`（0.1.6 已发 + DX 九项 + **B1 实时流**）；`swift/lib/MCSManagerAPI` = `1206aba`（tag **0.4.0**）；`swift/lib/OrzMCKit` = `f004baa`（22 个子模块）；父仓库 `main` 见 `git log -1` |
+| **swift/app 基线** | `swift/app` `main` = `24f803e3`（0.1.6 已发 + DX 九项 + B1 实时流 + **B2 强杀**）；`swift/lib/MCSManagerAPI` = `061866f`（tag **0.5.0**）；`swift/lib/OrzMCKit` = `f004baa`（22 个子模块）；父仓库 `main` 见 `git log -1` |
 | **已知坑** | ① **真机 XCUITest 可用**：必须**插数据线**（Wi-Fi 下会 `DTX 握手被拒/exit 74`；首次还需设备允许「自动化模式」，保持解锁亮屏）；`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机已知失败**：`testStatusBadgeKeepsSpinningAfterReentering` 在 iPhone SE3 / iOS 27.0.1 上必失败（像素哈希判动画，模拟器绿，**app `main` 上同样失败**，与本轮改动无关，待单独跟）。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`；⑧ **验收装开发包**：`swift/app/scripts/dev/install-dev-app.sh [--release|--no-build|--accept|--restore]`（10~20 s，覆盖装 `/Applications`，不要为验收去跑公证）。 |
-| **下一步（下次开工就从这里开始）** | **B2：MCSM `kill`（强杀）+ 异步停止进度**（`POST /api/protected_instance/kill`；面板停止是异步的，需要在过渡态里显示进度/超时提示）。可与 B1 同主题一起发 0.1.7。真机 UI 用 `run-ios-ui-tests.sh --device <UDID> --detach`（**必须插数据线**）；已知设备侧问题见 §0.1 |
+| **下一步（下次开工就从这里开始）** | **发 0.1.7**：先写 `docs/release-notes/0.1.7.md`（B1 实时流 + B2 强杀/停止进度），再 `./scripts/dev/release.sh --version 0.1.7`。验收用 `./scripts/dev/install-dev-app.sh --accept`（装开发包，别为验收去公证）。面板 API key 只用**钥匙串里的那把**（笔记里的旧 key 已 403） |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
 ## 2. 状态快照（Repo State）
@@ -363,6 +363,29 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-28（十一）— pi（B2 强杀 + 停止进度；验收改开发包）
+
+**B2 落地**
+- `MCSManagerAPI` **0.5.0**（PR #2）：`GET /api/protected_instance/kill`；官方 apidoc 已收录 →
+  drift 检查 `[ok]`；`/kill` 的 200 **不声明响应体**（实测 `data` 结构不固定：官方写
+  `{instanceUuid}`，10.18.0 实际是 `{instanceUuid, instances:[…]}`），声明 schema 会解码失败；
+- app PR #122：`RemoteServerAction.kill`（`pendingState = .stopping`，`canPerform` 只要不是
+  `offline` 就给 —— 唯一允许在自己过渡态执行的动作）、`RemoteStopProgress`（<30s/30–60s/≥60s）、
+  `stopRequestedAt` 记账、`⋯` 菜单「强制终止」（destructive + 二次确认）、停止中秒数 +
+  久等行内强杀按钮（`TimelineView` 秒级重绘）；exaroton 抛 `actionNotSupported`。
+
+**⚠️ 现场记录（重要）**
+1. 我用 curl 直接探 `/kill` 时对**运行中的 FoliaMC** 发了请求 → 服务器**真的被杀掉**
+   （请求挂到 30 秒超时 = 面板的 `INSTANCE_KILL_TIMEOUT`）。随后用 `/api/protected_instance/open`
+   重新启动，`{"status":200}`，实例已回到 **online**。教训：**不要在运行中的实例上探破坏性端点**，
+   要探就用已停止的实例（我第一步就是用 PaperMC 探的，那步是安全的）。
+2. 笔记里那把 key（`064118…`）现在已经 **403「密钥不正确」**；**钥匙串里那把（len 32）仍然有效**。
+   以后取值一律 `security find-generic-password -s com.joker.OrzMC.credentials -a mcsm.panel.<uuid> -w`
+   （Terminal.app 里跑）。
+
+**验收方式（已固化）**：`swift/app/scripts/dev/install-dev-app.sh --accept` —— 装开发包到
+`/Applications` + 无界面自检，退出码 0；本轮实测面板两个都 `err None`，实例状态 `FoliaMC online`。
 
 ### 2026-10-27（十）— pi（验收改为装开发包）
 
