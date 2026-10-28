@@ -103,7 +103,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **状态** | 🟢 B1 已合入（`swift/lib/MCSManagerAPI` **0.4.0** + `swift/app` PR #120）。0.1.6 (58) 是当前已发布版本；B1 未发版 |
 | **待办看板** | [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（只剩 P2-7；P0/P1/P2-6 已标 ✅） |
 | **swift/app 基线** | `swift/app` `main` = `5e33e74f`（0.1.6 已发 + DX 九项 + **B1 实时流**）；`swift/lib/MCSManagerAPI` = `1206aba`（tag **0.4.0**）；`swift/lib/OrzMCKit` = `f004baa`（22 个子模块）；父仓库 `main` 见 `git log -1` |
-| **已知坑** | ① **真机 XCUITest 可用**：必须**插数据线**（Wi-Fi 下会 `DTX 握手被拒/exit 74`；首次还需设备允许「自动化模式」，保持解锁亮屏）；`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机已知失败**：`testStatusBadgeKeepsSpinningAfterReentering` 在 iPhone SE3 / iOS 27.0.1 上必失败（像素哈希判动画，模拟器绿，**app `main` 上同样失败**，与本轮改动无关，待单独跟）。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`。 |
+| **已知坑** | ① **真机 XCUITest 可用**：必须**插数据线**（Wi-Fi 下会 `DTX 握手被拒/exit 74`；首次还需设备允许「自动化模式」，保持解锁亮屏）；`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机已知失败**：`testStatusBadgeKeepsSpinningAfterReentering` 在 iPhone SE3 / iOS 27.0.1 上必失败（像素哈希判动画，模拟器绿，**app `main` 上同样失败**，与本轮改动无关，待单独跟）。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`；⑧ **验收装开发包**：`swift/app/scripts/dev/install-dev-app.sh [--release|--no-build|--accept|--restore]`（10~20 s，覆盖装 `/Applications`，不要为验收去跑公证）。 |
 | **下一步（下次开工就从这里开始）** | **B2：MCSM `kill`（强杀）+ 异步停止进度**（`POST /api/protected_instance/kill`；面板停止是异步的，需要在过渡态里显示进度/超时提示）。可与 B1 同主题一起发 0.1.7。真机 UI 用 `run-ios-ui-tests.sh --device <UDID> --detach`（**必须插数据线**）；已知设备侧问题见 §0.1 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
@@ -363,6 +363,31 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-27（十）— pi（验收改为装开发包）
+
+**动因**：每次验收都在等 Apple 公证（Release → 签名 → notarize 9 min → dmg → 装 dmg → 断言，
+一轮 10~15 min）。验收要验的是"装好之后能不能用"，跟公证无关。
+
+**落地** `swift/app` PR #121 → `47dd131c`：`scripts/dev/install-dev-app.sh`
+- Debug（默认）/`--release` 开发签名构建，复用 `OrzMC-local`；打印版本 / 架构 / minos / 签名主体；
+- 备份现有 `/Applications/OrzMC.app` 到 `~/Library/Caches/orzmc-app-backup` → `ditto` 覆盖 →
+  `codesign --verify --deep --strict` → `open -a` 启动并确认进程；
+- `--accept` 装完跑无界面自检（面板列表 + 控制台实时流）；`--restore` 还原正式版；
+- 边界写死：不公证/不打包/`spctl` 必报 rejected 属正常，发版门禁仍是 `release.sh` 的 dry-run。
+
+**实测**（Terminal.app）：构建 → `0.1.6 (58)` / `arm64` / `minos 14.0` / `Apple Development: zhizhou wang`
+→ 备份 → 装 `/Applications/OrzMC.app` → 签名校验 → 自检退出码 **0**。
+
+**⚠️ 环境**：自检时两个面板都报 `HTTP 530 / error code 1033` —— **面板的 cloudflared 隧道此刻没起**
+（`curl https://mcs.jokerhub.cn` 同样 530）。代码侧 B1 已在前一轮用真面板验过；面板恢复后
+`install-dev-app.sh --accept` 可直接复跑。
+
+**两个新坑**
+1. `vtool … | awk '/minos/{print $2; exit}'` —— awk 提前 `exit` 让 vtool 吃 SIGPIPE，
+   `set -o pipefail` 下整个脚本返回 141、半路死掉（表里看着像"构建完成就退出"）；
+2. bash 3.2 按字节解析变量名：`say "（$CONFIG，…）"` 会把全角逗号吞进变量名 →
+   `CONFIG，: unbound variable`。**紧跟非 ASCII 一律 `${VAR}`**（本轮又踩一次，已全脚本扫过）。
 
 ### 2026-10-27（九）— pi（B1：MCSM 控制台实时流）
 
