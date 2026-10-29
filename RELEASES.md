@@ -3,18 +3,18 @@
 > 父仓库是产品组合的锚点：本文件记录 `main` 上一次基准组合的各子模块**记录指针**（gitlink）。
 > 更新：`python3 scripts/release/composition.py` 生成表格后粘贴至此；校验：`python3 scripts/verify/check.py`。
 
-## 基准组合（2026-10-28）—— B1/B2 已合入（**未发版**）
+## 基准组合（2026-10-30）—— B1/B2 已合入 + 子模块全量同步（**未发版**）
 
 | 子模块 | 仓库 | 分支 | 记录指针 |
 |---|---|---|---|
-| `deploy` | OrzMC/OrzMCDeploy | `main` | `e72ad9de9506` |
+| `deploy` | OrzMC/OrzMCDeploy | `main` | `acae4528c288` |
 | `plugin` | OrzMC/OrzMCPlugin | `main` | `5eadd6e5b4c8` |
 | `profile` | OrzMC/.github | `main` | `bb6b4ac4c66c` |
 | `proxy` | OrzMC/OrzMCProxy | `main` | `087bb52129a1` |
 | `python` | OrzMC/OrzPythonMC | `main` | `7f5f8f704069` |
 | `site` | OrzMC/OrzMCSite | `main` | `b1500b753152` |
 | `swift/app` | OrzMC/OrzMCApp | `main` | `24f803e3b7e8` |
-| `swift/lib/ExarotonAPI` | OrzMC/ExarotonAPI | `main` | `4f5c1a28985d` |
+| `swift/lib/ExarotonAPI` | OrzMC/ExarotonAPI | `main` | `bd965265ed43` |
 | `swift/lib/MCSManagerAPI` | OrzMC/MCSManagerAPI | `main` | `061866fd4ccd` |
 | `swift/lib/MojangAPI` | OrzMC/MojangAPI | `main` | `c5a0eadb4e83` |
 | `swift/lib/OrzAppUpdater` | OrzGeeker/OrzAppUpdater | `main` | `b23e0c414d78` |
@@ -31,6 +31,8 @@
 | `webmc` | OrzMC/OrzWebMC | `main` | `f0541165bc34` |
 
 > 相比 2026-10-27：`swift/app` → `24f803e3`（PR #122 强杀 + 停止进度，PR #121 开发包安装）、`swift/lib/MCSManagerAPI` → `061866f`（tag **0.5.0**，kill 端点）。
+> 相比 2026-10-28（2026-10-30 全量同步，其余子模块本就与远端一致）：`deploy` → `acae452`（tag **v0.1.2**，含 **v0.1.0 破坏性变更**：`DATA_ROOT` 取消默认值必须显式指定、面板中转成唯一拓扑、边缘层删除、公网游戏端口显式声明 ADR-034）、`swift/lib/ExarotonAPI` → `bd96526`（tag **0.0.10**，补 `TRANSFERRING(9)`、未知状态码退化解码）。
+> ⚠️ `deploy` 属破坏性升级：现有部署需按 `deploy/CHANGELOG.md` / `deploy/EXECUTION_PATH.md` 迁移（显式 `-d DATA_ROOT`、清理已删除的边缘层配置）。
 > 下一步：写 `docs/release-notes/0.1.7.md` → `scripts/dev/release.sh --version 0.1.7`。
 
 ## 基准组合（2026-10-27）—— B1 控制台实时流已合入（**未发版**）
