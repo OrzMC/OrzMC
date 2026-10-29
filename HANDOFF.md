@@ -99,12 +99,12 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 项 | 内容 |
 |---|---|
-| **主题** | **UI 优化 + 验收（已交接给 Codex）**：交接文档 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md)。0.1.7 发版排在这轮之后 |
-| **状态** | 🟢 交接文档已推送（`swift/app` @ `a5dd650a`）。B1/B2 已合入未发版；0.1.6 (58) 仍是当前已发布版本 |
+| **主题** | **远程托管多账号与实例 UI**（维护者最新要求：先 Mac，用 Mac 凭据在模拟器开发；真机之后统一验收）：原交接文档 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md)。0.1.7 发版排在这轮之后 |
+| **状态** | 🟢 多账号 PR [#123](https://github.com/OrzMC/OrzMCApp/pull/123) 已 squash 合入（app `84325973`），完整 Mac 门禁、整套模拟器 UI 与必需 CI 全绿。Mac 开发包已安装；0.1.6 (58) 仍是当前已发布版本，未发版 |
 | **待办看板** | 本轮看 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md) §4（UI-1..UI-6）；历史 [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 已全 ✅ |
-| **swift/app 基线** | `swift/app` `main` = `a5dd650a`（0.1.6 已发 + DX 九项 + B1 实时流 + B2 强杀 + UI 交接文档）；`swift/lib/MCSManagerAPI` = `061866f`（tag **0.5.0**）；`swift/lib/OrzMCKit` = `f004baa`；父仓库 `main` 见 `git log -1` |
+| **swift/app 基线** | `swift/app` `main` = `84325973`（多供应商多账号与实例展示 + Terminal 启动修复）；`swift/lib/MCSManagerAPI` = `061866f`（tag **0.5.0**）；`swift/lib/OrzMCKit` = `f004baa`；父仓库 `main` 见 `git log -1` |
 | **已知坑** | ① **真机 XCUITest 可用**：必须**插数据线**（Wi-Fi 下会 `DTX 握手被拒/exit 74`；首次还需设备允许「自动化模式」，保持解锁亮屏）；`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机已知失败**：`testStatusBadgeKeepsSpinningAfterReentering` 在 iPhone SE3 / iOS 27.0.1 上必失败（像素哈希判动画，模拟器绿，**app `main` 上同样失败**，与本轮改动无关，待单独跟）。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`；⑧ **验收装开发包**：`swift/app/scripts/dev/install-dev-app.sh [--release|--no-build|--accept|--restore]`（10~20 s，覆盖装 `/Applications`，不要为验收去跑公证）。 |
-| **下一步（下次开工就从这里开始）** | **Codex 按 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md) 做 UI 优化 + 验收**（从 P0 UI-1 真机必失败用例开始）。本轮结束后再发 **0.1.7**：写 `docs/release-notes/0.1.7.md` → `./scripts/dev/release.sh --version 0.1.7`；验收用 `./scripts/dev/install-dev-app.sh --accept`。面板 API key 只用**钥匙串里的那把**（笔记里的旧 key 已 403） |
+| **下一步（下次开工就从这里开始）** | 维护者先验收已安装的 Mac 远程托管账号页；实现与验收细节见 [`swift/app/docs/remote-accounts-2026-10-30.md`](swift/app/docs/remote-accounts-2026-10-30.md)。原 UI-1 真机判据、UI-3 停止秒数及大字号全面巡检尚未完成，真机由维护者后续统一验收。本轮不发版 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
 ## 2. 状态快照（Repo State）
@@ -363,6 +363,15 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-30 — Codex（远程托管多账号、界面复用与 Terminal 启动修复）
+
+- 维护者明确扩大范围为“每个供应商多个账号、每个账号多个实例”；之后指定先做 Mac，使用 Mac 凭据在模拟器开发，真机验收留待之后统一进行。
+- app 分支 `feat/ui-polish-remote-accounts` 已推送，PR [#123](https://github.com/OrzMC/OrzMCApp/pull/123)；实现 exaroton 账号 UUID + 独立 Keychain + 独立模型，旧 Token 成功迁移后才删除，迁移失败保留旧凭据。MCSM 同一地址支持不同凭据。供应商标题、账号标题、表单框架及实例名称/徽章布局共用；独有能力特化，不操作真实服务器生命周期。
+- `check.sh` 完整门禁通过；新增迁移失败保护与账号隔离单测通过。模拟器多账号、详情自动进入、Mac 真实凭据页面和截图巡检共 4 项定向全绿；最终整套 `check.sh --ui` 全绿（含旋转徽章重入），PR 必需 CI 全绿。改前/改后和账号截图已随 PR 保存到 `swift/app/docs/ui-remote-accounts/`。
+- Mac 开发版已安装到 `/Applications/OrzMC.app`（保留原安装备份），`install-dev-app.sh --accept` 退出 0；管理员／普通用户两账号各两台实例，四路只读控制台流均 LIVE。真实 Mac 面板凭据经进程环境注入模拟器，已只读验证相同两账号与实例，不复制或提交凭据。
+- Terminal 故障已定位为沙箱中的 LaunchServices 限制：名称查询失败，完整路径也可能误报可执行文件缺失；沙箱外成功。与 Ghostty 默认终端无关。脚本使用系统完整路径并明确沙箱外执行要求，`.command` 写回探针和开发版安装均验证通过。
+- 原 UI-1 真机判据、UI-3 exaroton 停止进度及大字号全面巡检未标完成。未发版；PR #123 已 squash 合入 app `84325973`，本次父仓库显式 bump `swift/app` 指针到该远端 main 提交。
 
 ### 2026-10-30（十二）— pi（子模块全量同步）
 
