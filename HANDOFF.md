@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-10-25 by pi（P2-7 第 1 步：供应商抽象层）
+> **最后更新**：2026-10-30 by pi（子模块全量同步：deploy v0.1.2 + ExarotonAPI 0.0.10）
 
 ---
 
@@ -363,6 +363,17 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-30（十二）— pi（子模块全量同步）
+
+- 逐个 `fetch` 对比 22 个子模块：**只有 2 个落后远端**，其余全部已与 `origin/<branch>` 一致
+  （`tools/thanos` / `tools/LoginSecurity` 按 `master` 比对，也已一致）。
+- `deploy` → `acae452`（`v0.1.2-1`，落后 24 个提交）：**v0.1.0 破坏性变更** ——
+  `DATA_ROOT` 取消默认值必须显式 `-d`、边缘层删除、面板中转成唯一拓扑、`MC_PUBLIC_TCP/UDP` 显式声明（ADR-034）。
+  ⚠️ **实际部署升级要按 `deploy/CHANGELOG.md` 迁移**，父仓库 bump 只是记录组合。
+- `swift/lib/ExarotonAPI` → `bd96526`（tag `0.0.10`）：补 `TRANSFERRING(9)`、未知状态码退化解码（避免整条消息解码失败）。
+- `RELEASES.md` 顶部基准组合刷新为 **2026-10-30**，并写明 deploy 的破坏性升级提示。
+- `scripts/verify/check.py` 全绿（PASS=79 FAIL=0）。**未跑** deploy 的 docker 门禁（其 CI 已在上游跑过）。
 
 ### 2026-10-28（十一）— pi（B2 强杀 + 停止进度；验收改开发包）
 
