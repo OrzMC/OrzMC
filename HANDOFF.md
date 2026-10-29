@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-10-30 by pi（子模块全量同步：deploy v0.1.2 + ExarotonAPI 0.0.10）
+> **最后更新**：2026-10-30 by pi（UI 优化 + 验收交接给 Codex）
 
 ---
 
@@ -99,12 +99,12 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 项 | 内容 |
 |---|---|
-| **主题** | **B1 + B2 已完成**（实时流、强杀 + 停止进度）；MCSM 体验补齐告一段落 → 下一步 **0.1.7 发版**（或回产品主线挑新主题） |
-| **状态** | 🟢 B1/B2 均已合入（`MCSManagerAPI` **0.5.0** + `swift/app` PR #120/#122）。0.1.6 (58) 仍是当前已发布版本；B1+B2 未发版 |
-| **待办看板** | [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)（只剩 P2-7；P0/P1/P2-6 已标 ✅） |
-| **swift/app 基线** | `swift/app` `main` = `24f803e3`（0.1.6 已发 + DX 九项 + B1 实时流 + **B2 强杀**）；`swift/lib/MCSManagerAPI` = `061866f`（tag **0.5.0**）；`swift/lib/OrzMCKit` = `f004baa`（22 个子模块）；父仓库 `main` 见 `git log -1` |
+| **主题** | **UI 优化 + 验收（已交接给 Codex）**：交接文档 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md)。0.1.7 发版排在这轮之后 |
+| **状态** | 🟢 交接文档已推送（`swift/app` @ `a5dd650a`）。B1/B2 已合入未发版；0.1.6 (58) 仍是当前已发布版本 |
+| **待办看板** | 本轮看 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md) §4（UI-1..UI-6）；历史 [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 已全 ✅ |
+| **swift/app 基线** | `swift/app` `main` = `a5dd650a`（0.1.6 已发 + DX 九项 + B1 实时流 + B2 强杀 + UI 交接文档）；`swift/lib/MCSManagerAPI` = `061866f`（tag **0.5.0**）；`swift/lib/OrzMCKit` = `f004baa`；父仓库 `main` 见 `git log -1` |
 | **已知坑** | ① **真机 XCUITest 可用**：必须**插数据线**（Wi-Fi 下会 `DTX 握手被拒/exit 74`；首次还需设备允许「自动化模式」，保持解锁亮屏）；`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机已知失败**：`testStatusBadgeKeepsSpinningAfterReentering` 在 iPhone SE3 / iOS 27.0.1 上必失败（像素哈希判动画，模拟器绿，**app `main` 上同样失败**，与本轮改动无关，待单独跟）。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`；⑧ **验收装开发包**：`swift/app/scripts/dev/install-dev-app.sh [--release|--no-build|--accept|--restore]`（10~20 s，覆盖装 `/Applications`，不要为验收去跑公证）。 |
-| **下一步（下次开工就从这里开始）** | **发 0.1.7**：先写 `docs/release-notes/0.1.7.md`（B1 实时流 + B2 强杀/停止进度），再 `./scripts/dev/release.sh --version 0.1.7`。验收用 `./scripts/dev/install-dev-app.sh --accept`（装开发包，别为验收去公证）。面板 API key 只用**钥匙串里的那把**（笔记里的旧 key 已 403） |
+| **下一步（下次开工就从这里开始）** | **Codex 按 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md) 做 UI 优化 + 验收**（从 P0 UI-1 真机必失败用例开始）。本轮结束后再发 **0.1.7**：写 `docs/release-notes/0.1.7.md` → `./scripts/dev/release.sh --version 0.1.7`；验收用 `./scripts/dev/install-dev-app.sh --accept`。面板 API key 只用**钥匙串里的那把**（笔记里的旧 key 已 403） |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
 ## 2. 状态快照（Repo State）
@@ -374,6 +374,9 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 - `swift/lib/ExarotonAPI` → `bd96526`（tag `0.0.10`）：补 `TRANSFERRING(9)`、未知状态码退化解码（避免整条消息解码失败）。
 - `RELEASES.md` 顶部基准组合刷新为 **2026-10-30**，并写明 deploy 的破坏性升级提示。
 - `scripts/verify/check.py` 全绿（PASS=79 FAIL=0）。**未跑** deploy 的 docker 门禁（其 CI 已在上游跑过）。
+- 之后写 **UI 优化 + 验收交接文档** `swift/app/docs/ui-handoff-2026-10-30.md`（`swift/app` @ `a5dd650a`），
+  含环境事实、UI-1..UI-6 候选任务、红线、验收协议（`check.sh` 各档 / 真机 `--detach` / 截图巡检导出 /
+  `install-dev-app --accept`）与可直接复制的 Codex 提示词。
 
 ### 2026-10-28（十一）— pi（B2 强杀 + 停止进度；验收改开发包）
 
