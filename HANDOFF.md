@@ -100,9 +100,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | **远程托管多账号与实例 UI**（维护者最新要求：先 Mac，用 Mac 凭据在模拟器开发；真机之后统一验收）：原交接文档 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md)。0.1.7 发版排在这轮之后 |
-| **状态** | 🟢 多账号 PR [#123](https://github.com/OrzMC/OrzMCApp/pull/123) 已 squash 合入（app `84325973`），完整 Mac 门禁、整套模拟器 UI 与必需 CI 全绿。Mac 开发包已安装；0.1.6 (58) 仍是当前已发布版本，未发版 |
+| **状态** | 🟢 账号样式与名称修复 [PR #124](https://github.com/OrzMC/OrzMCApp/pull/124) 已 squash 合入（app `91c46266`），完整 Mac 门禁、整套模拟器 UI 与必需 CI 全绿。Mac 开发包已安装；0.1.6 (58) 仍是当前已发布版本，未发版 |
 | **待办看板** | 本轮看 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md) §4（UI-1..UI-6）；历史 [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 已全 ✅ |
-| **swift/app 基线** | `swift/app` `main` = `84325973`（多供应商多账号与实例展示 + Terminal 启动修复）；`swift/lib/MCSManagerAPI` = `061866f`（tag **0.5.0**）；`swift/lib/OrzMCKit` = `f004baa`；父仓库 `main` 见 `git log -1` |
+| **swift/app 基线** | `swift/app` `main` = `91c46266`（多账号操作样式统一 + exaroton 账号名称自动读取）；`swift/lib/MCSManagerAPI` = `061866f`（tag **0.5.0**）；`swift/lib/OrzMCKit` = `f004baa`；父仓库 `main` 见 `git log -1` |
 | **已知坑** | ① **真机 XCUITest 可用**：必须**插数据线**（Wi-Fi 下会 `DTX 握手被拒/exit 74`；首次还需设备允许「自动化模式」，保持解锁亮屏）；`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机已知失败**：`testStatusBadgeKeepsSpinningAfterReentering` 在 iPhone SE3 / iOS 27.0.1 上必失败（像素哈希判动画，模拟器绿，**app `main` 上同样失败**，与本轮改动无关，待单独跟）。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`；⑧ **验收装开发包**：`swift/app/scripts/dev/install-dev-app.sh [--release|--no-build|--accept|--restore]`（10~20 s，覆盖装 `/Applications`，不要为验收去跑公证）。 |
 | **下一步（下次开工就从这里开始）** | 维护者先验收已安装的 Mac 远程托管账号页；实现与验收细节见 [`swift/app/docs/remote-accounts-2026-10-30.md`](swift/app/docs/remote-accounts-2026-10-30.md)。原 UI-1 真机判据、UI-3 停止秒数及大字号全面巡检尚未完成，真机由维护者后续统一验收。本轮不发版 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
@@ -363,6 +363,13 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-10-30 — Codex（远程账号样式与模拟器崩溃排查）
+
+- 维护者反馈两家添加账号按钮和账号菜单样式不一致，exaroton 卡重复显示供应商名；app [PR #124](https://github.com/OrzMC/OrzMCApp/pull/124) 已 squash 合入 `main`（`91c46266`），必需 CI 全绿。SDK 的 `GET /account/` 提供账号 `name`，代码仅替换默认名称并保留手工名称，旧数据兼容；查询失败显示通用账号占位。
+- 使用本机现有凭据只读对照 exaroton：Python 默认 User-Agent 的 `/account/` 和 `/servers/` 返回 403；相同凭据、相同网络路径设 `User-Agent: OrzMC` 后 `/account/` 返回 200 且名称非空，直接连接亦返回 200。证据指向服务端对探针 User-Agent 的处理；应用内使用同一凭据的真实账号 UI 用例已通过。未执行真实服务器生命周期操作。
+- 10:49:17 Codex 为替换旧源码测试向本轮 `xcodebuild` 发送终止信号；10:49:18.448 模拟器 `SpringBoard` 在 `XCTAutomationSupport` 创建自动化会话时因无效地址崩溃。时间紧邻，强烈提示测试中断触发模拟器自动化组件缺陷，但无法从堆栈证明内部根因；不是 Mac 版 OrzMC 进程崩溃。后续避免强停并立即重启同一模拟器 UI 测试。
+- Mac 完整门禁、账号名称定向单测及整套模拟器 UI 回归通过；Mac 开发包已安装、签名校验及只读面板自检通过。父仓库本次显式 bump `swift/app` 到 `91c46266`。真机验收仍由维护者后续统一进行，不发版。
 
 ### 2026-10-30 — Codex（远程托管多账号、界面复用与 Terminal 启动修复）
 
