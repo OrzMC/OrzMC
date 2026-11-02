@@ -1,6 +1,6 @@
 # 正版授权契约（Microsoft Account Auth）
 
-> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-10-15
+> **状态**：草案 `specVersion 0.1` ｜ **最后更新**：2026-11-02
 > **定位**：`orzmc client --auth` 的**语言无关契约**——定义 Microsoft 设备码流程、请求/响应映射、
 > 令牌模型与持久化、非 TTY 行为、错误码与安全红线。实现（Python / Swift）必须映射到本契约，
 > 并通过 [`conformance.md`](conformance.md) 的 `auth/*` 纯映射样例。
@@ -175,6 +175,8 @@
 | MC token 剩余 `<= skew`（skew 默认 `60s`） | 视为**需刷新**（`stale`） |
 | MC token 已过期 | 用 `msa.refresh_token` 刷新 MSA → 重走 §2 ③④⑤ |
 | 刷新被拒（`invalid_grant`） | 清除持久化令牌 → `E_AUTH_EXPIRED`，需重新登录 |
+| 刷新期间网络/服务临时错误 | 保留已保存的会话，返回错误供重试；不自动清除或启动设备码登录 |
+| MSA 刷新成功、后续 Xbox/Minecraft 请求失败 | 仍持刷新锁时先保存已轮换的 MSA 令牌及旧 MC 会话，再返回错误供重试 |
 | 档案返回 `401` | 强制刷新一次；仍 `401` → `E_AUTH_NO_GAME` |
 
 `authTokenState(expiresAt, now, skewSeconds=60)` → `valid` / `stale` / `expired`（见 §9）。
@@ -222,7 +224,7 @@
 | 场景 | 规范 |
 |:--|:--|
 | `--auth` + 有有效持久化令牌 | 静默复用，不弹设备码；`source = cache` |
-| `--auth` + 令牌 `stale`/过期 | 先刷新（`source = refresh`），失败再走设备码 |
+| `--auth` + 令牌 `stale`/过期 | 先刷新（`source = refresh`）；明确的 `invalid_grant` 清除旧会话并走设备码，临时错误保留会话并返回错误 |
 | TTY + 无令牌 | 打印设备码 + `verification_uri`，按 `interval` 轮询 |
 | **非 TTY + 无令牌** | **不读 stdin**：设备码/提示写 **stderr**，仍按 `interval` 轮询；受 `expires_in` 限制 |
 | `--json` | 设备码/进度/日志一律 **stderr**；stdout **恰好一个**信封；`data` **不含任何 token** |

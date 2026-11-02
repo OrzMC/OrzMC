@@ -1,18 +1,18 @@
 # OrzMC 客户端/服务端工具统一化推进计划
 
-> **状态**：草案（待评审） ｜ **创建**：2026-10 ｜ **维护方式**：每推进一步更新本文档的状态表与「变更记录」
+> **状态**：历史计划（部分决策已被替代） ｜ **创建**：2026-10 ｜ **复核**：2026-11-02
 >
-> 本文档是这项工作的**单一事实来源**。任何新会话/AI 智能体只读本文件 + 第 9 章列出的源文件，
-> 即可无损接着推进。**不要**依赖聊天记录或记忆。
+> 当前 CLI 分工以 [`two-cli-strategy.md` §6](two-cli-strategy.md#6-2026-10-20-方向调整当前生效) 为准：
+> Python 是实现主体和唯一对外分发渠道，Swift 同步迭代但不对外分发。
+> 本文 D13、D14 及 Phase 6 的退场计划属于被该决策替代的历史；进度和样例数是当时快照，
+> 当前工作状态以 [`HANDOFF.md`](../HANDOFF.md) §1 和实时校验结果为准。
 
 ---
 
 ## 0. 如何使用本文档
 
-1. 先读第 2 章「现状事实（已核验）」——它是决策依据，路径均已核对。
-2. 再读第 3 章「核心决策」——已经拍板的方向，除非有新证据否则不再翻案。
-3. 按第 5 章「阶段计划」推进，每完成一项就把第 6 章状态表的复选框勾上，并在第 10 章追加一条记录。
-4. 悬而未决的事项集中在第 7 章，推进前先清掉阻塞项。
+本文保留统一规范及历史架构决策的背景；继续工作前先读取当前策略和交接文档，
+不要把本文的历史复选框或版本视为实时状态。
 
 ---
 
@@ -94,11 +94,11 @@ natives OS-arch 规则、Java 版本推导、Fabric/Forge/Paper provider、启�
 | D10 | Swift/SwiftPM 依赖一律用 `OrzMC/*` **规范路径**（禁重定向）；`OrzMCKit` 本地覆盖**仅供开发态、不提交** | 消除重定向误读，同时不破坏 app 独立构建 |
 | D11 | **外部 Swift 依赖版本策略：HEAD 制**——`OrzMCKit` 的 `MojangAPI`/`PaperMC`/`OrzSwiftKit` 改用 `branch: main` | 与 Q7 一致，支撑快速迭代 |
 | D12 | **`MojangAPI` 平台下限抬到 macOS 13 / iOS 16**（消费 `CacheKit`） | 统一缓存层跨包复用；预稳定期可接受 |
-| D13 | **Swift `orzmc` CLI 作为发行产品**：独立 release 线（`OrzMCKit` 的 release-please + tag `vX.Y.Z`），资产 `orzmc-macos-{arm64,x86_64}`，与 Python 同规范（install.conf / PATH / 补全 / `update` / `uninstall` / `app`）；版本身份暂用 OrzMCKit 版本线（是否与 Python 统一待定） | 兑现 D7「一个 `orzmc`」：两面都发行 |
+| D13（已替代） | **Swift `orzmc` CLI 作为发行产品**：独立 release 线（`OrzMCKit` 的 release-please + tag `vX.Y.Z`），资产 `orzmc-macos-{arm64,x86_64}`，与 Python 同规范（install.conf / PATH / 补全 / `update` / `uninstall` / `app`）；版本身份暂用 OrzMCKit 版本线（是否与 Python 统一待定） | 兑现 D7「一个 `orzmc`」：两面都发行 |
 
-| D14 | **迭代收敛到单一 CLI 实现**：以 **Swift `orzmc`** 为唯一 CLI 方向，**Python CLI 进入维护模式**（只修安全/致命缺陷，不再新增功能）；Swift 侧跨平台验证通过后**停掉 Python CLI 的迭代** | 维护「一份规范 + 两套实现」的双份迭代成本已高于收益（2026-10 的 CLI 契约 0.2 就要在两侧各改一遍）；Swift 长期会走向跨平台，且 GUI 已共用 `Game` 引擎，收敛后引擎只有一份。**但收敛必须由验证驱动**，见 D14.1 的退场判据 |
+| D14（已替代） | **迭代收敛到单一 CLI 实现**：以 **Swift `orzmc`** 为唯一 CLI 方向，**Python CLI 进入维护模式**（只修安全/致命缺陷，不再新增功能）；Swift 侧跨平台验证通过后**停掉 Python CLI 的迭代** | 维护「一份规范 + 两套实现」的双份迭代成本已高于收益（2026-10 的 CLI 契约 0.2 就要在两侧各改一遍）；Swift 长期会走向跨平台，且 GUI 已共用 `Game` 引擎，收敛后引擎只有一份。**但收敛必须由验证驱动**，见 D14.1 的退场判据 |
 
-**D14.1 Python CLI 退场判据**（四条全部满足才停迭代 / 停止发行；任一不满足则 Python 仍是跨平台主力）：
+**D14.1 Python CLI 退场判据（历史，已替代）**：以下为旧方案，并非当前执行规则。
 
 1. **Linux 官方资产**：`orzmc-linux-{x86_64,arm64}` 有 release 产物，`scripts/accept_cli.py` 在**真实二进制**上全绿；
 2. **Windows 官方资产**：`orzmc-windows-{x86_64,arm64}` 同上（含 `install.ps1` / 补全 / 自升级）；
@@ -228,7 +228,7 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 
 ### Phase 6 — 跨平台收敛（D14：Swift 唯一 CLI 实现）
 
-> 目标：把 Swift `orzmc` 推到 Linux/Windows，达标后停掉 Python CLI 迭代（判据见 D14.1）。
+> **历史方案，已替代**：当前 CLI 方向见文首和 `two-cli-strategy.md` §6。以下进度保留作为当时记录。
 
 | 步骤 | 内容 | 影响仓库 | 验收 |
 |---|---|---|---|

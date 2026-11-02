@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-10-30 by pi（UI 优化 + 验收交接给 Codex）
+> **最后更新**：2026-11-02 by Codex（工程审查与可靠性改进）
 
 ---
 
@@ -29,6 +29,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 ## 0.1 接力提示词（**维护者不用复制** —— `AGENTS.md` §0 会让新会话自己读到这里）
 
+> **历史提示**：以下内容记录 2026-10-25 的环境与任务；版本、焦点和设备状态可能已变化。
+> 当前任务以用户最新要求及 §1 为准，实际 Git 状态以自检命令为准。
+>
 > 你在 `OrzMC` 父仓库（产品伞，22 个子模块）。**先读 `AGENTS.md`（规则）+ `HANDOFF.md`（状态）**，
 > 再按需读 `docs/`。铁律：**代码改子模块、父仓库只 bump 指针**、**禁用 `git add -A`**、
 > 一次提交只 bump 一个子模块（同一产品级变更可合并 bump，见 AGENTS §2）。
@@ -99,15 +102,15 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 项 | 内容 |
 |---|---|
-| **主题** | **远程托管多账号与实例 UI**（维护者最新要求：先 Mac，用 Mac 凭据在模拟器开发；真机之后统一验收）：原交接文档 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md)。0.1.7 发版排在这轮之后 |
-| **状态** | 🟢 控制台公共行组件接入 [PR #127](https://github.com/OrzMC/OrzMCApp/pull/127) 和公共库 [PR #21](https://github.com/OrzGeeker/OrzSwiftKit/pull/21) 已合入（app `ec2c4d69`、OrzSwiftKit `ef1ec716`），Mac 门禁、模拟器 UI 和必需 CI 通过。Mac 开发包已安装；0.1.6 (58) 仍是当前已发布版本，未发版 |
+| **主题** | 工程审查后的认证、协议、控制台性能、依赖组合及验收链路收敛；保留此前远程托管 UI 的真机待验收项。本轮不发版 |
+| **状态** | 🟢 认证、控制台、RCON、公共组件说明、Windows 锁测试与 App 依赖对齐均已合入并通过 PR 门禁；父仓库组合提交与 CI 见本次提交。未发版，真机验收待维护者统一进行 |
 | **待办看板** | 本轮看 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md) §4（UI-1..UI-6）；历史 [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 已全 ✅ |
-| **swift/app 基线** | `swift/app` `main` = `ec2c4d69`；`swift/lib/OrzSwiftKit` `main` = `ef1ec716`；`swift/lib/MCSManagerAPI` = `061866f`（tag **0.5.0**）；`swift/lib/OrzMCKit` = `f004baa`；父仓库 `main` 见 `git log -1` |
+| **swift/app 基线** | app `89b7baf8`；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
 | **已知坑** | ① **真机 XCUITest 可用**：必须**插数据线**（Wi-Fi 下会 `DTX 握手被拒/exit 74`；首次还需设备允许「自动化模式」，保持解锁亮屏）；`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机已知失败**：`testStatusBadgeKeepsSpinningAfterReentering` 在 iPhone SE3 / iOS 27.0.1 上必失败（像素哈希判动画，模拟器绿，**app `main` 上同样失败**，与本轮改动无关，待单独跟）。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`；⑧ **验收装开发包**：`swift/app/scripts/dev/install-dev-app.sh [--release|--no-build|--accept|--restore]`（10~20 s，覆盖装 `/Applications`，不要为验收去跑公证）。 |
-| **下一步（下次开工就从这里开始）** | 验收 Mac 控制台公共行组件；继续评估共享日志行模型、输入和远程跟随行为（当前仍保留各业务实现）。原 UI-1 真机判据、UI-3 停止秒数及大字号全面巡检尚未完成，真机由维护者后续统一验收。本轮不发版 |
+| **下一步（下次开工就从这里开始）** | 维护者统一真机验收；原 UI-1 真机判据、UI-3 停止秒数及大字号巡检仍未完成。RCON 非标准服务端结束探针兼容性、Windows 凭据 ACL 与 Thread Sanitizer 尚待受控验证；持续改进项见 `docs/engineering-review-2026-11-02.md` |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
-## 2. 状态快照（Repo State）
+## 2. 状态快照（Repo State，历史记录）
 
 > 最新接力分支：`feat/ui-refresh-handoff`；本轮仅 bump `swift/app` 到 `b13b422`（远端 app 分支 `feat/ui-refresh`）。以下历史表格不作为当前 Git 指针依据，实际以 `git ls-tree HEAD` 为准。
 
@@ -363,6 +366,13 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-02 — Codex（工程审查与可靠性改进）
+
+- 认证与并发：`OrzMCKit#104`、`OrzPythonMC#109`、`OrzMCApp#128` 已合入；两端保留可恢复认证会话，App 协议超时取消避免并发关闭。Python 质量门禁 488 通过 / 3 跳过，六平台 PR CI 通过。
+- 控制台与依赖治理：`OrzMCApp#129/#130`、`OrzSwiftKit#22` 已合入；MCSM 实时日志增量解析、UTF-8 截断修复、模拟器前后截图和完整 UI 测试通过；锁定组合构建及模拟器冒烟进入 CI。App 指针尚待最后对齐。
+- `OrzMCApp#131` 的 RCON 多包结束探针、`OrzMCKit#105` 的 Windows 陈旧锁测试修复及 App 依赖对齐 `#132` 已合入；#105 手动 CI `41442839780` 的 Windows x64/ARM64 均通过，#132 最终 PR CI 含模拟器冒烟通过。非标准 RCON 服务端对结束探针的兼容性尚未实测，未操作真实服务器。
+- 父仓库新增 App 锁文件与七个 Swift gitlink 的一致性检查及测试，并显式记录同一产品级变更涉及的四个子模块指针。本轮不发版，真机验收按维护者要求后续进行。
 
 ### 2026-11-02 — Codex（控制台公共显示层）
 

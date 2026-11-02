@@ -26,4 +26,6 @@ jobs:
             swift/lib/ExarotonAPI swift/lib/OrzSwiftKit swift/lib/OrzAppUpdater
 
       - name: Verify composition + conformance reference
-        run: python3 scripts/verify/check.py
+        run: |
+          python3 scripts/verify/test_app_dependency_pins.py
+          python3 scripts/verify/check.py

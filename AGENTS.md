@@ -247,7 +247,8 @@ git diff --submodule <路径>
 ## 8. 构建与验证
 
 - 父仓库**（可选）组合校验**：`python3 scripts/verify/check.py`（登记表与 `.gitmodules` 一致性 +
-  一致性参考自检），已接父仓库 CI（`.github/workflows/ci.yml`）；`--remote` 追加远端指针存在性检查
+  一致性参考自检 + App 已记录提交的 Xcode 锁文件与父仓库暂存的自有 Swift 依赖指针对齐），
+  已接父仓库 CI（`.github/workflows/ci.yml`）；`--remote` 追加远端指针存在性检查
   （在各子模块 `fetch` 后用 `git branch -r --contains` 判断 —— 不能用 `git ls-remote <url> <sha>`，
   它只匹配 ref 名，会把钉在非 tip 提交的子模块全部误报）。
 - 质量门禁在**各子模块内部**（业务构建/测试）：

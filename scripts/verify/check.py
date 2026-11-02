@@ -5,15 +5,17 @@
 1. `AGENTS.md` 子模块登记表 与 `.gitmodules` 的路径集合一致；
 2. 一致性套件用**规范参考适配器**自检全绿（离线）；
 3. CLI 命令面 manifest（`docs/spec/cli-surface.json`）结构自检（离线）；
-4. `--remote`：各子模块记录指针确实存在于远端（需网络）。
+4. App 的 Xcode 锁文件与父仓库所记录的自有 Swift 依赖版本一致；
+5. `--remote`：各子模块记录指针确实存在于远端（需网络）。
 
 用法：
-  python3 scripts/verify/check.py            # 1 + 2 + 3
-  python3 scripts/verify/check.py --remote   # 追加 4
+  python3 scripts/verify/check.py            # 离线检查
+  python3 scripts/verify/check.py --remote   # 追加远端指针检查
 """
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import subprocess
 import sys
@@ -22,6 +24,17 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 AGENTS = REPO / "AGENTS.md"
 GITMODULES = REPO / ".gitmodules"
+
+# App's Xcode lockfile must describe the same owned libraries as the umbrella.
+APP_DEPENDENCIES = {
+    "exarotonapi": "swift/lib/ExarotonAPI",
+    "mcsmanagerapi": "swift/lib/MCSManagerAPI",
+    "mojangapi": "swift/lib/MojangAPI",
+    "orzappupdater": "swift/lib/OrzAppUpdater",
+    "orzmckit": "swift/lib/OrzMCKit",
+    "orzswiftkit": "swift/lib/OrzSwiftKit",
+    "papermc": "swift/lib/PaperMC",
+}
 
 
 def fail(msg: str) -> None:
@@ -139,6 +152,40 @@ def check_platforms() -> bool:
     return True
 
 
+def check_app_dependency_pins() -> bool:
+    """Compare Xcode's committed dependency revisions with staged umbrella gitlinks."""
+    app_link = subprocess.run(["git", "ls-files", "-s", "--", "swift/app"], cwd=REPO,
+                              capture_output=True, text=True, check=False).stdout.split()
+    if len(app_link) != 4 or app_link[0] != "160000" or app_link[2] != "0":
+        fail("父仓库缺少 swift/app 子模块指针")
+        return False
+    lock_path = "OrzMC.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+    result = subprocess.run(["git", "show", f"{app_link[1]}:{lock_path}"], cwd=REPO / "swift/app",
+                            capture_output=True, text=True, check=False)
+    if result.returncode:
+        fail("无法读取父仓库记录的 App 提交或其依赖锁文件；请初始化对应子模块")
+        return False
+    try:
+        pins = {pin["identity"]: pin["state"]["revision"] for pin in json.loads(result.stdout)["pins"]}
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        fail(f"无法读取 App 的依赖锁文件：{exc}")
+        return False
+    ok = True
+    for identity, submodule in APP_DEPENDENCIES.items():
+        result = subprocess.run(["git", "ls-files", "-s", "--", submodule], cwd=REPO,
+                                capture_output=True, text=True, check=False)
+        fields = result.stdout.split()
+        expected = (fields[1] if result.returncode == 0 and len(fields) == 4
+                    and fields[0] == "160000" and fields[2] == "0" else None)
+        actual = pins.get(identity)
+        if not expected or actual != expected:
+            fail(f"App 依赖 {identity} 与父仓库 {submodule} 指针不一致：{actual or '缺失'} / {expected or '缺失'}")
+            ok = False
+    if ok:
+        print(f"[ok] App 锁文件与 {len(APP_DEPENDENCIES)} 个自有依赖指针一致")
+    return ok
+
+
 def check_remote() -> bool:
     """子模块记录指针是否**已推到远端**。
 
@@ -197,6 +244,7 @@ def main() -> int:
         check_parity_ledger(),
         check_compliance(),
         check_platforms(),
+        check_app_dependency_pins(),
     ]
     if args.remote:
         results.append(check_remote())

@@ -25,7 +25,8 @@
 | 文档 | 状态 | 内容 | 位置 |
 |:--|:--|:--|:--|
 | [product-architecture.md](product-architecture.md) | 现行 | **产品架构**：仓库角色地图、分层模型（L0 规范 / L1 引擎 / L2 前端 / L3 产品伞）、引擎六阶段、**允许依赖方向与禁止事项**、治理与已知差异 | docs/ |
-| [product-unification-plan.md](product-unification-plan.md) | 草案 | 客户端/服务端工具（`python` × `app`）统一化推进计划：已核验事实、决策 D1–D9、Phase 0–5、开放问题、上下文包 | docs/ |
+| [engineering-review-2026-11-02.md](engineering-review-2026-11-02.md) | 核心整改已合入 | 核心链路工程审查、整改证据与未验证边界 | docs/ |
+| [product-unification-plan.md](product-unification-plan.md) | 历史计划 | 客户端/服务端工具统一化的历史方案与决策；当前 CLI 分工以 `two-cli-strategy.md` 为准 | docs/ |
 | [two-cli-strategy.md](two-cli-strategy.md) | 生效中 | **两套 CLI 并行策略**：四种模型对比、并行期规则 R1–R5、`lead` 分工表、台账机制、中期路线 M1–M3（Python 作发行通道） | docs/ |
 | [cli-comparison.md](cli-comparison.md) | 生效中 | **两套 CLI 实测对比**：启动/CPU/内存、独立可运行性、依赖数、迭代效率、发布难易、结论与并行期分工；可复跑脚本 `scripts/bench/cli.py` | docs/ |
 | [platform-support.md](platform-support.md) | 现行 | **平台支持矩阵**：macOS 版本 × 芯片架构分层（Intel 已支持 / 逻辑层 CLI 钉 macOS 13 / GUI 要求 14）、证据与复跑命令、Intel 冒烟清单、「要不要把 GUI 降到 13」的代价清单 | docs/ |
