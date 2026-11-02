@@ -100,11 +100,11 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | **远程托管多账号与实例 UI**（维护者最新要求：先 Mac，用 Mac 凭据在模拟器开发；真机之后统一验收）：原交接文档 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md)。0.1.7 发版排在这轮之后 |
-| **状态** | 🟢 玩家长名单性能优化 [PR #126](https://github.com/OrzMC/OrzMCApp/pull/126) 已 squash 合入（app `1071c951`），完整 Mac 门禁、单台模拟器完整 UI 重跑与必需 CI 全绿。Mac 开发包已安装；0.1.6 (58) 仍是当前已发布版本，未发版 |
+| **状态** | 🟢 控制台公共行组件接入 [PR #127](https://github.com/OrzMC/OrzMCApp/pull/127) 和公共库 [PR #21](https://github.com/OrzGeeker/OrzSwiftKit/pull/21) 已合入（app `ec2c4d69`、OrzSwiftKit `ef1ec716`），Mac 门禁、模拟器 UI 和必需 CI 通过。Mac 开发包已安装；0.1.6 (58) 仍是当前已发布版本，未发版 |
 | **待办看板** | 本轮看 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md) §4（UI-1..UI-6）；历史 [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 已全 ✅ |
-| **swift/app 基线** | `swift/app` `main` = `1071c951`（玩家长名单按需渲染及减少凭据查询）；`swift/lib/MCSManagerAPI` = `061866f`（tag **0.5.0**）；`swift/lib/OrzMCKit` = `f004baa`；父仓库 `main` 见 `git log -1` |
+| **swift/app 基线** | `swift/app` `main` = `ec2c4d69`；`swift/lib/OrzSwiftKit` `main` = `ef1ec716`；`swift/lib/MCSManagerAPI` = `061866f`（tag **0.5.0**）；`swift/lib/OrzMCKit` = `f004baa`；父仓库 `main` 见 `git log -1` |
 | **已知坑** | ① **真机 XCUITest 可用**：必须**插数据线**（Wi-Fi 下会 `DTX 握手被拒/exit 74`；首次还需设备允许「自动化模式」，保持解锁亮屏）；`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机已知失败**：`testStatusBadgeKeepsSpinningAfterReentering` 在 iPhone SE3 / iOS 27.0.1 上必失败（像素哈希判动画，模拟器绿，**app `main` 上同样失败**，与本轮改动无关，待单独跟）。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`；⑧ **验收装开发包**：`swift/app/scripts/dev/install-dev-app.sh [--release|--no-build|--accept|--restore]`（10~20 s，覆盖装 `/Applications`，不要为验收去跑公证）。 |
-| **下一步（下次开工就从这里开始）** | 维护者验收已安装的 Mac 和 iPhone SE3 开发包中的玩家长名单切换及远程托管账号页；账号页实现与验收见 [`swift/app/docs/remote-accounts-2026-10-30.md`](swift/app/docs/remote-accounts-2026-10-30.md)。原 UI-1 真机判据、UI-3 停止秒数及大字号全面巡检尚未完成，真机由维护者后续统一验收。本轮不发版 |
+| **下一步（下次开工就从这里开始）** | 验收 Mac 控制台公共行组件；继续评估共享日志行模型、输入和远程跟随行为（当前仍保留各业务实现）。原 UI-1 真机判据、UI-3 停止秒数及大字号全面巡检尚未完成，真机由维护者后续统一验收。本轮不发版 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
 ## 2. 状态快照（Repo State）
@@ -363,6 +363,13 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-02 — Codex（控制台公共显示层）
+
+- `OrzSwiftKit` [PR #21](https://github.com/OrzGeeker/OrzSwiftKit/pull/21) 合入 `ef1ec716`，新增通用 `ConsoleCore` 跟随状态机和 `ConsoleUI` 惰性行容器；app [PR #127](https://github.com/OrzMC/OrzMCApp/pull/127) 合入 `ec2c4d69`，四类控制台均接入公共行容器，跟随状态只有一份实现。解析和配色继续复用原实现，业务缓冲、滚动策略和命令输入保持原行为；MCSM 仍按偏移标识行、视图内解析，后续共享数据模型/输入尚未完成。
+- app 完整 `check.sh`、单台模拟器 `check.sh --ui`、前后截图巡检及必需 CI 通过；公共库 CI 通过，公共状态机独立源码 9 测试通过，本机库完整 `swift test` 曾因 SwiftLint 二进制下载失败。Mac 开发包已安装；真机后续验收，不发版、不操作真实服务器。
+- 按维护者要求，`OrzGeeker/OrzSwiftKit` 的 `main` 经典保护为当前组织所有者 `wangzhizhou` 增加 PR 要求豁免；其他人仍需 1 个批准。该 GitHub 豁免覆盖 PR 要求，而非仅审批数量，也不会自动跟随未来组织所有者变化；管理员原本不受保护强制执行。
+- 父仓库本次显式记录 `swift/app` 与 `swift/lib/OrzSwiftKit` 两个同主题指针。磁盘可用空间一度降到约 3.6 GB，避免盲目删除用户缓存或备份。
 
 ### 2026-10-31 — Codex（真机开发包与分支收尾）
 
