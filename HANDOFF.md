@@ -105,7 +105,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **触发** | 线上 `$b` 备份成功但**群里零通知**（25 分钟的任务 → QQ 被动回复窗口 5 分钟早已过期） |
-| **状态** | 🟢 修复全部合入 `plugin` `develop`（HEAD `2beab39`，CI 全绿）；**尚未发版到 `main`** |
+| **状态** | 🟢 已发**里程碑**到 `main`（squash `770ccfd`，父仓库指针已 bump）+ Hangar **Beta `1.0.30-dev.429`**；**正式版 tag（release 通道）仍待发** |
 | **已做（8 个 PR）** | `#539` 被动回复窗口预判 + `40034005` 兜底；`#540` 长任务完成通知改主动群通知 + 静默无回执兜底 + 分页上限；`#541` i18n 占位符漏填（`{total}` 原样进群）+ 调用点护栏 + `InboundDedup` 加固；`#542` CHANGELOG 去重；`#543/#544` GeoIP 多源兜底（默认 `countryis → geojs`）+ 失败短缓存 + 决策窗预算；`#545/#546/#547` 文档索引 / 决策记录 / 网络受限机房手册 |
 | **盘点结论** | 全量 `develop→main` review（187 commits / 392 文件）：无 Folia 线程红线回归、无资源泄漏、无凭据、i18n 472 key 双语一致、缓存有界；修掉 1 个真 bug + 3 处加固 |
 | **下一步（需拍板）** | ① **里程碑发版**：实测撞 **21 文件冲突**，`-X theirs` 后仍须手工把 `CHANGELOG.md` 顶行还原成 `## [Unreleased]`；② `publish.yml` 缺 `workflow_dispatch`（tag 被 `paths-ignore` 吞掉时无法重跑）；③ 父仓库指针**等发版后再 bump** |
@@ -147,7 +147,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
-| `plugin` | `5eadd6e` | 本地常检出 `develop`（**`2beab39`**，2026-11-04 本批 8 个 PR）→ `M plugin` **预期，不要 bump**；发版合入 `main` 后再 bump |
+| `plugin` | `770ccfd` | **已 bump（2026-11-04）**：里程碑 PR #549（内容 == develop）；Hangar **Beta `1.0.30-dev.429`** 已发布，**正式版 tag 未打**（release 通道待单独发版） |
 | `python` | `5e70745` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.18.0 已发布（含 `auth.lock` 跨进程锁 + runtime 回滚）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；`ledger` 台账校验 + 命令面 `--strict`；**`fix(download)`（`#98`）**：`HttpStatusError` —— 4xx/5xx 不重试且保留 requests 原文，续传 416 且已取全按成功；`JavaEnv` 404 补「上游缺该平台构建」提示；验收 harness 的 `log_contains` 改去全部空白（rich 软换行不再切断标记）；根 `conftest.py` autouse 钉 `ORZMC_RUNTIME=python`；**`docs`（`#100`）**：CLI 验收脚本路径同步到父仓库 `scripts/accept/cli.py`；**`docs`（`#101`）**：合规标记注释点明单一事实源在父仓库；**2.18.1 已发布**（PyPI 双包 + 6 资产 + Release notes） |
 | `swift/app` | `aa22c90a` | `OrzMCApp`；**0.1.5 (57) 已发布**，`main` 已积累 15 个提交待发 **0.1.6**；**P2-7 五步完成**：供应商抽象层 + `RemoteStatusCenter` + MCSManager 只读接入 + 动作/控制台 + 面板增删改（普通用户/管理员两种 key 均验） |
 | `swift/lib/OrzMCKit` | `6944afb` | **Swift 引擎 + `orzmc` CLI**；**`v0.19.0` 已发布**（六资产；**Linux 自包含**：静态链 Swift 运行时、glibc 2.35、62–65 MB）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
@@ -393,6 +393,26 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-04（续） — pi（`plugin` 发版收口：A3 兜底 + 里程碑合入 + 父仓库 bump）
+
+**① A3 `publish.yml` 手动兜底（`#548`）**：新增 `workflow_dispatch`，`dry_run` 默认 **true**（只跑 check + 构建
+shadowJar + 上传 artifact，不发布/不建 Release/不 bump）；`-f dry_run=false` 才按 ref 真实发布
+（`--ref <tag>` → release，`--ref main` → beta）。`create GitHub Release` / `bump version` 额外要求
+`github.event_name == 'push'`，手动补跑不会重复建 Release 或重复 bump。文档进 AGENTS 发版流程第 ⓪ 步 + §5.6。
+
+**② 里程碑 `develop → main`（`#549`）**：`head=develop` 会 CONFLICTING → 按 AGENTS 解决分支流程
+（`milestone-content` = main + `merge develop -X theirs`）；**手工修 1 处**：`CHANGELOG.md` 顶行被 main 侧 1.0.29
+改名带成 `## [1.0.29]`（会把本批未发布条目错标成已发布）→ 还原为 `## [Unreleased]`；核验
+`git diff origin/develop milestone-content` = **0 文件** → auto-merge squash 合入 `main` = `770ccfd`。
+
+**③ 发布结果**：`Publish` 成功 → Hangar **Beta `1.0.30-dev.429`**（19:45 UTC）；GitHub Release 未创建（tag-only，符合预期）；
+`main→develop` 反向同步自动跳过且无残留 PR。
+
+**④ 父仓库 bump**：`plugin 5eadd6e → 770ccfd`（`0dc4329`），`scripts/verify/check.py` 全绿。
+
+**遗留**：**正式版 tag 未打**（需 `CHANGELOG` 归拢 `[Unreleased]` → `[1.0.30]` + `git tag 1.0.30` 触发 release 通道
++ 版本自增 PR + 再 bump 一次父仓库）；`#490/#481` 视频仍待人工录制。
 
 ### 2026-11-04 — pi（`plugin`：`$b` 完成通知丢失事故 → 深度盘点 → GeoIP 多源；8 个 PR）
 
