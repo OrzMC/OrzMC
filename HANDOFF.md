@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-04 by Codex（iPhone SE3 真机验收）
+> **最后更新**：2026-11-04 by pi（plugin 线：`$b` 通知事故 + GeoIP 多源，8 个 PR）
 
 ---
 
@@ -100,6 +100,23 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 ## 1. 当前焦点（Current Focus）
 
+### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
+
+| 项 | 内容 |
+|---|---|
+| **触发** | 线上 `$b` 备份成功但**群里零通知**（25 分钟的任务 → QQ 被动回复窗口 5 分钟早已过期） |
+| **状态** | 🟢 修复全部合入 `plugin` `develop`（HEAD `2beab39`，CI 全绿）；**尚未发版到 `main`** |
+| **已做（8 个 PR）** | `#539` 被动回复窗口预判 + `40034005` 兜底；`#540` 长任务完成通知改主动群通知 + 静默无回执兜底 + 分页上限；`#541` i18n 占位符漏填（`{total}` 原样进群）+ 调用点护栏 + `InboundDedup` 加固；`#542` CHANGELOG 去重；`#543/#544` GeoIP 多源兜底（默认 `countryis → geojs`）+ 失败短缓存 + 决策窗预算；`#545/#546/#547` 文档索引 / 决策记录 / 网络受限机房手册 |
+| **盘点结论** | 全量 `develop→main` review（187 commits / 392 文件）：无 Folia 线程红线回归、无资源泄漏、无凭据、i18n 472 key 双语一致、缓存有界；修掉 1 个真 bug + 3 处加固 |
+| **下一步（需拍板）** | ① **里程碑发版**：实测撞 **21 文件冲突**，`-X theirs` 后仍须手工把 `CHANGELOG.md` 顶行还原成 `## [Unreleased]`；② `publish.yml` 缺 `workflow_dispatch`（tag 被 `paths-ignore` 吞掉时无法重跑）；③ 父仓库指针**等发版后再 bump** |
+| **已决策** | **不做离线 GeoIP**（体积 +73%~+127%，且月度刷新/CC BY 署名/口径复核的长期成本不可控）——见 `plugin/docs/features.md` §5.1、issue #538 |
+| **安全策略（明确）** | 地区限制**保持 fail-close**：`geoip.fail_open` 只是调试/应急开关，**不用于换可用性**；网络受限走自建 `country.is`（`plugin/docs/manuals/geoip-restricted-network.md`） |
+
+> ⚠️ 父仓库 `M plugin` 是**预期状态**（本机 `plugin` 检出 `develop`），**不要提交**——发版合入 `main` 后再 bump。
+> 其余 `M <submodule>` 是本机子模块检出落后于新指针，同样**勿提交**（需要时 `git submodule update --init --recursive`）。
+
+### 1.2 App / CLI 线（Codex 交接，2026-11-04）
+
 | 项 | 内容 |
 |---|---|
 | **主题** | 工程审查后的认证、协议、控制台性能、依赖组合及验收链路收敛；保留此前远程托管 UI 的真机待验收项。本轮不发版 |
@@ -130,7 +147,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
-| `plugin` | `5eadd6e` | 本地常检出 `develop`（`bd908b8`）→ `M plugin` **预期，不要 bump** |
+| `plugin` | `5eadd6e` | 本地常检出 `develop`（**`2beab39`**，2026-11-04 本批 8 个 PR）→ `M plugin` **预期，不要 bump**；发版合入 `main` 后再 bump |
 | `python` | `5e70745` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.18.0 已发布（含 `auth.lock` 跨进程锁 + runtime 回滚）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；`ledger` 台账校验 + 命令面 `--strict`；**`fix(download)`（`#98`）**：`HttpStatusError` —— 4xx/5xx 不重试且保留 requests 原文，续传 416 且已取全按成功；`JavaEnv` 404 补「上游缺该平台构建」提示；验收 harness 的 `log_contains` 改去全部空白（rich 软换行不再切断标记）；根 `conftest.py` autouse 钉 `ORZMC_RUNTIME=python`；**`docs`（`#100`）**：CLI 验收脚本路径同步到父仓库 `scripts/accept/cli.py`；**`docs`（`#101`）**：合规标记注释点明单一事实源在父仓库；**2.18.1 已发布**（PyPI 双包 + 6 资产 + Release notes） |
 | `swift/app` | `aa22c90a` | `OrzMCApp`；**0.1.5 (57) 已发布**，`main` 已积累 15 个提交待发 **0.1.6**；**P2-7 五步完成**：供应商抽象层 + `RemoteStatusCenter` + MCSManager 只读接入 + 动作/控制台 + 面板增删改（普通用户/管理员两种 key 均验） |
 | `swift/lib/OrzMCKit` | `6944afb` | **Swift 引擎 + `orzmc` CLI**；**`v0.19.0` 已发布**（六资产；**Linux 自包含**：静态链 Swift 运行时、glibc 2.35、62–65 MB）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
@@ -229,6 +246,16 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 - D10 依赖用 `OrzMC/*` 规范路径 + 本地覆盖仅开发态；D11 外部 Swift 依赖 **HEAD 制**；D12 `MojangAPI` 平台 macOS13/iOS16。
 
 **开放问题**：Q1–Q7 均已决（见 [`docs/product-unification-plan.md`](docs/product-unification-plan.md) 第 7 章）。**当前无阻塞项。**
+
+**已决（2026-11-04，plugin）**
+- **GeoIP 不内置离线 IP 库**：实测 DB-IP Lite country mmdb 8.12 MB / 自制紧凑表 2.18 MB（jar 3.3 MB → ≈7.5 / ≈4.6 MB），
+  但月度数据刷新 + CC BY 署名 + 判定口径复核的长期维护成本不可控、项目会变复杂 → 不做。
+  替代：自建 `country.is`（Docker）/ 调 `providers` / 网络受限手册（**fail-close 不变**）。
+- **地区限制保持 fail-close**：不以 `geoip.fail_open` 换可用性（那会把地区未验证的玩家放进来）。
+
+**待拍板（plugin 发布线）**
+- 里程碑 `develop→main` 的时间点（会撞 21 文件冲突，按「解决分支」流程 + CHANGELOG 顶行手工还原）。
+- `publish.yml` 是否加 `workflow_dispatch` 兜底（当前 tag 若被 `paths-ignore` 吞掉，无法手动重跑）。
 
 **待定（计划项，非阻塞）**：`capabilities` schema ✅（§8.1）；`orzmc mcp` schema ✅（§8.2，server 待实现）；`--json` 错误码表 ✅（§6.1）。
 
@@ -366,6 +393,39 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-04 — pi（`plugin`：`$b` 完成通知丢失事故 → 深度盘点 → GeoIP 多源；8 个 PR）
+
+**起点**：分析服务器 `latest.log` 判断 `$b` 是否正常。结论：**备份本身完全正常**（11:13:43 `Done 100%`，
+5,061,518 单元，25 分 01 秒），问题在**完成通知**——它走 QQ 被动回复（`msg_id`）通道，群聊窗口只有 5 分钟，
+回执 12 秒后被平台拒收 `HTTP 400 / 40034005 回复消息msg_id已过期`；插件当时只识别 `40034128`，
+于是**只打一条 WARN 就把消息丢掉**（用户视角：备份成功、群里零通知）。
+
+**① 平台层（`#539`）**：`isPassiveReplyLimit` → `isPassiveReplyRejected`（覆盖 `40034128`/`40034005` + 文案兜底）；
+回执携带来源消息**接收时刻**，群 >4 分钟 / 单聊 >59 分钟**首发即主动消息**；`msg_seq` 序号表改按时间淘汰
+（不再 `clear()`，避免重置后被判重 `40054005`）。
+
+**② 业务层（`#540`）**：`$b/$o` 完成/失败通知统一走 `notifier`（主动群通知，修掉「成功看不到、失败反而能看到」
+的语义倒挂）；`runExclusive` 忙碌时回执（旧实现静默 return）；`$l/$w` 异步异常补失败回执；`$p/$v` 加 60s 总超时；
+`$w/$v l` 无页码时最多自动发 5 页 + 末页提示。
+
+**③ 深度盘点（`#541`）**：对 `develop→main`（187 commits / 392 文件）按风险维度 review：发现并修掉我自己引入的真 bug
+（`bot.list.page_limit_hint` 的 `{total}` 未传 → 原样发到群里），补 **i18n 调用点护栏**测试（此前只有语言包之间一致性），
+加固 `InboundDedup`（超限不再整体 clear）与 `runExclusive`（回调移出锁）。核验结论：无 Folia 线程红线回归、
+无资源泄漏、无凭据、缓存有界、i18n 472 key 双语一致。
+
+**④ 文档与决策（`#542/#545/#546/#547`）**：CHANGELOG 重复 `[Unreleased]` 去重；索引踩坑记录；
+记录「**不做离线 GeoIP**」；新增「网络受限机房」手册——**明确 fail-close 不变**（`fail_open` 仅调试/应急开关）。
+
+**⑤ GeoIP 多源（`#543/#544`，issue #538 关闭）**：只打一家 `geojs` 时上游抖动＝踢掉正常玩家（日志 14:24 被拒、
+14:25 重试才进）。改为 provider 链兜底（默认 **`countryis → geojs`**，均免费/免 key/无配额），总预算卡在决策窗 3s 内，
+失败短缓存 30s，日志带「命中源 + 耗时」与「逐条失败原因」。核对条款后把 `ipwho.is`（日额度有限）移出默认链。
+
+**⑥ 其他**：合并 Dependabot `gradle/actions 6.4.1`（`#537`，含安全修复）；**告警 #8**（guava `GHSA-xxph-c9ww-hj94`，
+仍是幽灵 `pom.xml` manifest）按既定流程 dismiss `not_used` → **open 告警 0**，`plugin/docs/dev/dependency-security-alerts.md` 补登。
+
+**遗留**：里程碑发版未做（21 文件冲突 + CHANGELOG 顶行需手工还原）；`publish.yml` 缺 `workflow_dispatch`；
+`plugin` 两条 video issue（#490/#481）待人工录制。父仓库 `M plugin` 等 `M <submodule>` 为预期状态，**勿提交**。
 
 ### 2026-11-04 — Codex（iPhone SE3 真机验收）
 
