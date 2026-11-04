@@ -120,11 +120,11 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | 远程服务器窗口（exaroton + MCSManager）的 macOS/iPhone 跨端界面重构；**主应用窗口的设计与布局已获维护者认可，禁止纳入本轮改动**。本轮不发版 |
-| **状态** | 🟡 控制台滚动与阅读优化已合入 app `92485e0b`；远程服务器窗口重构尚未开始。服务器资料保存方式仍待单独实现，且明确排在本轮界面工作之后 |
-| **待办看板** | 本轮看 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md) §4（UI-1..UI-6）；历史 [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 已全 ✅ |
-| **swift/app 基线** | app `92485e0b`；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
+| **状态** | 🟢 远程服务器窗口的**共享骨架重构已合入**：app `5004ffd2`（[PR #137](https://github.com/OrzMC/OrzMCApp/pull/137)，squash）；本地闸门、模拟器 UI、CI 全绿，有线 iPhone SE3 真机套件 `TEST EXECUTE SUCCEEDED`（0 失败）。服务器资料保存方式仍待单独实现（排在本轮界面工作之后） |
+| **待办看板** | 本轮看 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md) §4（UI-1..UI-7；UI-7 = 本轮跨端骨架，已 ✅）；历史 [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 已全 ✅ |
+| **swift/app 基线** | app `5004ffd2`（远程托管共享骨架）；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
 | **已知坑** | ① **真机 XCUITest 可用**：必须**插数据线**（Wi-Fi 下会 `DTX 握手被拒/exit 74`；首次还需设备允许「自动化模式」，保持解锁亮屏）；`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机动画判据**：`testStatusBadgeKeepsSpinningAfterReentering` 已改三帧取样，2026-11-04 在 iPhone SE3 / iOS 27.0.1 连续三次通过；完整验收仍以本轮最终真机套件为准。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`；⑧ **验收装开发包**：`swift/app/scripts/dev/install-dev-app.sh [--release|--no-build|--accept|--restore]`（10~20 s，覆盖装 `/Applications`，不要为验收去跑公证）。 |
-| **下一步（下次开工就从这里开始）** | 先完成远程服务器窗口跨端 UI 重构：按供应商分组（固定 exaroton → MCSManager，不得改成筛选器或调换顺序），抽取可复用的账号/实例展示骨架并保留各供应商特化能力；先按 `swift/app/docs/ui-handoff-2026-10-30.md` 导出 macOS/iPhone 基线截图，再逐项做全档 `check.sh`、模拟器 UI 和有线真机验收。完成后再单独处理服务器资料保存方式 |
+| **下一步（下次开工就从这里开始）** | ① 维护者目视验收远程托管页（Mac 开发包 `install-dev-app.sh`，iPhone `install-ios-device.sh`）；② 若还要润色，继续在 `OrzMC/Common/RemoteHostingUI/` 骨架里改（**不要回退成面板嵌套，不要改分组顺序**）；③ 界面部分收口后，再单独做服务器资料保存方式（三种模式 + 迁移/同步）。本轮不发版 |
 | **工作树保护** | `swift/app` 有 5 个未跟踪的保存方式草稿：`ServerRecordInstallation.swift`、`ServerRecordKeychain.swift`、`ServerRecordStorage.swift`、`ServerRecordStorageTests.swift`、`docs/server-storage-design-2026-11-04.md`。它们不属于已合入 app `main`，不得清理、暂存或混入 UI PR；当前独立测试会在受限沙箱因 `mktemp` 权限失败，验收 UI PR 时需临时移出并在退出时原样恢复 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
@@ -394,6 +394,16 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-05 — pi（远程托管页跨端骨架重构，PR #137）
+
+- App [PR #137](https://github.com/OrzMC/OrzMCApp/pull/137) 合入 `5004ffd2`（squash）：把「远程服务器」窗口（macOS 服务器窗口的远程托管面 + iPhone 远程托管 Tab）里 exaroton 与 MCSManager 各自写一遍的账号/实例展示，抽成一套共享骨架。**主应用窗口未动**，发版未动。
+- 骨架落在新目录 `swift/app/OrzMC/Common/RemoteHostingUI/`：`RemoteProviderSection`（供应商标题行 + 实例数 + 添加账号 + 组内空态卡）、`RemoteAccountCard`、`RemoteAccountMenu`（刷新 → 编辑 → 删除）、`RemoteInstanceRow`（名称+徽标 → 明细 → 右侧动作 → 底部停止进度/错误，大字号自动换行）、`RemoteInlineLoading/Empty/Error`、`RemoteEmptyCard`；`RemoteAccountViews.swift` 从 `ExarotonUI/List/Components/` 移到中立目录（pbxproj 同步，`check-pbxproj.py` 通过）。
+- 视觉变化：① 账号卡内不再"面板套面板"（exaroton 实例/额度池改成与 MCSM 同一套平铺行）；② 两家供应商的空态/加载/失败同一种排版（以前 exaroton 一行灰字 vs MCSM 一张卡片；错误一边横幅一边红字且 MCSM 无重试）；③ 账号菜单统一，MCSM 补上「刷新」。保留：分组顺序（exaroton → MCSManager）、`OrzMCStatusBadge`、`RemoteStopProgress`、共享控制台，以及额度池/内存/强杀等供应商能力。
+- 证据：前后对比截图在 `swift/app/docs/ui-remote-hosting-2026-11-05/`（macOS 用 DEBUG `--snapshot-watch`；iPhone 用新增巡检用例 `testSnapshotTourRemoteProviders` / `testSnapshotTourRemoteEmptyProviders` / `testSnapshotTourRemoteAccessibilitySize`）。
+- 门禁：`check.sh`、`UI_TEST_SECRETS=/private/tmp/orzmc-no-secrets check.sh --ui` 全绿；PR CI 全绿（split / build macOS / build iOS / protocol-live / ui-smoke）；有线 iPhone SE3（iOS 27.0.1）真机套件 `** TEST EXECUTE SUCCEEDED **`、0 失败。未操作任何会改真实服务器状态的按钮，自动化全部走假数据。
+- ⚠️ 真机环境坑复现：设备在 Wi-Fi 下 `transportType=localNetwork`，XCUITest 直接 `** TEST EXECUTE FAILED **`（退出码 65，DTX 握手被拒）。插上数据线后 `devicectl` 显示 `wired`，同一条 `run-ios-ui-tests.sh --device … --detach` 一次通过——**看到这个失败先查数据线，不要改产品代码**。
+- 未跟踪的 5 个服务器保存方式草稿全程未暂存、未修改；跑闸门时临时移出，结束后原样放回（SHA-256 逐项核对一致）。
 
 ### 2026-11-05 — Codex（切换工具前的项目状态与分支清理）
 
