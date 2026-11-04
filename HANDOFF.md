@@ -105,10 +105,10 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **触发** | 线上 `$b` 备份成功但**群里零通知**（25 分钟的任务 → QQ 被动回复窗口 5 分钟早已过期） |
-| **状态** | 🟢 已发两轮**里程碑**到 `main`（`770ccfd`、`4bece96`，父仓库指针已 bump）+ Hangar **Beta `1.0.30-dev.430`**；**正式版 tag（release 通道）仍待发** |
+| **状态** | ✅ **1.0.30 正式版已发布**（Hangar Release / Modrinth release / GitHub Release `OrzMC-1.0.30.jar`）；版本自增到 **1.0.31**（PR #559 自动合） |
 | **已做（8 个 PR）** | `#539` 被动回复窗口预判 + `40034005` 兜底；`#540` 长任务完成通知改主动群通知 + 静默无回执兜底 + 分页上限；`#541` i18n 占位符漏填（`{total}` 原样进群）+ 调用点护栏 + `InboundDedup` 加固；`#542` CHANGELOG 去重；`#543/#544` GeoIP 多源兜底（默认 `countryis → geojs`）+ 失败短缓存 + 决策窗预算；`#545/#546/#547` 文档索引 / 决策记录 / 网络受限机房手册 |
 | **盘点结论** | 全量 `develop→main` review（187 commits / 392 文件）：无 Folia 线程红线回归、无资源泄漏、无凭据、i18n 472 key 双语一致、缓存有界；修掉 1 个真 bug + 3 处加固 |
-| **下一步（需拍板）** | ① **里程碑发版**：实测撞 **21 文件冲突**，`-X theirs` 后仍须手工把 `CHANGELOG.md` 顶行还原成 `## [Unreleased]`；② `publish.yml` 缺 `workflow_dispatch`（tag 被 `paths-ignore` 吞掉时无法重跑）；③ 父仓库指针**等发版后再 bump** |
+| **下一步** | ① 观察线上：飞书发 `$b` 应只有飞书群收到完成/坏块提示；② `develop` 已领先 `main`（#552/#553/#557 的后续同步由 `main→develop` 自动处理）；③ 下次功能迭代照常走 develop |
 | **已决策** | **不做离线 GeoIP**（体积 +73%~+127%，且月度刷新/CC BY 署名/口径复核的长期成本不可控）——见 `plugin/docs/features.md` §5.1、issue #538 |
 | **安全策略（明确）** | 地区限制**保持 fail-close**：`geoip.fail_open` 只是调试/应急开关，**不用于换可用性**；网络受限走自建 `country.is`（`plugin/docs/manuals/geoip-restricted-network.md`） |
 
@@ -147,7 +147,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 子模块 | 记录指针 | 说明 |
 |---|---|---|
-| `plugin` | `4bece96` | **已 bump（2026-11-04，第二轮）**：里程碑 PR #549 + #551（内容 == develop）；Hangar **Beta `1.0.30-dev.430`**；**正式版 tag 未打**（release 通道待单独发版） |
+| `plugin` | `a3128f9` | **1.0.30 正式版已发布**（2026-11-04）：Hangar Release / Modrinth release / GitHub Release；发版后版本自增到 `1.0.31`（#559） |
 | `python` | `5e70745` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.18.0 已发布（含 `auth.lock` 跨进程锁 + runtime 回滚）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；`ledger` 台账校验 + 命令面 `--strict`；**`fix(download)`（`#98`）**：`HttpStatusError` —— 4xx/5xx 不重试且保留 requests 原文，续传 416 且已取全按成功；`JavaEnv` 404 补「上游缺该平台构建」提示；验收 harness 的 `log_contains` 改去全部空白（rich 软换行不再切断标记）；根 `conftest.py` autouse 钉 `ORZMC_RUNTIME=python`；**`docs`（`#100`）**：CLI 验收脚本路径同步到父仓库 `scripts/accept/cli.py`；**`docs`（`#101`）**：合规标记注释点明单一事实源在父仓库；**2.18.1 已发布**（PyPI 双包 + 6 资产 + Release notes） |
 | `swift/app` | `aa22c90a` | `OrzMCApp`；**0.1.5 (57) 已发布**，`main` 已积累 15 个提交待发 **0.1.6**；**P2-7 五步完成**：供应商抽象层 + `RemoteStatusCenter` + MCSManager 只读接入 + 动作/控制台 + 面板增删改（普通用户/管理员两种 key 均验） |
 | `swift/lib/OrzMCKit` | `6944afb` | **Swift 引擎 + `orzmc` CLI**；**`v0.19.0` 已发布**（六资产；**Linux 自包含**：静态链 Swift 运行时、glibc 2.35、62–65 MB）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
@@ -413,6 +413,29 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 - 按维护者要求，将当前未提交工作区的 Debug 开发包安装并启动于 `/Applications/OrzMC.app` 和数据线连接的 iPhone SE3（iOS 27.0.1）；Mac 原安装已备份至 `~/Library/Caches/orzmc-app-backup/`。供人工验收已实现的界面，不能视为本轮完整测试或存储功能交付。
 - app 分支 `feat/remote-console-storage` 有未提交修改：统一额度池服务器卡片和详情导航、exaroton 刷新图标、MCSM 键盘及状态显示；控制台加入搜索、字号和换行设置。第一批 UI 完整门禁通过；后续控制台修改的完整本地门禁通过。控制台专项测试曾因测试重复关闭仍打开的系统菜单而失败，测试修正后复跑停在模拟器测试运行器启动阶段，已终止；专项及最终全量 UI 门禁仍需复跑。前后截图暂存 `/private/tmp/orzmc-pool-before-20261104`、`/private/tmp/orzmc-pool-after2-20261104`；控制台修改后截图待导出。
 - 用户确认保存方式按账号/服务器分别选择，临时方式保留至卸载，iCloud 同步配置和凭据。`swift/app/docs/server-storage-design-2026-11-04.md` 和加密存储、迁移保护为未接入的草稿；7 项存储单测通过。三种模式尚未接入实际账号和服务器，不可声称已完成或已上线。Mac 删除 App 不保证删除支持文件，需明确清理入口；跨端同步需共享 Keychain 访问组、真实签名及并发冲突和删除处理。未操作真实服务器、未推送或合入。
+
+### 2026-11-04（续 3） — pi（`plugin` 1.0.30 正式发版）
+
+维护者验收通过后发正式版。完整链路与两个新坑：
+
+**① 发版前检查发现漏项（已修，`#553`）**：本版新增三个 `geoip.*` 键却没抬 `config-version`，
+违反 `docs/dev/config-schema-governance.md` §3.1 —— 老装（磁盘 15 == LATEST 15）不会触发 `DefaultsMerger`，
+键永远补不进去。→ `LATEST_VERSION` 15 → **16** + 三个 schema 资源同步版本标记。
+
+**② 第三轮里程碑（`#554`）**：沿用 `#557` 学到的做法「从 develop 切、合 main、冲突取 ours」，
+结果树 == develop 且 main 是祖先（PR 直接 MERGEABLE）；合并后仍逐文件核验 0 差异。
+（教训升级：`-X theirs` 不会回退 main 侧的非冲突改动，**必须**合并后 `git diff origin/develop` 空。）
+
+**③ 发版前实测新兜底路径，发现它自己是坏的（`#557`）**：`gh workflow run publish.yml -f dry_run=true`
+失败——`ls build/libs/*-all.jar` 命中不到（shadow 产物是 `OrzMC-<ver>.jar`，无 `-all`）。
+→ 改 glob 为 `build/libs/*.jar`，再跑 dry-run 通过（产物 `OrzMC-1.0.30-dev.433.jar`）。
+
+**④ 正式发版（全绿）**：CHANGELOG 归拢 `[1.0.30] - 2026-11-04` + 升级须知（`#555`，纯文档不触发 beta）→
+`git tag 1.0.30`（打在工作流修复提交 `b2d2478`）→ `Publish` 成功 →
+**Hangar Release `1.0.30`**、**Modrinth release `1.0.30`**（folia/paper）、**GitHub Release `1.0.30`**
+（资产 `OrzMC-1.0.30.jar`）→ bump-version PR `#559` 自动合（版本 → **1.0.31**）。
+
+**⑤ 父仓库**：`plugin 4bece96 → a3128f9`；`RELEASES.md` 追加 2026-11-04 基准组合；本文件 §1.1/§2.2 更新。
 
 ### 2026-11-04（续 2） — pi（`plugin` 线上反馈两个 bug 修复 + 第二轮里程碑）
 
