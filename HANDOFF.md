@@ -120,11 +120,11 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | 工程审查后的认证、协议、控制台性能、依赖组合及验收链路收敛；保留此前远程托管 UI 的真机待验收项。本轮不发版 |
-| **状态** | 🟢 App 已合入并通过 PR 门禁；2026-11-04 iPhone SE3 真机自动化通过，开发包已安装启动。人工验收及部分大字号场景仍待维护者确认；未发版 |
+| **状态** | 🟡 远程服务器与控制台界面已完成并合入 app `919d9234`；服务器资料保存方式仍待单独实现，本轮未发版 |
 | **待办看板** | 本轮看 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md) §4（UI-1..UI-6）；历史 [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 已全 ✅ |
-| **swift/app 基线** | app `d3bc45d9`；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
-| **已知坑** | ① **真机 XCUITest 可用**：必须**插数据线**（Wi-Fi 下会 `DTX 握手被拒/exit 74`；首次还需设备允许「自动化模式」，保持解锁亮屏）；`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机动画判据待查**：`testStatusBadgeKeepsSpinningAfterReentering` 曾在 iPhone SE3 / iOS 27.0.1 失败；2026-11-04 同设备连续三次通过，但像素哈希判据未改，历史失败原因仍未确认。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`；⑧ **验收装开发包**：`swift/app/scripts/dev/install-dev-app.sh [--release|--no-build|--accept|--restore]`（10~20 s，覆盖装 `/Applications`，不要为验收去跑公证）。 |
-| **下一步（下次开工就从这里开始）** | 维护者在已安装的开发包上完成人工验收；UI-1 旧像素判据未修改（本次真机连续三次通过，历史失败仍待分析）、大字号停止长提示仍待巡检。RCON 非标准服务端结束探针兼容性、Windows 凭据 ACL 与 Thread Sanitizer 尚待受控验证；持续改进项见 `docs/engineering-review-2026-11-02.md` |
+| **swift/app 基线** | app `919d9234`；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
+| **已知坑** | ① **真机 XCUITest 可用**：必须**插数据线**（Wi-Fi 下会 `DTX 握手被拒/exit 74`；首次还需设备允许「自动化模式」，保持解锁亮屏）；`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机动画判据**：`testStatusBadgeKeepsSpinningAfterReentering` 已改三帧取样，2026-11-04 在 iPhone SE3 / iOS 27.0.1 连续三次通过；完整验收仍以本轮最终真机套件为准。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`；⑧ **验收装开发包**：`swift/app/scripts/dev/install-dev-app.sh [--release|--no-build|--accept|--restore]`（10~20 s，覆盖装 `/Applications`，不要为验收去跑公证）。 |
+| **下一步（下次开工就从这里开始）** | 单独处理服务器资料保存方式：核查保留在 app 工作树的未跟踪设计与代码草稿，分别接入账号和服务器，处理旧数据安全迁移、跨端签名与同步冲突。大字号停止长提示仍待巡检 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
 ## 2. 状态快照（Repo State，历史记录）
@@ -393,6 +393,20 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-04 — Codex（远程界面和控制台验收完成）
+
+- App [PR #135](https://github.com/OrzMC/OrzMCApp/pull/135) 合入 `919d9234`：统一 exaroton 额度池服务器卡片和导航、补刷新图标、MCSM 键盘与状态显示；共享控制台支持筛选、字号调整、换行及长行横向浏览。修复 MCSM 日志退格重绘把 `list` 误显示为 `lislist`；维护者授权的 FoliaMC 只读诊断确认命令本身执行成功。前后假数据截图见 PR。
+- App `check.sh`、最终 `check.sh --ui` 和 PR 全部适用 CI 通过；iPhone SE3 有线真机完整 UI 33 项：20 通过、13 按条件跳过、0 失败；徽章动画测试使用徽章区域三帧采样，连续三次真机通过。真机长日志筛选、缩放、换行和横向浏览专项通过。自动化使用隔离演示数据，结束后正常启动 iPhone 开发包；未发版。
+- 维护者要求保存方式单独处理。app 的 `ServerRecordInstallation.swift`、`ServerRecordKeychain.swift`、`ServerRecordStorage.swift`、对应测试及 `docs/server-storage-design-2026-11-04.md` 仍为未跟踪草稿，未纳入界面 PR，继续保留。下一步需接入并验证三种方式及迁移/同步。
+
+### 2026-11-04 — Codex（远程服务器与控制台，进行中）
+
+- 维护者批准对 FoliaMC 测试服只读诊断：网页和 OrzMC 各发送一次 `list` 均正常返回；原始日志显示 JLine 先输出彩色 `lis`、三个退格再输出 `list`，共享解析器此前丢弃退格导致误显示 `lislist`。现已实现行内退格重绘和 ANSI 清行，并补充颜色、分片等回归测试；更新后的 Mac 开发包实测历史记录正确显示 `list`。徽章三帧判据模拟器通过、有线 iPhone 连续三次通过；完整本地门禁通过。修复后模拟器 UI 和真机回归尚在进行。生产配置未改动，保存方式草稿暂不纳入界面提交。
+- 维护者要求先完成界面、保存方式单独处理。控制台已改为日志区域双指缩放、Mac 紧凑字号按钮和换行图标，并修复不换行时的横向滚动；假面板端到端测试验证 `list` 原样到达，离线 HTTP 捕获验证只发送一次 `command=list`。维护者确认 Mac/iPhone 的真实 MCSManager 每次均出现 `lislist`，发送前输入框为 `list`，没有其他客户端；真实面板/服务器端原因仍未定位，不可声明已修复或向真实服务器发送诊断命令。UI-1 测试判据改为三帧采样，未跳过或修改动画；模拟器通过，真机连续三次尚未验证。完整本地门禁（动画测试代码改动前）及完整模拟器 UI 门禁通过；前后截图在 `swift/app/docs/ui-console-2026-11-04/`。最后一次重跑完整本地门禁的沙箱外请求因自动审批用量上限未执行，待恢复后重跑。
+- 按维护者要求，将当前未提交工作区的 Debug 开发包安装并启动于 `/Applications/OrzMC.app` 和数据线连接的 iPhone SE3（iOS 27.0.1）；Mac 原安装已备份至 `~/Library/Caches/orzmc-app-backup/`。供人工验收已实现的界面，不能视为本轮完整测试或存储功能交付。
+- app 分支 `feat/remote-console-storage` 有未提交修改：统一额度池服务器卡片和详情导航、exaroton 刷新图标、MCSM 键盘及状态显示；控制台加入搜索、字号和换行设置。第一批 UI 完整门禁通过；后续控制台修改的完整本地门禁通过。控制台专项测试曾因测试重复关闭仍打开的系统菜单而失败，测试修正后复跑停在模拟器测试运行器启动阶段，已终止；专项及最终全量 UI 门禁仍需复跑。前后截图暂存 `/private/tmp/orzmc-pool-before-20261104`、`/private/tmp/orzmc-pool-after2-20261104`；控制台修改后截图待导出。
+- 用户确认保存方式按账号/服务器分别选择，临时方式保留至卸载，iCloud 同步配置和凭据。`swift/app/docs/server-storage-design-2026-11-04.md` 和加密存储、迁移保护为未接入的草稿；7 项存储单测通过。三种模式尚未接入实际账号和服务器，不可声称已完成或已上线。Mac 删除 App 不保证删除支持文件，需明确清理入口；跨端同步需共享 Keychain 访问组、真实签名及并发冲突和删除处理。未操作真实服务器、未推送或合入。
 
 ### 2026-11-04（续） — pi（`plugin` 发版收口：A3 兜底 + 里程碑合入 + 父仓库 bump）
 
