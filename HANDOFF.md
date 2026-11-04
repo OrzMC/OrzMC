@@ -120,9 +120,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | 远程服务器窗口（exaroton + MCSManager）的 macOS/iPhone 跨端界面重构；**主应用窗口的设计与布局已获维护者认可，禁止纳入本轮改动**。本轮不发版 |
-| **状态** | 🟢 远程服务器窗口的**共享骨架重构已合入**：app `5004ffd2`（[PR #137](https://github.com/OrzMC/OrzMCApp/pull/137)，squash）；本地闸门、模拟器 UI、CI 全绿，有线 iPhone SE3 真机套件 `TEST EXECUTE SUCCEEDED`（0 失败）。服务器资料保存方式仍待单独实现（排在本轮界面工作之后） |
+| **状态** | 🟢 远程托管共享骨架已合入 app `5004ffd2`（[PR #137](https://github.com/OrzMC/OrzMCApp/pull/137)）；🟢 控制台终端重绘真因已修 app `885ee190`（[PR #138](https://github.com/OrzMC/OrzMCApp/pull/138)：`versioversion` / `pluginplugins`）。两轮均本机闸门 + 模拟器 UI + CI + 有线真机全绿。服务器资料保存方式仍待单独实现（排在本轮界面工作之后） |
 | **待办看板** | 本轮看 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md) §4（UI-1..UI-7；UI-7 = 本轮跨端骨架，已 ✅）；历史 [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 已全 ✅ |
-| **swift/app 基线** | app `5004ffd2`（远程托管共享骨架）；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
+| **swift/app 基线** | app `885ee190`（远程托管共享骨架 + 控制台 CSI 光标重绘修复）；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
 | **已知坑** | ① **真机 XCUITest 可用**：必须**插数据线**（Wi-Fi 下会 `DTX 握手被拒/exit 74`；首次还需设备允许「自动化模式」，保持解锁亮屏）；`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机动画判据**：`testStatusBadgeKeepsSpinningAfterReentering` 已改三帧取样，2026-11-04 在 iPhone SE3 / iOS 27.0.1 连续三次通过；完整验收仍以本轮最终真机套件为准。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`；⑧ **验收装开发包**：`swift/app/scripts/dev/install-dev-app.sh [--release|--no-build|--accept|--restore]`（10~20 s，覆盖装 `/Applications`，不要为验收去跑公证）。 |
 | **下一步（下次开工就从这里开始）** | ① 维护者目视验收远程托管页（Mac 开发包 `install-dev-app.sh`，iPhone `install-ios-device.sh`）；② 若还要润色，继续在 `OrzMC/Common/RemoteHostingUI/` 骨架里改（**不要回退成面板嵌套，不要改分组顺序**）；③ 界面部分收口后，再单独做服务器资料保存方式（三种模式 + 迁移/同步）。本轮不发版 |
 | **工作树保护** | `swift/app` 有 5 个未跟踪的保存方式草稿：`ServerRecordInstallation.swift`、`ServerRecordKeychain.swift`、`ServerRecordStorage.swift`、`ServerRecordStorageTests.swift`、`docs/server-storage-design-2026-11-04.md`。它们不属于已合入 app `main`，不得清理、暂存或混入 UI PR；当前独立测试会在受限沙箱因 `mktemp` 权限失败，验收 UI PR 时需临时移出并在退出时原样恢复 |
@@ -394,6 +394,23 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-05 — pi（控制台 `versioversion` 真因：CSI 光标左移被当成未知序列丢掉）
+
+- 维护者反馈：`lislist` 修好后，发 `version` / `plugins` 仍显示成 `> versioversion` / `> pluginplugins`（前缀红色）。要求先查根因再修。
+- **根因（用面板原始字节定位）**：JLine 的逐字回显会混用两种重绘 —— 退格 `\b` **和** CSI 光标左移 `ESC [ <n> D`。
+  解析器只实现了 `\b`，`ESC [ 6 D` 被当"未知 CSI"丢弃 → 光标没回去 → 整行 append 在行尾：
+  `> v\b…ESC[6Dversion` 渲染成 `> versioversion`。`list` 当年只碰到退格形态，所以那轮修复看起来"好了"。
+- 取证工具（仅 DEBUG，已入库）：`ORZMC_DEMO_MCSM_DIAGNOSE=1` + `ORZMC_DEMO_MCSM_RAW_LOG=1` 把每台实例的
+  `outputlog` 原文字节（转义成 `\u{1B}`/`\b`/`\r`）写到 `~/Library/Caches/orzmc-mcsm-raw-<daemon>_<uuid>.txt`，
+  **只拉日志、不发命令**；另落 `orzmc-mcsm-run.json` 记录实际收到哪些 `ORZMC_DEMO_*`（`open --env` 丢变量时靠它）。
+  注意：实例 id 形如 `daemon/uuid`，当文件名必须先转义（踩过）。
+- 修复：`ConsoleTextParser` 按 ECMA-48 补 `CSI n D`（左移）/ `CSI n C`（右移，越界补空格）/ `CSI n G`（第 n 列）；
+  上下移与绝对定位仍丢弃（单行渲染器没有行模型）。回归用例直接用面板原始字节（version / plugins / whitelist add·remove）。
+- 验证：`swift test` 31 项（ConsoleTextTests）通过；`check.sh` / `check.sh --ui` 绿；PR CI 绿；
+  有线 iPhone SE3 真机套件 `** TEST EXECUTE SUCCEEDED **`。前后截图 `swift/app/docs/ui-console-redraw-2026-11-05/`
+  （before = 同一份真实字节在旧解析器下的渲染，正是维护者截图里那两行）。
+- 未发版；未向真实服务器发任何命令（诊断只读）；未跟踪的 5 个存储草稿仍原样保留。
 
 ### 2026-11-05 — pi（远程托管页跨端骨架重构，PR #137）
 
