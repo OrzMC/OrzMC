@@ -120,9 +120,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | 工程审查后的认证、协议、控制台性能、依赖组合及验收链路收敛；保留此前远程托管 UI 的真机待验收项。本轮不发版 |
-| **状态** | 🟡 远程服务器与控制台界面已完成并合入 app `919d9234`；服务器资料保存方式仍待单独实现，本轮未发版 |
+| **状态** | 🟡 控制台滚动与阅读优化已合入 app `92485e0b`；服务器资料保存方式仍待单独实现，本轮未发版 |
 | **待办看板** | 本轮看 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md) §4（UI-1..UI-6）；历史 [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 已全 ✅ |
-| **swift/app 基线** | app `919d9234`；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
+| **swift/app 基线** | app `92485e0b`；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
 | **已知坑** | ① **真机 XCUITest 可用**：必须**插数据线**（Wi-Fi 下会 `DTX 握手被拒/exit 74`；首次还需设备允许「自动化模式」，保持解锁亮屏）；`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机动画判据**：`testStatusBadgeKeepsSpinningAfterReentering` 已改三帧取样，2026-11-04 在 iPhone SE3 / iOS 27.0.1 连续三次通过；完整验收仍以本轮最终真机套件为准。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`；⑧ **验收装开发包**：`swift/app/scripts/dev/install-dev-app.sh [--release|--no-build|--accept|--restore]`（10~20 s，覆盖装 `/Applications`，不要为验收去跑公证）。 |
 | **下一步（下次开工就从这里开始）** | 单独处理服务器资料保存方式：核查保留在 app 工作树的未跟踪设计与代码草稿，分别接入账号和服务器，处理旧数据安全迁移、跨端签名与同步冲突。大字号停止长提示仍待巡检 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
@@ -393,6 +393,12 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-04 — Codex（控制台滚动与阅读优化）
+
+- App [PR #136](https://github.com/OrzMC/OrzMCApp/pull/136) 合入 `92485e0b`：默认最小字号与不换行，已有用户字号选择保留；修复 MCSManager 轮询无变化时重建日志行导致滚动位置丢失，以及换行时首行被裁切；短日志从顶部开始，自建服务器筛选不再因匹配数量变化自动跳到末尾。为保证首行可见，远程控制台初始显示顶部，长日志可手动向下浏览。
+- App 完整本地检查（隔离未跟踪存储草稿后）、模拟器完整 UI 与 PR 适用 CI 通过；有线 iPhone SE3 / iOS 27.0.1 完整 UI 35 项：21 通过、14 按条件跳过、0 失败。真机覆盖 100 行上下往返、长行横向浏览、筛选、字号手势、换行和轮询后位置保持；测试使用假数据。Mac 和 iPhone 开发包已安装并启动，未发版。
+- 未跟踪服务器存储草稿仍原样保留，未纳入 PR。草稿中的加密安装存储测试在当前环境因临时文件 `EPERM` 失败，移开草稿后本次 PR 的完整检查通过；该问题留给存储功能单独处理。
 
 ### 2026-11-04 — Codex（远程界面和控制台验收完成）
 
