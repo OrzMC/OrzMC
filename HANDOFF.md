@@ -122,7 +122,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **主题** | 远程服务器窗口（exaroton + MCSManager）的 macOS/iPhone 跨端界面重构；**主应用窗口的设计与布局已获维护者认可，禁止纳入本轮改动**。本轮不发版 |
 | **状态** | 🟢 远程托管共享骨架 app `5004ffd2`（[#137](https://github.com/OrzMC/OrzMCApp/pull/137)）；🟢 控制台 CSI 光标重绘修复 app `885ee190`（[#138](https://github.com/OrzMC/OrzMCApp/pull/138)）；🟢 页顶统一添加入口 + 空态说明页 app `cf1806bb`（[#139](https://github.com/OrzMC/OrzMCApp/pull/139)）。三轮均本机闸门 + 模拟器 UI + CI + 有线真机全绿。服务器资料保存方式仍待单独实现（排在本轮界面工作之后） |
 | **待办看板** | 本轮看 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md) §4（UI-1..UI-7；UI-7 = 本轮跨端骨架，已 ✅）；历史 [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 已全 ✅ |
-| **swift/app 基线** | app `b4d422b2`（远程托管共享骨架 + 控制台 CSI 重绘 + 页顶统一添加入口 + UI 套件提速）；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
+| **swift/app 基线** | app `f9d8f285`（远程托管共享骨架 + 控制台 CSI 重绘 + 页顶统一添加入口 + UI 套件提速 + `--ui-changed`）；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
 | **已知坑** | ① **真机 XCUITest 可用，且不需要插数据线**（2026-11-06 校准：`transportType=localNetwork`、没插线，整套用例 `TEST EXECUTE SUCCEEDED`）。真正的门槛是设备**允许「UI 自动化」**（设置 → 开发者 → 启用 UI 自动化，否则 `Timed out while enabling automation mode`，插着线也一样）+ **解锁亮屏**；插线只是安装/日志更稳。`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机动画判据**：`testStatusBadgeKeepsSpinningAfterReentering` 已改三帧取样，2026-11-04 在 iPhone SE3 / iOS 27.0.1 连续三次通过；完整验收仍以本轮最终真机套件为准。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`；⑧ **验收装开发包**：`swift/app/scripts/dev/install-dev-app.sh [--release|--no-build|--accept|--restore]`（10~20 s，覆盖装 `/Applications`，不要为验收去跑公证）。⑨ **模拟器 `OrzMC-UI` 被重建过**（2026-11-06）：新 UDID `02BD7324-E9DE-4BCC-89D2-BEC55116AFCC`（脚本按名字查找，一般不用改；文档里旧的 `571ACD8A-…` 已失效）。⑩ **空态/无账号的 UI 用例要剥凭据**：`scripts/dev/uitest-secrets.env` 会把真实 exaroton Token 与 MCSM 面板转给 App，`makeApp([... "ORZMC_UITEST_NO_CREDENTIALS": "1"])` 才会真的空。⑪ **真机自动化**：iOS 27.2 设备首次跑需要「设置 → 开发者 → 启用 UI 自动化」，否则 `Timed out while enabling automation mode` —— 这条与有没有插线无关（2026-11-06：插线时也报它，开关打开后 Wi-Fi 直接跑通）。 |
 | **下一步（下次开工就从这里开始）** | ① 维护者目视验收远程托管页（Mac 开发包 `install-dev-app.sh`，iPhone `install-ios-device.sh`）；② 若还要润色，继续在 `OrzMC/Common/RemoteHostingUI/` 骨架里改（**不要回退成面板嵌套，不要改分组顺序**）；③ 界面部分收口后，再单独做服务器资料保存方式（三种模式 + 迁移/同步）。本轮不发版 |
 | **工作树保护** | `swift/app` 有 5 个未跟踪的保存方式草稿：`ServerRecordInstallation.swift`、`ServerRecordKeychain.swift`、`ServerRecordStorage.swift`、`ServerRecordStorageTests.swift`、`docs/server-storage-design-2026-11-04.md`。它们不属于已合入 app `main`，不得清理、暂存或混入 UI PR；当前独立测试会在受限沙箱因 `mktemp` 权限失败，验收 UI PR 时需临时移出并在退出时原样恢复 |
@@ -394,6 +394,29 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-06 — pi（迭代提速第二轮：`--ui-changed`，PR #142）
+
+- 第一轮（#141）把整套模拟器 UI 从 22.4 → 8.6 分钟；这一轮解决"日常改动不需要整套"：
+
+  | 场景 | 命令 | 耗时 |
+  |---|---|---|
+  | 日常（推荐） | `./scripts/dev/check.sh --ui-changed` | **1–3 分钟**（按 diff 选 4–12 例） |
+  | 推送前 | `./scripts/dev/check.sh --ui` | 8.6 分钟（27 例） |
+  | 发版 | 加 `--real` | 12.4 分钟 |
+
+- 映射写在 `run-ios-ui-tests.sh` 的 `ui_tests_for_changes`：MCSM 目录 → MCSM+控制台用例、
+  exaroton 目录 → exaroton+添加+状态徽章、自建服务器目录 → 自建用例、`ConsoleText.swift` → 控制台 3 例；
+  其它（基础层/测试/本地化/工程文件）→ **整套**（宁慢不误）；只有文档 → 秒级跳过。
+  `UI_CHANGED_FILES` 可直接喂改动清单来验证映射。
+- **并行执行试过、放弃**：`-parallel-testing-enabled` + clone 会让 runner 挂住（>20 分钟无输出）。
+- **CI 的 15 分钟没救回来**（诚实记录）：恢复的 DerivedData 与 UI 脚本目录对齐、
+  构建目标改成与 `build` 格一致的泛型目标，两条路都还是整目录重编 → 说明那份缓存在 UI 流程里
+  实际没被复用。再压的正确方向是"少跑"（`ui-smoke` 加路径过滤），不是继续修缓存。
+- 附带修掉一个会**硬失败**的坑：缓存里的 `ModuleCache.noindex/*.pcm` 记着 SDK 头文件 mtime，
+  runner 升级 Xcode 后报 `has been modified since the module file … was built` → 构建 65 退出
+  （2026-11-06 macOS 那格实测）。现在恢复缓存后先删模块缓存。
+- 文档：`swift/app/docs/iteration-flow.md` 补了 `--ui-changed` 映射表 + "并行不可行"的结论。
 
 ### 2026-11-06 — pi（迭代耗时复盘：UI 套件 22.4 → 8.6 分钟，PR #141）
 
