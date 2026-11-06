@@ -120,10 +120,10 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | 远程服务器窗口（exaroton + MCSManager）的 macOS/iPhone 跨端界面重构；**主应用窗口的设计与布局已获维护者认可，禁止纳入本轮改动**。本轮不发版 |
-| **状态** | 🟢 远程托管共享骨架已合入 app `5004ffd2`（[PR #137](https://github.com/OrzMC/OrzMCApp/pull/137)）；🟢 控制台终端重绘真因已修 app `885ee190`（[PR #138](https://github.com/OrzMC/OrzMCApp/pull/138)：`versioversion` / `pluginplugins`）。两轮均本机闸门 + 模拟器 UI + CI + 有线真机全绿。服务器资料保存方式仍待单独实现（排在本轮界面工作之后） |
+| **状态** | 🟢 远程托管共享骨架 app `5004ffd2`（[#137](https://github.com/OrzMC/OrzMCApp/pull/137)）；🟢 控制台 CSI 光标重绘修复 app `885ee190`（[#138](https://github.com/OrzMC/OrzMCApp/pull/138)）；🟢 页顶统一添加入口 + 空态说明页 app `cf1806bb`（[#139](https://github.com/OrzMC/OrzMCApp/pull/139)）。三轮均本机闸门 + 模拟器 UI + CI + 有线真机全绿。服务器资料保存方式仍待单独实现（排在本轮界面工作之后） |
 | **待办看板** | 本轮看 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md) §4（UI-1..UI-7；UI-7 = 本轮跨端骨架，已 ✅）；历史 [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 已全 ✅ |
-| **swift/app 基线** | app `885ee190`（远程托管共享骨架 + 控制台 CSI 光标重绘修复）；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
-| **已知坑** | ① **真机 XCUITest 可用**：必须**插数据线**（Wi-Fi 下会 `DTX 握手被拒/exit 74`；首次还需设备允许「自动化模式」，保持解锁亮屏）；`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机动画判据**：`testStatusBadgeKeepsSpinningAfterReentering` 已改三帧取样，2026-11-04 在 iPhone SE3 / iOS 27.0.1 连续三次通过；完整验收仍以本轮最终真机套件为准。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`；⑧ **验收装开发包**：`swift/app/scripts/dev/install-dev-app.sh [--release|--no-build|--accept|--restore]`（10~20 s，覆盖装 `/Applications`，不要为验收去跑公证）。 |
+| **swift/app 基线** | app `cf1806bb`（远程托管共享骨架 + 控制台 CSI 重绘 + 页顶统一添加入口）；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
+| **已知坑** | ① **真机 XCUITest 可用**：必须**插数据线**（Wi-Fi 下会 `DTX 握手被拒/exit 74`；首次还需设备允许「自动化模式」，保持解锁亮屏）；`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机动画判据**：`testStatusBadgeKeepsSpinningAfterReentering` 已改三帧取样，2026-11-04 在 iPhone SE3 / iOS 27.0.1 连续三次通过；完整验收仍以本轮最终真机套件为准。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`；⑧ **验收装开发包**：`swift/app/scripts/dev/install-dev-app.sh [--release|--no-build|--accept|--restore]`（10~20 s，覆盖装 `/Applications`，不要为验收去跑公证）。⑨ **模拟器 `OrzMC-UI` 被重建过**（2026-11-06）：新 UDID `02BD7324-E9DE-4BCC-89D2-BEC55116AFCC`（脚本按名字查找，一般不用改；文档里旧的 `571ACD8A-…` 已失效）。⑩ **空态/无账号的 UI 用例要剥凭据**：`scripts/dev/uitest-secrets.env` 会把真实 exaroton Token 与 MCSM 面板转给 App，`makeApp([... "ORZMC_UITEST_NO_CREDENTIALS": "1"])` 才会真的空。⑪ **真机自动化**：iOS 27.2 设备首次跑需要「设置 → 开发者 → 启用 UI 自动化」，否则 `Timed out while enabling automation mode`（数据线/Wi-Fi 是另一条判据）。 |
 | **下一步（下次开工就从这里开始）** | ① 维护者目视验收远程托管页（Mac 开发包 `install-dev-app.sh`，iPhone `install-ios-device.sh`）；② 若还要润色，继续在 `OrzMC/Common/RemoteHostingUI/` 骨架里改（**不要回退成面板嵌套，不要改分组顺序**）；③ 界面部分收口后，再单独做服务器资料保存方式（三种模式 + 迁移/同步）。本轮不发版 |
 | **工作树保护** | `swift/app` 有 5 个未跟踪的保存方式草稿：`ServerRecordInstallation.swift`、`ServerRecordKeychain.swift`、`ServerRecordStorage.swift`、`ServerRecordStorageTests.swift`、`docs/server-storage-design-2026-11-04.md`。它们不属于已合入 app `main`，不得清理、暂存或混入 UI PR；当前独立测试会在受限沙箱因 `mktemp` 权限失败，验收 UI PR 时需临时移出并在退出时原样恢复 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
@@ -394,6 +394,28 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-06 — pi（远程托管页：页顶统一添加入口 + 空态说明页，PR #139）
+
+- 维护者要求：把两家的「添加账号」合成**页顶一个**入口，先选供应商再填对应表单；一家都没配时是**空态说明页**，
+  只有配了哪家才显示哪家的分组与服务器。App [PR #139](https://github.com/OrzMC/OrzMCApp/pull/139) 合入 `cf1806bb`。
+- 实现：`RemoteAddProviderMenu`（菜单：exaroton / MCSManager）→ `ExarotonContent` 用 `EditorSheet` 统一弹表单；
+  分组不再自带添加按钮与组内空态（`RemoteProviderSection` 去掉 `emptyState`）；空态用 `EmptyContentView`。
+- 两轮返工（都是维护者实测出来的，值得记住）：
+  ① **空态页选完供应商没反应** —— 表单 sheet 原先挂在分组上（`.onChange(of: addRequest)`），
+     而没账号时分组根本不渲染 → 没有观察者。**sheet 必须挂在常在的页面层**；MCSM 面板编辑器还要补
+     `.environment(mcsm)`（它读面板模型做连接自检，缺了会崩在 `EnvironmentValues`）。
+     账号表单独立成 `ExarotonAccountEditorSheet`，关闭时显式把 item 置空（`sheet(item:)` 不置空下一次弹不出来）。
+  ② **macOS 空态"视觉上不居中"** —— 添加入口与说明块同在一个 VStack 时，说明块是在"按钮行以下"居中，
+     900pt 高窗口里整体下移约 24pt。改为说明块整页居中 + 入口用 `.overlay(alignment: .top)` 浮在页顶
+     （实测块中心与内容区中心差 ≤7pt）。
+- 用例：`testSingleAddEntryIsAtTopAndOffersBothProviders`、`testAddEntryOpensMCSManagerForm`、
+  `testAddFromEmptyPageOpensProviderForms`（空页两家都能弹）、`testPanelMenuEditOpensEditor`、
+  `testRemotePageWithoutAccountsShowsEmptyState`；巡检 `testSnapshotTourRemoteEmptyProviders`。
+- 验证：`check.sh`、`check.sh --ui` 全绿；PR CI 全绿；**有线 iPhone SE3 真机套件 `TEST EXECUTE SUCCEEDED`**
+  （`testMCSManagerConsoleCanFilterAndChangeDisplay` 在模拟器上偶发滚动位置失败，单跑即绿，CI 亦绿）。
+- 截图：`swift/app/docs/ui-remote-add-provider-2026-11-06/`（before 两个按钮 / after 空态、菜单、两家表单、有数据）。
+- 未发版；`/Applications/OrzMC.app` 已更新到该构建；未操作真实服务器。
 
 ### 2026-11-05 — pi（控制台 `versioversion` 真因：CSI 光标左移被当成未知序列丢掉）
 
