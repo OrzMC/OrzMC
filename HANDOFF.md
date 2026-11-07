@@ -122,7 +122,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **主题** | 远程服务器窗口（exaroton + MCSManager）的 macOS/iPhone 跨端界面重构；**主应用窗口的设计与布局已获维护者认可，禁止纳入本轮改动**。本轮不发版 |
 | **状态** | 🟢 远程托管共享骨架 app `5004ffd2`（[#137](https://github.com/OrzMC/OrzMCApp/pull/137)）；🟢 控制台 CSI 光标重绘修复 app `885ee190`（[#138](https://github.com/OrzMC/OrzMCApp/pull/138)）；🟢 页顶统一添加入口 + 空态说明页 app `cf1806bb`（[#139](https://github.com/OrzMC/OrzMCApp/pull/139)）。三轮均本机闸门 + 模拟器 UI + CI + 有线真机全绿。服务器资料保存方式仍待单独实现（排在本轮界面工作之后） |
 | **待办看板** | 本轮看 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md) §4（UI-1..UI-7；UI-7 = 本轮跨端骨架，已 ✅）；历史 [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 已全 ✅ |
-| **swift/app 基线** | app `78aa3976`（远程托管共享骨架 + 控制台 CSI 重绘 + 页顶统一添加入口 + UI 套件提速 + `--ui-changed` + 「我的服务器」卡片列表/详情页 + 服务器卡片三处统一 + 侧边栏展开卡顿修复）；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
+| **swift/app 基线** | app `c38d30fa`（远程托管共享骨架 + 控制台 CSI 重绘 + 页顶统一添加入口 + UI 套件提速 + `--ui-changed` + 「我的服务器」卡片列表/详情页 + 服务器卡片三处统一 + 侧边栏展开卡顿修复 + 窄屏卡片动作底栏）；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
 | **已知坑** | ① **真机 XCUITest 可用，且不需要插数据线**（2026-11-06 校准：`transportType=localNetwork`、没插线，整套用例 `TEST EXECUTE SUCCEEDED`）。真正的门槛是设备**允许「UI 自动化」**（设置 → 开发者 → 启用 UI 自动化，否则 `Timed out while enabling automation mode`，插着线也一样）+ **解锁亮屏**；插线只是安装/日志更稳。`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`；CI 侧的同类报错来自恢复的 SwiftPM 缓存，脚本已不再传 `-skipPackageUpdates`（否则不补 fetch）。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机动画判据**：`testStatusBadgeKeepsSpinningAfterReentering` 已改三帧取样，2026-11-04 在 iPhone SE3 / iOS 27.0.1 连续三次通过；完整验收仍以本轮最终真机套件为准。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`；⑧ **验收装开发包**：`swift/app/scripts/dev/install-dev-app.sh [--release|--no-build|--accept|--restore]`（10~20 s，覆盖装 `/Applications`，不要为验收去跑公证）。⑨ **模拟器 `OrzMC-UI` 被重建过**（2026-11-06）：新 UDID `02BD7324-E9DE-4BCC-89D2-BEC55116AFCC`（脚本按名字查找，一般不用改；文档里旧的 `571ACD8A-…` 已失效）。⑩ **空态/无账号的 UI 用例要剥凭据**：`scripts/dev/uitest-secrets.env` 会把真实 exaroton Token 与 MCSM 面板转给 App，`makeApp([... "ORZMC_UITEST_NO_CREDENTIALS": "1"])` 才会真的空。⑪ **真机自动化**：iOS 27.2 设备首次跑需要「设置 → 开发者 → 启用 UI 自动化」，否则 `Timed out while enabling automation mode` —— 这条与有没有插线无关（2026-11-06：插线时也报它，开关打开后 Wi-Fi 直接跑通）。 |
 | **下一步（下次开工就从这里开始）** | ① 维护者目视验收远程托管页（Mac 开发包 `install-dev-app.sh`，iPhone `install-ios-device.sh`）；② 若还要润色，继续在 `OrzMC/Common/RemoteHostingUI/` 骨架里改（**不要回退成面板嵌套，不要改分组顺序**）；③ 界面部分收口后，再单独做服务器资料保存方式（三种模式 + 迁移/同步）。本轮不发版 |
 | **工作树保护** | `swift/app` 有 5 个未跟踪的保存方式草稿：`ServerRecordInstallation.swift`、`ServerRecordKeychain.swift`、`ServerRecordStorage.swift`、`ServerRecordStorageTests.swift`、`docs/server-storage-design-2026-11-04.md`。它们不属于已合入 app `main`，不得清理、暂存或混入 UI PR；当前独立测试会在受限沙箱因 `mktemp` 权限失败，验收 UI PR 时需临时移出并在退出时原样恢复 |
@@ -394,6 +394,17 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-07 — pi（窄屏服务器卡片动作固定为底栏，PR #147）
+
+- 维护者手机截图：同一屏两张 MCSM 实例卡里，一张动作挤在名称行、另一张被 `ViewThatFits` 折到第二行，
+  像"按钮掉到卡片底部"，两张卡观感不一致。App [#147](https://github.com/OrzMC/OrzMCApp/pull/147) → `c38d30fa`。
+- 改成按**宽度等级**：紧凑宽度（iPhone 竖屏）动作**固定**成卡片底部操作栏（细分隔线 + 右对齐），
+  常规宽度（iPad / macOS）仍与名称同一行；`Actions == EmptyView` 的卡片（「我的服务器」）不预留操作栏。
+- 用例：`testMCSManagerInstanceActionsAreInline` 等 4 条 ✅；`check.sh --fast` ✅；PR CI 全绿。
+- 截图：`swift/app/docs/ui-server-cards-2026-11-07/`（before 维护者原图 / after 模拟器）。
+- 侧边栏卡顿按维护者要求**先不动**（真因已定位到"侧边栏控件在重新出现时被重新布局"，
+  待选 ① 削每帧成本 还是 ② 换掉 NavigationSplitView）。
 
 ### 2026-11-07 — pi（侧边栏「收起后再展开」卡顿：真因是 `.prominentDetail`，PR #146）
 
