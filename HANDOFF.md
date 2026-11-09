@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；PR #158/#159/#160/#161/#162）
+> **最后更新**：2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；PR #158/#159/#160/#161/#162）
 
 ---
 
@@ -393,6 +393,18 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-09 — pi（搜索引擎提交：IndexNow 自动化，site #11 已发布）
+
+- `site` PR #11（`86a8b28`）合入并发布：
+  · `site_deploy.yml` 发布后自动把 sitemap 全部 URL 提交 IndexNow（本次 57 条，HTTP 202），
+    等 key 文件可访问再提交、失败不影响发布；key 文件 `static/2f2c12947f6d299cc8962ebb07e23ae2.txt`；
+  · `params.toml` 预留 `google_site_verification` / `bing_site_verification`（填值即输出验证 meta）；
+  · 新增 `docs/seo-search-engines.md`（GSC/Bing 步骤、AI 引用观察方法）。
+- **待维护者账号操作**（无法由 AI 代做）：登录 [GSC](https://search.google.com/search-console) /
+  [Bing Webmaster](https://www.bing.com/webmasters) 添加资源、验证、提交
+  `https://orzmc.jokerhub.cn/sitemap.xml`；之后每月看 Bing「AI Performance」并手工抽查 AI 引用。
+- 父仓库 bump site → `86a8b28`。
 
 ### 2026-11-09 — pi（官网 GEO/SEO 优化，site #10 已发布）
 
