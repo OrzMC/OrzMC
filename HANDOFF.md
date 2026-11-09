@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达；PR #158/#159/#160）
+> **最后更新**：2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；PR #158/#159/#160/#161/#162）
 
 ---
 
@@ -122,9 +122,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **主题** | 服务器管理页（macOS「服务器」窗口 + iOS 首页）**合并为一个列表**并统一卡片动作/视觉/刷新交互；主应用窗口只做了维护者点名的轻量统一（实例动作按钮可用态、目录「打开」图标）。本轮不发版 |
 | **状态** | ✅ **0.1.7 (59) 已发布**（[Release 0.1.7](https://github.com/OrzMC/OrzMCApp/releases/tag/0.1.7)：dmg + zip + appcast；Developer ID 签名 + 公证 + Gatekeeper accepted）。此前 0.1.7 内容：服务器页合并 + 视觉/刷新收口（[#157](https://github.com/OrzMC/OrzMCApp/pull/157)）、实例卡动作顺序 + 模组入口（[#158](https://github.com/OrzMC/OrzMCApp/pull/158)）、项目悬空引用清理 + 文档发布根路径直达（[#160](https://github.com/OrzMC/OrzMCApp/pull/160)）。 |
 | **待办看板** | [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md) §4：UI-1..UI-14 全部 ✅（UI-9 合并列表、UI-10 动作+折叠、UI-11 视觉评审、UI-12 主窗口按钮/图标、UI-13 控制台导航页、UI-14 刷新收口）；[`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 已全 ✅ |
-| **swift/app 基线** | app `16dad5ac`（0.1.7 发版 + appcast；含服务器页合并/视觉/刷新收口、实例卡动作 **插件/模组 → 控制台**、Fabric/Forge `ModsManagerView` 本地清单、pbxproj 悬空引用清理、文档发布 `docs-site` + 根路径直达）；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
+| **swift/app 基线** | app `d6924462`（0.1.7 发版 + appcast `16dad5ac`；含服务器页合并/视觉/刷新收口、实例卡动作 **插件/模组 → 控制台**、Fabric/Forge `ModsManagerView` 本地清单、pbxproj 悬空引用清理、文档发布 `docs-site` + 根路径直达、docs 依赖解析重试/去缓存）；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
 | **已知坑** | ① **真机 XCUITest 可用，且不需要插数据线**（2026-11-06 校准：`transportType=localNetwork`、没插线，整套用例 `TEST EXECUTE SUCCEEDED`）。真正的门槛是设备**允许「UI 自动化」**（设置 → 开发者 → 启用 UI 自动化，否则 `Timed out while enabling automation mode`，插着线也一样）+ **解锁亮屏**；插线只是安装/日志更稳。`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`；CI 侧的同类报错来自恢复的 SwiftPM 缓存，脚本已不再传 `-skipPackageUpdates`（否则不补 fetch）。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机动画判据**：`testStatusBadgeKeepsSpinningAfterReentering` 已改三帧取样，2026-11-04 在 iPhone SE3 / iOS 27.0.1 连续三次通过；完整验收仍以本轮最终真机套件为准。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`；⑧ **验收装开发包**：`swift/app/scripts/dev/install-dev-app.sh [--release|--no-build|--accept|--restore]`（10~20 s，覆盖装 `/Applications`，不要为验收去跑公证）。⑨ **模拟器 `OrzMC-UI` 被重建过**（2026-11-06）：新 UDID `02BD7324-E9DE-4BCC-89D2-BEC55116AFCC`（脚本按名字查找，一般不用改；文档里旧的 `571ACD8A-…` 已失效）。⑩ **空态/无账号的 UI 用例要剥凭据**：`scripts/dev/uitest-secrets.env` 会把真实 exaroton Token 与 MCSM 面板转给 App，`makeApp([... "ORZMC_UITEST_NO_CREDENTIALS": "1"])` 才会真的空。⑪ **真机自动化**：iOS 27.2 设备首次跑需要「设置 → 开发者 → 启用 UI 自动化」，否则 `Timed out while enabling automation mode` —— 这条与有没有插线无关（2026-11-06：插线时也报它，开关打开后 Wi-Fi 直接跑通）。 |
-| **下一步（下次开工就从这里开始）** | ① **插件/模组的搜索 / 安装 / 更新 / 卸载 + 渠道（Hangar、Modrinth）**：`ModsManagerModel` / `PluginManagerModel` 是接入点，需要把"渠道"抽出来（两者共用一套目录/安装/更新 UI）；② 文档站点首次用新 workflow 发布失败（`resolvePackageDependencies` 下载 Sparkle/SwiftLint 二进制包 `badResponse`，runner 网络/限流），计划给 docs workflow 加**重试**再触发；③ 可选：A 方案（账号/面板降级为子标题行）；④ 可选：macOS 亮色 / 提高对比 / VoiceOver 人工复核 |
+| **下一步（下次开工就从这里开始）** | ① **插件/模组的搜索 / 安装 / 更新 / 卸载 + 渠道（Hangar、Modrinth）**：`ModsManagerModel` / `PluginManagerModel` 是接入点，需要把"渠道"抽出来（两者共用一套目录/安装/更新 UI）；② 文档 workflow 现在**干净解析依赖**（约 20 分钟/次），若嫌慢只缓存 `DerivedData` 中不含 `SourcePackages/artifacts` 的部分；③ 可选：A 方案（账号/面板降级为子标题行）；④ 可选：macOS 亮色 / 提高对比 / VoiceOver 人工复核 |
 | **本轮的硬口径（别回退）** | ① 分组顺序 **自建 → exaroton → MCSM**，一个页面、页顶只有一个「添加服务器」（左）与「全部折叠/展开」（右）；实例卡动作顺序 **插件/模组 → 控制台**（插件/模组共用一个 `InstanceAddonSheet`）；② **不要再做"卡中卡"**：账号卡内部的行是 `.plain`（`ServerCard(surface:)`），Liquid Glass 只留一层；③ 状态徽章唯一实现 `OrzMCStatusBadge`；④ 图标动作统一走 `OrzMCActionButton`（可用 0.85 / 禁用 0.35 / 命中区 22/32）；刷新统一走 `OrzMCRefreshButton`（刷新中同槽位转圈）；⑤ 控制台是**导航页**不是 sheet；⑥ 整卡可点（透明垫层 + `contentShape`），`tapIdentifier` 留在内容里的主按钮上 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
@@ -410,8 +410,10 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 - **PR #160**（`fcd628b1`）：清掉 Xcode 里 26 个悬空引用 + 7 个空分组；`check-pbxproj.py` 改为路径解析并新增
   悬空引用/24 位 ID 检查；文档发布产物改 `docs-site/`，新增 `scripts/dev/make-docs-landing.py`（根路径直达文档首页，
   不再 meta-refresh 白屏），`docs/doc-publishing.md`。
-- ⚠️ 文档站点这次**没有发布成功**：新的 publish-docs 在 `resolvePackageDependencies` 下载 Sparkle/SwiftLint
-  二进制包时 `badResponse`（runner 网络/限流；本地同 URL 正常）。下一步给 docs workflow 加下载重试。
+- **文档站点已上线**：`https://orzmc.github.io/OrzMCApp/` 根路径直接渲染文档首页（`history.replaceState` shim，
+  无 meta-refresh 白屏）。排障记录：① 首次失败是 `resolvePackageDependencies` 下载 Sparkle/SwiftLint
+  二进制包 `badResponse`；② 加重试后仍稳定失败 → 根因是**恢复的 `SourcePackages` 缓存里带旧二进制产物**，
+  SwiftPM 重新下载失败；③ 改为 docs job **不恢复 DerivedData/SourcePackages**（干净解析，约 20 分钟）后成功。
 - 其它：CI 的 `protocol-live` 仍偶发 SwiftPM 缓存 `already exists`，`gh run rerun --failed` 即绿；
   发版 job 的 SwiftPM 缓存若中毒（`already exists` / `badResponse`），`gh cache delete <id>` 后重跑。
 
