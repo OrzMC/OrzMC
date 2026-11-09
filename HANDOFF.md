@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；PR #158/#159/#160/#161/#162）
+> **最后更新**：2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；PR #158/#159/#160/#161/#162）
 
 ---
 
@@ -393,6 +393,18 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-09 — pi（GSC / Bing 已提交 sitemap + 全站 SEO 审计，site #12 已发布）
+
+- 维护者已在 **Google Search Console / Bing Webmaster** 以「域资源 `jokerhub.cn`」添加站点并提交
+  `https://orzmc.jokerhub.cn/sitemap.xml`。
+- 全量审计 sitemap 57 个 URL：**0 抓取错误、0 canonical 不一致、0 noindex、标题/描述/H1 齐全、无重复**。
+- 审计发现并修复：37 个分类/标签页 `<title>` 退化为站点名、描述退化为站点简介
+  （主题 baseof 用 `.Params.Title`）——项目覆盖 `layouts/_default/baseof.html`，术语页标题追加
+  「（标签）/（分类）」，新增 `content/tags|categories/_index.md`。`site` PR #12（`02e6f33`）。
+- IndexNow 在发布后自动提交（57 条，HTTP 202）；GSC/Bing 收录与 AI 引用需时间，观察方法见
+  `site/docs/seo-search-engines.md`（Bing「AI Performance」+ 每月手工抽查）。
+- 父仓库 bump site → `02e6f33`。
 
 ### 2026-11-09 — pi（搜索引擎提交：IndexNow 自动化，site #11 已发布）
 
