@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；PR #158/#159/#160/#161/#162）
+> **最后更新**：2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；PR #158/#159/#160/#161/#162）
 
 ---
 
@@ -393,6 +393,20 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-09 — pi（官网 GEO/SEO 优化，site #10 已发布）
+
+- `site` PR #10（`b55dcb7`）合入 main 并发布 gh-pages：
+  · 新增 `/llms.txt`（Hugo `[outputFormats.LLMS]` + `layouts/index.llms.txt`，随页面/文章自动更新）；
+  · `robots.txt` 显式放行 GPTBot / OAI-SearchBot / ClaudeBot / PerplexityBot / Google-Extended 等；
+  · JSON-LD 补 `WebPage` + `SoftwareApplication`（客户端/插件）、`@id` 关联、`Organization.knowsAbout`、文章作者 `Person`；
+  · 独立页补 `description`（此前 meta 描述退化成整页正文），首页 `description` 与 `hero_description` 解耦；
+  · `og:locale` 修正为 `zh_CN`，补 `twitter:image:alt` / `og:image:secure_url`；
+    hero preload 覆盖所有有 `featured_image` 的页面，hero 图统一 `fetchpriority=high`。
+- 合规生成器 `scripts/sync_compliance.py` 一并给官网隐私页输出 `description`（`--check` 通过）。
+- 验证：`check_content.py`、生产构建、全部 JSON-LD 可解析、`./deploy -n`、线上
+  `/llms.txt` / `/robots.txt` / 结构化数据已确认。
+- 父仓库 bump site → `b55dcb7`。
 
 ### 2026-11-09 — pi（官网页面面向用户收敛，site #9 已发布）
 
