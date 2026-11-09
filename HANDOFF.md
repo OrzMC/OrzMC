@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-05 by Codex（应用远程服务器跨端界面重构待开工；工作树与分支已巡检）
+> **最后更新**：2026-11-08 by pi（服务器页合并 + 卡片动作/视觉/刷新统一已验收，PR #157 → `878bf173`）
 
 ---
 
@@ -119,13 +119,13 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 项 | 内容 |
 |---|---|
-| **主题** | 远程服务器窗口（exaroton + MCSManager）的 macOS/iPhone 跨端界面重构；**主应用窗口的设计与布局已获维护者认可，禁止纳入本轮改动**。本轮不发版 |
-| **状态** | ✅ **维护者 2026-11-07 验收通过**（iPhone SE3 Debug `c38d30fa` + macOS Release `c38d30fa`）。🟢 远程托管共享骨架 app `5004ffd2`（[#137](https://github.com/OrzMC/OrzMCApp/pull/137)）；🟢 控制台 CSI 光标重绘修复 app `885ee190`（[#138](https://github.com/OrzMC/OrzMCApp/pull/138)）；🟢 页顶统一添加入口 + 空态说明页 app `cf1806bb`（[#139](https://github.com/OrzMC/OrzMCApp/pull/139)）。三轮均本机闸门 + 模拟器 UI + CI + 有线真机全绿。服务器资料保存方式仍待单独实现（排在本轮界面工作之后） |
-| **待办看板** | 本轮看 [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md) §4（UI-1..UI-7；UI-7 = 本轮跨端骨架，已 ✅）；历史 [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 已全 ✅ |
-| **swift/app 基线** | app `ff58d16c`（远程托管共享骨架 + 控制台 CSI 重绘 + 页顶统一添加入口 + UI 套件提速 + `--ui-changed` + 「我的服务器」卡片列表/详情页 + 服务器卡片三处统一 + 卡片动作底栏 + 服务器资料存储 P1–P4（iCloud 真机验收 + 清除本机资料 + 现有记录复核））；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
+| **主题** | 服务器管理页（macOS「服务器」窗口 + iOS 首页）**合并为一个列表**并统一卡片动作/视觉/刷新交互；主应用窗口只做了维护者点名的轻量统一（实例动作按钮可用态、目录「打开」图标）。本轮不发版 |
+| **状态** | ✅ **维护者 2026-11-08 验收通过**（macOS Debug `0.1.6 (58)` + iPhone SE3 Debug，均为 PR [#157](https://github.com/OrzMC/OrzMCApp/pull/157) 的 squash `878bf173`）。PR CI（split / build×2 / protocol-live / ui-smoke）全绿；本机 `check.sh --fast/--build/--ios` + iOS UI 套件绿 |
+| **待办看板** | [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md) §4：UI-1..UI-14 全部 ✅（UI-9 合并列表、UI-10 动作+折叠、UI-11 视觉评审、UI-12 主窗口按钮/图标、UI-13 控制台导航页、UI-14 刷新收口）；[`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 已全 ✅ |
+| **swift/app 基线** | app `878bf173`（服务器页合并 + `ServerCard(surface:)` 两层表面 + 字阶/元信息 + 分组折叠 `OrzMCDisplayModeControls` + 整卡可点 + MCSM 控制台导航页 + `OrzMCRefreshButton` 刷新收口）；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
 | **已知坑** | ① **真机 XCUITest 可用，且不需要插数据线**（2026-11-06 校准：`transportType=localNetwork`、没插线，整套用例 `TEST EXECUTE SUCCEEDED`）。真正的门槛是设备**允许「UI 自动化」**（设置 → 开发者 → 启用 UI 自动化，否则 `Timed out while enabling automation mode`，插着线也一样）+ **解锁亮屏**；插线只是安装/日志更稳。`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`；CI 侧的同类报错来自恢复的 SwiftPM 缓存，脚本已不再传 `-skipPackageUpdates`（否则不补 fetch）。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机动画判据**：`testStatusBadgeKeepsSpinningAfterReentering` 已改三帧取样，2026-11-04 在 iPhone SE3 / iOS 27.0.1 连续三次通过；完整验收仍以本轮最终真机套件为准。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`；⑧ **验收装开发包**：`swift/app/scripts/dev/install-dev-app.sh [--release|--no-build|--accept|--restore]`（10~20 s，覆盖装 `/Applications`，不要为验收去跑公证）。⑨ **模拟器 `OrzMC-UI` 被重建过**（2026-11-06）：新 UDID `02BD7324-E9DE-4BCC-89D2-BEC55116AFCC`（脚本按名字查找，一般不用改；文档里旧的 `571ACD8A-…` 已失效）。⑩ **空态/无账号的 UI 用例要剥凭据**：`scripts/dev/uitest-secrets.env` 会把真实 exaroton Token 与 MCSM 面板转给 App，`makeApp([... "ORZMC_UITEST_NO_CREDENTIALS": "1"])` 才会真的空。⑪ **真机自动化**：iOS 27.2 设备首次跑需要「设置 → 开发者 → 启用 UI 自动化」，否则 `Timed out while enabling automation mode` —— 这条与有没有插线无关（2026-11-06：插线时也报它，开关打开后 Wi-Fi 直接跑通）。 |
-| **下一步（下次开工就从这里开始）** | ① 维护者目视验收远程托管页（Mac 开发包 `install-dev-app.sh`，iPhone `install-ios-device.sh`）；② 若还要润色，继续在 `OrzMC/Common/RemoteHostingUI/` 骨架里改（**不要回退成面板嵌套，不要改分组顺序**）；③ 界面部分收口后，再单独做服务器资料保存方式（三种模式 + 迁移/同步）。本轮不发版 |
-| **工作树保护** | `swift/app` 有 5 个未跟踪的保存方式草稿：`ServerRecordInstallation.swift`、`ServerRecordKeychain.swift`、`ServerRecordStorage.swift`、`ServerRecordStorageTests.swift`、`docs/server-storage-design-2026-11-04.md`。它们不属于已合入 app `main`，不得清理、暂存或混入 UI PR；当前独立测试会在受限沙箱因 `mktemp` 权限失败，验收 UI PR 时需临时移出并在退出时原样恢复 |
+| **下一步（下次开工就从这里开始）** | ① **发 0.1.7**：改 `Config.xcconfig` 版本/build + `docs/release-notes/0.1.7.md`（面向用户的"升级须知"：服务器页合并、控制台改为导航页、刷新行为），合入后 `gh workflow run release-app.yml --ref main`；② 可选：A 方案（账号/面板降级为子标题行、实例卡与自建卡同层）——落点 `RemoteAccountCard` + 两个 `*Section`；③ 可选：macOS 亮色 / 提高对比 / VoiceOver 人工复核（§16 已声明未验） |
+| **本轮的硬口径（别回退）** | ① 分组顺序 **自建 → exaroton → MCSM**，一个页面、页顶只有一个「添加服务器」（左）与「全部折叠/展开」（右）；② **不要再做"卡中卡"**：账号卡内部的行是 `.plain`（`ServerCard(surface:)`），Liquid Glass 只留一层；③ 状态徽章唯一实现 `OrzMCStatusBadge`；④ 图标动作统一走 `OrzMCActionButton`（可用 0.85 / 禁用 0.35 / 命中区 22/32）；刷新统一走 `OrzMCRefreshButton`（刷新中同槽位转圈）；⑤ 控制台是**导航页**不是 sheet；⑥ 整卡可点（透明垫层 + `contentShape`），`tapIdentifier` 留在内容里的主按钮上 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
 ## 2. 状态快照（Repo State，历史记录）
@@ -394,6 +394,24 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-08 — pi（服务器页合并 + 卡片动作/视觉/刷新统一，PR #157 验收通过）
+
+- 维护者要求：把「我的服务器」与「远程托管」**合并成一个列表**（省掉顶部切换）、统一「添加服务器」；
+  随后五轮反馈依次收口：卡片动作与其它来源统一 + 分组折叠、HIG 视觉评审（两层表面/字阶/标签/图标）、
+  主窗口按钮与目录图标、exaroton 整卡可点 + MCSM 控制台改导航页 + 账号卡刷新转圈、刷新交互清单收口。
+- App PR [#157](https://github.com/OrzMC/OrzMCApp/pull/157)（8 commits）squash → **`878bf173`**。
+  关键落点：`OrzMC/Common/ServersUI/ServersContentView.swift`（一个列表 + 路由 + 页顶）、
+  `RemoteHostingUI/ServerCard.swift`（`surface` / 整卡点击 / 元信息行）、
+  `RemoteHostingUI/RemoteHostingSkeleton.swift`（分组/账号卡/刷新菜单）、
+  `Sources/OrzMCDesignSystem/ActionButton.swift`（`OrzMCActionButton` / `OrzMCRefreshButton` /
+  `OrzMCDisplayModeControls`）、`MCSManagerUI/MCSManagerConsoleView.swift`（原 sheet → 导航页）。
+- 文档：`swift/app/docs/app-ui-design.md` §11–§16、`ui-handoff-2026-10-30.md` UI-9..UI-14、
+  `ui-refresh-inventory-2026-11-08.md`（改前快照 + 收口状态）。
+- 验证：`check.sh --fast/--build/--ios`；iOS UI 套件（新增整卡点击 / 分组折叠 / 卡片动作 / 控制台页用例；
+  `testRealSelfHostedServerShowsOnline` 依赖 `192.168.0.33:25565` 真实测试服，离线时会失败、CI 无凭据时跳过）；
+  PR CI 全绿；Mac 开发包 + iPhone SE3 由维护者验收通过。
+- 未做：A 方案（账号降级为子标题行）；macOS 亮色/高对比/VoiceOver 人工复核；0.1.7 未发版。
 
 ### 2026-11-08 — pi（现有记录可用性复核，PR #155）
 
