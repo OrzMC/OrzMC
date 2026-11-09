@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；PR #158/#159/#160/#161/#162）
+> **最后更新**：2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；内容 SEO 护栏与周检（site #13）；PR #158/#159/#160/#161/#162）
 
 ---
 
@@ -393,6 +393,17 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-09 — pi（内容 SEO/GEO 护栏 + 每周审计，site #13 已发布）
+
+- `site` PR #13（`3fcb32e`）：
+  · `check_content.py` 新增护栏（CI 阻断）：title、独立页 description 20–160 字、
+    文章 summary/description、重复 title 报错、重复描述/未进导航警告；
+  · `llms.txt` 主要页面改为按 `menu.main` 自动收录，新增页面不再改模板；
+  · 新增 `scripts/seo_audit.py` 与每周一 `SEO / GEO Audit` workflow（失败告警）；
+  · AGENTS/README/`docs/seo-search-engines.md` 补内容更新检查清单。
+- 验证：`check_content.py` 0 警告；本地/线上审计 57 URL 0 错误；手动触发周检成功。
+- 父仓库 bump site → `3fcb32e`。
 
 ### 2026-11-09 — pi（GSC / Bing 已提交 sitemap + 全站 SEO 审计，site #12 已发布）
 
