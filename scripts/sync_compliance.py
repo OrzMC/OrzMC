@@ -154,6 +154,7 @@ def site_privacy(c: dict[str, str]) -> str:
         "---\n"
         'title: "隐私政策"\n'
         "toc: true\n"
+        'description: "OrzMC 隐私政策：官网与开源工具的数据处理方式、使用的第三方服务，以及联系方式。"\n'
         f"# 本页由 scripts/sync_compliance.py 从 docs/compliance/privacy.md 生成，请勿直接编辑。\n"
         "---\n\n"
         f"{body}\n"
