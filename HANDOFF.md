@@ -1579,7 +1579,7 @@ GUI 保持 macOS 14（`@Observable` 要求），**逻辑层（CLI/库）钉在 m
 - 工具：`scripts/dev/purge-package-cache.sh`（升级 pin 后清 SwiftPM 缓存）。
 
 **尚未做（下一会话从这里开始）**
-- 维护者新反馈的 8 项，已按优先级写进 [`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md)：
+- 维护者新反馈的 8 项，已按优先级写进 `swift/app/docs/backlog-2026-10-25.md`（已删，结论在 `remote-hosting-providers.md`）：
   P0 远程托管错误弹窗（原始 NSError + 取消当错误）、P1 控制台空态位置 / 内存行布局 / 服务器菜单三项 /
   iOS 应用图标缺失、P2 统一终端渲染（ANSI）、P2 多供应商（Exaroton + MCSM）与多实例预研。
 - 发版保持暂停，等这批体验项做完统一出 0.1.4。
@@ -2084,7 +2084,7 @@ CI 缓存把问题藏住了，干净构建会失败）。#49 已关闭并折叠�
 8. **验证**：`scripts/air/run.sh app`（macOS）与 `app-ios` 构建绿；`app-test` 绿；
    `check-platform-split.sh` 绿。完整梳理与后续 P2 路线见
    [`swift/app/docs/app-ui-design.md`](swift/app/docs/app-ui-design.md)；
-   Codex 交接文档与提示词见 [`swift/app/docs/ui-handoff.md`](swift/app/docs/ui-handoff.md)。
+   Codex 交接文档与提示词见 `swift/app/docs/ui-handoff.md`（已随 2026-11-09 清理删除）。
 9. **状态**：`swift/app` 有未提交改动（未开分支/未推送），父仓库暂不 bump 指针。
 
 ### 2026-10-22 — pi（远端 issue/PR 巡检后的三件事：合规标记口径 / 发布 2.18.1 / plugin 告警噪音）
@@ -2843,7 +2843,7 @@ W6 同一改动验证 3 遍。
 
 **本机不再构建**（SDK 13.3 / 磁盘 9.8GB / no-op 构建 16.7s，见上一条）。改为远端构建：
 
-- 新增 **[`scripts/air/run.sh`](scripts/air/run.sh)**：`env|sync|build|test|accept|all|sh|clean`；
+- 新增 **`scripts/air/run.sh`（已退役）**：`env|sync|build|test|accept|all|sh|clean`；
   `rsync --delete`（排除 `.build`）→ `~/orzmc-build/OrzMCKit` → 远端 `swift build`。
 - `air`：`joker@192.168.0.26`，**Apple Silicon M1 / 8 核 / Swift 6.4 / SDK 27 / 24GB 可用**。
 - 关键优化：依赖 `branch: main` 每次解析都联网 → 默认 `--only-use-versions-from-resolved-file`
@@ -3095,7 +3095,7 @@ vanilla/paper、进度只有一个 `Double`、Java 状态读系统 JDK 并引导
 - **产出**：
   - 新增 [`docs/spec/frontends.md`](docs/spec/frontends.md)：模型图、数据归属表（位置/写入者/并发语义）、
     共存规则 **F0–F9**、隔离矩阵、**新前端接入清单**、反模式、现状与待补。
-  - 新增 [`docs/spec/fixtures/state/paths.json`](docs/spec/fixtures/state/paths.json)：共享落点机器可读快照
+  - 新增 `docs/spec/fixtures/state/paths.json`（已改名为 `docs/spec/state-paths.json`）：共享落点机器可读快照
     （供将来的 `state.paths` conformance 用例）。
   - 交叉引用：`spec/README.md`（§1/§2/§3）、`docs/README.md` 索引、`product-architecture.md` §1.2
     标题改为“一个 `orzmc`，多个前端，一套数据”、`install-update.md` §2/§3、`auth.md` §5、`fixtures/README.md`。
