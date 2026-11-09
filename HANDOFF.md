@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-08 by pi（服务器页合并 + 卡片动作/视觉/刷新统一已验收，PR #157 → `878bf173`）
+> **最后更新**：2026-11-09 by pi（实例卡动作改为「插件/模组 → 控制台」+ Fabric/Forge 模组入口，PR #158 → `9a7a1a38`）
 
 ---
 
@@ -120,12 +120,12 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **主题** | 服务器管理页（macOS「服务器」窗口 + iOS 首页）**合并为一个列表**并统一卡片动作/视觉/刷新交互；主应用窗口只做了维护者点名的轻量统一（实例动作按钮可用态、目录「打开」图标）。本轮不发版 |
-| **状态** | ✅ **维护者 2026-11-08 验收通过**（macOS Debug `0.1.6 (58)` + iPhone SE3 Debug，均为 PR [#157](https://github.com/OrzMC/OrzMCApp/pull/157) 的 squash `878bf173`）。PR CI（split / build×2 / protocol-live / ui-smoke）全绿；本机 `check.sh --fast/--build/--ios` + iOS UI 套件绿 |
+| **状态** | ✅ **维护者 2026-11-09 验收通过**：主窗口实例卡动作顺序改为 **插件/模组 → 控制台**，Fabric/Forge 新增「模组」入口（[#158](https://github.com/OrzMC/OrzMCApp/pull/158) → `9a7a1a38`）；此前服务器页合并 + 视觉/刷新收口（[#157](https://github.com/OrzMC/OrzMCApp/pull/157) → `878bf173`）已验收。两轮 PR CI 全绿；本机 `check.sh --fast/--build/--ios` 绿 |
 | **待办看板** | [`swift/app/docs/ui-handoff-2026-10-30.md`](swift/app/docs/ui-handoff-2026-10-30.md) §4：UI-1..UI-14 全部 ✅（UI-9 合并列表、UI-10 动作+折叠、UI-11 视觉评审、UI-12 主窗口按钮/图标、UI-13 控制台导航页、UI-14 刷新收口）；[`swift/app/docs/backlog-2026-10-25.md`](swift/app/docs/backlog-2026-10-25.md) 已全 ✅ |
-| **swift/app 基线** | app `878bf173`（服务器页合并 + `ServerCard(surface:)` 两层表面 + 字阶/元信息 + 分组折叠 `OrzMCDisplayModeControls` + 整卡可点 + MCSM 控制台导航页 + `OrzMCRefreshButton` 刷新收口）；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
+| **swift/app 基线** | app `9a7a1a38`（服务器页合并 + 两层表面/字阶 + 分组折叠 + 整卡可点 + MCSM 控制台导航页 + `OrzMCRefreshButton`；实例卡动作 **插件/模组 → 控制台**，Fabric/Forge 新增 `ModsManagerView` 本地清单）；OrzMCKit `7821b1ee`；OrzSwiftKit `71193475`；Python `fa1659eb`。实际组合以父仓库 Git 指针为准 |
 | **已知坑** | ① **真机 XCUITest 可用，且不需要插数据线**（2026-11-06 校准：`transportType=localNetwork`、没插线，整套用例 `TEST EXECUTE SUCCEEDED`）。真正的门槛是设备**允许「UI 自动化」**（设置 → 开发者 → 启用 UI 自动化，否则 `Timed out while enabling automation mode`，插着线也一样）+ **解锁亮屏**；插线只是安装/日志更稳。`run-ios-ui-tests.sh --device <UDID> --detach` 一条命令跑完并回传结果。② 真机签名必须经 Terminal.app（脚本已用 `--detach` 自动处理）。③ 升 `Package.resolved` 版本后报 `Couldn't check out revision`：`scripts/dev/refresh-package.sh <包名>`；CI 侧的同类报错来自恢复的 SwiftPM 缓存，脚本已不再传 `-skipPackageUpdates`（否则不补 fetch）。④ 降级依赖 pin 后 `scripts/dev/purge-package-cache.sh <包名>`。⑤ `check.sh --changed` 按改动范围选档。⑥ **真机动画判据**：`testStatusBadgeKeepsSpinningAfterReentering` 已改三帧取样，2026-11-04 在 iPhone SE3 / iOS 27.0.1 连续三次通过；完整验收仍以本轮最终真机套件为准。⑦ 单个 UI 用例复跑：`UI_ONLY_TESTING=OrzMCUITests/<类>/<用例>`；⑧ **验收装开发包**：`swift/app/scripts/dev/install-dev-app.sh [--release|--no-build|--accept|--restore]`（10~20 s，覆盖装 `/Applications`，不要为验收去跑公证）。⑨ **模拟器 `OrzMC-UI` 被重建过**（2026-11-06）：新 UDID `02BD7324-E9DE-4BCC-89D2-BEC55116AFCC`（脚本按名字查找，一般不用改；文档里旧的 `571ACD8A-…` 已失效）。⑩ **空态/无账号的 UI 用例要剥凭据**：`scripts/dev/uitest-secrets.env` 会把真实 exaroton Token 与 MCSM 面板转给 App，`makeApp([... "ORZMC_UITEST_NO_CREDENTIALS": "1"])` 才会真的空。⑪ **真机自动化**：iOS 27.2 设备首次跑需要「设置 → 开发者 → 启用 UI 自动化」，否则 `Timed out while enabling automation mode` —— 这条与有没有插线无关（2026-11-06：插线时也报它，开关打开后 Wi-Fi 直接跑通）。 |
-| **下一步（下次开工就从这里开始）** | ① **发 0.1.7**：改 `Config.xcconfig` 版本/build + `docs/release-notes/0.1.7.md`（面向用户的"升级须知"：服务器页合并、控制台改为导航页、刷新行为），合入后 `gh workflow run release-app.yml --ref main`；② 可选：A 方案（账号/面板降级为子标题行、实例卡与自建卡同层）——落点 `RemoteAccountCard` + 两个 `*Section`；③ 可选：macOS 亮色 / 提高对比 / VoiceOver 人工复核（§16 已声明未验） |
-| **本轮的硬口径（别回退）** | ① 分组顺序 **自建 → exaroton → MCSM**，一个页面、页顶只有一个「添加服务器」（左）与「全部折叠/展开」（右）；② **不要再做"卡中卡"**：账号卡内部的行是 `.plain`（`ServerCard(surface:)`），Liquid Glass 只留一层；③ 状态徽章唯一实现 `OrzMCStatusBadge`；④ 图标动作统一走 `OrzMCActionButton`（可用 0.85 / 禁用 0.35 / 命中区 22/32）；刷新统一走 `OrzMCRefreshButton`（刷新中同槽位转圈）；⑤ 控制台是**导航页**不是 sheet；⑥ 整卡可点（透明垫层 + `contentShape`），`tapIdentifier` 留在内容里的主按钮上 |
+| **下一步（下次开工就从这里开始）** | ① **插件/模组的搜索 / 安装 / 更新 / 卸载 + 渠道（Hangar、Modrinth）**：现在 `ModsManagerView` 只有本地清单，`ModsManagerModel` 是接入点；插件侧 `PluginManagerView` 目前只接 Hangar，需要把"渠道"抽出来（两者共用一套目录/安装/更新 UI）；② **发 0.1.7**：改 `Config.xcconfig` + `docs/release-notes/0.1.7.md`（服务器页合并、控制台导航页、刷新行为、模组入口），合入后 `gh workflow run release-app.yml --ref main`；③ 可选：A 方案（账号/面板降级为子标题行）；④ 可选：macOS 亮色 / 提高对比 / VoiceOver 人工复核 |
+| **本轮的硬口径（别回退）** | ① 分组顺序 **自建 → exaroton → MCSM**，一个页面、页顶只有一个「添加服务器」（左）与「全部折叠/展开」（右）；实例卡动作顺序 **插件/模组 → 控制台**（插件/模组共用一个 `InstanceAddonSheet`）；② **不要再做"卡中卡"**：账号卡内部的行是 `.plain`（`ServerCard(surface:)`），Liquid Glass 只留一层；③ 状态徽章唯一实现 `OrzMCStatusBadge`；④ 图标动作统一走 `OrzMCActionButton`（可用 0.85 / 禁用 0.35 / 命中区 22/32）；刷新统一走 `OrzMCRefreshButton`（刷新中同槽位转圈）；⑤ 控制台是**导航页**不是 sheet；⑥ 整卡可点（透明垫层 + `contentShape`），`tapIdentifier` 留在内容里的主按钮上 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
 ## 2. 状态快照（Repo State，历史记录）
@@ -394,6 +394,17 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-09 — pi（实例卡动作顺序 + Fabric/Forge 模组入口，PR #158 验收通过）
+
+- 维护者要求：Paper 的「插件」按钮放到「控制台」左边；Fabric/Forge 服务端在控制台左边加「模组」按钮；
+  插件/模组的搜索/安装/更新/卸载与渠道（Hangar、Modrinth）下一轮再做。
+- App PR [#158](https://github.com/OrzMC/OrzMCApp/pull/158) squash → **`9a7a1a38`**：
+  `FormSectionHeader` 的 `.inspect` 固定 **mods → plugins → console**；`ServerSoftware.supportsMods`；
+  新增 `ModsManagerView`/`ModsManagerModel`（只做本地清单：扫 `mods/`、版本号、搜索、重新扫描、
+  Finder 打开；**不做**安装/更新），插件与模组共用 `InstanceAddonSheet` 一个 sheet。
+- 验证：`check.sh --fast/--build/--ios`、PR CI 全绿；Mac 开发包维护者验收通过（iPhone 不受影响）。
+- 下一步：把"渠道"抽出来（Hangar 插件 / Modrinth 模组），两套目录/安装/更新 UI 共用；然后发 0.1.7。
 
 ### 2026-11-08 — pi（服务器页合并 + 卡片动作/视觉/刷新统一，PR #157 验收通过）
 
