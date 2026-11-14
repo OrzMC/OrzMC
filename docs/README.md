@@ -73,7 +73,7 @@
 ### 运维工具
 | 子模块 | 一句话职责 | 文档入口 |
 |:--|:--|:--|
-| [`backup`](../backup) | 世界优化与备份单仓：`spec/`（语言无关规范）+ `java/` + `rust/` + `upstream/thanos` | [README](../backup/README.md) · [AGENTS](../backup/AGENTS.md) · [SPEC](../backup/spec/SPEC.md) |
+| [`backup`](../backup) | 世界优化与备份单仓：`spec/`（语言无关规范）+ `java/` + `rust/` + `upstream/thanos`；分发：Homebrew tap `orzmc/core`、crates.io、单文件 `backup.jar` | [README](../backup/README.md) · [AGENTS](../backup/AGENTS.md) · [SPEC](../backup/spec/SPEC.md) · [产品页](https://orzmc.github.io/OrzMCBackup/) |
 
 ### 游戏内插件（工具集）
 | 子模块 | 一句话职责 | 文档入口 |

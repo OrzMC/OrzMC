@@ -8,6 +8,7 @@
 .
 ├── AGENTS.md                   # AI 智能体协作单一事实源（仓库性质 / 铁律 / 子模块登记表）
 ├── app                         # Git子模块：Swift语言开发相关库以及一个macOS/iOS应用程序
+├── backup                      # Git子模块：世界优化与备份单仓（spec/ 规范 + java/ + rust/ + upstream/thanos）
 ├── CONTRIBUTING.md             # 人/机贡献指南（子模块工作流 / 提交规范 / PR 流程）
 ├── deploy                      # Git子模块：Docker 容器化部署方案（MCSManager / EasyBot / MariaDB / Gatus）
 ├── docs                        # 伞级文档（文档索引 + 进行中的跨仓方案）
@@ -26,8 +27,7 @@
 │   ├── DeathChest              # 死亡掉落箱子插件
 │   ├── EzShops                 # 商店插件
 │   ├── GetMeHome               # 家的传送插件
-│   ├── LoginSecurity           # 登录认证插件
-│   └── backup                  # 世界优化与备份单仓（spec/ 规范 + java/ + rust/ + upstream/thanos）
+│   └── LoginSecurity           # 登录认证插件
 └── webmc                       # Git子模块：主要探索使用Web浏览器连接服务器玩耍的可能性
 ```
 
