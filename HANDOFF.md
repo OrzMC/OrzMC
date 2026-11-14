@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；内容 SEO 护栏与周检（site #13）；PR #158/#159/#160/#161/#162）
+> **最后更新**：2026-11-15 by pi（**全量同步子模块指针到远端最新**：`backup`→`7ba22be`、`deploy`→`04c3538`、`swift/app`→`33e0ee6`，其余 17 个已是最新；顺带修 `boot-check.sh` 两处显示缺陷。<br>上一轮 2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；内容 SEO 护栏与周检（site #13）；PR #158/#159/#160/#161/#162）
 
 ---
 
@@ -139,6 +139,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 > ⚠️ 父仓库 `M plugin` 是**预期状态**（本机 `plugin` 检出 `develop`），**不要提交**——发版合入 `main` 后再 bump。
 > 其余 `M <submodule>` 是本机子模块检出落后于新指针，同样**勿提交**（需要时 `git submodule update --init --recursive`）。
+> 2026-11-15 全量同步后，`git submodule status` 除 `plugin` 外**全部无标志**（既无 `+` 也无 `-`）。
 
 ### 1.2 App / CLI 线（Codex 交接，2026-11-05）
 
@@ -175,11 +176,13 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 |---|---|---|
 | `plugin` | `a3128f9` | **1.0.30 正式版已发布**（2026-11-04）：Hangar Release / Modrinth release / GitHub Release；发版后版本自增到 `1.0.31`（#559） |
 | `python` | `5e70745` | `OrzPythonMC`；**2.13.0 已发布**（6 资产）；**`fix(app)`**：非 macOS 一律 `E_UNSUPPORTED`（原 `E_RUNTIME`）；**2.18.0 已发布（含 `auth.lock` 跨进程锁 + runtime 回滚）**；`feat(runtime)` 转发通道 + `orzmc runtime status|install`；`feat(conformance)`：`default_state_dir(environ=, is_windows=)` 接缝 + `statePaths` 适配器操作；`ledger` 台账校验 + 命令面 `--strict`；**`fix(download)`（`#98`）**：`HttpStatusError` —— 4xx/5xx 不重试且保留 requests 原文，续传 416 且已取全按成功；`JavaEnv` 404 补「上游缺该平台构建」提示；验收 harness 的 `log_contains` 改去全部空白（rich 软换行不再切断标记）；根 `conftest.py` autouse 钉 `ORZMC_RUNTIME=python`；**`docs`（`#100`）**：CLI 验收脚本路径同步到父仓库 `scripts/accept/cli.py`；**`docs`（`#101`）**：合规标记注释点明单一事实源在父仓库；**2.18.1 已发布**（PyPI 双包 + 6 资产 + Release notes） |
-| `swift/app` | `aa22c90a` | `OrzMCApp`；**0.1.5 (57) 已发布**，`main` 已积累 15 个提交待发 **0.1.6**；**P2-7 五步完成**：供应商抽象层 + `RemoteStatusCenter` + MCSManager 只读接入 + 动作/控制台 + 面板增删改（普通用户/管理员两种 key 均验） |
+| `swift/app` | `33e0ee6` | 2026-11-15 同步（此前 `aa22c90a`）；`OrzMCApp`；**0.1.5 (57) 已发布**，`main` 已积累 15 个提交待发 **0.1.6**；**P2-7 五步完成**：供应商抽象层 + `RemoteStatusCenter` + MCSManager 只读接入 + 动作/控制台 + 面板增删改（普通用户/管理员两种 key 均验） |
 | `swift/lib/OrzMCKit` | `6944afb` | **Swift 引擎 + `orzmc` CLI**；**`v0.19.0` 已发布**（六资产；**Linux 自包含**：静态链 Swift 运行时、glibc 2.35、62–65 MB）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `swift/lib/MCSManagerAPI` | `7428340` | MCSManager 面板 API 客户端（OpenAPI 生成）；tag **0.3.1**（`/api/auth` 外壳 + 去字符串时间戳 + `text/plain` 错误体 + 动作/控制台端点 + `MCSMResponseEnvelope`）；20 条测试 |
-| `site`/`deploy`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
+| `backup` | `7ba22be` | 2026-11-15 同步（产品页/文档刷新 #95 的 squash 提交）；详见 §1.0 |
+| `deploy` | `04c3538` | 2026-11-15 同步（Eagler/拓扑/多后端/三端验收，0.2.0 定版） |
+| `site`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
 | `swift/lib/OrzSwiftKit` | `f35e4dc` | `OrzGeeker/OrzSwiftKit`；**0.0.20**：`ManagedProcess` 的 `send`/`terminate`/`forceKill`/`waitForExit(timeout:)`、`run(inheritStandardInput:)`；**`#1`**：`Package.resolved` 里 swift-nio 2.73→**2.104**、swift-system 1.3.2→1.8.1（都是 console-kit 的传递依赖）→ ⚠️ **构建工具链下限抬到 Swift 6.1**（见 §2.5） |
 
@@ -419,6 +422,24 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-15 — pi（全量同步子模块指针 + boot-check 两处修复）
+
+- **做法**：20 个子模块逐个 `fetch` 后，用「父仓库记录指针 vs `origin/<目标分支>`」逐一比对
+  （目标分支取 `.gitmodules` 的 `branch`，缺省 `main`，`LoginSecurity` 回落到 `master`），只有 3 个真的落后。
+- **实际 bump（父仓库 PR #58，squash `fe3dd46`，父 CI `verify` 绿）**：
+  - `backup` `7e4ffa4` → `7ba22be`：PR #95 是 **squash 合并**，父仓库原先钉的是合并前的本地提交（不在远端）
+  - `deploy` `acae452` → `04c3538`（40 提交）：Eagler 单开关 / 前端拓扑正交开关（ADR-036）/
+    Velocity 多后端 / Geyser NetherNet-only 收敛单端口 / 三端验收 T1–T5 / 0.2.0 CHANGELOG 定版
+  - `swift/app` `d95cb1a` → `33e0ee6`（9 提交）：docs/README 与 `iteration-flow.md` 补全、两轮自愈验证
+- **未 bump**：`plugin` 仍钉 `main` `a3128f9`（本机检出 `develop` 属预期，`M plugin` 勿提交）；
+  其余 17 个子模块比对结果 `behind=0`。
+- **顺带修复 `scripts/dev/boot-check.sh`**（父仓库 `fix/boot-check-recorded-pointer` 分支）：
+  ① `+` 行的「记录指针」原取自 `git submodule status`（那是**检出**提交）→ 改为 `git rev-parse HEAD:<path>`；
+  ② `$BRANCH）` / `$UPSTREAM）` 紧跟全角括号，`set -u` 下被当成变量名的一部分，
+  在「当前分支没有 upstream」时直接 `unbound variable` 退出（新建分支跑自检必踩）→ 改用 `${VAR}`。
+- **沉淀**：以后「同步所有子模块」照本条目做——先逐个 `fetch` + 比对再动手，不要 `git submodule foreach git pull`
+  （会移动全部指针，把 `plugin` 的 `develop` 也一起误 bump 进父仓库）。
 
 ### 2026-11-15 — pi（backup 产品页重写 + 文档对齐当前实现）
 
