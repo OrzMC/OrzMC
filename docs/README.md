@@ -73,9 +73,7 @@
 ### 运维工具
 | 子模块 | 一句话职责 | 文档入口 |
 |:--|:--|:--|
-| [`tools/OrzMCBackup`](../tools/OrzMCBackup) | 世界优化与备份（CLI + 库） | [README](../tools/OrzMCBackup/README.md) · [AGENTS](../tools/OrzMCBackup/AGENTS.md) |
-| [`tools/rust-thanos`](../tools/rust-thanos) | Rust 区块清理 | [README](../tools/rust-thanos/README.md) · [AGENTS](../tools/rust-thanos/AGENTS.md) |
-| [`tools/thanos`](../tools/thanos) | PHP 区块清理（**上游**） | [README](../tools/thanos/README.md) |
+| [`backup`](../backup) | 世界优化与备份单仓：`spec/`（语言无关规范）+ `java/` + `rust/` + `upstream/thanos` | [README](../backup/README.md) · [AGENTS](../backup/AGENTS.md) · [SPEC](../backup/spec/SPEC.md) |
 
 ### 游戏内插件（工具集）
 | 子模块 | 一句话职责 | 文档入口 |
