@@ -121,7 +121,8 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **Homebrew tap 组织化（2026-11-15）** | 新建 **`OrzMC/homebrew-core`**（`brew tap orzmc/core`）作为组织级 tap：README + `Formula/rust-thanos.rb`（0.0.4，按 `.github/homebrew_formula.rb.tpl` 渲染，sha256 取自真实发布资产）。本地已 `brew tap` + `brew info` + `brew fetch`（**sha256 校验通过**）。文档/分发表改为 `orzmc/core`；根 README 的分发渠道表同步。<br>**归档仓迁回**：`OrzMC/rust-thanos` → **`OrzGeeker/rust-thanos`**（保持 archived）。<br>**组织凭据探测（临时 workflow，已删）**：`CARGO_REGISTRY_TOKEN` ✅ 对本仓生效；`HOMEBREW_TAP_REPO` / `HOMEBREW_TAP_REPO_TOKEN` ❌ **尚未授权给本仓** —— 需在组织层创建并勾选 `OrzMCBackup`：`HOMEBREW_TAP_REPO=OrzMC/homebrew-core` + 一个对该仓有 `contents: write` 的 PAT。有凭据后 `release-rust` 的 `update-homebrew-tap` 会自动渲染并提交 formula（当前无凭据自动跳过）。 |
 | **Homebrew tap 全链路打通（2026-11-15）** | 组织凭据 `HOMEBREW_TAP_REPO` / `HOMEBREW_TAP_REPO_TOKEN` 已授权给本仓（探测确认 present）。实测链路：`gh workflow run release-rust.yml -f mode=homebrew -f tag=rust-v0.0.4` → job 绿 → tap 出现自动提交 （`rust-thanos rust-v0.0.4`）→ 四个 sha256 与真实资产一致 → 本机 `brew tap/trust/install` 通过，`rust-thanos --version` = `0.0.4`。<br>**过程中修掉两个真缺陷**：① 手动 dispatch 下 URL 用分支名拼（改为 job 级 `TAG`）；② 回填时 `sha256` 取自 `publish-release` 输出（dispatch 时不运行）→ 空哈希公式被提交，现改为从 Release 资产 `digest` 解析（回退下载校验），并在提交前拒绝空 sha256。<br>**新能力**：`release-rust` 支持 `mode=build-only|homebrew` —— 不重新发版即可**回填/修复 formula**；顺带删掉一个白跑 `cargo build` 的无效步骤（每次发版省 1–2 分钟）。 |
 | **产品页与文档刷新（2026-11-15）** | `backup` 产品页 https://orzmc.github.io/OrzMCBackup/ 已按当前实现重写（#95）：新增「安装」区（Homebrew `brew tap orzmc/core` + `brew trust`、crates.io、单文件 JAR）、双实现说明、24 组一致性向量、与上游 PHP 对照；修正源码构建路径（`java/gradlew -p java :app:shadowJar`）、徽章改指向真实工作流（`java.yml`/`rust.yml`/`conformance.yml`/`release-*`）、修掉 Pages 下 404 的 `LICENSE` 相对链接。<br>文档同步：`README.md` 新增「安装（预编译）」表 + Homebrew 回填用法；`docs/FEATURES.md` §十四 CI 表按现状重写、版本与 `AGENTS.md` 对齐（Kotlin 2.4.21 / Gradle 9.9.1 / lz4 1.14.0）；父 README 目录树修正（`backup` 在**根目录**，此前误画在 `tools/` 下）。<br>**核对出的两处事实偏差**（已标注，未改代码）：① `merge --dry-run`/`--diff-file` **仅 Java 有**（Rust 无，已进 `spec/divergences.md` C2）；② `--zip-output` 实测是「打包成**平级** `yyyyMMddHHmmss.zip` 并删原目录」。 |
-| **下一步（下次从这里开始）** | ① **待维护者决策**：`rust/Cargo.toml` 的 `license = "MIT"` 与仓库 `LICENSE`(Apache-2.0)/README 徽章不一致（crates.io 已按 MIT 发布 0.0.4）——统一口径需改 crate 元数据并随下个版本生效；② 可选：给官方 Hugo 站（`site` 子模块）加一页 backup 产品介绍（当前只有 `backup` 自己的 Pages）；③ 评估 `ForgeForced`（模组 ticket）是否入规范（`spec/divergences.md` 候选 C1）；④ WOS-5.4 / WOS-12.x **有意保持不覆盖**，无需再补。 |
+| **许可口径统一：全仓 Apache-2.0（2026-11-15）** | 此前分裂：根 `LICENSE`/README 徽章/Maven POM 是 Apache-2.0，而 `rust/Cargo.toml` 声明 MIT、`rust/LICENSE` 是 MIT 全文、`rust/README.md` 徽章也是 MIT → crates.io 上显示 MIT。<br>改法：`license = "Apache-2.0"` + `rust/LICENSE` 换成与仓库根同文副本（cargo 不能引用包外文件）+ `rust.yml` 加 `License copy in sync`（`cmp` 漂移即失败）+ 版本 0.0.4→**0.0.5**（crates.io 元数据按版本冻结）。<br>**已发版** `rust-v0.0.5`：crates.io 0.0.5 `license: Apache-2.0`、Release 6 资产、tap 自动更新到 0.0.5、`brew install` → `rust-thanos 0.0.5`（包内 LICENSE 与仓库一致）。≤0.0.4 仍为 MIT（不可撤销、不可改元数据），CHANGELOG 已写明无需迁移。<br>法律依据：两个域都是独立实现（`rust/LICENSE` 原版权即本项目）；上游 thanos(MIT) 只以只读子模块存在，不进产物。 |
+| **下一步（下次从这里开始）** | ① 评估 `ForgeForced`（模组 ticket）是否入规范（`spec/divergences.md` 候选 C1）；② 若决定统一 CLI 表面，优先把 Java 的 `merge --dry-run`/`--diff-file` 移植到 Rust（现登记为 C2）；③ WOS-5.4 / WOS-12.x **有意保持不覆盖**，无需再补。<br>**已决策（不需要再做）**：官方 Hugo 站**不加** backup 产品页（维护者 2026-11-15 决定，产品介绍只放 `backup` 自己的 Pages）；许可统一为 Apache-2.0（已完成并发 0.0.5）。 |
 | **注意** | ① **嵌套子模块**：检出需 `git submodule update --init --recursive`；`upstream/thanos` 只读，升级走 `backup/upstream/README.md` 的评审式流程。② 本机 `tools/OrzMCBackup` 现是**临时符号链接**（换 shell cwd 用，已进 `.git/info/exclude`），可在任意时刻 `rm tools/OrzMCBackup`；③ `plugin` 的 `M` 仍是历史遗留（本机 `develop`），**勿提交**。 |
 
 
@@ -422,6 +423,21 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-15 — pi（许可口径统一：全仓 Apache-2.0 + rust-thanos 0.0.5 发版）
+
+- **问题**：许可是分裂的——根 `LICENSE`、README 徽章、Maven POM(`backup-core`) 都是 Apache-2.0，
+  而 `rust/Cargo.toml`/`rust/LICENSE`/`rust/README.md` 徽章是 MIT，crates.io 因此显示 MIT。
+- **改法**：`license = "Apache-2.0"`；`rust/LICENSE` 换成与根同文的 Apache-2.0 副本（cargo 不能引用包目录外文件，
+  `cargo package --list` 确认会打进 crate）；`rust.yml` 新增 `License copy in sync`（`cmp ../LICENSE LICENSE`）；
+  `AGENTS.md` 把「许可口径唯一：Apache-2.0」写进跨域约束；README/rust README/CHANGELOG 同步（#96）。
+- **发版**：版本 0.0.4→**0.0.5**（crates.io 元数据按版本冻结，只有新版本生效）→ 先 `mode=build-only` 干跑
+  （6 平台构建绿、publish 跳过），再打 `rust-v0.0.5` 正式发版：Release 6 资产 ✅、crates.io 0.0.5
+  `license: Apache-2.0` ✅、`update-homebrew-tap` 自动提交 0.0.5 ✅、`brew install` → `rust-thanos 0.0.5` ✅
+  （包内 `LICENSE` 与仓库 `cmp` 一致）。
+- **合法性说明**：两域都是独立实现（`rust/LICENSE` 原版权即本项目），上游 thanos(MIT) 仅只读子模块、不进产物 →
+  统一到 Apache-2.0 无兼容性问题；≤0.0.4 的 MIT 授权继续有效（不可撤销），CHANGELOG 写明无需迁移。
+- **维护者决策记录**：官方 Hugo 站**不加** backup 产品页（产品介绍只保留 `backup` 自己的 Pages）。
 
 ### 2026-11-15 — pi（全量同步子模块指针 + boot-check 两处修复）
 
