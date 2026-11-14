@@ -27,9 +27,7 @@
 │   ├── EzShops                 # 商店插件
 │   ├── GetMeHome               # 家的传送插件
 │   ├── LoginSecurity           # 登录认证插件
-│   ├── OrzMCBackup             # 世界优化与备份工具（CLI + 库）
-│   ├── rust-thanos             # Rust 编写的区块清理工具
-│   └── thanos                  # PHP 编写的区块清理工具
+│   └── backup                  # 世界优化与备份单仓（spec/ 规范 + java/ + rust/ + upstream/thanos）
 └── webmc                       # Git子模块：主要探索使用Web浏览器连接服务器玩耍的可能性
 ```
 

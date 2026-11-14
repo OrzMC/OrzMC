@@ -43,7 +43,7 @@
 
 **聚合型 monorepo / 产品伞**，本身几乎不含业务代码：
 
-- 通过 **Git 子模块（submodule）** 汇集 22 个独立仓库（插件 / CLI / Swift（`swift/app` + `swift/lib/*`）/ 部署 / 中转 / 官网 / 工具集 / 组织主页）。
+- 通过 **Git 子模块（submodule）** 汇集 20 个独立仓库（插件 / CLI / Swift（`swift/app` + `swift/lib/*`）/ 部署 / 中转 / 官网 / 工具集 / 组织主页）。
 - 父仓库的职责只有三件事：
   1. **锁定版本**：记录各子模块的 commit 指针，对同一套产品定义一个可复现的组合。
   2. **承载伞级内容**：`README.md`、`docs/`、`scripts/`、`images/`、`skins/`、`LICENSE`。
@@ -67,7 +67,7 @@
 
 - 子模块的构建命令、架构红线、分支模型**各不相同**（如 plugin 提交进 `develop`，python/site 进 `main`）。
 - 有 `AGENTS.md` 的：`plugin` / `deploy` / `python` / `site` / `tools/EzShops` /
-  `tools/OrzMCBackup` / `tools/rust-thanos`。没有的按该子模块 `README.md` / `CONTRIBUTING.md` 行事。
+  `backup`（其 `java/` 与 `rust/` 各有子指南）。没有的按该子模块 `README.md` / `CONTRIBUTING.md` 行事。
 - 父仓库的规则是**下限**，子模块的规则是**上限**——两者都要满足。
 
 ### 铁律 3：子模块指针必须显式提交，且一次提交只 bump 一个子模块
@@ -152,13 +152,11 @@ git commit -m "docs: ..."
 | `site` | `OrzMC/OrzMCSite` | `main` | 自研 | Hugo 官方网站（GitHub Pages） | ✅ |
 | `webmc` | `OrzMC/OrzWebMC` | `main` | 自研 | 浏览器连服实验 | — |
 | `profile` | `OrzMC/.github` | `main` | 自研 | GitHub 组织主页 profile | — |
-| `tools/OrzMCBackup` | `OrzMC/OrzMCBackup` | `main` | 自研 | 世界优化与备份（CLI + Kotlin/Java 库） | ✅ |
-| `tools/rust-thanos` | `OrzMC/rust-thanos` | `main` | 自研 | Rust 版区块清理（对齐 OrzMCBackup） | ✅ |
+| `backup` | `OrzMC/OrzMCBackup` | `main` | 自研 | **世界优化与备份单仓**：`spec/`（语言无关规范+一致性向量）、`java/`（Kotlin CLI + Maven Central 库）、`rust/`（CLI + lib）、`upstream/thanos`（官方 PHP，嵌套只读子模块） | ✅ |
 | `tools/DeathChest` | `OrzMC/death-chest` | `main` | 派生 | 死亡掉落箱子插件 | — |
 | `tools/EzShops` | `OrzMC/EzShops` | `main` | 派生 | 商店插件（上游 ez-plugins） | ✅ |
 | `tools/GetMeHome` | `OrzMC/GetMeHome` | `main` | 派生 | 家的传送插件 | — |
 | `tools/LoginSecurity` | `OrzMC/LoginSecurity` | `master` | 派生 | 登录认证插件（上游 lenis0012） | — |
-| `tools/thanos` | `aternosorg/thanos` | `master` | 上游 | PHP 区块清理库（**外部主仓，勿本地改**） | — |
 
 **完整 URL / 分支以 `.gitmodules` 为准**；本表漂移时以 `.gitmodules` 为准并回来修正本表。
 
@@ -170,7 +168,7 @@ git commit -m "docs: ..."
 # 首次克隆（父仓库）
 git clone --recurse-submodules https://github.com/OrzMC/OrzMC.git
 
-# 已克隆但子模块为空
+# 已克隆但子模块为空（注意 --recursive：backup 内含嵌套子模块 upstream/thanos）
 git submodule update --init --recursive
 
 # 一次性把所有子模块拉到 .gitmodules 记录的分支最新（谨慎，会移动多个指针）
@@ -188,7 +186,7 @@ git diff --submodule <路径>
 - **detached HEAD**：`git submodule update` 后子模块常处于 detached HEAD。要改代码前先
   `git switch <分支>`，否则提交会"悬空"、推送后父仓库指针无法追踪。
 - **忘记提交子模块指针**：在子模块里 commit 了但父仓库没 `git add`，等于这次变更没进产品组合。
-- **误改上游**：`tools/thanos` 是外部上游仓库。若确需改动，应先 fork 到 `OrzMC/` 再改 `.gitmodules`，
+- **误改上游**：官方 PHP 实现位于 `backup/upstream/thanos`（**嵌套子模块**，只读）。若确需改动，应先 fork 到 `OrzMC/` 再改 `backup/.gitmodules`，
   不要直接向上游推。
 - **不要用 `git add -A` / `git add .`**：会把**所有**子模块的指针变更一并暂存（例如 `plugin` 本地在 `develop`、
   父仓库却应钉 `main`），造成误 bump。改父仓库自有内容时始终 **显式 `git add <路径>`**。

@@ -61,7 +61,7 @@ OrzMC 是一个围绕 **PaperMC 生态**的 Minecraft 社区服务器开源组�
 | `OrzMC/OrzMCPlugin` | 运行面 | PaperMC 核心插件 | Java 25 / Gradle | Hangar / Modrinth |
 | `OrzMC/OrzMCDeploy` | 运行面 | Docker Compose 部署平台 | Shell / Compose | Release tarball |
 | `OrzMC/OrzMCProxy` | 运行面 | FRP 跨运营商中转 | Shell / frp | 脚本 |
-| `OrzMC/OrzMCBackup`、`rust-thanos`、`tools/*` | 运行面 | 世界优化备份、游戏内插件 | Kotlin/Rust/PHP/Java | 各自发布 |
+| `OrzMC/OrzMCBackup`（spec + java + rust）、`tools/*` | 运行面 | 世界优化备份、游戏内插件 | Kotlin/Rust/PHP/Java | 各自发布 |
 
 > **治理说明**：Swift 引擎依赖（`MojangAPI` / `PaperMC` / `ExarotonAPI`）**均已在 `OrzMC`**；
 > 仅**通用基础组件**（`OrzSwiftKit` / `OrzAppUpdater` / `OrzSwiftLint`）在维护者自有的 `OrzGeeker`
@@ -133,7 +133,7 @@ flowchart TB
 ### 运行面（不属于工具链，但同属产品）
 
 `OrzMCPlugin`（服务器核心插件）、`OrzMCDeploy`（部署）、`OrzMCProxy`（中转）、
-`OrzMCBackup` / `rust-thanos` / `tools/*`（运维与游戏内插件）。
+`OrzMCBackup`（spec/java/rust）/ `tools/*`（运维与游戏内插件）。
 它们与工具链的关系是：**工具链负责把服务器/客户端跑起来**，运行面负责**跑起来之后**。
 
 ---
@@ -283,7 +283,7 @@ L3 产品伞 ──▶ 只做锁定与文档，不改任何实现代码
 
 - 工具链（L0–L2）负责**把客户端/服务端在任意机器上跑起来**（本地或通过部署）。
 - 运行面负责**服务器跑起来之后的能力**：插件（`OrzMCPlugin`）、部署编排（`OrzMCDeploy`）、
-  跨网接入（`OrzMCProxy`）、世界优化（`OrzMCBackup`/`rust-thanos`）。
+  跨网接入（`OrzMCProxy`）、世界优化（`OrzMCBackup`：spec/java/rust）。
 - 二者通过**约定与产物**衔接：如 `OrzMCDeploy` 管理 PaperMC 实例，插件由 `OrzMCPlugin` 提供；
   工具链部署的目录布局应与运行面的期望一致（spec 布局的又一约束来源）。
 

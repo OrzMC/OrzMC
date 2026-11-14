@@ -17,15 +17,10 @@
 [submodule "site"]
 	path = site
 	url = https://github.com/OrzMC/OrzMCSite.git
-[submodule "tools/OrzMCBackup"]
-	path = tools/OrzMCBackup
+[submodule "backup"]
+	path = backup
 	url = https://github.com/OrzMC/OrzMCBackup.git
-[submodule "tools/rust-thanos"]
-	path = tools/rust-thanos
-	url = https://github.com/OrzMC/rust-thanos.git
-[submodule "tools/thanos"]
-	path = tools/thanos
-	url = https://github.com/aternosorg/thanos.git
+	# 嵌套子模块：backup/upstream/thanos（官方 PHP 参考实现，只读）→ 用 --recursive 初始化
 [submodule "tools/LoginSecurity"]
 	path = tools/LoginSecurity
 	url = https://github.com/OrzMC/LoginSecurity

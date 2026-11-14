@@ -99,6 +99,17 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 ## 1. 当前焦点（Current Focus）
 
+### 1.0 世界优化单仓改造（2026-11-14，pi）——**进行中，下次从这里继续**
+
+| 项 | 内容 |
+|---|---|
+| **决策** | `OrzMCBackup` 升级为**单仓多语言**并作为父仓库 `backup`：`spec/`（语言无关规范 = 唯一行为真值）+ `java/`（Kotlin CLI/库）+ `rust/`（原 `rust-thanos`）+ `upstream/thanos`（官方 PHP，**嵌套只读 submodule**）。Rust 历史不迁入（由归档旧仓保留，删仓前清理）。 |
+| **已完成（本会话）** | ① `backup` 分支 `refactor/monorepo`（`11b41f2`，BREAKING）：Gradle 根移到 `java/`（命令 `java/gradlew -p java <task>`，任务路径仍 `:core:*`/`:app:*`，Maven 坐标与 `backup.jar` 不变）；`rust/` 收入代码（历史不入库）；`spec/SPEC.md` v0.1（条款 `WOS-###`）+ `spec/divergences.md` + `spec/upstream-divergences.md`；`upstream/thanos` 子模块（钉 `56772da`）；CI 拆分 `java.yml` / `rust.yml`；Java 发布 tag 改 `java-v*`（`release-java-app` / `release-java-lib`）。② 父仓库：子模块路径 `tools/OrzMCBackup` → `backup`，移除 `tools/rust-thanos` 与 `tools/thanos`（后者已嵌套进 `backup/upstream/thanos`），登记表/文档/`docs/spec` 交叉引用同步。验收：`java/gradlew -p java check` 绿、`rust` 19 套件绿、`scripts/verify/check.py` 绿、`boot-check.sh` 可开工。 |
+| **未推送** | 父仓库、`backup`（`refactor/monorepo` + 更早的 `fix/upstream-parity`、`feat/merge-dry-run`）均**仅本地提交**；推送前需确认 PR 顺序：`fix/upstream-parity` → `refactor/monorepo` → `feat/merge-dry-run`。 |
+| **下一步（S2 起）** | ① **S2**：`spec/SPEC.md` 条款细化到可测断言（现在 v0.1 已有 12 章）；② **S3**：`spec/vectors/`（`forceload` 优先，`Forced` 打包回归）+ `spec/schema/manifest.schema.json` + `spec/tools/{make_manifest.py,compare.py}`（遵循父 `docs/spec/conformance.md` 的适配器协议）；③ **S4**：`conformance` 阻断门禁 + Rust 发布工作流 `release-rust.yml`（tag `rust-v*`，homebrew 模板待迁入 `.github/`）；④ 归档 `OrzMC/rust-thanos`（历史留存一段时间后删除）。 |
+| **注意** | ① **嵌套子模块**：检出需 `git submodule update --init --recursive`；`upstream/thanos` 只读，升级走 `backup/upstream/README.md` 的评审式流程。② 本机 `tools/OrzMCBackup` 现是**临时符号链接**（换 shell cwd 用，已进 `.git/info/exclude`），可在任意时刻 `rm tools/OrzMCBackup`；③ `plugin` 的 `M` 仍是历史遗留（本机 `develop`），**勿提交**。 |
+
+
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
 
 | 项 | 内容 |
@@ -405,6 +416,19 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 - **实测发现 3 个真缺陷**（都是闭环自己抓的）：`$d` 无规则时输出「访问规则为空」而非「黑名单」；配置热加载真实命令是 `/config reload` 而非 `/orzmc config reload`；`gh issue list` 走搜索索引 → 新建 issue 1–3s 内查不到 → nightly 去重静默失效（改 REST + 重试后验证通过）。
 - **不可自举边界**（已写入 `plugin/docs/quality-testing-plan.md`）：真实 IM 平台（QQ 频控/被动回复窗口）、真实 LP 授权、多玩家交互、大世界备份性能，仍走 `e2e/` 全量套件人工验收。
 - **注意**：本次只在 `plugin` 的 `develop` 落地，**未 bump 父仓库指针**（父仓库钉 `main`）；发版合入 `main` 后统一 bump。
+### 2026-11-14 — pi（世界优化单仓改造：`backup` = spec + java + rust + upstream）
+
+- `OrzMCBackup`（现 `backup`）结构改造（`11b41f2`，BREAKING）：
+  · Gradle 根 → `java/`（`java/gradlew -p java ...`；任务路径 `:core:*`/`:app:*` 不变，Maven 坐标与 `backup.jar` 不变）
+  · `rust/` = 原 `rust-thanos` 代码（**不导入历史**，由归档仓保留）；`rust/AGENTS.md` 降为域内指南并指向根 AGENTS
+  · 新增 `spec/`：`SPEC.md` v0.1（WOS-1..12 条款 + impl 映射 + 一致性进度）、`divergences.md`、`upstream-divergences.md`（原 `docs/upstream-comparison.md` 迁入）
+  · 新增 `upstream/thanos` 嵌套子模块（钉 `56772da`），`upstream/README.md` 写清只读/升级流程
+  · CI：`test-matrix.yml` → `java.yml`（路径过滤 `java/**`）+ 新增 `rust.yml`；发布 tag 加 `java-v*` 前缀
+- 父仓库：`tools/OrzMCBackup` → `backup`；移除 `tools/rust-thanos`、`tools/thanos`；登记表 22 → 20 个；
+  `docs/spec/README.md` 增加与 `backup/spec` 的分工说明；`README.md` 目录树、`docs/README.md`、产品架构/统一化方案引用同步。
+- 验证：`java/gradlew -p java check`（含 Kover 门槛）绿；`cd rust && cargo test` 19 套件 / fmt / clippy 绿；
+  `python3 scripts/verify/check.py`（20 子模块）绿；`./scripts/dev/boot-check.sh` 结论「可以开工」。
+- 待办：推送三个分支并开 PR；S2/S3/S4（向量/比较器/门禁/Rust 发版）；归档 `OrzMC/rust-thanos`。
 
 ### 2026-11-09 — pi（内容 SEO/GEO 护栏 + 每周审计，site #13 已发布）
 

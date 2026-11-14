@@ -73,8 +73,8 @@
 **引擎重复点（G1/G2 的靶心）**：Mojang 版本清单、version JSON、libraries/assets 下载计划、
 natives OS-arch 规则、Java 版本推导、Fabric/Forge/Paper provider、启动参数拼装——两边各写了一套。
 
-**已有可复用先例**：父仓库中 `plugin` 已有独立 `orzmc-api`（零 Bukkit、可发布）；`tools/thanos`
-与 `tools/rust-thanos` 是「上游 + 自研重写」的对照模式，证明本组织接受「多实现 + 对齐」。
+**已有可复用先例**：父仓库中 `plugin` 已有独立 `orzmc-api`（零 Bukkit、可发布）；`backup/upstream/thanos`
+与 `backup/spec` + `backup/java`/`backup/rust` 是「上游 + 规范 + 多实现」的对照模式，证明本组织接受「多实现 + 对齐」。
 
 ---
 
@@ -324,7 +324,7 @@ resolve   解析元数据（版本清单 / version JSON / loader / Java 需求�
 **父仓库与先例**
 - `README.md`、`.gitmodules`
 - `plugin/docs/architecture.md`（orzmc-api 分层先例）
-- `tools/thanos` ↔ `tools/rust-thanos`（多实现对齐先例）
+- `backup/upstream/thanos` ↔ `backup/spec` ↔ `backup/java`/`backup/rust`（多实现 + 规范对齐先例）
 
 ---
 

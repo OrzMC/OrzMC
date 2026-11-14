@@ -12,6 +12,22 @@
   `behind` 的 `reason` 与 `review_by`。由 `scripts/verify/parity.py` 校验（父仓库 CI），
   策略与中期路线见 [`../two-cli-strategy.md`](../two-cli-strategy.md)。
 
+## 0. 与 `backup/spec` 的分工
+
+本目录规格的是**产品面**（`orzmc` CLI/GUI 的命令、数据模型、安装/打开契约）；
+**世界优化/合并**这一块的行为规范在子模块内独立维护：
+
+| 规范 | 位置 | 覆盖 | 消费者 |
+|---|---|---|---|
+| 产品面规范 | `docs/spec/`（本目录） | CLI 命令面、数据模型、前端契约 | `python`、`swift/*` |
+| 世界优化规范 | [`backup/spec/SPEC.md`](../../backup/spec/SPEC.md) | `.mca` 格式、裁剪/合并语义、报告与退出码 | `backup/java`、`backup/rust`（`backup/upstream/thanos` 为参考） |
+
+两者共享同一套方法学：**条款（可测断言）+ 黄金样例/向量 + 语言无关运行器 + 允许分歧登记**。
+`backup/spec/` 的向量同样遵循本目录 [`conformance.md`](conformance.md) 的适配器协议约定
+（实现只输出 manifest，比较由中立工具完成）。
+
+---
+
 ## 1. 这个规范是什么
 
 OrzMC 的工具产品（见 [`../product-architecture.md`](../product-architecture.md) §1.2）目标是
