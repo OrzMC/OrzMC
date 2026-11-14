@@ -120,7 +120,8 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **java v0.3.2 已发布（2026-11-15）** | tag `java-v0.3.2`（前缀新方案首个 Java 版）：<br>• **GitHub Release** ✅ `java-v0.3.2`，含 `backup.jar` + `.sha256`，Release notes 已写面向用户的升级须知（损坏 region 不再消失、自动化请用 `--strict`、`merge --dry-run`、`RangePattern`）<br>• **Maven Central** ✅ `io.github.wangzhizhou:backup-core:0.3.2`（jar/sources/javadoc/pom + `.asc` 全部可访问，`maven-metadata.xml` release=0.3.2）。⚠️ 该 run **状态为红**但发布实际成功：Portal `PUBLISHING` 阶段超过 20 分钟窗口（v0.3.1 也有同类假阴性）→ 已在 #91 从根上修：超时以 repo1 实际产物为准 + 已发布则跳过上传（幂等）<br>• 顺带修正 `release-java-app.yml`：去掉 `tag_name: v${{ VERSION }}`（新方案下会额外造一个 `vX.Y.Z` tag）<br>**依赖状态**：两批升级已合（#88/#89），全部门禁绿。 |
 | **Homebrew tap 组织化（2026-11-15）** | 新建 **`OrzMC/homebrew-core`**（`brew tap orzmc/core`）作为组织级 tap：README + `Formula/rust-thanos.rb`（0.0.4，按 `.github/homebrew_formula.rb.tpl` 渲染，sha256 取自真实发布资产）。本地已 `brew tap` + `brew info` + `brew fetch`（**sha256 校验通过**）。文档/分发表改为 `orzmc/core`；根 README 的分发渠道表同步。<br>**归档仓迁回**：`OrzMC/rust-thanos` → **`OrzGeeker/rust-thanos`**（保持 archived）。<br>**组织凭据探测（临时 workflow，已删）**：`CARGO_REGISTRY_TOKEN` ✅ 对本仓生效；`HOMEBREW_TAP_REPO` / `HOMEBREW_TAP_REPO_TOKEN` ❌ **尚未授权给本仓** —— 需在组织层创建并勾选 `OrzMCBackup`：`HOMEBREW_TAP_REPO=OrzMC/homebrew-core` + 一个对该仓有 `contents: write` 的 PAT。有凭据后 `release-rust` 的 `update-homebrew-tap` 会自动渲染并提交 formula（当前无凭据自动跳过）。 |
 | **Homebrew tap 全链路打通（2026-11-15）** | 组织凭据 `HOMEBREW_TAP_REPO` / `HOMEBREW_TAP_REPO_TOKEN` 已授权给本仓（探测确认 present）。实测链路：`gh workflow run release-rust.yml -f mode=homebrew -f tag=rust-v0.0.4` → job 绿 → tap 出现自动提交 （`rust-thanos rust-v0.0.4`）→ 四个 sha256 与真实资产一致 → 本机 `brew tap/trust/install` 通过，`rust-thanos --version` = `0.0.4`。<br>**过程中修掉两个真缺陷**：① 手动 dispatch 下 URL 用分支名拼（改为 job 级 `TAG`）；② 回填时 `sha256` 取自 `publish-release` 输出（dispatch 时不运行）→ 空哈希公式被提交，现改为从 Release 资产 `digest` 解析（回退下载校验），并在提交前拒绝空 sha256。<br>**新能力**：`release-rust` 支持 `mode=build-only|homebrew` —— 不重新发版即可**回填/修复 formula**；顺带删掉一个白跑 `cargo build` 的无效步骤（每次发版省 1–2 分钟）。 |
-| **下一步（下次从这里开始）** | ① 首次用新 tag 方案发版：`java-v0.3.2`（Java，需同步 `java/gradle/libs.versions.toml` 与 CHANGELOG 的 Unreleased）+ `rust-v0.0.4`（Rust，tag 必须等于 `rust/Cargo.toml`）；② 评估 `ForgeForced`（模组 ticket）是否入规范（`spec/divergences.md` 候选 C1）；③ WOS-5.4（库 API 注入）与 WOS-12.x（元条款）**有意保持不覆盖**，无需再补。 |
+| **产品页与文档刷新（2026-11-15）** | `backup` 产品页 https://orzmc.github.io/OrzMCBackup/ 已按当前实现重写（#95）：新增「安装」区（Homebrew `brew tap orzmc/core` + `brew trust`、crates.io、单文件 JAR）、双实现说明、24 组一致性向量、与上游 PHP 对照；修正源码构建路径（`java/gradlew -p java :app:shadowJar`）、徽章改指向真实工作流（`java.yml`/`rust.yml`/`conformance.yml`/`release-*`）、修掉 Pages 下 404 的 `LICENSE` 相对链接。<br>文档同步：`README.md` 新增「安装（预编译）」表 + Homebrew 回填用法；`docs/FEATURES.md` §十四 CI 表按现状重写、版本与 `AGENTS.md` 对齐（Kotlin 2.4.21 / Gradle 9.9.1 / lz4 1.14.0）；父 README 目录树修正（`backup` 在**根目录**，此前误画在 `tools/` 下）。<br>**核对出的两处事实偏差**（已标注，未改代码）：① `merge --dry-run`/`--diff-file` **仅 Java 有**（Rust 无，已进 `spec/divergences.md` C2）；② `--zip-output` 实测是「打包成**平级** `yyyyMMddHHmmss.zip` 并删原目录」。 |
+| **下一步（下次从这里开始）** | ① **待维护者决策**：`rust/Cargo.toml` 的 `license = "MIT"` 与仓库 `LICENSE`(Apache-2.0)/README 徽章不一致（crates.io 已按 MIT 发布 0.0.4）——统一口径需改 crate 元数据并随下个版本生效；② 可选：给官方 Hugo 站（`site` 子模块）加一页 backup 产品介绍（当前只有 `backup` 自己的 Pages）；③ 评估 `ForgeForced`（模组 ticket）是否入规范（`spec/divergences.md` 候选 C1）；④ WOS-5.4 / WOS-12.x **有意保持不覆盖**，无需再补。 |
 | **注意** | ① **嵌套子模块**：检出需 `git submodule update --init --recursive`；`upstream/thanos` 只读，升级走 `backup/upstream/README.md` 的评审式流程。② 本机 `tools/OrzMCBackup` 现是**临时符号链接**（换 shell cwd 用，已进 `.git/info/exclude`），可在任意时刻 `rm tools/OrzMCBackup`；③ `plugin` 的 `M` 仍是历史遗留（本机 `develop`），**勿提交**。 |
 
 
@@ -418,6 +419,28 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-15 — pi（backup 产品页重写 + 文档对齐当前实现）
+
+- **动机**：产品页 https://orzmc.github.io/OrzMCBackup/ 落后于实现——只提 Kotlin、构建路径还是单仓前的
+  `app/build/libs/backup.jar`、徽章指向已重命名的 `release-lib.yml`/`test-matrix.yml`（线上是死图）、
+  文档区 FEATURES 还写 v0.2.3。
+- **产品页（#95）**：新增「安装」区（Homebrew/crates.io/单文件 JAR，含真实下载 URL）；
+  Hero 与特性补「Kotlin + Rust 双实现」「24 组一致性向量」「与上游 PHP 逐字节对照」；
+  快速开始改为装好即用并说明 Rust 需显式 `backup` 子命令（Java 省略即备份）；
+  徽章换成 java/rust/conformance/release-java-app/release-rust/codecov；页脚补 tap 与 crates.io 入口、
+  `LICENSE` 相对链接改 GitHub 绝对链接（Pages 下原为 404）。Pages 构建核验：`built @ 7ba22be`，
+  线上 grep `brew trust` / `conformance.yml` / `24 … 一致性向量` 全部命中，旧徽章 0 命中。
+- **文档对齐**：`README.md` 加「安装（预编译）」表与 `mode=homebrew` 回填用法、Gradle 9.7.0→9.9.1；
+  `docs/FEATURES.md` §十四 CI 表按现状重写（java/rust/conformance/release-java-*/release-rust）、
+  版本对齐、架构决策 3 由「字节级扫描」纠正为「结构感知扫描（WOS-3.4）」；
+  `AGENTS.md` 版本对齐版本目录真值；父 README 目录树修正（`backup` 在根，不在 `tools/`）。
+- **实测核对（本机 Rust CLI 对着 `spec/vectors`）**：`backup <vec> --dry-run --report` ✅、
+  `backup <vec> <out> -t 300 --zip-output` ✅（输出目录被平级 `yyyyMMddHHmmss.zip` 取代）、
+  `merge BASE PATCH OUTPUT --report --progress-mode global` ✅；`merge --dry-run --diff-file` ❌
+  （Rust 报 Usage）→ 确认该能力仅 Java 有，已在 README/FEATURES/`spec/divergences.md` C2 三处标注。
+- **发现的不一致（待决策，未改代码）**：`rust/Cargo.toml` 声明 `MIT`，而仓库 `LICENSE` 是 Apache-2.0、
+  README 徽章也是 Apache-2.0；crates.io 上 0.0.4 已按 MIT 展示。改口径需动 crate 元数据并随下个版本生效。
 
 ### 2026-11-14 — pi（plugin 自动化质量闭环：PR 门禁 + 夜间 + 趋势看板）
 
