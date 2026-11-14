@@ -43,7 +43,7 @@ UPSTREAM="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null |
 if [[ -n "$UPSTREAM" ]]; then
   read -r AHEAD BEHIND < <(git rev-list --left-right --count 'HEAD...@{u}' 2>/dev/null || echo "0 0")
   if [[ "$BEHIND" != "0" ]]; then
-    bad "落后远端 $BEHIND 个提交（$UPSTREAM） → 先 \`git pull --ff-only\`"
+    bad "落后远端 $BEHIND 个提交（${UPSTREAM}） → 先 \`git pull --ff-only\`"
     NEED_SYNC=1
   fi
   if [[ "$AHEAD" != "0" ]]; then
@@ -51,7 +51,7 @@ if [[ -n "$UPSTREAM" ]]; then
   fi
   [[ "$BEHIND" == "0" && "$AHEAD" == "0" ]] && ok "与 $UPSTREAM 同步"
 else
-  warn "当前分支没有 upstream（$BRANCH）→ 确认这是不是有意为之"
+  warn "当前分支没有 upstream（${BRANCH}）→ 确认这是不是有意为之"
 fi
 
 DIRTY="$(git status --porcelain --untracked-files=normal | wc -l | tr -d ' ')"
@@ -84,7 +84,10 @@ while IFS= read -r line; do
   if [[ "$flag" == "+" ]]; then
     sub_branch="$(git -C "$path" rev-parse --abbrev-ref HEAD 2>/dev/null)"
     sub_sha="$(git -C "$path" rev-parse --short HEAD 2>/dev/null)"
-    OFFPOINTER+=("$path|${sha:0:8}|$sub_branch|$sub_sha")
+    # `git submodule status` 在 `+` 行打印的是**检出**的提交，不是父仓库记录的指针；
+    # 记录值要从父仓库的树里取，否则「记录 X · 当前 Y」两列会显示成同一个提交。
+    rec_sha="$(git rev-parse --short "HEAD:$path" 2>/dev/null || printf '%s' "${sha:0:8}")"
+    OFFPOINTER+=("$path|$rec_sha|$sub_branch|$sub_sha")
   fi
   sub_dirty="$(git -C "$path" status --porcelain --untracked-files=no 2>/dev/null | wc -l | tr -d ' ')"
   [[ "$sub_dirty" != "0" ]] && SUBDIRTY+=("$path|$sub_dirty")
