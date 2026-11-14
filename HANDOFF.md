@@ -105,7 +105,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 |---|---|
 | **决策** | `OrzMCBackup` 升级为**单仓多语言**并作为父仓库 `backup`：`spec/`（语言无关规范 = 唯一行为真值）+ `java/`（Kotlin CLI/库）+ `rust/`（原 `rust-thanos`）+ `upstream/thanos`（官方 PHP，**嵌套只读 submodule**）。Rust 历史不迁入（由归档旧仓保留，删仓前清理）。 |
 | **已完成（本会话）** | ⓪ **S3 首批 + S4 完成**（`57e13cb`）：`spec/tools/{mca,manifest,compare,make_vectors}.py` 中立工具链；向量 `forceload-forced`（含 `Forced` 打包反证）与 `decision-inhabited`（严格 `>`/缺 tag/外部压缩）；`spec/schema/manifest.schema.json`；`scripts/conformance.sh`（构建+跑向量+中立比对）；`.github/workflows/conformance.yml`（阻断门禁 + 向量可复现校验）；`.github/workflows/release-rust.yml`（tag `rust-v*` + 6 平台 + homebrew 模板）。验收：`./scripts/conformance.sh all` → java 2/2、rust 2/2 PASS。 | ① `backup` 分支 `refactor/monorepo`（`11b41f2`，BREAKING）：Gradle 根移到 `java/`（命令 `java/gradlew -p java <task>`，任务路径仍 `:core:*`/`:app:*`，Maven 坐标与 `backup.jar` 不变）；`rust/` 收入代码（历史不入库）；`spec/SPEC.md` v0.1（条款 `WOS-###`）+ `spec/divergences.md` + `spec/upstream-divergences.md`；`upstream/thanos` 子模块（钉 `56772da`）；CI 拆分 `java.yml` / `rust.yml`；Java 发布 tag 改 `java-v*`（`release-java-app` / `release-java-lib`）。② 父仓库：子模块路径 `tools/OrzMCBackup` → `backup`，移除 `tools/rust-thanos` 与 `tools/thanos`（后者已嵌套进 `backup/upstream/thanos`），登记表/文档/`docs/spec` 交叉引用同步。验收：`java/gradlew -p java check` 绿、`rust` 19 套件绿、`scripts/verify/check.py` 绿、`boot-check.sh` 可开工。 |
-| **S3 完成度** | **13/13 向量**（新增 compression-matrix / threshold-zero / remove-unknown / merge-parallel / merge-corrupt-patch / overlap-rejected）；java 与 rust 全部 PASS；条款覆盖 36/53（`python3 backup/spec/tools/coverage.py`）。**安全修复**：Rust CLI 原可在 `OUTPUT == INPUT` 时先问"是否覆盖"再 `remove_dir_all` **删掉源世界**，现已把重叠守卫提前到 CLI 入口（WOS-10.1 + 向量 `overlap-rejected` 回归）。早期 7/7 向量：`forceload-forced`、`decision-inhabited`、`merge-basic`、`world-basic`、`errors-corrupt-region`、`world-26-1`、`cli-dry-run`；java 与 rust 全部 PASS。**行为变更**：WOS-6.7 —— 无法解析的 region 原样保留（Java 对齐 Rust），已写入 CHANGELOG `Unreleased`。 |
+| **S3 完成度** | **21 个向量**（新增 mcc-external / corrupt-chunk / symlink-world / report-fields / custom-compression / merge-overlap / forceload-corrupt / decompress-bomb），java 与 rust 全部 PASS，条款覆盖 **46/53**（`python3 backup/spec/tools/coverage.py`）。剩余未覆盖：WOS-3.4（同一 chunk 两个 `InhabitedTime` 的取值口径，语义待定）、WOS-5.4（库 API，属实现定义）、WOS-10.3（跨链接删除场景）、WOS-12.x（元条款）。早期数据：13/13 向量（新增 compression-matrix / threshold-zero / remove-unknown / merge-parallel / merge-corrupt-patch / overlap-rejected）；java 与 rust 全部 PASS；条款覆盖 36/53（`python3 backup/spec/tools/coverage.py`）。**安全修复**：Rust CLI 原可在 `OUTPUT == INPUT` 时先问"是否覆盖"再 `remove_dir_all` **删掉源世界**，现已把重叠守卫提前到 CLI 入口（WOS-10.1 + 向量 `overlap-rejected` 回归）。早期 7/7 向量：`forceload-forced`、`decision-inhabited`、`merge-basic`、`world-basic`、`errors-corrupt-region`、`world-26-1`、`cli-dry-run`；java 与 rust 全部 PASS。**行为变更**：WOS-6.7 —— 无法解析的 region 原样保留（Java 对齐 Rust），已写入 CHANGELOG `Unreleased`。 |
 | **未推送** | 父仓库、`backup`（`refactor/monorepo` + 更早的 `fix/upstream-parity`、`feat/merge-dry-run`）均**仅本地提交**；推送前需确认 PR 顺序：`fix/upstream-parity` → `refactor/monorepo` → `feat/merge-dry-run`。 |
 | **下一步** | ① **S3 第二批向量**：`world-basic`（WOS-2/6/7：惰性写入、payload 原字节、杂项复制）、`world-26-1`（嵌套维度）、`merge-basic`（WOS-8）、`errors`（损坏 region/chunk、解压上限）、`cli`（退出码/`--dry-run` 零写入）；② **人工项**：在 GitHub 把 `conformance` workflow 设为 required check（阻断合并）；③ 推送三个分支并开 PR；④ 归档 `OrzMC/rust-thanos`（历史留存一段时间后删除）；⑤ 评估 `ForgeForced`（模组 ticket）是否入规范（见 `spec/divergences.md` 候选 C1）。 |
 | **注意** | ① **嵌套子模块**：检出需 `git submodule update --init --recursive`；`upstream/thanos` 只读，升级走 `backup/upstream/README.md` 的评审式流程。② 本机 `tools/OrzMCBackup` 现是**临时符号链接**（换 shell cwd 用，已进 `.git/info/exclude`），可在任意时刻 `rm tools/OrzMCBackup`；③ `plugin` 的 `M` 仍是历史遗留（本机 `develop`），**勿提交**。 |
@@ -408,15 +408,16 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 
 ### 2026-11-14 — pi（plugin 自动化质量闭环：PR 门禁 + 夜间 + 趋势看板）
 
-- **目标**：让 `plugin` 的「开发 → 测试 → 验收」在仓库内自举闭环，减少人工测试服依赖。PR #565/#566/#567/#571 + 趋势看板 #574：
-  - **#565 门禁可信化**：JaCoCo 门槛 60/50/55 → **78/65/78**（原门槛比实测低 20+ 点，等于没有）、Codecov patch 70%、`org.gradle.test-retry`（max 2 次）、`-PexcludeFlaky` 隔离舱、修掉 4 处「sleep 后断言」时序 flaky（心跳用例实测已红过一次）。
-  - **#566/#567 自举真实服务端（L1.5）**：`gradlew e2eLocalPaper|e2eLocalFolia` 下载 Paper/Folia → 隔离 run 目录 → 起服 → stdin 控制台断言 → 断言 exit 0，**10 条断言**（`$h $l $w $d $a $r $e`、`config reload`、`maintenance on/off`）；`foliaSmoke` 复用同一实现（两变体各 10 条）。
+- **目标**：让 `plugin` 的「开发 → 测试 → 验收」在仓库内自举闭环，减少人工测试服依赖。4 个 PR（#565/#566/#567/#571）+ 趋势看板（#574 待合）：
+  - **#565 门禁可信化**：JaCoCo 门槛 60/50/55 → **78/65/78**（原门槛比实测低 20+ 点等于没有）、Codecov patch 70%、`org.gradle.test-retry`（max 2 次）、`-PexcludeFlaky` 隔离舱、修掉 4 处「sleep 后断言」时序 flaky（实测心跳用例已红过一次）。
+  - **#566/#567 自举真实服务端（L1.5）**：`gradlew e2eLocalPaper|e2eLocalFolia` 下载 Paper/Folia → 隔离 run 目录 → 起服 → stdin 控制台断言 → exit 0，**10 条断言**（`$h $l $w $d $a $r $e`、`config reload`、`maintenance on/off`）；`foliaSmoke` 复用同一实现（两变体各 10 条）。
   - **#567 nightly**（`nightly.yml`，每日 01:30）：`check` + 双核心 E2E + builtin 变体；失败自动开 issue（`nightly-failure`，REST 去重）、恢复自动关闭。
   - **#574 趋势看板**：`scripts/quality/trend.py` 夜间把「用例数 + 覆盖率」写进 issue #572（保留 30 行，跌 >1pt 标 ⚠️）。
 - **仓库设置已改**：main/develop ruleset 必选检查 = `build` + `folia-smoke` + **`e2e-paper`（新）** + `approval-gate`；e2e-paper 上线后 6/6 绿（约 2 分钟，与 folia-smoke 并行）。
-- **实测发现 3 个真缺陷**（都是闭环自己抓的）：`$d` 无规则时输出「访问规则为空」而非「黑名单」；配置热加载真实命令是 `/config reload` 而非 `/orzmc config reload`；`gh issue list` 走搜索索引 → 新建 issue 1–3s 内查不到 → nightly 去重静默失效（改 REST + 重试后验证通过）。
+- **实测发现 3 个真缺陷**（都是闭环自己抓的）：`$d` 无规则时输出「访问规则为空」不是「黑名单」；配置热加载真实命令是 `/config reload` 而非 `/orzmc config reload`；`gh issue list` 走搜索索引 → 新建 issue 1–3s 内查不到 → nightly 去重静默失效（改 REST + 重试后验证通过）。
 - **不可自举边界**（已写入 `plugin/docs/quality-testing-plan.md`）：真实 IM 平台（QQ 频控/被动回复窗口）、真实 LP 授权、多玩家交互、大世界备份性能，仍走 `e2e/` 全量套件人工验收。
-- **注意**：本次只在 `plugin` 的 `develop` 落地，**未 bump 父仓库指针**（父仓库钉 `main`）；发版合入 `main` 后统一 bump。
+- **注意**：`plugin` 指针未 bump（改动都在 `develop`，父仓库钉 `main`）；`plugin` 发版合入 `main` 后再统一 bump。
+
 ### 2026-11-14 — pi（世界优化单仓改造：`backup` = spec + java + rust + upstream）
 
 - `OrzMCBackup`（现 `backup`）结构改造（`11b41f2`，BREAKING）：
