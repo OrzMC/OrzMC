@@ -134,6 +134,8 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **现状事实** | 首页 Tab：国内服 / 开发测试服；海外服只在别处出现。测试服 `show_address=false` 仍隐藏地址（含 `web_port=18443`）。国内服/海外服的 `web_host`、`web_port` 仍是注释示例，等真实 WSS 入口确定后填。 |
 | **Eaglercraft 26.3 内嵌调研结论（2026-11-15）** | ① 客户端是**单文件 HTML**（`eaglercraft-26.3-fe8f1237.html`，78,124,802 B），官方分发 `https://cdn.eaglercraft.net/objects/dl/26.3/eaglercraft-26.3-fe8f1237-815f7813.zip`（58.9 MB，`application/zip`）。② 官方站 `https://eaglercraft.com/play?version=26.3` 是 Next.js 壳，**返回 `X-Frame-Options: DENY`** → **不能 iframe 官方页**；`/play` 只认 `launch=1` / `version=`（版本经 sessionStorage `eagler_play_launch` 传递），**没有** server / 自动进服参数。③ 客户端 HTML 自带写死的 `eaglercraftXOpts`（`container:"game_frame"`、内联 `assetsURI`、`allowBootMenu:false`…），**未预置 servers**；能静态搜到的 URL 参数只有 `?singlethread` / `?nomesh` / `?perfdebug` / `?chunkunload`。④ 结论：**「点开即进服」只能自托管客户端副本**（可 patch `eaglercraftXOpts` 加 `servers`，该 hosted release 是否读取 `servers` **需实测**），且 75 MB 文件**不适合放 GitHub Pages**（单文件 100 MB 硬限、站点 1 GB / 带宽 100 GB 软限、每次部署重传），应放自有 VPS（Caddy，长效缓存 + `frame-ancestors https://orzmc.jokerhub.cn`）后由官网 iframe。 |
 | **下一步（下次从这里开始）** | ① 低成本方案（**待维护者点头**）：卡片/页面加「在浏览器中玩」按钮 → 新标签打开 `https://eaglercraft.com/play?version=26.3`，并提示「多人游戏 → 直连 → 粘贴卡片上的 `wss://` 地址」（复制按钮已有）。② 完整方案：VPS 托管 `eaglercraft-26.3-*.html` → 官网 iframe + 预置服务器；需真机先跑通客户端并验证 `servers` 选项与 `frame-ancestors`。 |
+| **iframe 可行性已核实（2026-11-15）** | ① 本站在 GitHub Pages 上**不发** `X-Frame-Options` / CSP（实测响应头只有 `cache-control: max-age=600`）→ 我们的页可以 iframe 同源或第三方页（只受对方头约束），站点本身也可被嵌。② Pages **不支持自定义响应头**（无 `_headers`），但**不影响**：26.3 客户端无 `SharedArrayBuffer`/`crossOriginIsolated`/`Atomics`（默认单线程）→ 不需要 COOP/COEP 隔离头。③ 被明确拒绝的是官方站：`eaglercraft.com`、`/zh/play`、`/mc/26.3` 全部 `X-Frame-Options: DENY`。④ **真障碍是体积与带宽**：单文件 75 MiB（Git 50 MiB 警告 / 100 MiB 硬限，Pages 不服务 LFS；站点 1 GB、软带宽 100 GB/月、HTML 缓存 600 s → 粗算约 1300 次首访/月即触顶）；且本机 VPS 是**家宽上行**，多人拉 75 MB 不现实。⑤ 结论：若做嵌入，应「点击才加载 iframe」（`loading=lazy` + `allow="fullscreen; gamepad; pointer-lock; clipboard-write"`）、客户端放自有 VPS 并配 `frame-ancestors` 白名单 + 长缓存；否则优先「离线单文件 + 我们的 wss 地址」或直接链官方页。 |
+| **Web 客户端文章已重写（2026-11-15，site #15）** | `content/posts/1.client/11.webmc.md` 全文重写：官方 Classic / Eaglercraft（26.3 = MC 26.3 / 协议 777，单文件 75 MiB）/ MCJS（1.5.2–26.3 + 1.6.4 Forge 整合包）现状盘点与对比表；原理与通道约束；我们测试服实测（三端同服、Folia、插件矩阵、1006 真实成因）；**Java 服务器接入最佳实践**（拓扑、版本对齐、TLS 反代四条硬要求、身份与安全、基岩共存、稳定性、上线验收清单、故障速查）；合规边界；并在「客户端启动器」页加了入口。已发布。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
 
@@ -432,6 +434,18 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-15 — pi（Web 客户端文章重写 + Eaglercraft iframe 可行性核实，site #15 已发布）
+
+- **文章**（OrzMCSite #15 squash `0c3c20a` → 父仓库 #67）：`posts/1.client/11.webmc.md` 从「三行对比」重写为完整指南——
+  ① 2026-11 现状盘点（官方 Classic 仅创造/无联机；Eaglercraft 26.3 = MC 26.3 / 协议 777，单文件 78,124,802 B、zip 58,885,242 B，
+  官网 2025-08 整站重写后带账号云存档/服务器目录/共享世界/资源包；MCJS 覆盖 1.5.2–26.3 + 1.6.4 Forge 整合包并标注停更版本）；
+  ② 原理与约束（只认 TLS、桥接一律离线、仅代理能改 UUID）；③ 我们测试服实测（三端同服、Folia 可用、插件矩阵 PASS、1006 = 渲染卡顿漏心跳）；
+  ④ **Java 服接入最佳实践**（拓扑、版本对齐、TLS 反代四条硬要求、身份与安全、基岩共存、稳定性、验收清单、故障速查）；⑤ 合规边界。
+- **iframe 核实**：本站 Pages 无 XFO/CSP（只有 `cache-control: max-age=600`）→ 可以 iframe 同源/第三方页；Pages 不支持自定义头但客户端不需要
+  COOP/COEP；官方站 `X-Frame-Options: DENY` 嵌不了。真障碍是 **75 MiB 体积 + 家宽上行 + Pages 带宽软限**，结论见 §1.3。
+- **方法**：用 `curl -I` 对比头 + 下载官方面板 zip 解包静态扫描（`eaglercraftXOpts`、`URLSearchParams`、`SharedArrayBuffer`）+
+  抓 `.next` chunk 确认 `/play` 只认 `launch`/`version`；文章渲染用 WKWebView 检查 390/900px 无横向溢出。
 
 ### 2026-11-15 — pi（官网服务器卡片：三端地址 + 多服 Tab + 紧凑化，site #14 已发布）
 
