@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-15 by pi（**全量同步子模块指针到远端最新**：`backup`→`7ba22be`、`deploy`→`04c3538`、`swift/app`→`33e0ee6`，其余 17 个已是最新；顺带修 `boot-check.sh` 两处显示缺陷。<br>上一轮 2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；内容 SEO 护栏与周检（site #13）；PR #158/#159/#160/#161/#162）
+> **最后更新**：2026-11-15 by pi（**官网服务器卡片三端化 + 多服 Tab**：`site` #14 / 父仓库 #65 已发布；Eaglercraft 26.3 内嵌可行性已调研，结论见 §1.3。<br>上一轮 2026-11-15 by pi（**全量同步子模块指针到远端最新**：`backup`→`7ba22be`、`deploy`→`04c3538`、`swift/app`→`33e0ee6`，其余 17 个已是最新；顺带修 `boot-check.sh` 两处显示缺陷。<br>上一轮 2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；内容 SEO 护栏与周检（site #13）；PR #158/#159/#160/#161/#162）
 
 ---
 
@@ -125,6 +125,15 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **下一步（下次从这里开始）** | ① 评估 `ForgeForced`（模组 ticket）是否入规范（`spec/divergences.md` 候选 C1）；② 若决定统一 CLI 表面，优先把 Java 的 `merge --dry-run`/`--diff-file` 移植到 Rust（现登记为 C2）；③ WOS-5.4 / WOS-12.x **有意保持不覆盖**，无需再补。<br>**已决策（不需要再做）**：官方 Hugo 站**不加** backup 产品页（维护者 2026-11-15 决定，产品介绍只放 `backup` 自己的 Pages）；许可统一为 Apache-2.0（已完成并发 0.0.5）。 |
 | **注意** | ① **嵌套子模块**：检出需 `git submodule update --init --recursive`；`upstream/thanos` 只读，升级走 `backup/upstream/README.md` 的评审式流程。② 本机 `tools/OrzMCBackup` 现是**临时符号链接**（换 shell cwd 用，已进 `.git/info/exclude`），可在任意时刻 `rm tools/OrzMCBackup`；③ `plugin` 的 `M` 仍是历史遗留（本机 `develop`），**勿提交**。 |
 
+
+### 1.3 官网 `site` 线（2026-11-15，pi）——**服务器卡片三端 + 多服 Tab，已发布；下一步 Eaglercraft 内嵌**
+
+| 项 | 内容 |
+|---|---|
+| **已完成（OrzMCSite #14，父仓库 #65）** | ① 服务器卡片支持**三端地址**：Java / 基岩 / **Web（Eaglercraft）**——新增 per-server `web_port`/`web_host`，渲染 `wss://<主机>:<端口>/`（缺省 443，不可用走 18443；`web_host` 缺省沿用 Java 主机，可指独立子域），只有配置了才展示，主机仍走替换表加密（产物无明文）。② **多服 Tab**：shortcode `tabs`（或 `[server_status] tabs`），服务器数 > 1 时同一区域 Tab 切换，Tab 带在线状态色点、键盘可切换、刷新后选中态不丢；首页 = 国内服 + 开发测试服。③ **卡片紧凑化**：桌面卡高 406.9→302.2px（双地址），卡内间距统一 8px / 次级组 7px，地址胶囊单行化（76.8→44px），MOTD 与地址胶囊统一 `--ss-row-h` 44px 等高背景块（去掉「服务器标语」标签与左侧强调条）。 |
+| **现状事实** | 首页 Tab：国内服 / 开发测试服；海外服只在别处出现。测试服 `show_address=false` 仍隐藏地址（含 `web_port=18443`）。国内服/海外服的 `web_host`、`web_port` 仍是注释示例，等真实 WSS 入口确定后填。 |
+| **Eaglercraft 26.3 内嵌调研结论（2026-11-15）** | ① 客户端是**单文件 HTML**（`eaglercraft-26.3-fe8f1237.html`，78,124,802 B），官方分发 `https://cdn.eaglercraft.net/objects/dl/26.3/eaglercraft-26.3-fe8f1237-815f7813.zip`（58.9 MB，`application/zip`）。② 官方站 `https://eaglercraft.com/play?version=26.3` 是 Next.js 壳，**返回 `X-Frame-Options: DENY`** → **不能 iframe 官方页**；`/play` 只认 `launch=1` / `version=`（版本经 sessionStorage `eagler_play_launch` 传递），**没有** server / 自动进服参数。③ 客户端 HTML 自带写死的 `eaglercraftXOpts`（`container:"game_frame"`、内联 `assetsURI`、`allowBootMenu:false`…），**未预置 servers**；能静态搜到的 URL 参数只有 `?singlethread` / `?nomesh` / `?perfdebug` / `?chunkunload`。④ 结论：**「点开即进服」只能自托管客户端副本**（可 patch `eaglercraftXOpts` 加 `servers`，该 hosted release 是否读取 `servers` **需实测**），且 75 MB 文件**不适合放 GitHub Pages**（单文件 100 MB 硬限、站点 1 GB / 带宽 100 GB 软限、每次部署重传），应放自有 VPS（Caddy，长效缓存 + `frame-ancestors https://orzmc.jokerhub.cn`）后由官网 iframe。 |
+| **下一步（下次从这里开始）** | ① 低成本方案（**待维护者点头**）：卡片/页面加「在浏览器中玩」按钮 → 新标签打开 `https://eaglercraft.com/play?version=26.3`，并提示「多人游戏 → 直连 → 粘贴卡片上的 `wss://` 地址」（复制按钮已有）。② 完整方案：VPS 托管 `eaglercraft-26.3-*.html` → 官网 iframe + 预置服务器；需真机先跑通客户端并验证 `servers` 选项与 `frame-ancestors`。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
 
@@ -423,6 +432,14 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-15 — pi（官网服务器卡片：三端地址 + 多服 Tab + 紧凑化，site #14 已发布）
+
+- **需求**：服务器卡片要有第三种客户端入口（Web / Eaglercraft），首页把主服与测试服放进同一块区域用 Tab 切换，并把卡片垂直空间压缩、间距统一。
+- **落地**（OrzMCSite #14 squash `b4f46ab` → 父仓库 #65 `925a652`，Pages 部署绿）：`web_port`/`web_host` → `wss://<主机>:<端口>/`（端口显式、缺省 443、不可用 18443、主机缺省沿用 Java 域，仍走替换表加密）；shortcode `tabs` → `role=tablist` 分段控件（状态色点 + 键盘切换 + 刷新保留选中）；卡片桌面高 406.9→302.2px、区块间距统一 8px、地址胶囊单行化 76.8→44px、MOTD 与胶囊统一 44px 等高背景块。
+- **坑**：① 内容页写 `{{/* … */}}` 会被当正文渲染（已写进 `site/AGENTS.md`）；② `<p>` 默认 `margin: 1em` 让「说明→地址区」比其它区块多 15px，是卡片“看着不齐”的真凶；③ 单行胶囊用容器查询，断点按**内容宽**（`@container min-width: 28em`）判定而非视口。
+- **验证方式（可复用）**：本机无 Chrome / Playwright 不支持 macOS 13 → 用 `swiftc` + WKWebView 写了离屏测量器：注入 fetch stub 后读 `getBoundingClientRect`，逐档视口（320/390/500/560/640/660/700/900）断言卡高、间距、横向溢出；Tab 交互另用 jsdom 断言。
+- **下一步**：Eaglercraft 26.3 内嵌可行性已调研完（官方页 `X-Frame-Options: DENY`、`/play` 无 server 参数、客户端是 75 MB 单文件），结论与两条路线见 §1.3。
 
 ### 2026-11-15 — pi（许可口径统一：全仓 Apache-2.0 + rust-thanos 0.0.5 发版）
 
