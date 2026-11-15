@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-15 by pi（**官网服务器卡片三端化 + 多服 Tab**：`site` #14 / 父仓库 #65 已发布；Eaglercraft 26.3 内嵌可行性已调研，结论见 §1.3。<br>上一轮 2026-11-15 by pi（**全量同步子模块指针到远端最新**：`backup`→`7ba22be`、`deploy`→`04c3538`、`swift/app`→`33e0ee6`，其余 17 个已是最新；顺带修 `boot-check.sh` 两处显示缺陷。<br>上一轮 2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；内容 SEO 护栏与周检（site #13）；PR #158/#159/#160/#161/#162）
+> **最后更新**：2026-11-15 by pi（**子模块第二轮同步**：`backup` `233e504`→`fa399ea`，20 个子模块现已**全部等于远端 `main`/`master` 最新**；`plugin` 仍钉 `main` `a3128f9`，工作树检出 `develop` 属预期。<br>上一轮 2026-11-15 by pi（**官网服务器卡片三端化 + 多服 Tab**：`site` #14 / 父仓库 #65 已发布；Eaglercraft 26.3 内嵌可行性已调研，结论见 §1.3。<br>上一轮 2026-11-15 by pi（**全量同步子模块指针到远端最新**：`backup`→`7ba22be`、`deploy`→`04c3538`、`swift/app`→`33e0ee6`，其余 17 个已是最新；顺带修 `boot-check.sh` 两处显示缺陷。<br>上一轮 2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；内容 SEO 护栏与周检（site #13）；PR #158/#159/#160/#161/#162）
 
 ---
 
@@ -194,7 +194,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | `swift/lib/OrzMCKit` | `6944afb` | **Swift 引擎 + `orzmc` CLI**；**`v0.19.0` 已发布**（六资产；**Linux 自包含**：静态链 Swift 运行时、glibc 2.35、62–65 MB）；Windows arm64 链路（`build-windows` 双臂矩阵 + `.github/actions/msvc-arm64` + `windows-arm64` 探针）；`feat(conformance)` 把 `install.conf`/`auth.json`/补全落点收敛进 `Game.StatePaths`；`--strict` + `ledger` 三处 CI 校验 |
 | `swift/lib/{MojangAPI,PaperMC,ExarotonAPI,OrzAppUpdater}` | 见 [`RELEASES.md`](RELEASES.md) | Swift 依赖（引擎依赖 + 基础设施 + 自升级），随 `swift/` 收拢；HEAD 制，本地改后各自仓库提交 → 上层 bump |
 | `swift/lib/MCSManagerAPI` | `7428340` | MCSManager 面板 API 客户端（OpenAPI 生成）；tag **0.3.1**（`/api/auth` 外壳 + 去字符串时间戳 + `text/plain` 错误体 + 动作/控制台端点 + `MCSMResponseEnvelope`）；20 条测试 |
-| `backup` | `7ba22be` | 2026-11-15 同步（产品页/文档刷新 #95 的 squash 提交）；详见 §1.0 |
+| `backup` | `fa399ea` | 2026-11-15 同步；`fa399ea` 是 CRLF→LF 归一提交（`233e504` 是 #100 产品页 Tab 收口） |
 | `deploy` | `04c3538` | 2026-11-15 同步（Eagler/拓扑/多后端/三端验收，0.2.0 定版） |
 | `site`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
@@ -471,6 +471,16 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 - **合法性说明**：两域都是独立实现（`rust/LICENSE` 原版权即本项目），上游 thanos(MIT) 仅只读子模块、不进产物 →
   统一到 Apache-2.0 无兼容性问题；≤0.0.4 的 MIT 授权继续有效（不可撤销），CHANGELOG 写明无需迁移。
 - **维护者决策记录**：官方 Hugo 站**不加** backup 产品页（产品介绍只保留 `backup` 自己的 Pages）。
+
+### 2026-11-15（续） — pi（全量同步第二轮：`backup` 一条无人认领的换行符提交）
+
+- **复跑比对**（20 个子模块逐个 `fetch`）：除 `backup` 外全部 `behind=0 ahead=0`；`site` 已被 #74–#77 单独 bump 到 `bccdf7f`。
+- **`backup` `233e504` → `fa399ea`**（父仓库 PR #78）：内容只是
+  `java/core/src/test/resources/Fixtures/world/paper-world.yml` 由 CRLF 归一为 LF（`--ignore-all-space` 差异为空）。
+- ⚠️ **待维护者决策**：该提交 message 是 `CRLF will be replaced by LF`（`git add` 的警告文本被当成提交信息），
+  且**未经 PR 直接推到 `backup/main`**（`gh pr list` 里没有对应 PR；本地 reflog 只显示 pull）。
+  该提交上 `java` / `rust` / `conformance` 三个工作流**均绿**，父仓库为不长期 behind 已照常跟随。
+  若不想留这条噪音提交，需在 `OrzMCBackup` 开 revert PR（本轮**未做**）。
 
 ### 2026-11-15 — pi（全量同步子模块指针 + boot-check 两处修复）
 
