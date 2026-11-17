@@ -207,11 +207,21 @@ git diff --submodule <路径>
 | `CONTRIBUTING.md` | 人/机贡献指南 | 流程变化时同步 |
 | `docs/` | 伞级文档与进行中的方案 | 每份文档头部标「状态 / 最后更新」；索引进 `docs/README.md` |
 | `scripts/` | 服务器运维脚本 + 校验/一致性工具 + 本地联调（`verify/`、`conformance/`、`release/`、`swift-dev.sh`） | 生产脚本改动需谨慎并说明 |
+| `.agents/skills/` | 项目技能（给 AI 用的过程文档，见下节） | 真实值必须占位符化；改技能同样走 PR |
 | `images/` / `skins/` | README 图片 / 玩家皮肤 | 资源类，避免无谓重编码 |
 | `LICENSE` | 许可证 | **不要改**（子项目各自许可证见其仓库） |
 
 **该放进子模块、而非父仓库的内容**：任何可构建产物、业务逻辑、子项目配置、子项目 CI、
 会被独立发布的代码——一律进对应子模块。
+
+### 6.1 项目技能（`.agents/skills/`）
+
+- 技能 = **给 AI 用的过程文档**：`SKILL.md`（frontmatter 含 `name`/`description`）+ `references/` + `scripts/` + `templates/`。
+- 目录约定与 Hermes 启用方式见 `.agents/skills/README.md`。当前只有 `orzmc/`（服务器运维统一技能，
+  由 `OrzMC/OrzMCAdmin` 归档仓迁入）。
+- **真实值禁止入库**：域名 `{SERVER_HOST}`、家宽 IP `{HOME_IP}`、云主机 `{CVM_IP}`、密码/Token `{PASSWORD}` / `{TOKEN}`。
+  真实值只留在各人本机的私人技能副本，发布时脱敏（本机脚本 `orzmc_publish.sh` 会 enc + 复扫门禁）。
+- 在本仓库工作的 AI 会话优先使用这里的版本（项目技能优先级高于个人技能副本）。
 
 ---
 
