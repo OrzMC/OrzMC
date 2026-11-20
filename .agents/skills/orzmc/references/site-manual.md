@@ -26,6 +26,20 @@
 | 服务器状态卡片 | `{{< server-status tags="players" >}}`，`params.toml` 每台服配 `tags = ["players"]` / `["dev"]`（**单点维护**：名称/地址变化只改 params.toml，文档零改动） | 旧 `servers=` 参数——按 name/host 精确匹配，中文名带 emoji 匹配不上 → `servers:[]` 空数组、卡片空白；且名称/域名变化要改每篇文档 |
 | 排版 | 纯 Markdown 列表 / 表格（移动端友好） | 裸 HTML（`<br>` 等）——Hugo 默认**静默省略 raw HTML**，不渲染也不报错 |
 
+## server-status 卡片的数据源（mcstatus.io）── 两个必须知道的坑
+
+卡片数字来自 `api.mcstatus.io/v2/status/java/<host>`（渲染在 `static/js/server-status.js`）。
+**它不是权威数据源**，排障时先怀疑上游而不是 CSS：
+
+| 坑 | 机制 | 规则 |
+|:--|:--|:--|
+| MOTD 颜色被「量化」 | 上游把 JSON `text`/`color` 树压成 **16 色 legacy `§` 码**，MiniMessage 的逐字渐变（`<gradient:a:b>`）塌成 2 段，切点可能落在词中间，任何 CSS 都还原不回来 | 需要网页+游戏内都正常的文案，MOTD 用**单一 legacy 色**（如 `<gold>`）；渐变只留给只给游戏内看的行 |
+| `version.protocol` 恒为 47 | 对本服（真实 762）、Paper 26.3、Hypixel 一律返回 47 —— 上游字段是假值 | 卡片只显示「类型 · 版本」两段，**不显示协议号**；缺版本就不渲染该段（`normalize()` 可留字段仅供排障） |
+
+排障顺序：`mc_ping_probe.py <host> <port>` 拿服务端真实 JSON（递归打印 `text`/`color` 逐节点）→
+`curl -s api.mcstatus.io/v2/status/java/<host>:<port>` 对比 `raw` → 两边不一致即上游量化，改 MOTD 源文案；
+两边一致才回头查前端/样式。改动落在站点仓库（现为父仓 `site/` 子模块），合并 `main` 后 CI 自动发 Pages。
+
 ## 验收
 
 - 本地 `hugo -d` 构建通过（页数无异常下降）

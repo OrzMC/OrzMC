@@ -138,6 +138,10 @@ def sec_connectivity() -> tuple[str, list[str]]:
 def sec_backend() -> tuple[str, list[str]]:
     lines, todos = [], []
     for label, uuid, port in INSTANCES:
+        if not probe.rcon_enabled(uuid):
+            # 2026-11-19 起测试服关闭 RCON（enable-rcon=false）：不探测，改从容器状态与日志判断存活
+            lines.append(f"- {label}：ℹ️ RCON 已关闭，改看容器状态与日志")
+            continue
         ok, body = probe.rcon(port, probe.rcon_password(uuid), "list")
         ok2, tps = probe.rcon(port, probe.rcon_password(uuid), "tps")
         if not ok:

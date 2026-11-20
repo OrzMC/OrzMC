@@ -13,8 +13,8 @@ PYTHONPATH="" python "$LOCALAPPDATA/hermes/scripts/orzmc_entry_probe.py"   # 内
 # 2) 基岩：/v1/join 的 version 字段 = 当前支持的最新 Bedrock 版本
 curl -s --max-time 8 http://127.0.0.1:19132/v1/join
 
-# 3) 网页：18443 只要 404 + Server: EaglercraftXServer 就说明 WebSocket 入口活着
-curl -sk --max-time 8 --resolve dev.{SERVER_NAME}.cn:18443:127.0.0.1 https://dev.{SERVER_NAME}.cn:18443/ -I
+# 3) 网页：443 只要 404 + Server: EaglercraftXServer 就说明 WebSocket 入口活着
+curl -sk --max-time 8 --resolve dev.{SERVER_NAME}.cn:443:127.0.0.1 https://dev.{SERVER_NAME}.cn/ -I
 ```
 
 ## 各通道上下限的「真值」怎么读
@@ -74,6 +74,6 @@ grep -nE '^\[|min_minecraft_protocol|max_minecraft_protocol' eagler/proxy/plugin
 |:--|:--|:--|
 | Java | `dev.{SERVER_NAME}.cn:25565` | 1.7.2 – <服务端版本>，减掉 block-versions 四段 |
 | 基岩 | `dev.{SERVER_NAME}.cn:19132` | Bedrock 1.20.0 – 最新（`/v1/join` 的 version） |
-| 网页 | `https://dev.{SERVER_NAME}.cn:18443` | EaglercraftX，MC 协议 3–340 |
+| 网页 | `https://dev.{SERVER_NAME}.cn` | EaglercraftX，MC 协议 3–340 |
 
 附一句「上限 = 服务端版本，比它新的客户端要等核心升级」，以及客户端侧 mod 一般能进（`announce-forge=false` 丢 FML 标记）、带服务端 mod 的整合包进不去。

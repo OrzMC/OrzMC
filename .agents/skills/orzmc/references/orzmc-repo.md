@@ -1,5 +1,9 @@
 # OrzMC 统一代码仓库（运维资产地图）
 
+> **本机工作区（唯一）**：`E:\dev\OrzMC`（Windows 主机）。**所有 OrzMC 相关改动都在这个仓库下做**——`site/`(=OrzMCSite)、`plugin/`、`proxy/`、`swift/app/` 等 20 个子模块都在里面，**不要再单独 `gh repo clone` 到 `E:\dev\<Repo名>`**（会在仓库外多出一份副本、且父仓指针不同步）。
+> 子模块改动流程：`cd E:\dev\OrzMC/<子模块>` → 在子仓库建分支提 PR（子仓库自己的 CI 负责构建/发布，如 site 的 `Publish Web Page`）→ 合并后回父仓 bump 指针（`git submodule update --init <path>`、在子模块里 `git checkout -B main origin/main`、父仓 `git add <path>` 提交 PR）。父仓 `main` 有分支保护，必须 PR + CI `verify` 绿。
+> 子模块默认未初始化（`git submodule status` 前缀 `-`）；按需 `git submodule update --init <path>` 单个拉取，别一次性 `--recursive` 全拉（很大）。
+
 > **仓库**：`https://github.com/OrzMC/OrzMC`（monorepo 总仓，Apache 2.0）
 > **克隆**：`git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/OrzMC/OrzMC.git`（15 个 git submodule）
 > **用途**：Minecraft Geek 工程总仓——本技能涉及的插件源码、插件配置库、运维工具、自维护 fork 全部以 submodule 挂在此仓下。运维场景先在 `~/OrzMC/` 找对应子模块。

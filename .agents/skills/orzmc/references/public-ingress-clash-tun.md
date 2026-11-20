@@ -3,6 +3,11 @@
 > 2026-09-11~12 本机（Windows + Clash TUN + Docker Desktop WSL2 mirrored + MCSM 实例）实测定论。
 > 结论先行：**问题常不在路由器/运营商，而在本机 Clash 的 TUN 抢了默认路由，把「入站连接的应答包」送进了代理隧道。**
 
+> **2026-11-19 现状变更**：家宽**入站 443 已可进**，公网入口回到标准 443
+> （`compose.site.yaml` 只留 `443:443`，`80` 与 `18443` 映射已删除，访问地址不再带端口）。
+> 文中「80/443 被封、只能用 18443」是 2026-10-29 那次的实测结论，作为历史排障思路保留；
+> **端口可用性每次都要重新实测**，不要拿旧结论当现状。
+
 ## 1. 症状特征（一套组合拳就能判定）
 
 | 现象 | 说明 |
@@ -107,6 +112,44 @@ ip rule add ipproto udp sport 19132 table 101 pref 90
 ### 3d. 防火墙三条规则已存在（核对用，别重复加）
 `OrzMC Java 25565 TCP` / `Bedrock Geyser 19132 UDP`（另 25566/19133）均为 `Allow / Any`，`Get-NetFirewallRule -Direction Inbound -Enabled True` 可查。
 
+### 3f. TUN 模式下的**长连接**故障：WebSocket 1006 / 登录反复掉线（2026-11-19）
+
+**症状**：开了 Clash Verge，外部客户端能连上但很快断——日志里是 WebSocket `1006`（异常关闭，无关闭帧），面板/网页客户端表现为「反复掉线、重新登录」；关掉 Clash 即全部正常。短请求（HTTP GET）看不出问题，只有长连接发作。
+
+**判定（30 秒）**：
+1. `netsh interface show interface` 有 `Mihomo` 虚拟网卡 → TUN 开着。
+2. `nslookup mcs.{SERVER_NAME}.cn` 返回 `198.18.x.x` → DNS 被 TUN/fake-ip 劫持（真实应是家宽公网 IP）。
+3. 核心 API `GET /connections` 里出现形如 `{HOME_IP} <客户端源端口>` 的条目 → **入站连接也被塞进了 mihomo 的 gVisor 用户态栈**（`DIRECT` 也一样）：短请求能跑通，长连接在 gVisor TCP 代理里蹲不稳 → 1006。
+
+**不要指望 `tun.route-exclude-address` 能救**：它按**目标地址**匹配，而入站应答的目标是任意外网客户端 IP，永远命中不到。Windows 也没有 `ip rule` 那种按源地址的策略路由，所以宿主侧没法「只把应答绕开 TUN」。
+
+**正确修法（按优先级）**：
+1. **这台机器不要用 TUN 模式**——它是公网入口宿主。日常浏览器/`gh`/`git` 用系统代理 + 规则模式（`127.0.0.1:7897`）就够了，做法见 3g。
+   ⚠️ **改 `verge.yaml` 的 `enable_tun_mode` 不持久**：Verge 启动时会用内存里的状态重写该文件，实测改完 `false`、重启后又被写回 `true`。持久化只有两条路——**在 Verge 界面里手动关掉 TUN 开关**（唯一真正落盘的路径），或加一条守护每分钟检查并关回去。别只在文件里改一次就以为解决了。
+2. 临时关 TUN **不需要管理员**：核心的控制接口在命名管道上（`\\.\pipe\verge-mihomo-production-<hash>`，用 `os.listdir("\\.\\pipe\\")` 找名字），直接发 HTTP：`PATCH /configs {"tun":{"enable":false}}` → `204`，3 秒内 `Mihomo` 网卡消失。`GET /version` 可先验通道（返回 `{"meta":true,"version":"v1.19.33"}`）。注意 `/connections` 是 chunked 响应，手写管道客户端要去掉 chunk 头。
+3. **WSL 侧策略路由补上 443**：`scripts/orzmc-mc-reply-route.sh` 的 `TCP_PORTS` 默认值已改为 `25565 25566 25567 443`、`UDP_PORTS` 加 `24454`，即使 TUN 被重新打开，Caddy（容器内发布 443）的应答也优先走 `table 101` 从 Wi-Fi 正门出。三处副本要 md5 一致：`E:/orzmc/scripts` → WSL `/usr/local/bin` → Hermes 技能 `scripts/`；改完跑一次主脚本触发 `APPLIED`（守护会自行修复）。
+4. 杀掉 `verge-mihomo.exe` 需要管理员（它以 `clash_verge_service` 服务身份运行，`taskkill /F` 报拒绝访问）；关 TUN 通常已经够用，不必提权。
+
+### 3g. 关掉 TUN 后，如何保住浏览器 / gh / git 的外网访问
+
+关 TUN 不损失代理能力：核心仍在 `127.0.0.1:7897` 监听（mixed 端口），只是不再接管系统路由。两条通道各自配置：
+
+1. **浏览器 = 系统代理（WinINET）**：置 `ProxyEnable=1` + `ProxyServer=127.0.0.1:7897`，**再调一次刷新通知**已运行的进程（只写注册表不刷新，浏览器可能继续用旧设置）：
+```python
+import winreg, ctypes
+k=winreg.OpenKey(winreg.HKEY_CURRENT_USER,r"Software\Microsoft\Windows\CurrentVersion\Internet Settings",0,winreg.KEY_ALL_ACCESS)
+winreg.SetValueEx(k,"ProxyEnable",0,winreg.REG_DWORD,1)
+winreg.SetValueEx(k,"ProxyServer",0,winreg.REG_SZ,"127.0.0.1:7897")
+w=ctypes.WinDLL("wininet"); w.InternetSetOptionW(None,39,None,0); w.InternetSetOptionW(None,37,None,0)
+```
+2. **命令行 = 用户级环境变量**（`setx`，永久、免管理员）：`HTTPS_PROXY`/`HTTP_PROXY=http://127.0.0.1:7897`，`NO_PROXY=localhost,127.0.0.1,::1,192.168.0.0/16,.{SERVER_NAME}.cn,<公网IP>`——不排本地网段/自家域名会回环。libcurl/git/gh 认 `NO_PROXY`，所以**不要**再写 `git config --global http.proxy`（写了会绕过 NO_PROXY，把自家域名也送进代理）。`setx` 只对之后启动的进程生效，已开的终端要重开。
+
+**验收三条**：`Invoke-WebRequest https://github.com` 200（这条走系统代理，等价浏览器路径）；`gh api user --jq .login` 返回账号；自家域名 `curl` 仍是 0.0x 秒级（证明 NO_PROXY/规则直连生效）。TUN 开着时同样域名是 0.5s 级——**这组延迟对比就是 TUN 开销的量化证据**，报障时直接给数字。
+
+**坑**：
+- 在 Verge 里关 TUN 时它常把**系统代理也一起关掉**（`ProxyEnable` 变 0，浏览器裸连），所以每次动过 Verge 设置都要复查这一项。
+- 系统代理指向 7897 ⇒ **退出 Verge/核心 = 浏览器立刻 `ERR_PROXY_CONNECTION_FAILED`**；Verge 必须常驻（界面关掉、核心留着也行）。
+
 ## 4. 走过的弯路（别重复）
 
 | 尝试 | 结果 |
@@ -180,21 +223,83 @@ wsl -d Ubuntu -u root -- bash -c "tcpdump -n -i any 'tcp port 25565'"
 
 直连 Caddy 只有一跳，TTFB ≈ 客户端到家的 RTT，不再有「TLS + 边缘 + 回源」三段叠加；国内访问 10–30ms 级，海外 150–300ms 级。原 Cloudflare Tunnel 的 0.7s 地板结构性问题已消除。
 
-### 2026-11-18 补：橙云通配记录仍是个坑（新增子域必读）
+## 9. 「已弃隧道」≠ 已弃：通配橙云把漏网子域静默接进隧道
 
-`{SERVER_NAME}.cn` zone 里除通配外**全部**是灰云（proxied=false）。唯一橙云记录是
-`*.{SERVER_NAME}.cn → <tunnel-id>.cfargotunnel.com`（proxied=true）。后果：
+**症状**：同机自建服务（容器发布 `8080`）访问明显慢——首字节 2~3 秒、静态资源同样慢、`cf-cache-status: HIT` 也照样慢；同一容器走局域网直连毫秒级。
 
-- **任何新子域只要没建显式记录，就自动落进这条 Cloudflare 隧道**。实测 `music.{SERVER_NAME}.cn`
-  因此每条请求绕 CF 边缘（落 SIN 新加坡）→ 隧道 → 家里，TTFB **1.9–3.1 s**；同机直连 3 ms，
-  走 Caddy 18443 的 mcs/easybot **33–58 ms**。静态资源 `cf-cache-status: HIT` 也照样 2 s，
-  说明耗时在链路不在源站。
-- 新增子域的标准动作：**先建显式灰云 CNAME `子域 → home.{SERVER_NAME}.cn`，再在 `site/Caddyfile`
-  加站点块**（`tls { dns cloudflare {$CF_DNS_API_TOKEN} }` + `reverse_proxy`），然后 `caddy reload`。
-  显式记录优先于通配，不用删通配。
-- 隧道连接器**不在这台机器上**（无 cloudflared 进程/容器/服务/凭据），隧道由别的设备连，
-  所以走隧道的服务等于多一跳；能用 18443 直连的一律别用隧道。
-- 上游建议用 `host.docker.internal:<宿主端口>` 而非容器名：vendor compose 管理的服务
-  （如 orzmusic）升级时会重建容器，手工 `docker network connect` 会被丢掉，走宿主端口则解耦。
-- 排查手法：`curl -w '%{time_starttransfer}'` 对比「本机端口 / 局域网 IP / 域名 / 同机 Caddy 域名」
-  四组数字，一眼就能定位是容器、家宽还是 CF 层。
+**根因**：`*.{SERVER_NAME}.cn` 在 Cloudflare 有一条**通配橙云记录**（`CNAME <tunnel-id>.cfargotunnel.com` + `proxied=true`）。凡是**没有单独写显式记录**的子域都命中通配 → 请求先进 Cloudflare 边缘 → 再经隧道回源，比同机直连多出「边缘排队 + 隧道 + 回源」三段。
+
+### 9a. 入口阶梯量法（5 分钟定性，别从容器查起）
+
+同一时刻并排测五条路径，量级差在哪段就归因在哪段：
+
+| 路径 | 实测档位 | 含义 |
+|:--|:--|:--|
+| `127.0.0.1:<发布端口>`（宿主源站） | 0.01–0.03s | 容器/应用本身 |
+| `http://<LAN_HOST_IP>:<发布端口>` | 0.003s 级 | 局域网一跳 |
+| 同机已走 Caddy 的子域 `:18443` | 0.04–0.08s | Caddy 直连基线（对照组） |
+| 出问题的域名（灰云直连后） | 同基线 | 期望值 |
+| 出问题的域名（命中通配隧道） | **1.9–3.1s** | 慢在这里 = 入口 |
+
+orzmusic 实测即上表（源站 0.01–0.03s / 局域网 0.003s / 隧道域名 1.9–3.1s / 同机 18443 0.04–0.08s）→ **慢 30~80 倍全在入口**，容器、前端、DB 一概无关。
+
+```bash
+# 一律带 -w 量化，别用「感觉慢」
+for u in "http://127.0.0.1:8080/api/health" "http://<LAN_HOST_IP>:8080/api/health" \
+         "https://mcs.{SERVER_NAME}.cn/" "https://music.{SERVER_NAME}.cn/api/health" \
+         "https://music.{SERVER_NAME}.cn/api/health"; do
+  curl -sk -o /dev/null -w "%{http_code} %{time_total}s  $u\n" "$u"
+done
+```
+
+### 9b. 判定它在不在隧道里（DoH 取真值：本机解析被 Clash 劫持成 198.18.x）
+
+```bash
+curl -s -H 'accept: application/dns-json' 'https://cloudflare-dns.com/dns-query?name=<子域>&type=A'
+```
+
+| 解析结果 | 形态 | 结论 |
+|:--|:--|:--|
+| `A` = 家宽公网 IP（与 `curl http://ip.3322.net/` 一致） | 显式灰云 / 无代理 | ✅ 直连 |
+| `A` = Cloudflare 边缘 IP（`104.x` / `172.67.x` 等）且 CNAME 链含 `cfargotunnel.com` | 橙云 + 隧道 | ❌ 最慢 |
+| `A` = Cloudflare 边缘 IP、CNAME 无隧道 | 橙云回源（家宽 80/443 被封，多半 52x） | ❌ 也不通/慢 |
+
+**审计「还有哪些服务受影响」的标准答法**：把 **Caddyfile 的 site 块清单 + 各容器宿主端口 + DNS 已知子域**三份并起来，逐个 DoH 查后按上表归类。不要凭「我们早就改直连了」下结论。实战里 orzmusic（`music.{SERVER_NAME}.cn`）与 sticker 这类**没有单独 site 块**的服务都是通配受害者 —— **是不是受害者只看 DNS 记录，与业务是什么无关**。
+
+### 9c. 修法（两条，缺一不可）
+
+1. **DNS 加显式灰云记录**：该子域建 `A`（或灰云 `CNAME`）指向家宽 IP，**关闭代理**。显式记录优先于通配，通配本身不必动（动了会牵连其它子域）。
+2. **Caddy 加 site 块按 SNI 分流**，复用已映射的 `18443`（不要新开公网端口：家宽 80/443 被封，每多一个端口就多一条路由器映射 + 防火墙规则）：
+
+```caddyfile
+music.{SERVER_NAME}.cn:18443 {
+    reverse_proxy orzmusic:8080
+}
+```
+
+```bash
+# 容器不在 Caddy 同一 docker 网络时先连上（按服务名反代的前提）
+docker network connect orzmc_default <应用容器>
+docker restart orzmc-caddy
+```
+
+访问改走 `https://<子域>:18443/`（证书对域名有效，与端口无关）；局域网内直接用 `http://<LAN_HOST_IP>:<发布端口>`。
+
+### 9d. 验收
+
+```bash
+# 1) DNS 已是灰云：解出的是家宽 IP
+curl -s -H 'accept: application/dns-json' 'https://1.1.1.1/dns-query?name=<子域>&type=A'
+# 2) 本机 SNI 直连 18443（不能用 -H Host：TLS 看 SNI，会 exit 35）
+curl -sk -o /dev/null -w '%{http_code} %{time_total}s\n' \
+  --resolve <子域>:18443:127.0.0.1 https://<子域>:18443/api/health
+# 3) 外网节点复核（本机测域名会被 Clash / hairpin 弄成假结果）
+```
+
+判据：`time_total` 落回 Caddy 直连档（0.0x 秒级）才算修好；仍 1s+ 说明 DNS 未生效（看 TTL、多解析器交叉）或仍命中通配。
+
+### 9e. 纪律
+
+- **新建任何自建服务子域后立刻 DoH 查一次**：通配橙云会把它静默接进隧道，等「感觉慢」再查要绕一大圈。
+- **「慢」的第一分诊永远是入口阶梯，不是容器**：源站毫秒级 + 域名秒级 = 入口问题，此时查容器 CPU、日志、DB 索引全是白费；静态资源 `cf-cache-status: HIT` 仍慢同样证明延迟在链路。
+- **别把「已弃隧道」当既成事实沿用**：弃的是**入口路由**（Caddy 接管 18443），DNS 层的通配橙云记录仍在，两者是两件事。

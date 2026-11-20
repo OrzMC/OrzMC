@@ -7,7 +7,10 @@
 从外部对 25565 做状态包握手，看返回的版本串：
 
 ```bash
-PYTHONPATH="" python "$LOCALAPPDATA/hermes/scripts/connectivity_check.py" --host <域名> --java
+PYTHONPATH="" python "$LOCALAPPDATA/hermes/scripts/connectivity_check.py" --only <目标名>
+# 目标名用 --list 查（如 prod-mcsm）；临时目标用 --host <域名> --java <端口> --bedrock <端口>
+# ⚠️ --java / --bedrock 都必须带端口号，只写 --java 会报 "expected one argument"
+# ⚠️ --external（check-host 外部探测）需先 export HTTPS_PROXY=http://127.0.0.1:7897，否则回 SSL EOF 假失败
 # 回 "Paper 26.3"           → 无代理层，Paper 直占 25565
 # 回 "Velocity 1.7.2-26.3"  → 已有代理层，只加 EaglerXServer 插件 + wss 反代即可
 ```
@@ -120,10 +123,62 @@ nslookup -type=NS <域名> 223.5.5.5
 
 ```bash
 curl.exe -i https://<域名>:25565/          # 期望 404/101，而不是证书错误
-openssl s_client -connect <域名>:25565 -servername <域名> </dev/null 2>&1 | grep 'Verify return code'   # 期望 0
+openssl s_client -connect <域名>:25565 -servername <域名> </dev/null 2>&1 | grep -E '^subject=|^issuer='
+# 必须打印证书 subject/issuer；只看到 `no peer certificate available` = 这个端口根本没有 TLS
 ```
 
+⚠️ **绝对不要用 `grep 'Verify return code'` 判 TLS**：openssl 在**完全没有证书**的端口上也打印
+`Verify return code: 0 (ok)`（“没有可验证的证书，所以无失败”），照这条验会把明文端口验成「已配 TLS」——
+这正是「以为 wss 好了、玩家却连不上」的来源。同理，`http://…:25565/` 能回 404 插件页 + `ws://` 能拿到 `101`，
+也只能证明**服务在跑且讲明文**，证明不了 wss 可用。
+
 别忘端口：`25565/tcp` 要在防火墙/安全组单独放行，只开 443 是本机自测通、玩家进不来的经典假绿。
+
+## 测试服 Caddy 的证书续期（不用管，但有哨兵）
+
+`orzmc-caddy`（v2.11.7）走 ACME + **ARI**：向 Let's Encrypt 询问建议窗口后自动续，90 天证书通常在剩余约 1/3 寿命时完成，容器运行即生效、热切换不重启、不依赖入站 80/443（DNS-01 via Cloudflare）。**不要手工续期，也不要删 `E:/orzmc/caddy/data`**（删了触发 LE 重复证书配额，5 张/周）。
+
+失败是静默的，因此挂了 cron `caddy-cert-watch`（每日 09:05，脚本 `%LOCALAPPDATA%/hermes/scripts/caddy_cert_watch.py`，no_agent 空输出=静默）：检查剩余天数 <21、期望子域缺证书、容器未运行、24h 内 `logger` 以 `tls` 开头的 error。注意过滤 ACME 错误时必须认 logger 名 —— `http.log.error.log0` 里的 404/EOF 是正常探测噪声，按“含 tls/acme 字样”过滤会天天误报。
+
+## 测试服运行树：只认 Release 包（2026-11-20 定案）
+
+- 程序树 = `E:\deploy\orzmc`（**单个固定目录**，release tarball 原地覆盖升级；老板明确反对多余一层，别再搞 `orzmc-current` junction 或保留多份 `orzmc-deploy-<ver>` 目录）。`up/stop/status` 只从这里执行。
+- 目录职责三句话：程序 `E:\deploy\orzmc` / 数据 `E:\orzmc`（DATA_ROOT）/ 备份 `E:\orzmc-backups`（`backup.sh` 默认落点）。`E:\orzmc` 里混有 `tools/`(jdk25/gradle/hugo，JAVA_HOME 指向它) 与 `tmp/` 缓存，**不要**为「整洁」搬它们——代价是改环境变量 + 仓库多个脚本，而 `backup.sh` 根本没有任何排除项（`tar` 整个 DATA_ROOT），该改的是脚本的排除名单。
+- `E:\orzmc\src\OrzMC` 已删除（曾既是开发克隆又被误当运行树，caddy 的 config_files 就指向过它）。开发克隆只保留 `E:\dev\OrzMC`。
+- 验收命令：`docker ps --format '{{.Names}}' | while read -r c; do docker inspect "$c" --format '{{index .Config.Labels "com.docker.compose.project.config_files"}}'; done` —— 五个 orzmc-* 容器必须全部指向 `E:\deploy\orzmc`。
+- **端口拓扑（容易配反）**：运营商封的只是**外网** 443；内网 443 正常。所以 Caddy 固定发布**宿主 443**（`"443:443"`），公网入口由**路由器**做 `外网 18443 → 内网 192.168.0.33:443`。玩家地址写 `wss://dev.{SERVER_NAME}.cn:18443`——18443 是路由器外侧端口，宿主上根本没有这个端口。
+- **坑**：`$DATA_ROOT/compose.site.yaml` 的 caddy 端口曾写 `18443:443`（把路由器侧和执行侧搞混），导致宿主 443 无人监听、路由器转发打到空端口。验证方法：宿主 `curl -sk --resolve dev.{SERVER_NAME}.cn:443:127.0.0.1 https://dev.{SERVER_NAME}.cn:443/` 应得 404 + `Via: 1.1 Caddy`；再从内网连**公网 IP:18443**（hairpin）应得同样结果（404 + 101）。注意 hairpin 下 `公网IP:443` 也会通，**不能**用它判断外网 443 是否被封，必须用外网节点。
+
+## 家宽入口：入站 443 常被运营商封 → web 入口固定用高位端口
+
+玩家反馈「外部设备打开网页客户端进不去」时，**先测入口端口的外部可达性，别先查插件**。
+判据要三样并置才下结论：① 同 IP 的高位端口通不通（通 = IP/DDNS/NAT/防火墙都没问题）；② 80/443 的返回类型
+（**timeout = 被静默丢弃**，`refused` = 包到了宿主但没监听）；③ **路由器上确实存在 `443→宿主:443` 这条规则**（让老板确认，
+本机读不到转发表）—— 规则存在仍 8/8 timeout 才能锁定运营商；没这条规则时现象一模一样，别把一个没配的映射当成封锁证据。家宽入站 80/443 常被运营商
+按策略静默丢弃，而同一 IP 的高位端口（18443 之类）正常：判据与三种返回的并置表见
+`network-connectivity-diagnosis` 的「同一 IP 上高位端口通、80/443 全 timeout」一节。
+
+- 确认封了之后，**不要再去路由器反复改映射**：把外部端口改成高位（如 `18443 → 宿主:443`），Caddy 内部继续听 443，
+  **证书不用重签**，玩家地址写成 **`wss://<域名>:18443/`**（网页客户端支持带端口地址）。
+- **`443→宿主:443` 与 `18443→宿主:443` 可以同时留着**：Caddy 内部只有一个 443 监听，两条映射只是两个外部入口，
+  互不冲突、也不占额外资源。所以查证阶段让老板**两条都配上一次性测完**（判据见下），别为了「万一 443 能用」
+  来回删改规则 —— 每次改映射都要重测一轮，而并存是零成本的。测完把「打不开的那个」留着也无害，
+  公开地址只写实测能进的那个；等哪天运营商放开 443，地址改回不带端口的版本即可。
+- 同类站点（面板/easybot/音乐站）同在一个 Caddy 443 上，一并变成 `https://<子域>:18443/` —— 这可以当作交叉验证：
+  面板也打不开 ⇒ 入口问题，与网页客户端/插件无关。
+- **改端口必须同步改对外公布地址的配置项**（`site/config/_default/params.toml` 的 `web_port`、文档、引导文案），
+  否则站点给玩家复制的还是已封端口的 `wss://域名:443/`，故障会以「玩家说还是连不上」二次复发。
+  注意**站点是 CI 发布产物**：本地改文件不生效，要 push 到 OrzMCSite 走 Pages 才会上线，
+  验收必须去线上页面 grep 旧端口（应为 0），不能只看本地 diff。
+  **发布链路两处卡点**：① 父仓（OrzMC/OrzMC）的 main 不能直推，要开 PR 等 `verify` 检查绿了再合；
+  ② gh-pages 已更新、CDN 仍回旧值（max-age=600）→ 别写 `sleep 150` 类长轮询（会被 exit 124 杀掉），
+  改用浏览器直接打开线上页面、点开「地址」眼睛按钮读 DOM（地址是延迟渲染的，grep 原始 HTML 可能看不到）。
+- 真想要「不带端口的 443」只有一条路：Cloudflare 橙云代理 443 + 回源高位端口（多一层代理与延迟），别为了它把
+  Eaglercraft 的 TLS 层拆成插件自带 TLS 去赌 443 能进。
+
+**外部验证不必等玩家/手机**：`export HTTPS_PROXY=http://127.0.0.1:7897` 后用 `curl https://<域名>:<端口>/` 与 WS 升级请求
+从公网绕一圈回来，一次同时验证 TLS 证书 + Caddy 按 Host 分流 + `101 Switching Protocols`（写法见同一 skill 的
+「本机代理当外部观察点」）。`404 'Websocket Upgrade Failure'` + `Server: EaglercraftXServer/*` = 已打到正确后端。
 
 ## 上线验证（顺序固定）
 
@@ -135,7 +190,7 @@ curl -i -H "Connection: Upgrade" -H "Upgrade: websocket" \
 # 2) 只有一个监听者（不是偷偷起了第二端口）
 netstat -ano | findstr :25565
 # 3) Java 侧没被弄坏
-PYTHONPATH="" python "$LOCALAPPDATA/hermes/scripts/connectivity_check.py" --host <域名> --java
+PYTHONPATH="" python "$LOCALAPPDATA/hermes/scripts/connectivity_check.py" --only <目标名>   # Java 侧没被弄坏（回原版本串）
 # 4) 真跑：浏览器 wss://域名/ 进服 + 基岩 19132 仍通 + 三个 Java 客户端（1.8.8 / 中间版 / 服务端版本）各进一次
 ```
 
@@ -148,6 +203,14 @@ PYTHONPATH="" python "$LOCALAPPDATA/hermes/scripts/connectivity_check.py" --host
 - **Netty 管道会抢**：EaglerX 系靠注入 pipeline 工作，与同样改管道的插件（`packetevents`、`GrimAC` 内嵌 packetevents）叠加时，「登录后 Bad packet id」「偶发断连」是典型症状。**上生产前先在一份实例副本上灰度。**
 - **核对作者实测过的核心版本**：README 写 "up to 26.x" 但列出的是 1.21.11–26.2；跑 26.3 属「大概率行、未验证」，出问题先怀疑反射名表，不是配置。
 - **网页客户端只能 `wss://`**：https 页面里的 `ws://` 会被当混合内容拦掉，TLS 这层躲不掉。
+- **给已有 Java 明文入口的端口开 TLS 前必须先灰度**：`require_tls=false` 声称按首字节 `0x16` 嗅探区分 ws/wss 并让原生握手透传，
+  但这依赖嗅探零误判，一次误判就是全部 Java 玩家进不去。先在副本上验「`wss` 101 + Java 多版本握手」同时成立再动生产；
+  拿不准就走「另开一个端口专供 wss」或「前置反代终结 TLS」，不去碰 Java 那根端口。
+- **三端验收要分开下结论**：Java / 基岩 / 网页是三条独立链路，`connectivity_check.py --only <目标>` 一次能把
+  Java（Paper 版本串）+ 基岩旧 RakNet Pong + 新 NetherNet 全验完；网页端要单独拿**证书块**证。
+  基岩 `both` 模式下「旧协议 Pong 通 + `GET /v1/join` 200」才算新旧客户端都能进，只通一条就是单边可用。
+- **容器 access log 的 `remote_ip` 全是网桥网关（如 `172.18.0.1`）不代表「没人从外网来过」**：Docker 发布端口会 SNAT，
+  LAN 与 WAN 长得一样。判「外网到底通没通」只能靠外部探测/代理出口测，不能靠日志。
 
 ## 回滚
 
