@@ -1,7 +1,7 @@
 ---
 name: orzmc
 description: "Minecraft 运维统一技能（唯一入口）：三端服务器运维/插件构建升级/性能诊断/权限体系/测试/基岩支持（含 NetherNet 迁移），74 份参考文档 + 170+ 脚本。"
-version: 2.6.22
+version: 2.6.23
 author: Hermes Agent
 tags: [minecraft, papermc, server, maintenance, upgrade, plugin, exaroton, mcsm, luckperms, testing]
 platforms: [macos, linux, windows]
@@ -122,6 +122,7 @@ required_commands: [java, curl, tar]
 
 | 版本 | 日期 | 变更 |
 |:--|:--|:--|
+| 2.6.23 | 2026-11-20 | **三目录铁律进 SKILL.md 正文（不再只放在 reference 里）**：程序 `E:/deploy/orzmc`（`up`/`stop`/`backup` 唯一执行处）/ 数据 `E:/orzmc`（DATA_ROOT）/ 备份 `E:/orzmc-backups`（唯一备份根）；升级=同目录原地覆盖、回滚=用 `_dl` 旧 tarball 覆盖回同路径，**禁止 junction / 版本目录 / 软链**；`tools/`、`reports/`、`deliver/` 留 DATA_ROOT；`backup.sh` 整份打包且默认无排期。**同时修正 `references/skill-publish-flow.md` 已过期的口径**：原文写「公网 IP 必须手工改」，实际已落 `{HOME_IP}`/`{CVM_IP}` 的 ENC_RULES → 改为「按 IP 网段前缀写正则规则，不靠手改文档」；新增《门禁中止了怎么办》四步（不改真源 → 认值归类 → 补 ENC 规则 → 发布后 grep 回证）与两条硬纪律：**已在 git 历史的真实值不会因新规则消失，清历史要改写+force push，只能告知老板拍板、不得默默强推或假装已清**；**发布后先做 `gh pr view` 回读 + `git pull --ff-only`，`git branch -D` 属审批门，别为删分支把整轮验证卡死** |
 | 2.6.22 | 2026-11-20 | **推翻 2.6.21 的 junction 方案：统一运行树 = 单个固定目录 `E:/deploy/orzmc`（原地覆盖升级，回滚靠 `_dl` 里的旧 tarball），不再有 `orzmc-current`、不再留 `orzmc-deploy-<ver>` 多版本目录**——老板直接质疑「这不是把部署搞复杂了吗」，且 `install.sh` 本就支持固定目录覆盖升级。同时定三目录职责：程序 `E:/deploy/orzmc` / 数据 `E:/orzmc`(DATA_ROOT) / 备份 `E:/orzmc-backups`（唯一备份根，`E:/orzmc/backup`、`E:/deploy/backups` 已并入）。§7 与 SKILL.md 索引、`eagler-client-access.md` 同步订正；`tools/` 留在 DATA_ROOT（挪它要改 `JAVA_HOME` + 5 处引用，收益不足），备份排除项留 v0.3.0 由 `backup.sh` 解决 |
 | 2.6.21 | 2026-11-20 | **`references/deploy-layer-boundaries.md` 新增 §7「统一运行树」**：老板定「部署必须走仓库 release 产物、开发克隆不参与运行」后，把目标形态固化成五层（`_dl` 下载缓存 / `orzmc-deploy-<ver>` **定版目录不可变** / `orzmc-current` junction 作唯一运行入口 / DATA_ROOT / `E:\dev\OrzMC` 只读）。三条可复用手法写进正文：① **换树前先证明产物可信** —— `tar` 解包到 scratch + `diff -r --strip-trailing-cr -q`（期望无输出）+ `sha256sum` 对 `.sha256`，三件全过才拿它当运行树；② **删旧克隆/退役目录前核引用面** —— 文件侧 `grep -rIl` 排除自身目录 + 容器侧一次 `docker ps -a --format '{{.Names}}{{"\t"}}{{.Label "com.docker.compose.project.config_files"}}'`；③ **迁移验收 = 五个容器 `config_files` 全指到定版目录 + `tests/acceptance_eagler.sh`**，面板/代理断 40–90 秒、实例容器不停、玩家会掉线故只选无人时段，回滚=junction 指回旧目录再 `stop && up`。同轮两条 Windows/git 坑：**`docker ps --format` 每行带 `\r`**，`while read c; do docker inspect "$c"; done` 会因 `orzmc-caddy\r` 全部 not found → 循环静默返回空（假阴性，据此删目录即埋雷），改用单命令带 label 或先 `tr -d '\r'`；**squash 合并后本地 main 与远端 diverged**（同一内容不同 hash）→ fast-forward 失败属正常，先 `fetch` 再重置；`reset --hard`/`rmdir /s /q` 属审批门（老板常不在），优先 `git branch -m main local-merged-<n>` + `git switch -c main origin/main` 的非破坏写法；**PR 是否真合并不看回显**（可能被截成 `1 lines output`），用 `gh pr view --json state,mergeCommit` 回读。 |
 | 2.6.20 | 2026-11-20 | **新增 `references/deploy-layer-boundaries.md`（部署分层职责边界）**：老板问「测试服靠 deploy 子模块部署，主/子模块各负责什么、哪些要部署后额外处理」时按该文作答。口径：`deploy` = 平台层 + 代理层（compose 编排 / `orzmc.sh` 八条生命周期 / `lib/eagler.sh` 的 jar 下载校验·velocity.toml 渲染·`forwarding.secret` 不覆盖·拓扑切换挪 `disabled/`·`post_up` 自动改 listeners+settings+Geyser 三份配置 / `firewall apply` 五组限源规则），**实例（面板）、`paper-global.yml` 的 velocity secret、TLS·证书·DDNS·路由器、密钥值一律不做**；站点增量只写 `$DATA_ROOT/compose.site.yaml`（改包内文件换包即丢）。三条可复用手法：① `docker inspect <容器> --format '{{index .Config.Labels "com.docker.compose.project.config_files"}}'` 反查容器由哪棵树起 —— 实测同一 project 被「发布 tarball 目录」与「仓库克隆」两棵树各管一半容器，光看容器名查不出；② 判两棵树是否真漂移必须 `diff --strip-trailing-cr`，Windows checkout 的 CRLF vs tarball 的 LF 会把每个文件都报成「完全不同」；③ 部署后手工清单固定 11 项，其中**备份默认没有排期**（`backup.sh` 只是命令），汇报「已部署完整」前先核计划任务。同轮补 Windows 坑：`schtasks /query` 输出 UTF-16LE，git-bash 里 `grep` 报 `binary file matches` → 改用 `Get-ScheduledTask`。 |
@@ -279,6 +280,19 @@ curl -s -H 'accept: application/dns-json' \
 - **旧 API `api.papermc.io/v2` 已完全废弃（410 Gone）**——用 fill-data 新机制（`parse_papermc.py` 封装）
 - ⚠️ **PaperMC 通道判定（新）**：fill API 的 build 对象带 `channel` 字段（STABLE/BETA/ALPHA）——「最新版」不等于「可上线版」，升级前先看 channel；本会话脚本查询：`https://fill.papermc.io/v3/projects/paper/versions/26.2/builds/latest`
 - **插件基线（历史快照 2026-08~09，完整版已外置）**：OrzMC 1.0.17→1.0.24 演进、EzShops 2.5.9（yaml 存储）、voicechat 2.6.21、**GrimAC 渠道/处罚阈值/VL 语义/误报源/6 分类 kick 实测**、LoginSecurity `ls.bypass` 事件、LuckPerms/SkinsRestorer/WE 限额等全部细节 → `references/plugin-baseline-legacy.md`；GrimAC 调优专项 → `references/grimac-tuning.md`。**当前版本一律以上方 2026-10-19 基线行为准。**
+
+## 三目录铁律（程序 / 数据 / 备份）
+
+| 层 | 路径 | 说明 |
+|:--|:--|:--|
+| 程序 | `E:\deploy\orzmc` | 单个固定 Release 目录，`orzmc.sh` 的唯一入口；`up` / `stop` / `backup` **只在这里执行** |
+| 数据 | `E:\orzmc` | `DATA_ROOT`：MCSM 实例、eagler、caddy 证书、easybot、site、`.env`、`compose.site.yaml` |
+| 备份 | `E:\orzmc-backups` | 唯一备份根（其它任何 `backup`/`backups` 目录一律并入这里后删除） |
+
+- **升级 = 同一目录原地覆盖**（untar over `E:\deploy\orzmc`），回滚 = 用 `E:\deploy\_dl\` 里的旧 tarball 覆盖回同一目录。容器 `config_files` 因此永远指向同一路径，不需要重新指向。
+- **不要**引入 junction（`orzmc-current`）、`orzmc-deploy-<ver>` 版本目录、软链——老板的原话是「这不是把部署搞复杂了吗」。多一层不带来任何收益，`install.sh` 本来就支持覆盖升级。
+- **非运行数据不许写进 `DATA_ROOT`**。`tools/`（JDK/gradle/hugo）例外留在 `E:\orzmc\tools`：`JAVA_HOME` 与 5 处引用写死它，搬它要改环境变量 + 提 PR，收益不足；备份膨胀在 `backup.sh` 的排除项里解决，不靠搬家。`reports/`、`deliver/` 同理留原地（hermes 脚本 + cron 硬编码）。
+- `backup.sh` 默认 `tar` 整份 `DATA_ROOT`、**不含任何排除项**，且**默认没有排期**——汇报「已部署完整」前先核计划任务，别把「命令存在」当「备份在做」。
 
 ## 操作步骤
 
