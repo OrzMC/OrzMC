@@ -179,3 +179,22 @@ wsl -d Ubuntu -u root -- bash -c "tcpdump -n -i any 'tcp port 25565'"
 ### 延迟结论（取代旧 TTFB ≈ 3×RTT 模型）
 
 直连 Caddy 只有一跳，TTFB ≈ 客户端到家的 RTT，不再有「TLS + 边缘 + 回源」三段叠加；国内访问 10–30ms 级，海外 150–300ms 级。原 Cloudflare Tunnel 的 0.7s 地板结构性问题已消除。
+
+### 2026-11-18 补：橙云通配记录仍是个坑（新增子域必读）
+
+`{SERVER_NAME}.cn` zone 里除通配外**全部**是灰云（proxied=false）。唯一橙云记录是
+`*.{SERVER_NAME}.cn → <tunnel-id>.cfargotunnel.com`（proxied=true）。后果：
+
+- **任何新子域只要没建显式记录，就自动落进这条 Cloudflare 隧道**。实测 `music.{SERVER_NAME}.cn`
+  因此每条请求绕 CF 边缘（落 SIN 新加坡）→ 隧道 → 家里，TTFB **1.9–3.1 s**；同机直连 3 ms，
+  走 Caddy 18443 的 mcs/easybot **33–58 ms**。静态资源 `cf-cache-status: HIT` 也照样 2 s，
+  说明耗时在链路不在源站。
+- 新增子域的标准动作：**先建显式灰云 CNAME `子域 → home.{SERVER_NAME}.cn`，再在 `site/Caddyfile`
+  加站点块**（`tls { dns cloudflare {$CF_DNS_API_TOKEN} }` + `reverse_proxy`），然后 `caddy reload`。
+  显式记录优先于通配，不用删通配。
+- 隧道连接器**不在这台机器上**（无 cloudflared 进程/容器/服务/凭据），隧道由别的设备连，
+  所以走隧道的服务等于多一跳；能用 18443 直连的一律别用隧道。
+- 上游建议用 `host.docker.internal:<宿主端口>` 而非容器名：vendor compose 管理的服务
+  （如 orzmusic）升级时会重建容器，手工 `docker network connect` 会被丢掉，走宿主端口则解耦。
+- 排查手法：`curl -w '%{time_starttransfer}'` 对比「本机端口 / 局域网 IP / 域名 / 同机 Caddy 域名」
+  四组数字，一眼就能定位是容器、家宽还是 CF 层。
