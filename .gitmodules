@@ -73,3 +73,6 @@
 	path = swift/lib/MCSManagerAPI
 	url = https://github.com/OrzMC/MCSManagerAPI.git
 	branch = main
+[submodule ".agents/skills/orzmc"]
+	path = .agents/skills/orzmc
+	url = https://github.com/OrzMC/OrzMCAdmin.git
