@@ -21,7 +21,7 @@
 
 测试服运行模式（2026-11-16 起自动识别，无需手改目标）:
   proxy  = 统一代理入口（ADR-036）：25565/19132 由 orzmc-velocity 持有，
-           Paper/Folia 后端不再发布 Java/基岩端口（只剩 RCON 25575/25576）→
+           Paper/Folia 后端不再发布 Java/基岩端口（2026-11-19 起 RCON 也关闭，无宿主端口）→
            目标集 = proxy(LAN) + proxy-pub(域名) + prod-mcsm，**不再探测 25566/19133 旧端口**；
            后端存活另用 RCON 端口 TCP 可连性表示（只测连通，不认证）。
   direct = 旧双实例直连（回退）：paper=25565/19132、folia=25566/19133。
@@ -79,7 +79,27 @@ PUBLIC_HOST = os.environ.get("ORZMC_PUBLIC_HOST", "")  # 留空则用域名 + Do
 PUBLIC_DOMAIN = os.environ.get("ORZMC_PUBLIC_DOMAIN", "dev.{SERVER_NAME}.cn")
 
 # 代理模式下后端唯一可见的宿主端口 = RCON（实例配置 enable-rcon 25575/25576）
-BACKEND_RCON = {"paper": 25575, "folia": 25576}
+# 2026-11-19 起测试服关闭 RCON（server.properties enable-rcon=false 且不再发布端口），
+# 这里按实例配置自动降级：关掉了就不再拿 RCON 端口当存活信号，避免误报「后端未启动」。
+BACKEND_RCON_PORTS = {"paper": 25575, "folia": 25576}
+_BACKEND_UUIDS = {"paper": "716c2fb712154c36ba5ab0f1480d3f87", "folia": "8A932DD47F4D42AAAD6A6A9A5FAD2A91"}
+
+
+def _rcon_published(inst: str) -> bool:
+    root = os.environ.get("ORZMC_DATA_ROOT", "E:/orzmc")
+    path = os.path.join(root, "mcsmanager", "daemon", "data", "InstanceData",
+                        _BACKEND_UUIDS[inst], "server.properties")
+    try:
+        txt = open(path, encoding="utf-8", errors="replace").read()
+    except OSError:
+        return True  # 读不到就按老逻辑探测，别吞真故障
+    for line in txt.splitlines():
+        if line.startswith("enable-rcon="):
+            return line.split("=", 1)[1].strip().lower() == "true"
+    return True
+
+
+BACKEND_RCON = {b: p for b, p in BACKEND_RCON_PORTS.items() if _rcon_published(b)}
 
 
 def tcp_open(host, port, timeout=2.5):
@@ -94,7 +114,7 @@ def detect_test_mode(lan=None):
     """自动识别测试服运行模式（2026-11-16 ADR-036）
 
     proxy  = 统一代理入口：25565/19132 由 orzmc-velocity 容器持有，两个 MCSM 实例
-             **不再发布 Java/基岩端口**（只留 RCON 25575/25576 + 语音 24454）
+             **不再发布 Java/基岩端口**（2026-11-19 起 RCON 关闭；只剩语音 24454）
     direct = 旧双实例直连：paper=25565 / folia=25566（另有 19132/19133 基岩）
 
     判据：25566 是否可连。proxy 模式下该端口根本没发布 → 关闭。

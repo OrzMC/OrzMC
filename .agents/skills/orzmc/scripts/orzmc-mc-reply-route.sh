@@ -43,6 +43,7 @@
 # 现在它主要是"WSL 重启后把守护拉起来"的兜底，实时修复由守护负责）。
 # 用法: orzmc-mc-reply-route.sh [--check|--force]
 # 环境变量: ORZMC_IFACE / ORZMC_GW / ORZMC_SIP / ORZMC_TCP_PORTS / ORZMC_UDP_PORTS / ORZMC_TABLE
+# 443 = Caddy 公网 Web 入口（面板/音乐/网页客户端，含 WebSocket 长连接），24454 = Simple Voice Chat
 #           ORZMC_NO_DAEMON=1 可禁用守护自启（仅调试用）
 # 退出码: 0=正常（已就位或应用并验证通过） / 1=校验失败或缺失(--check)
 
@@ -54,8 +55,8 @@ FROM_PREF=85
 SPORT_PREF=90
 LOG="${ORZMC_ROUTE_LOG:-/var/log/orzmc-mc-reply-route.log}"
 MAX_TRY=3
-TCP_PORTS="${ORZMC_TCP_PORTS:-25565 25566 25567}"
-UDP_PORTS="${ORZMC_UDP_PORTS:-19132 19133 19134}"
+TCP_PORTS="${ORZMC_TCP_PORTS:-25565 25566 25567 443}"
+UDP_PORTS="${ORZMC_UDP_PORTS:-19132 19133 19134 24454}"
 
 MODE="${1:-apply}"
 

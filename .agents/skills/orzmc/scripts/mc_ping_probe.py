@@ -10,6 +10,24 @@ import socket, struct, json, time, subprocess, sys
 HOST = sys.argv[1] if len(sys.argv) > 1 else "{SERVER_HOST}"
 PORT = int(sys.argv[2]) if len(sys.argv) > 2 else 25565
 
+def flatten_text(node, out=None):
+    """把 chat component 递归拍平成纯文本（'text' 在父节点、内容在 'extra' 里）。"""
+    if out is None:
+        out = []
+    if isinstance(node, str):
+        out.append(node)
+    elif isinstance(node, list):
+        for n in node:
+            flatten_text(n, out)
+    elif isinstance(node, dict):
+        if isinstance(node.get("text"), str):
+            out.append(node["text"])
+        for key in ("extra", "with"):
+            if key in node:
+                flatten_text(node[key], out)
+    return "".join(out)
+
+
 def dns_lookup(host):
     try:
         infos = socket.getaddrinfo(host, PORT, socket.AF_UNSPEC, socket.SOCK_STREAM)
@@ -106,6 +124,7 @@ if ok:
     v, p = info.get("version", {}), info.get("players", {})
     print(f"    版本 {v.get('name')} | 玩家 {p.get('online')}/{p.get('max')}")
     desc = info.get("description", {})
-    print(f"    MOTD: {(desc.get('text') if isinstance(desc, dict) else str(desc))[:80]}")
+    motd = flatten_text(desc).replace("\n", " ⏎ ")
+    print(f"    MOTD: {motd[:80] if motd else '(空)'}")
 else:
     print(f"    ❌ {rtt}  (JSONDecodeError ≈ 服务器离线/代理转发异常)")

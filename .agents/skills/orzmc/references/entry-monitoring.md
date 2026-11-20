@@ -12,7 +12,7 @@
 | 层 | 检查 | 红了的含义 | 正确措辞 |
 |:--|:--|:--|:--|
 | **引擎层** | `docker inspect` 两个入口容器 | Docker Desktop / WSL2 挂了 | 「Docker 引擎不可用 —— 容器与端口全部无法核实」**只报这一条**，跳过其余检查 |
-| **入口层** | `orzmc-velocity` / `orzmc-caddy` 状态、Java 25565 状态包、NetherNet `GET /v1/join`、网页 18443（TLS+SNI，期望 404 且 `Server: EaglercraftXServer`） | 玩家真的进不来 | 「入口/通道不可用」 |
+| **入口层** | `orzmc-velocity` / `orzmc-caddy` 状态、Java 25565 状态包、NetherNet `GET /v1/join`、网页 443（TLS+SNI，期望 404 且 `Server: EaglercraftXServer`） | 玩家真的进不来 | 「入口/通道不可用」 |
 | **后端层** | `docker ps -a` 查 `MCSM-716c2f` / `MCSM-8A932D` 容器状态；running 才打 RCON 25575/25576 | 实例没起（`autoStart=false`，老板要人工启动） | **2026-11-16 老板决策后：实例 stopped/missing 归「提示项」**——只写本机日志 `INFO 后端 xxx 实例=容器状态 stopped（刻意保持停止…）`，**不进告警集、不进状态文件、不参与 6h 复述、不发飞书**；只有「实例 running 但 RCON 认证失败」才是真故障。绝不能把 RCON 的 ConnectionRefused 说成入口故障 |
 
 要点：

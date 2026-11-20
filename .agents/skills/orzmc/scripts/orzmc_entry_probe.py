@@ -3,7 +3,8 @@
 
 拓扑（2026-11-12 起）：公网 25565/19132 由 orzmc-velocity（Velocity + Geyser-Velocity
 + EaglercraftXServer）独占，网页入口走 orzmc-caddy:18443，后端是 MCSM-716c2f(Paper)
-与 MCSM-8A932D(Folia)，只开 RCON 25575/25576。
+与 MCSM-8A932D(Folia)。2026-11-19 起两台后端已关闭 RCON（enable-rcon=false，不再发布端口），
+本探针按实例配置自动跳过 RCON 探测，只保留入口层校验。
 
 检查项：入口容器、Java 状态包、NetherNet 信令 /v1/join、网页入口 TLS+404、
 两口 RCON 认证。
@@ -170,14 +171,14 @@ def nethernet() -> tuple[bool, str]:
 
 
 def web_entry() -> tuple[bool, str]:
-    """网页入口：TLS(SNI) 直连 18443，期望 404 + Server: EaglercraftXServer（101 才是升级，GET 永远 404）。"""
+    """网页入口：TLS(SNI) 直连宿主 443，期望 404 + Server: EaglercraftXServer（101 才是升级，GET 永远 404）。"""
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
     try:
-        raw = socket.create_connection(("127.0.0.1", 18443), timeout=8)
+        raw = socket.create_connection(("127.0.0.1", 443), timeout=8)
         s = ctx.wrap_socket(raw, server_hostname=DOMAIN)
-        s.sendall(f"GET / HTTP/1.1\r\nHost: {DOMAIN}:18443\r\nConnection: close\r\n\r\n".encode())
+        s.sendall(f"GET / HTTP/1.1\r\nHost: {DOMAIN}\r\nConnection: close\r\n\r\n".encode())
         head = s.recv(600).decode("latin-1", "replace")
         s.close()
         line = head.splitlines()[0] if head else ""
@@ -199,6 +200,17 @@ def rcon_password(uuid: str) -> str:
         return m.group(1).strip() if m else ""
     except OSError:
         return ""
+
+
+def rcon_enabled(uuid: str) -> bool:
+    """server.properties 里 enable-rcon=false 时，不再拿 RCON 当选活信号（2026-11-19 关闭 RCON 后）。"""
+    try:
+        txt = open(os.path.join(DATA_ROOT, "mcsmanager", "daemon", "data", "InstanceData", uuid, "server.properties"),
+                   encoding="utf-8", errors="replace").read()
+    except OSError:
+        return True  # 读不到就按老逻辑探测，别把真故障吞掉
+    m = re.search(r"(?m)^enable-rcon=(.+)$", txt)
+    return True if not m else m.group(1).strip().lower() == "true"
 
 
 def rcon(port: int, password: str, command: str = "list", timeout: float = 8.0) -> tuple[bool, str]:
@@ -280,6 +292,11 @@ def main() -> int:
                     f"后端 {label} 实例",
                     f"容器状态 {state}（刻意保持停止；面板手动启动，不自动拉起）",
                 ))
+                continue
+            if not rcon_enabled(uuid):
+                # 2026-11-19 起测试服关闭 RCON：端口不发布、server.properties enable-rcon=false，
+                # 仅作提示项记录，不探测、不进告警。
+                infos.append((f"后端 {label} RCON", "已关闭（enable-rcon=false，未发布端口），不探测"))
                 continue
             ok, detail = rcon(port, rcon_password(uuid))
             results.append((f"RCON {label} :{port}", ok, detail))
