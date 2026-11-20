@@ -157,6 +157,7 @@ git commit -m "docs: ..."
 | `tools/EzShops` | `OrzMC/EzShops` | `main` | 派生 | 商店插件（上游 ez-plugins） | ✅ |
 | `tools/GetMeHome` | `OrzMC/GetMeHome` | `main` | 派生 | 家的传送插件 | — |
 | `tools/LoginSecurity` | `OrzMC/LoginSecurity` | `master` | 派生 | 登录认证插件（上游 lenis0012） | — |
+| `.agents/skills/orzmc` | `OrzMC/OrzMCAdmin` | `main` | 自研 | OrzMC 服务器运维统一技能（AI 过程文档：三端运维/插件构建/性能诊断/权限/测试/基岩）；独立 tag 迭代，可单独 clone | — |
 
 **完整 URL / 分支以 `.gitmodules` 为准**；本表漂移时以 `.gitmodules` 为准并回来修正本表。
 
@@ -207,7 +208,7 @@ git diff --submodule <路径>
 | `CONTRIBUTING.md` | 人/机贡献指南 | 流程变化时同步 |
 | `docs/` | 伞级文档与进行中的方案 | 每份文档头部标「状态 / 最后更新」；索引进 `docs/README.md` |
 | `scripts/` | 服务器运维脚本 + 校验/一致性工具 + 本地联调（`verify/`、`conformance/`、`release/`、`swift-dev.sh`） | 生产脚本改动需谨慎并说明 |
-| `.agents/skills/` | 项目技能（给 AI 用的过程文档，见下节） | 真实值必须占位符化；改技能同样走 PR |
+| `.agents/skills/` | 项目技能（给 AI 用的过程文档，见下节）；`orzmc/` 是 submodule | 真实值必须占位符化；改技能在技能仓改，父仓库只 bump 指针 |
 | `images/` / `skins/` | README 图片 / 玩家皮肤 | 资源类，避免无谓重编码 |
 | `LICENSE` | 许可证 | **不要改**（子项目各自许可证见其仓库） |
 
@@ -217,8 +218,12 @@ git diff --submodule <路径>
 ### 6.1 项目技能（`.agents/skills/`）
 
 - 技能 = **给 AI 用的过程文档**：`SKILL.md`（frontmatter 含 `name`/`description`）+ `references/` + `scripts/` + `templates/`。
-- 目录约定与 Hermes 启用方式见 `.agents/skills/README.md`。当前只有 `orzmc/`（服务器运维统一技能，
-  由 `OrzMC/OrzMCAdmin` 归档仓迁入）。
+- 目录约定与 Hermes 启用方式见 `.agents/skills/README.md`。
+- 当前 `.agents/skills/orzmc/` 是 **git submodule**，指向独立技能仓库 `OrzMC/OrzMCAdmin`
+  （技能有独立版本线与 tag，可单独 clone 复用）。父仓库里只存一个 commit 指针。
+- **改技能的流程**：改本机技能目录 → 发布脚本推到 `OrzMCAdmin`（走 PR + tag）→
+  再 bump 父仓库的子模块指针（第二个小 PR）。**不要**在父仓库里直接编辑技能文件——
+  那会让父仓库记录偏离技能仓，下次指针更新就冲突或被覆盖。
 - **真实值禁止入库**：域名 `{SERVER_HOST}`、家宽 IP `{HOME_IP}`、云主机 `{CVM_IP}`、密码/Token `{PASSWORD}` / `{TOKEN}`。
   真实值只留在各人本机的私人技能副本，发布时脱敏（本机脚本 `orzmc_publish.sh` 会 enc + 复扫门禁）。
 - 在本仓库工作的 AI 会话优先使用这里的版本（项目技能优先级高于个人技能副本）。

@@ -15,7 +15,18 @@
 
 | 目录 | 说明 |
 |---|---|
-| `orzmc/` | OrzMC 服务器运维统一技能（唯一入口）：三端运维、插件构建升级、性能诊断、权限体系、测试、基岩支持。原 `OrzMC/OrzMCAdmin` 仓库迁移而来，该仓库仅作历史存档。 |
+| `orzmc/` | **git submodule** → [`OrzMC/OrzMCAdmin`](https://github.com/OrzMC/OrzMCAdmin)：OrzMC 服务器运维统一技能（唯一入口），三端运维、插件构建升级、性能诊断、权限体系、测试、基岩支持。技能有独立版本线与 tag（当前 `v2.6.23`），可单独 `git clone` 复用。
+
+## 技能是子模块：怎么改
+
+```
+改技能：本机技能目录 → 发布脚本 → OrzMCAdmin 的 PR + tag → 父仓库 bump 指针（第二个小 PR）
+```
+
+- `git clone` 本仓库后必须 `git submodule update --init --recursive`，否则 `.agents/skills/orzmc/` 是空目录。
+- 更新到技能仓最新：`git submodule update --remote .agents/skills/orzmc`，然后把变化提交成 `chore(skills): bump …` 的 PR。
+- **不要在父仓库里直接改技能文件**：父仓库只存一个 commit 指针，改了也不会进技能仓，下次 bump 就丢。
+- 本机一键：`bash ~/AppData/Local/hermes/scripts/orzmc_publish.sh --merge`（脱敏 → 技能仓 PR → tag → 自动 bump 父仓库指针）。
 
 ## 在 Hermes 里启用
 
