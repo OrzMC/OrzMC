@@ -157,6 +157,7 @@ git commit -m "docs: ..."
 | `tools/EzShops` | `OrzMC/EzShops` | `main` | 派生 | 商店插件（上游 ez-plugins） | ✅ |
 | `tools/GetMeHome` | `OrzMC/GetMeHome` | `main` | 派生 | 家的传送插件 | — |
 | `tools/LoginSecurity` | `OrzMC/LoginSecurity` | `master` | 派生 | 登录认证插件（上游 lenis0012） | — |
+| `.agents/skills/orzmc` | `OrzMC/OrzMCAdmin` | `main` | 自研 | OrzMC 服务器运维统一技能（AI 过程文档：三端运维/插件构建/性能诊断/权限/测试/基岩）；独立 tag 迭代，可单独 clone | — |
 
 **完整 URL / 分支以 `.gitmodules` 为准**；本表漂移时以 `.gitmodules` 为准并回来修正本表。
 
