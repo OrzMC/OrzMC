@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-15 by pi（**子模块第二轮同步**：`backup` `233e504`→`fa399ea`，20 个子模块现已**全部等于远端 `main`/`master` 最新**；`plugin` 仍钉 `main` `a3128f9`，工作树检出 `develop` 属预期。<br>上一轮 2026-11-15 by pi（**官网服务器卡片三端化 + 多服 Tab**：`site` #14 / 父仓库 #65 已发布；Eaglercraft 26.3 内嵌可行性已调研，结论见 §1.3。<br>上一轮 2026-11-15 by pi（**全量同步子模块指针到远端最新**：`backup`→`7ba22be`、`deploy`→`04c3538`、`swift/app`→`33e0ee6`，其余 17 个已是最新；顺带修 `boot-check.sh` 两处显示缺陷。<br>上一轮 2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；内容 SEO 护栏与周检（site #13）；PR #158/#159/#160/#161/#162）
+> **最后更新**：2026-11-22 by pi（**`webmc` 网关调研落库**：OrzWebMC #1/#2 → 父仓库 bump 指针；拆出 Eaglercraft 两代客户端、WS 帧/压缩、握手 v3/v5、MC 登录时序与「自研 Go 网关 + Velocity」方案，见 §1.4。<br>上一轮 2026-11-15 by pi（**子模块第二轮同步**：`backup` `233e504`→`fa399ea`，20 个子模块现已**全部等于远端 `main`/`master` 最新**；`plugin` 仍钉 `main` `a3128f9`，工作树检出 `develop` 属预期。<br>上一轮 2026-11-15 by pi（**官网服务器卡片三端化 + 多服 Tab**：`site` #14 / 父仓库 #65 已发布；Eaglercraft 26.3 内嵌可行性已调研，结论见 §1.3。<br>上一轮 2026-11-15 by pi（**全量同步子模块指针到远端最新**：`backup`→`7ba22be`、`deploy`→`04c3538`、`swift/app`→`33e0ee6`，其余 17 个已是最新；顺带修 `boot-check.sh` 两处显示缺陷。<br>上一轮 2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；内容 SEO 护栏与周检（site #13）；PR #158/#159/#160/#161/#162）
 
 ---
 
@@ -139,6 +139,16 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **内容按用户视角收敛（2026-11-15，site #25）** | `posts/1.client/11.webmc.md` 从 240 行技术长文压到 59 行，分「玩家：三步进服 + 卡顿掉线排查」与「服主：接入四件事（选形态 / 整链离线 / wss 入口 / 身份措施）」，实现细节统一指向 `deploy` 文档；`content/client.md` 启动器表格首行加「不想安装，浏览器直接玩 → Eaglercraft Web 客户端」，用户可一键点进。 |
 | **Web 客户端文章已重写（2026-11-15，site #15）** | `content/posts/1.client/11.webmc.md` 全文重写：官方 Classic / Eaglercraft（26.3 = MC 26.3 / 协议 777，单文件 75 MiB）/ MCJS（1.5.2–26.3 + 1.6.4 Forge 整合包）现状盘点与对比表；原理与通道约束；我们测试服实测（三端同服、Folia、插件矩阵、1006 真实成因）；**Java 服务器接入最佳实践**（拓扑、版本对齐、TLS 反代四条硬要求、身份与安全、基岩共存、稳定性、上线验收清单、故障速查）；合规边界；并在「客户端启动器」页加了入口。已发布。 |
 
+### 1.4 `webmc` 线（2026-11-22，pi）——**P0 调研完成，等实现决策**
+
+| 项 | 内容 |
+|---|---|
+| **已落地** | `OrzWebMC` PR #1/#2（squash `406c2f3`）：新增 `README.md` + `docs/{README,eaglercraft-internals,protocol-spec,gateway-design,references}.md`（约 1800 行）；父仓库本次 bump 指针。 |
+| **核心结论** | Eaglercraft 在 PLAY 阶段就是原始 MC 包：**1 个 WS 二进制帧 = 1 个 MC 包**（无 VarInt 长度前缀、无 MC zlib），压缩靠 WS `permessage-deflate`。网关只需「Eagler 握手 v3/v5 + MC 登录（含 Set Compression / Login Acknowledged）+ 帧/压缩中继」；后端**零插件**，网关可作普通离线客户端接 Paper 或 Velocity。 |
+| **推荐方案** | 自研 Go 单二进制 `orzmc-web-gateway`（详见 `webmc/docs/gateway-design.md`），与 EaglerXServer **并存灰度**；协议翻译交 ViaVersion；皮肤/语音/MOTD 为 P2+。 |
+| **硬约束** | 整链 `online-mode=false`；客户端 All Rights Reserved 且不符合 Mojang EULA → 本仓**不分发客户端本体**；只连配置上游（禁开放代理）。 |
+| **下一步（下次从这里开始）** | ① 维护者定 D1–D4（实现语言 / 与 EaglerXServer 关系 / 客户端分发 / 身份令牌）；② 按 `protocol-spec.md` §9 的 10 项真机确认清单先做 P1 探针（尤其 26.3 的 PLAY 帧与 LoginAck）；③ 起 Go 骨架 + 假客户端/假后端，先打通 1.8.8 → Paper 直连。 |
+
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
 
 | 项 | 内容 |
@@ -234,7 +244,7 @@ swift test --package-path swift/lib/MCSManagerAPI   # MCSManager API 客户端�
 | 执行助手 | `scripts/win/run.sh -c '<ps>'` / `-f <file.ps1>` / stdin；服务端 E2E 用 [`scripts/win/e2e-server.ps1`](scripts/win/e2e-server.ps1) |
 | 清理 | `scripts/win/run.sh -c 'Remove-Item -Recurse -Force E:\orzmc-verify'` |
 
-> ⚠️ `E:\orzmc` 是**生产部署**（caddy/cloudflared/database/mcsmanager），**勿动**。详见 [`AGENTS.md` §8.1](AGENTS.md)。
+> ⚠️ `E:\orzmc` 是**生产部署**（caddy/mcsmanager/easybot/site），**勿动**。详见 [`AGENTS.md` §8.1](AGENTS.md)。
 >
 > ⚠️ **Windows 上 `uv` 坑**：默认托管目录可能残留不可信装入点（`os error 448`）→ `uv sync` 失败。
 > 解决：`$env:UV_PYTHON_INSTALL_DIR="E:\orzmc-verify\uvpython"` 后 `uv sync --directory E:\orzmc-verify\src --all-packages`（`git`/`uv` 已装，无系统 Python）。
@@ -436,6 +446,14 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-22 — pi（`webmc`：Eaglercraft 原理 / 协议 / 网关方案落库）
+
+- **产出**：OrzWebMC #1（squash `5a89212`）+ #2（`406c2f3`）——`README.md` + `docs/{README,eaglercraft-internals,protocol-spec,gateway-design,references}.md`；父仓库本次 bump `webmc` 指针并更新 `docs/README.md` 入口。
+- **方法**：读 EaglerXServer 1.1.1 源码（pipeline / handshake / `VanillaInitializer` / 压缩禁用）+ 1.8.8 客户端源码（`ConnectionHandshake` / `EaglercraftNetworkManager` / `PlatformNetworking` / workspace 模板）+ Velocity `proxy-protocol` / `login-ratelimit` + 我们 `deploy` 的 26.3 实测；**两端源码互证**「1 帧 = 1 包、无长度前缀、无 MC 压缩」。
+- **关键结论**：网关可以很薄——握手 v3/v5 + 登录（含 ≥764 的 Login Acknowledged、后端压缩）+ 双向帧中继；后端零插件；网关接 Velocity 无需实现 modern forwarding（对代理而言就是普通离线客户端），真实 IP 用 PROXY v2，但必须同时开 `[advanced] proxy-protocol=true`，否则会撞 `login-ratelimit=3000`。
+- **待办/决策**：D1 语言（建议 Go）、D2 与 EaglerXServer 并存、D3 客户端不分发（ARR/EULA）、D4 站点令牌身份；实现前先关 `protocol-spec.md` §9 的 10 项真机确认。
+- **注意**：`webmc` 里旧的 `start.sh` / `service.sh` / `config.json` 是占位（引用并不存在的 `package.json`），P1 起 Go 骨架时删除或改写；**不要把 Eagler 客户端源码/二进制复制进仓库**（ARR）。
 
 ### 2026-11-15 — pi（Web 客户端文章重写 + Eaglercraft iframe 可行性核实，site #15 已发布）
 
