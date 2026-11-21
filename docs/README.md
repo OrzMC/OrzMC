@@ -62,7 +62,7 @@
 | [`python`](../python) | `orzmc` CLI：客户端启动 / 服务端部署 | [README](../python/README.md) · [AGENTS](../python/AGENTS.md) |
 | [`swift/app`](../swift/app) | macOS/iOS 启动器（SwiftUI） | [README](../swift/app/README.md) · [项目文档](https://orzmc.github.io/OrzMCApp/) |
 | [`swift/lib/OrzMCKit`](../swift/lib/OrzMCKit) | **Swift 引擎**（`Game`/`Fabric`）+ `orzmc` CLI | [README](../swift/lib/OrzMCKit/README.md) |
-| [`webmc`](../webmc) | 浏览器连服实验 | [目录](../webmc) |
+| [`webmc`](../webmc) | 浏览器连服网关（Eaglercraft） | [README](../webmc/README.md) · [文档索引](../webmc/docs/README.md) · [原理](../webmc/docs/eaglercraft-internals.md) · [协议](../webmc/docs/protocol-spec.md) · [方案](../webmc/docs/gateway-design.md) |
 
 ### 网络与部署
 | 子模块 | 一句话职责 | 文档入口 |
