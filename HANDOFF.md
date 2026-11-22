@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-22 by pi（**一键进服落地**：官方站支持 `/play?joinServer=<wss>&version=<ver>&launch=1` 深链（`launch=1` 自动启动、免点「启动游戏」）；`site` #28/#29 已把「在浏览器中玩」改为直接进服；自托管兜底已验证（site #30 预留入口 / webmc #12 文档）；`webmc` 文档修正旧结论；因目标只是「浏览器能进服」而非替换 EaglercraftXServer，**网关暂缓**）。<br>上一轮 2026-11-22 by pi（**`webmc` 网关调研落库**：OrzWebMC #1/#2 → 父仓库 bump 指针；拆出 Eaglercraft 两代客户端、WS 帧/压缩、握手 v3/v5、MC 登录时序与「自研 Kotlin 2.x 网关 + Velocity」方案（**D1 已定 Kotlin 2.4.x**），见 §1.4。<br>上一轮 2026-11-15 by pi（**子模块第二轮同步**：`backup` `233e504`→`fa399ea`，20 个子模块现已**全部等于远端 `main`/`master` 最新**；`plugin` 仍钉 `main` `a3128f9`，工作树检出 `develop` 属预期。<br>上一轮 2026-11-15 by pi（**官网服务器卡片三端化 + 多服 Tab**：`site` #14 / 父仓库 #65 已发布；Eaglercraft 26.3 内嵌可行性已调研，结论见 §1.3。<br>上一轮 2026-11-15 by pi（**全量同步子模块指针到远端最新**：`backup`→`7ba22be`、`deploy`→`04c3538`、`swift/app`→`33e0ee6`，其余 17 个已是最新；顺带修 `boot-check.sh` 两处显示缺陷。<br>上一轮 2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；内容 SEO 护栏与周检（site #13）；PR #158/#159/#160/#161/#162）
+> **最后更新**：2026-11-22 by pi（**`plugin` milestone → beta `1.0.31-dev.436` 已发布 + 四组合实机验收**：#610 IM 静默看门狗（#612）、builtin 下 easybot 配置体检降噪（#613）、dependabot 自动合并修复（#611）随 milestone #615 合入 main；本机测试服 Paper/Folia × builtin/easybot 四组合验收通过（入站经飞书 API 回读确认）；发现的「长连接入站断流」立 [plugin#616](https://github.com/OrzMC/OrzMCPlugin/issues/616) 跟踪。见 §1.1 与 §5。<br>上一轮 2026-11-22 by pi（**一键进服落地**：官方站支持 `/play?joinServer=<wss>&version=<ver>&launch=1` 深链（`launch=1` 自动启动、免点「启动游戏」）；`site` #28/#29 已把「在浏览器中玩」改为直接进服；自托管兜底已验证（site #30 预留入口 / webmc #12 文档）；`webmc` 文档修正旧结论；因目标只是「浏览器能进服」而非替换 EaglercraftXServer，**网关暂缓**）。<br>上一轮 2026-11-22 by pi（**`webmc` 网关调研落库**：OrzWebMC #1/#2 → 父仓库 bump 指针；拆出 Eaglercraft 两代客户端、WS 帧/压缩、握手 v3/v5、MC 登录时序与「自研 Kotlin 2.x 网关 + Velocity」方案（**D1 已定 Kotlin 2.4.x**），见 §1.4。<br>上一轮 2026-11-15 by pi（**子模块第二轮同步**：`backup` `233e504`→`fa399ea`，20 个子模块现已**全部等于远端 `main`/`master` 最新**；`plugin` 仍钉 `main` `a3128f9`，工作树检出 `develop` 属预期。<br>上一轮 2026-11-15 by pi（**官网服务器卡片三端化 + 多服 Tab**：`site` #14 / 父仓库 #65 已发布；Eaglercraft 26.3 内嵌可行性已调研，结论见 §1.3。<br>上一轮 2026-11-15 by pi（**全量同步子模块指针到远端最新**：`backup`→`7ba22be`、`deploy`→`04c3538`、`swift/app`→`33e0ee6`，其余 17 个已是最新；顺带修 `boot-check.sh` 两处显示缺陷。<br>上一轮 2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；内容 SEO 护栏与周检（site #13）；PR #158/#159/#160/#161/#162）
 
 ---
 
@@ -156,10 +156,10 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **触发** | 线上 `$b` 备份成功但**群里零通知**（25 分钟的任务 → QQ 被动回复窗口 5 分钟早已过期） |
-| **状态** | ✅ **1.0.30 正式版已发布**（Hangar Release / Modrinth release / GitHub Release `OrzMC-1.0.30.jar`）；版本自增到 **1.0.31**（PR #559 自动合） |
-| **已做（8 个 PR）** | `#539` 被动回复窗口预判 + `40034005` 兜底；`#540` 长任务完成通知改主动群通知 + 静默无回执兜底 + 分页上限；`#541` i18n 占位符漏填（`{total}` 原样进群）+ 调用点护栏 + `InboundDedup` 加固；`#542` CHANGELOG 去重；`#543/#544` GeoIP 多源兜底（默认 `countryis → geojs`）+ 失败短缓存 + 决策窗预算；`#545/#546/#547` 文档索引 / 决策记录 / 网络受限机房手册 |
+| **状态** | ✅ **1.0.30 正式版已发布**（Hangar Release / Modrinth release / GitHub Release `OrzMC-1.0.30.jar`）；版本自增到 **1.0.31**（PR #559 自动合）；✅ **beta `1.0.31-dev.436` 已发布**（milestone #615 → main `7522802`，Hangar/Modrinth beta，sha256 `2756cd49…d36bd`），父仓库指针已 bump |
+| **已做（8 个 PR）** | `#539` 被动回复窗口预判 + `40034005` 兜底；`#540` 长任务完成通知改主动群通知 + 静默无回执兜底 + 分页上限；`#541` i18n 占位符漏填（`{total}` 原样进群）+ 调用点护栏 + `InboundDedup` 加固；`#542` CHANGELOG 去重；`#543/#544` GeoIP 多源兜底（默认 `countryis → geojs`）+ 失败短缓存 + 决策窗预算；`#545/#546/#547` 文档索引 / 决策记录 / 网络受限机房手册；`#611` dependabot 自动合并改 REST 取作者（GraphQL 把 bot login 呈现成 `app/dependabot`，自动合并静默停摆两周）；`#612` IM 静默看门狗判活改为「任何入站活性」（含 WS 控制帧）+ `platforms.<id>.heartbeat_timeout_seconds` + 日志口径；`#613` `backend: builtin` 不再报 easybot 明文传输等「不参与运行」建议 |
 | **盘点结论** | 全量 `develop→main` review（187 commits / 392 文件）：无 Folia 线程红线回归、无资源泄漏、无凭据、i18n 472 key 双语一致、缓存有界；修掉 1 个真 bug + 3 处加固 |
-| **下一步** | ① 观察线上：飞书发 `$b` 应只有飞书群收到完成/坏块提示；② `develop` 已领先 `main`（#552/#553/#557 的后续同步由 `main→develop` 自动处理）；③ **质量闭环已落地**（见 §5 2026-11-14 条目）：PR 必选 `build/folia-smoke/e2e-paper/approval-gate` + nightly 01:30 + 趋势看板 issue #572；④ 下次功能迭代照常走 develop |
+| **下一步** | ① **plugin#616**（长连接入站断流：`累计入站 0 帧`+读线程卡 TLS read+出站 HTTP 正常；easybot 自身也每 30~40min 重启 transport）——待做三个实验定性（`im.yml platforms.<id>.proxy` / 实例 `network: host` / 同网 python 参考客户端对照）；② 观察线上：飞书发 `$b` 应只有飞书群收到完成/坏块提示；③ **质量闭环已落地**（见 §5 2026-11-14 条目）：PR 必选 `build/folia-smoke/e2e-paper/approval-gate` + nightly 01:30 + 趋势看板 issue #572；④ 下次功能迭代照常走 develop |
 | **已决策** | **不做离线 GeoIP**（体积 +73%~+127%，且月度刷新/CC BY 署名/口径复核的长期成本不可控）——见 `plugin/docs/features.md` §5.1、issue #538 |
 | **安全策略（明确）** | 地区限制**保持 fail-close**：`geoip.fail_open` 只是调试/应急开关，**不用于换可用性**；网络受限走自建 `country.is`（`plugin/docs/manuals/geoip-restricted-network.md`） |
 
@@ -448,6 +448,28 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-22 — pi（`plugin`：dependabot 自动合并修复 + issue #610 + milestone beta `1.0.31-dev.436` + 四组合实机验收）
+
+- **首次定位「PR 挂着没人合」**：`dependabot-merge.yml` 用 `gh pr view --json author`（GraphQL）取作者，bot 的 login 被呈现成
+  `app/dependabot`，与硬编码 `dependabot[bot]` 不等 → 判定走「静默跳过」分支，**自动合并停摆且无任何报错**（#606/#607 挂了一周）。
+  改为 REST `.user.login` + 两种形态都认（plugin #611），事故与排查命令写进 `plugin/docs/dev/repo-automation.md`。
+- **issue #610（IM 空闲期反复重连）**：#612 判活改为「任何入站活性」（文本/二进制/**WS 控制帧 ping/pong**）、
+  窗口可配 `im.yml platforms.<qq|feishu|discord>.heartbeat_timeout_seconds`、“超时日志给出「实测静默/窗口/已发心跳/入站帧数」+ 首条 WARN 后续 INFO + 稳定后「结束静默重连期」；飞书建连补一行 INFO。
+  顺带 #613：`backend: builtin` 下不再报 easybot 明文传输/凭据缺失/会话绑定建议（builtin 根本不建连 EasyBot）。
+- **milestone #615（develop → main，244 commits）**：squash 历史导致 head=develop 必报 CONFLICTING → 按 AGENTS 走
+  `milestone-content` 分支（main + `merge -X theirs` develop，合并树与 develop 一致）→ auto-merge → Publish success →
+  **Hangar/Modrinth beta `1.0.31-dev.436`**（sha256 `2756cd49…d36bd`）。父仓库本次 bump `plugin` 指针。
+- **四组合实机验收（本机测试服，均换 436）**：Paper 26.3 / Folia 26.3 × builtin / easybot —— 插件加载、IM 通道建立
+  （`[qq] 网关 READY` / `[feishu] 长连接已建立（心跳 90s，静默窗口 270s）` / `EasyBot WebSocket 认证成功`）、通知投递全部通过；
+  入站用飞书 API 回读群历史确认两台服各自回复（**英文 = Paper builtin、中文 = Folia easybot**，bot 账号 `cli_aa11b7bc…` vs `cli_aaa50b23…`）。
+- **新发现（plugin#616）**：新日志把结论讲清楚了 —— 心跳发出去了但**入站断流**（QQ `op11` 只来一部分、飞书连服务端 30s 的 WS ping 都收不到），
+  静默期线程转储显示读线程 `RUNNABLE` 卡在 TLS read、出站 HTTP 正常、easybot 自己每 30~40min 重启 feishu transport →
+  是**本机出网路径**（WSL2 + Docker NAT + Clash）问题，非实现缺陷。issue 里留了三个定性实验与可选增强；
+  另更正过一条「消息丢失」的误判（回复成功不写日志 → 假阴性，飞书长连接会重投未 ACK 事件）。
+- **注意（本机环境坑）**：MCSM 面板 API Key 权限不足（403 `非法访问实例`，key 属 `instances: []` 的 user），本次启停用
+  `docker` 直接操作；MCSM 原容器带 `--rm`（`docker stop` 后即消失）→ 用同名 `docker create` 复刻。若面板启停异常：
+  `docker rm -f MCSM-716c2f MCSM-8A932D` 再从面板启动（世界数据在 `InstanceData/`，均为正常关闭）。
 
 ### 2026-11-22 — pi（自托管客户端兜底验证 + site 预留入口）
 
