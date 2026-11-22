@@ -149,7 +149,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **硬约束** | 整链 `online-mode=false`；客户端 All Rights Reserved 且不符合 Mojang EULA → 本仓**不分发客户端本体**；只连配置上游（禁开放代理）。 |
 | **目标收窄（2026-11-22）** | 维护者明确：目标只是「浏览器能进服」，**不是替换 EaglercraftXServer**。官方站 `?joinServer=<wss>&version=<ver>` 深链已满足一键进服（`site` #28），因此**网关不是必需**，P1 暂缓/按需再启；现网继续用 EaglercraftXServer。 |
 | **自托管兜底（2026-11-22 已验证）** | 官方站不可用时的备用入口：官方 26.3 HTML 打 patch（`eaglercraftXOpts.joinServer` 读 `?server=`）→ Caddy 托管 → `site` 的 `web_client_fallback_url`（默认空）显示次级链接。无头 Edge 已走通「Edit Profile → Done → Default Username → Continue Anyway → 自动连测试服（白名单踢出）」。**VPS 尚未部署**；客户端 ARR/EULA，私有/不公开/不商业化（`webmc/docs/self-hosted-client.md`）。 |
-| **下一步（下次从这里开始）** | ① 官方主路径已验收（`launch=1` 自动启动；真机首次可能弹一次「保存进度」，点 ×）。② 兜底（可选）：VPS Caddy 托管 patch 版 + 填 `web_client_fallback_url` + 做一次「官方不可用」演练；未部署前保持空。③ 网关暂缓（目标已满足）；若以后要替换 EaglercraftXServer/多服统一入口，再按 `gateway-design.md` P1 启动。 |
+| **Web 客户端托管服务（2026-11-22，已合并）** | `webmc` #13（`b4258f8`）：Kotlin/Ktor 服务 + Dockerfile/compose，**不含客户端本体**。版本目录、`/play` 注入 `joinServer`、`/embed` + `WebMC`、`/api/versions|health`、`/client`（防穿越/token）。`./gradlew clean test` 通过；真实 26.3 HTML 78 MB 经服务 `/play` 注入并自动连测试服（白名单踢出）；Docker 运行镜像（temurin 25 本地）健康/API/play 正常；多阶段 Dockerfile 因本机 Docker Hub 超时未跑。 |
+| **环境故障（已恢复）** | 2026-11-22 WSL 在最后一次 Gradle 测试时卡死；`wsl --shutdown` 后恢复，最终测试/运行验证已完成。 |
+| **下一步（下次从这里开始）** | ① `OrzMCDeploy` 集成：compose 增加 `webmc` 服务 + Caddy `webclient.` + `./webmc-data:/data`（客户端由运维放置）；② `site` 已有 `web_client_fallback_url`（`{address}`/`{version}`），可指向服务；③ 生产启用前在 VPS 做一次多阶段 Docker 构建 + 健康/深链/外嵌/首次档案演练。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
 
@@ -448,6 +450,14 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-22 — pi（Web 客户端托管服务落地：webmc #13）
+
+- **主线切换**：按维护者定义，`webmc` 提供**自部署 Web 客户端托管服务/镜像**，不随附客户端；客户端由部署者放入 `data/versions/<id>/client.html`。原「协议网关」线暂缓。
+- **实现（Kotlin 2.4.21 + Ktor 3.6.1）**：版本发现（meta 可选）、`/play`（首次访问缓存补丁注入 `eaglercraftXOpts.joinServer`）、`/embed`（iframe + `WebMC.join/setVersion/reload` + postMessage）、`/api/versions`、`/api/health`、`/client`（扩展名白名单/防穿越）、可选 token/CSP/CORS/缓存头。
+- **交付**：`Dockerfile`（gradle:9.9-jdk21 构建 + temurin 21-jre 非 root）、`docker-compose.yml`、`.dockerignore`、`data/versions/{README.md,meta.example.json}`（无客户端）、`docs/client-hosting-service.md`；README 改为托管服务主线；删除旧 `start.sh`/`service.sh`/`config.json`。
+- **验证**：`./gradlew clean test` 通过（并修复注入 `joinServer` 的双逗号）；真实官方 26.3 HTML（78,124,802 B）→ `/play` 返回 78,124,960 B 注入版；无头 Edge 首次 Edit Profile→Done、Default Username→Continue Anyway 后自动连接测试服（白名单踢出）；Docker 运行镜像（temurin 25 本地）健康/API/play 正常。
+- **未做**：`OrzMCDeploy` 实际 compose/Caddy 改动、VPS 部署、多阶段 Dockerfile 构建（本机 Docker Hub 超时）。客户端二进制未入库/未进镜像。
 
 ### 2026-11-22 — pi（`plugin`：dependabot 自动合并修复 + issue #610 + milestone beta `1.0.31-dev.436` + 四组合实机验收）
 
