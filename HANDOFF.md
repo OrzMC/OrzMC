@@ -149,9 +149,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **硬约束** | 整链 `online-mode=false`；客户端 All Rights Reserved 且不符合 Mojang EULA → 本仓**不分发客户端本体**；只连配置上游（禁开放代理）。 |
 | **目标收窄（2026-11-22）** | 维护者明确：目标只是「浏览器能进服」，**不是替换 EaglercraftXServer**。官方站 `?joinServer=<wss>&version=<ver>` 深链已满足一键进服（`site` #28），因此**网关不是必需**，P1 暂缓/按需再启；现网继续用 EaglercraftXServer。 |
 | **自托管兜底（2026-11-22 已验证）** | 官方站不可用时的备用入口：官方 26.3 HTML 打 patch（`eaglercraftXOpts.joinServer` 读 `?server=`）→ Caddy 托管 → `site` 的 `web_client_fallback_url`（默认空）显示次级链接。无头 Edge 已走通「Edit Profile → Done → Default Username → Continue Anyway → 自动连测试服（白名单踢出）」。**VPS 尚未部署**；客户端 ARR/EULA，私有/不公开/不商业化（`webmc/docs/self-hosted-client.md`）。 |
-| **Web 客户端托管服务（2026-11-22，已合并 + 本地验收通过）** | `webmc` #13/#14（`b4258f8`/`9fc0899`）：Kotlin/Ktor 服务 + Dockerfile/compose，**不含客户端本体**。版本目录、`/play` 注入 `joinServer`、`/embed` + `WebMC`、`/api/versions|health`、`/client`（防穿越/token）。本地验收：真实 26.3 HTML 78,124,802 B → `/play` 200 / 78,124,960 B；token 401/200、embed、穿越 404；无头 Edge 首次档案/用户名确认后自动连测试服（白名单踢出）；Docker 运行镜像健康/API/play 约 6s。多阶段 Dockerfile 因本机 Docker Hub 超时未跑（标签已核对）。 |
+| **Web 客户端托管服务（2026-11-22，已合并 + 本地验收通过）** | `webmc` #13/#14/#15（`b4258f8`/`9fc0899`/`28da67b`）：Kotlin/Ktor 服务 + Dockerfile/compose，**不含客户端本体**。版本目录、`/play` 注入 `joinServer`、`/embed` + `WebMC`、`/api/versions|health`、`/client`（防穿越/token）。本地验收：真实 26.3 HTML → `/play` 200 / 78,124,960 B；token/embed/穿越/无头 Edge 自动连测试服均通过。**镜像已发布** `ghcr.io/orzmc/orzmc-webmc:0.1.0`（digest `caa2b4cb…`，当前 private）。 |
 | **环境故障（已恢复）** | 2026-11-22 WSL 在最后一次 Gradle 测试时卡死；`wsl --shutdown` 后恢复，最终测试/运行验证已完成。 |
-| **下一步（下次从这里开始）** | ① `OrzMCDeploy` 集成：compose 增加 `webmc` 服务 + Caddy `webclient.` + `./webmc-data:/data`（客户端由运维放置）；② `site` 已有 `web_client_fallback_url`（`{address}`/`{version}`），可指向服务；③ 生产启用前：发布镜像到 registry，并在 VPS 跑一次多阶段 Docker 构建 + 健康/深链/外嵌/首次档案演练。 |
+| **下一步（下次从这里开始）** | ① **GHCR 可见性**：把 `orzmc-webmc` 包改为 public，或在部署宿主 `docker login ghcr.io`（PAT `read:packages`）；② `deploy` 已集成（#32）：`ENABLE_WEBMC=true` + 客户端放 `$DATA_ROOT/webmc/versions/<id>/client.html` + Caddy `webclient.`；③ `site` 的 `web_client_fallback_url` 指向服务；④ VPS 演练健康/深链/外嵌/首次档案。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
 
@@ -450,6 +450,14 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-22 — pi（webmc 镜像发布 + OrzMCDeploy 集成）
+
+- **镜像**：`.github/workflows/image.yml` 构建并推 GHCR；`ghcr.io/orzmc/orzmc-webmc:0.1.0` + `latest`，digest `sha256:caa2b4cb…`。首次因 builder 用 jdk21 与 Gradle toolchain 17 不匹配失败，改 `gradle:9.9-jdk17` 后绿。
+- **GHCR 可见性**：包当前 **private**（GitHub Packages 默认）；需在 Packages 设置改 public，或部署宿主 `docker login ghcr.io`（PAT read:packages）。
+- **OrzMCDeploy #32（squash `b102f92`）**：新增可选服务 `webmc`（profile `webmc`，`ENABLE_WEBMC`），宿主 `LAN_WEBMC_PORT=18092`，卷 `$DATA_ROOT/webmc`，环境变量 `WEBMC_IMAGE/FRAME_ANCESTORS/PUBLIC_BASE_URL/ACCESS_TOKEN/JAVA_OPTS`；`init` 建 `webmc/versions`，`status` 打印入口；新增 `docs/webmc.md`，README/usage/AGENTS/CHANGELOG 同步。
+- **验证**：`bash -n`、`init/validate`、`compose config`；临时 compose 项目起本地镜像 → `/api/health`、`/play` 注入正常，测试后 down。
+- **注意**：deploy 未实际 `up`（避免影响生产容器）；GHCR private 前生产拉取会失败。
 
 ### 2026-11-22 — pi（webmc 托管服务本地验收完成）
 
