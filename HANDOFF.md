@@ -460,6 +460,7 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 - **部署代码**：`deploy` #33（`681e090`）默认镜像 0.1.1；`site.sh` 的 adapt/reload/ps 改走 `dkr`，WSL 后端挂载路径用 `wsl_path`，修复 Windows 侧 `site apply` 的 `E:/...` 卷错误；已复制到生产包并实测 `site apply` 幂等通过。
 - **site**：#31（`368a7fd`）`web_client_fallback_url` 指向 `https://webmc.jokerhub.cn/play?version={version}&server={address}`。
 - **GHCR**：0.1.1 + latest 已发布（digest `eeb28e3b…`），包仍 private；本机已 `docker login ghcr.io`，生产当前使用本地 0.1.1 镜像。
+- **Deploy 发布**：`v0.7.0`（tag `705ab9b`）Release tarball 已产出（含 webmc）；生产包已按同内容打过补丁，后续可用 `install.sh`/tarball 升级。
 - **注意**：`up` 仍会提示 Geyser 配置更新；未擅自重启面板里的 velocity 实例。
 
 ### 2026-11-22 — pi（webmc 镜像发布 + OrzMCDeploy 集成）
