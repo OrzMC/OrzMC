@@ -148,10 +148,11 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **推荐方案** | 自研 **Kotlin 2.4.x 服务**（JVM 21+ + Netty + 协程）`orzmc-web-gateway`（详见 `webmc/docs/gateway-design.md`），与 EaglerXServer **并存灰度**；协议翻译交 ViaVersion；皮肤/语音/MOTD 为 P2+。 |
 | **硬约束** | 整链 `online-mode=false`；客户端 All Rights Reserved 且不符合 Mojang EULA → 本仓**不分发客户端本体**；只连配置上游（禁开放代理）。 |
 | **目标收窄（2026-11-22）** | 维护者明确：目标只是「浏览器能进服」，**不是替换 EaglercraftXServer**。官方站 `?joinServer=<wss>&version=<ver>` 深链已满足一键进服（`site` #28），因此**网关不是必需**，P1 暂缓/按需再启；现网继续用 EaglercraftXServer。 |
-| **自托管兜底（2026-11-22 已验证）** | 官方站不可用时的备用入口：官方 26.3 HTML 打 patch（`eaglercraftXOpts.joinServer` 读 `?server=`）→ Caddy 托管 → `site` 的 `web_client_fallback_url`（默认空）显示次级链接。无头 Edge 已走通「Edit Profile → Done → Default Username → Continue Anyway → 自动连测试服（白名单踢出）」。**VPS 尚未部署**；客户端 ARR/EULA，私有/不公开/不商业化（`webmc/docs/self-hosted-client.md`）。 |
-| **Web 客户端托管服务（2026-11-22，已合并 + 本地验收通过）** | `webmc` #13/#14/#15（`b4258f8`/`9fc0899`/`28da67b`）：Kotlin/Ktor 服务 + Dockerfile/compose，**不含客户端本体**。版本目录、`/play` 注入 `joinServer`、`/embed` + `WebMC`、`/api/versions|health`、`/client`（防穿越/token）。本地验收：真实 26.3 HTML → `/play` 200 / 78,124,960 B；token/embed/穿越/无头 Edge 自动连测试服均通过。**镜像已发布** `ghcr.io/orzmc/orzmc-webmc:0.1.0`（digest `caa2b4cb…`，当前 private）。 |
+| **自托管兜底（2026-11-22 已上线）** | 官方站不可用时的备用入口：官方 26.3 HTML 按字节 patch（`eaglercraftXOpts.joinServer` 读 `?server=`）→ Caddy 托管 → `site` 的 `web_client_fallback_url` 指向 `https://webmc.jokerhub.cn/play?version={version}&server={address}`（#31）。无头 Edge 已走通「Edit Profile → Done → Default Username → Continue Anyway → 自动连测试服（白名单踢出）」。客户端 ARR/EULA，私有/不公开/不商业化（`webmc/docs/self-hosted-client.md`）。 |
+| **Web 客户端托管服务（2026-11-22，已上线）** | `webmc` #13–#17（`b4258f8`/`9fc0899`/`28da67b`/`cca3e22`）：Kotlin/Ktor 服务 + Dockerfile/compose，**不含客户端本体**。版本目录、`/play` 注入 `joinServer`、`/embed` + `WebMC`、`/api/versions|health`、`/client`（防穿越/token）。**镜像 0.1.1** `ghcr.io/orzmc/orzmc-webmc`，digest `eeb28e3b…`；0.1.1 按字节注入，修复 78MB 客户端 `-Xmx512m` OOM。 |
 | **环境故障（已恢复）** | 2026-11-22 WSL 在最后一次 Gradle 测试时卡死；`wsl --shutdown` 后恢复，最终测试/运行验证已完成。 |
-| **下一步（下次从这里开始）** | ① **GHCR 可见性**：把 `orzmc-webmc` 包改为 public，或在部署宿主 `docker login ghcr.io`（PAT `read:packages`）；② `deploy` 已集成（#32）：`ENABLE_WEBMC=true` + 客户端放 `$DATA_ROOT/webmc/versions/<id>/client.html` + Caddy `webclient.`；③ `site` 的 `web_client_fallback_url` 指向服务；④ VPS 演练健康/深链/外嵌/首次档案。 |
+| **生产已上线（2026-11-22）** | `https://webmc.jokerhub.cn`：TLS（Let's Encrypt）正常；`/api/health` 200；`/play?version=26.3&server=wss://dev.jokerhub.cn:443/` 返回 78,124,960 B 注入版。生产客户端在 `E:/orzmc/webmc/versions/26.3/client.html`；Caddy 路由 `webmc.jokerhub.cn=orzmc-webmc:8300` 已由 `site apply` 生成（证书 89 天）。无头 Edge 真实连接 `wss://dev.jokerhub.cn:443/`，收到白名单踢出（预期）。 |
+| **下一步（下次从这里开始）** | ① **GHCR 可见性**：包仍 private；在 Packages 改 public，或宿主 `docker login ghcr.io`（本机已用 PAT 登录一次，生产用本地 0.1.1 镜像启动）。② 重启/重装时确认能拉 `0.1.1`（digest `eeb28e3b…`）。③ 可选：把 `LAN_WEBMC_PORT` 18092 从公网/防火墙收掉，只留 Caddy。④ `site` 兜底链接已指向 webmc（#31），等 Pages 刷新后线上验证。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
 
@@ -450,6 +451,16 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-22 — pi（webmc 生产上线：webmc.jokerhub.cn）
+
+- **上线**：生产 `E:/orzmc` 启用 `ENABLE_WEBMC=true`、`LAN_WEBMC_PORT=18092`、`WEBMC_IMAGE=…:0.1.1`、`WEBMC_PUBLIC_BASE_URL=https://webmc.jokerhub.cn`、`WEBMC_FRAME_ANCESTORS=…orzmc.jokerhub.cn…`；客户端放 `webmc/versions/26.3/client.html`（sha256 `acc1496a…`，78,124,802 B）。Caddy 路由由 `SITE_ROUTES` 追加并 `site apply` 生成；TLS 证书由 Cloudflare DNS-01 签发。
+- **生产首测 OOM**：0.1.0 在 `-Xmx512m` 下 `Patcher.readString` OOM；`webmc` #16 改为按字节注入（峰值约 2×），0.1.1 已验证 `/play` 200 / 78,124,960 B；生产用本地重建的 0.1.1 镜像启动。
+- **浏览器**：无头 Edge 打开 `https://webmc.jokerhub.cn/play?...`，WebSocket `wss://dev.jokerhub.cn/` 握手成功、发送 `Eaglercraft 26.2`/`Guest_…`，收到白名单踢出；截图 `C:\Users\WangA\eagler-test\accept-prod.png`。
+- **部署代码**：`deploy` #33（`681e090`）默认镜像 0.1.1；`site.sh` 的 adapt/reload/ps 改走 `dkr`，WSL 后端挂载路径用 `wsl_path`，修复 Windows 侧 `site apply` 的 `E:/...` 卷错误；已复制到生产包并实测 `site apply` 幂等通过。
+- **site**：#31（`368a7fd`）`web_client_fallback_url` 指向 `https://webmc.jokerhub.cn/play?version={version}&server={address}`。
+- **GHCR**：0.1.1 + latest 已发布（digest `eeb28e3b…`），包仍 private；本机已 `docker login ghcr.io`，生产当前使用本地 0.1.1 镜像。
+- **注意**：`up` 仍会提示 Geyser 配置更新；未擅自重启面板里的 velocity 实例。
 
 ### 2026-11-22 — pi（webmc 镜像发布 + OrzMCDeploy 集成）
 
