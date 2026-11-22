@@ -152,7 +152,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **Web 客户端托管服务（2026-11-22，已上线）** | `webmc` #13–#17（`b4258f8`/`9fc0899`/`28da67b`/`cca3e22`）：Kotlin/Ktor 服务 + Dockerfile/compose，**不含客户端本体**。版本目录、`/play` 注入 `joinServer`、`/embed` + `WebMC`、`/api/versions|health`、`/client`（防穿越/token）。**镜像 0.1.1** `ghcr.io/orzmc/orzmc-webmc`，digest `eeb28e3b…`；0.1.1 按字节注入，修复 78MB 客户端 `-Xmx512m` OOM。 |
 | **环境故障（已恢复）** | 2026-11-22 WSL 在最后一次 Gradle 测试时卡死；`wsl --shutdown` 后恢复，最终测试/运行验证已完成。 |
 | **生产已上线（2026-11-22）** | `https://webmc.jokerhub.cn`：TLS（Let's Encrypt）正常；`/api/health` 200；`/play?version=26.3&server=wss://dev.jokerhub.cn:443/` 返回 78,124,960 B 注入版。生产客户端在 `E:/orzmc/webmc/versions/26.3/client.html`；Caddy 路由 `webmc.jokerhub.cn=orzmc-webmc:8300` 已由 `site apply` 生成（证书 89 天）。无头 Edge 真实连接 `wss://dev.jokerhub.cn:443/`，收到白名单踢出（预期）。 |
-| **下一步（下次从这里开始）** | ① **GHCR 可见性**：包仍 private；在 Packages 改 public，或宿主 `docker login ghcr.io`（本机已用 PAT 登录一次，生产用本地 0.1.1 镜像启动）。② 重启/重装时确认能拉 `0.1.1`（digest `eeb28e3b…`）。③ 可选：把 `LAN_WEBMC_PORT` 18092 从公网/防火墙收掉，只留 Caddy。④ `site` 兜底链接已指向 webmc（#31），等 Pages 刷新后线上验证。 |
+| **下一步（下次从这里开始）** | ① **GHCR 已 public**（2026-11-22 确认，匿名 manifest 200）：新机器可不再 `docker login`，直接拉 `0.1.1`（digest `eeb28e3b…`）。② 生产当前仍用本地 0.1.1 镜像；可择机 `docker compose pull webmc` 切到 registry 镜像。③ 可选：把 `LAN_WEBMC_PORT` 18092 从公网/防火墙收掉，只留 Caddy。④ `site` 兜底已指向 webmc（#31）并发布。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
 
@@ -459,7 +459,7 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 - **浏览器**：无头 Edge 打开 `https://webmc.jokerhub.cn/play?...`，WebSocket `wss://dev.jokerhub.cn/` 握手成功、发送 `Eaglercraft 26.2`/`Guest_…`，收到白名单踢出；截图 `C:\Users\WangA\eagler-test\accept-prod.png`。
 - **部署代码**：`deploy` #33（`681e090`）默认镜像 0.1.1；`site.sh` 的 adapt/reload/ps 改走 `dkr`，WSL 后端挂载路径用 `wsl_path`，修复 Windows 侧 `site apply` 的 `E:/...` 卷错误；已复制到生产包并实测 `site apply` 幂等通过。
 - **site**：#31（`368a7fd`）`web_client_fallback_url` 指向 `https://webmc.jokerhub.cn/play?version={version}&server={address}`。
-- **GHCR**：0.1.1 + latest 已发布（digest `eeb28e3b…`），包仍 private；本机已 `docker login ghcr.io`，生产当前使用本地 0.1.1 镜像。
+- **GHCR**：0.1.1 + latest 已发布（digest `eeb28e3b…`）；维护者已将包改为 **public**（匿名 manifest 200，无需登录）；生产当前使用本地 0.1.1 镜像。
 - **Deploy 发布**：`v0.7.0`（tag `705ab9b`）Release tarball 已产出（含 webmc）；生产包已按同内容打过补丁，后续可用 `install.sh`/tarball 升级。
 - **注意**：`up` 仍会提示 Geyser 配置更新；未擅自重启面板里的 velocity 实例。
 
