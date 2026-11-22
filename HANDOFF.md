@@ -149,7 +149,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **硬约束** | 整链 `online-mode=false`；客户端 All Rights Reserved 且不符合 Mojang EULA → 本仓**不分发客户端本体**；只连配置上游（禁开放代理）。 |
 | **目标收窄（2026-11-22）** | 维护者明确：目标只是「浏览器能进服」，**不是替换 EaglercraftXServer**。官方站 `?joinServer=<wss>&version=<ver>` 深链已满足一键进服（`site` #28），因此**网关不是必需**，P1 暂缓/按需再启；现网继续用 EaglercraftXServer。 |
 | **自托管兜底（2026-11-22 已上线）** | 官方站不可用时的备用入口：官方 26.3 HTML 按字节 patch（`eaglercraftXOpts.joinServer` 读 `?server=`）→ Caddy 托管 → `site` 的 `web_client_fallback_url` 指向 `https://webmc.jokerhub.cn/play?version={version}&server={address}`（#31）。无头 Edge 已走通「Edit Profile → Done → Default Username → Continue Anyway → 自动连测试服（白名单踢出）」。客户端 ARR/EULA，私有/不公开/不商业化（`webmc/docs/self-hosted-client.md`）。 |
-| **Web 客户端托管服务（2026-11-22，已上线）** | `webmc` #13–#22：Kotlin/Ktor 服务 + Dockerfile/compose，**不含客户端本体**。版本目录、`/play` 注入 `joinServer`、`/embed` + `WebMC`、`/api/versions|health`、`/client`（防穿越/token）。**镜像 0.1.2** `ghcr.io/orzmc/orzmc-webmc`，digest `ef0fb1d7…`；0.1.1 按字节注入修复 78MB 客户端 OOM，0.1.2 播放壳/大小屏/加载反馈。 |
+| **Web 客户端托管服务（2026-11-22，已上线）** | `webmc` #13–#23：Kotlin/Ktor 服务 + Dockerfile/compose，**不含客户端本体**。版本目录、`/play` 注入 `joinServer`、`/embed` + `WebMC`、`/api/versions|health`、`/client`（防穿越/token）。**镜像 0.1.2** `ghcr.io/orzmc/orzmc-webmc`，digest `ef0fb1d7…`；0.1.1 按字节注入修复 78MB 客户端 OOM，0.1.2 播放壳/大小屏/加载反馈。 |
 | **环境故障（已恢复）** | 2026-11-22 WSL 在最后一次 Gradle 测试时卡死；`wsl --shutdown` 后恢复，最终测试/运行验证已完成。 |
 | **生产已上线（2026-11-22）** | `https://webmc.jokerhub.cn`：TLS（Let's Encrypt）正常；`/api/health` 200；`/play` 注入版可用。生产客户端在 `E:/orzmc/webmc/versions/<id>/client.html`；Caddy 路由 `webmc.jokerhub.cn=orzmc-webmc:8300` 已由 `site apply` 生成（证书 89 天）。无头 Edge 真实连接 `wss://dev.jokerhub.cn:443/`，收到白名单踢出（预期）。 |
 | **生产多版本（2026-11-23）** | 已放 4 个官方版本并重启 webmc：`1.8.8`（47/js）、`1.12.2`（340/js）、`26.2`（776/wasm-gc）、`26.3`（777/wasm-gc，更新到 2026-11-20 `590e4bd1` 构建）。`/api/versions` 返回 4 条；`/` 启动页列出 4 个。`1.8.8/1.12.2` 的 `meta.json` 必须 `"inject": "joinServer"`（官方代码有选项名但不读 URL，`auto` 会误判）；`1.5.2` 需 EaglerXRewind，未放。握手探针：1.8.8/v3=47、1.12.2/v3/v4=340、26.2/v5=776 均 `SERVER_VERSION` 成功；26.2 与 26.3 无头 Edge 自动连服，26.3 仍白名单踢出。 |
@@ -457,7 +457,7 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 ### 2026-11-23 — pi（webmc 0.1.2：播放壳 / 大小屏 / 加载反馈）
 
 - **UI**：`/` 重做为简洁深色入口（表单 + 版本卡片）；`/play` 改为播放壳，默认窗口模式，工具栏可全屏/小窗、刷新、返回；首次加载显示 spinner + 进度条 + 计时；`/play/raw` 保留原始客户端，`/embed` 改用它并补加载层。
-- **构建**：`webmc` #21（`5d6a2ee`）版本 0.1.2，运行镜像 JDK 25 LTS；GHCR 0.1.2/latest 已由 image workflow 45050903403 发布，digest `sha256:ef0fb1d7…`；本地镜像已构建并用于生产。
+- **构建**：`webmc` #21–#23（`5d6a2ee`/`7498cc7`/`e10e2b4`）版本 0.1.2，运行镜像 JDK 25 LTS；GHCR 0.1.2/latest 已由 image workflow 45050903403 发布，digest `sha256:ef0fb1d7…`；本地镜像已构建并用于生产。
 - **部署**：`deploy` #37（`05630c1`）默认镜像 0.1.2，随后发布 `v0.7.1`（`c5fa224`，tarball 已产出）；生产 `.env` 已切 0.1.2 并 `up`。
 - **验证**：生产 `/api/health` 4 版本；`/play` 壳 6,820 B，`/play/raw` 78,394,945 B；raw CSP 为 `frame-ancestors 'self' https://…`；无头 Edge 已显示客户端 profile，工具栏/全屏切换可用；加载层在 iframe load 后隐藏。
 
