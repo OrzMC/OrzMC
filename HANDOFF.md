@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-22 by pi（**一键进服落地**：官方站支持 `/play?joinServer=<wss>&version=<ver>&launch=1` 深链（`launch=1` 自动启动、免点「启动游戏」）；`site` #28/#29 已把「在浏览器中玩」改为直接进服；`webmc` 文档修正旧结论；因目标只是「浏览器能进服」而非替换 EaglercraftXServer，**网关暂缓**）。<br>上一轮 2026-11-22 by pi（**`webmc` 网关调研落库**：OrzWebMC #1/#2 → 父仓库 bump 指针；拆出 Eaglercraft 两代客户端、WS 帧/压缩、握手 v3/v5、MC 登录时序与「自研 Kotlin 2.x 网关 + Velocity」方案（**D1 已定 Kotlin 2.4.x**），见 §1.4。<br>上一轮 2026-11-15 by pi（**子模块第二轮同步**：`backup` `233e504`→`fa399ea`，20 个子模块现已**全部等于远端 `main`/`master` 最新**；`plugin` 仍钉 `main` `a3128f9`，工作树检出 `develop` 属预期。<br>上一轮 2026-11-15 by pi（**官网服务器卡片三端化 + 多服 Tab**：`site` #14 / 父仓库 #65 已发布；Eaglercraft 26.3 内嵌可行性已调研，结论见 §1.3。<br>上一轮 2026-11-15 by pi（**全量同步子模块指针到远端最新**：`backup`→`7ba22be`、`deploy`→`04c3538`、`swift/app`→`33e0ee6`，其余 17 个已是最新；顺带修 `boot-check.sh` 两处显示缺陷。<br>上一轮 2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；内容 SEO 护栏与周检（site #13）；PR #158/#159/#160/#161/#162）
+> **最后更新**：2026-11-22 by pi（**一键进服落地**：官方站支持 `/play?joinServer=<wss>&version=<ver>&launch=1` 深链（`launch=1` 自动启动、免点「启动游戏」）；`site` #28/#29 已把「在浏览器中玩」改为直接进服；自托管兜底已验证（site #30 预留入口 / webmc #12 文档）；`webmc` 文档修正旧结论；因目标只是「浏览器能进服」而非替换 EaglercraftXServer，**网关暂缓**）。<br>上一轮 2026-11-22 by pi（**`webmc` 网关调研落库**：OrzWebMC #1/#2 → 父仓库 bump 指针；拆出 Eaglercraft 两代客户端、WS 帧/压缩、握手 v3/v5、MC 登录时序与「自研 Kotlin 2.x 网关 + Velocity」方案（**D1 已定 Kotlin 2.4.x**），见 §1.4。<br>上一轮 2026-11-15 by pi（**子模块第二轮同步**：`backup` `233e504`→`fa399ea`，20 个子模块现已**全部等于远端 `main`/`master` 最新**；`plugin` 仍钉 `main` `a3128f9`，工作树检出 `develop` 属预期。<br>上一轮 2026-11-15 by pi（**官网服务器卡片三端化 + 多服 Tab**：`site` #14 / 父仓库 #65 已发布；Eaglercraft 26.3 内嵌可行性已调研，结论见 §1.3。<br>上一轮 2026-11-15 by pi（**全量同步子模块指针到远端最新**：`backup`→`7ba22be`、`deploy`→`04c3538`、`swift/app`→`33e0ee6`，其余 17 个已是最新；顺带修 `boot-check.sh` 两处显示缺陷。<br>上一轮 2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；内容 SEO 护栏与周检（site #13）；PR #158/#159/#160/#161/#162）
 
 ---
 
@@ -148,7 +148,8 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **推荐方案** | 自研 **Kotlin 2.4.x 服务**（JVM 21+ + Netty + 协程）`orzmc-web-gateway`（详见 `webmc/docs/gateway-design.md`），与 EaglerXServer **并存灰度**；协议翻译交 ViaVersion；皮肤/语音/MOTD 为 P2+。 |
 | **硬约束** | 整链 `online-mode=false`；客户端 All Rights Reserved 且不符合 Mojang EULA → 本仓**不分发客户端本体**；只连配置上游（禁开放代理）。 |
 | **目标收窄（2026-11-22）** | 维护者明确：目标只是「浏览器能进服」，**不是替换 EaglercraftXServer**。官方站 `?joinServer=<wss>&version=<ver>` 深链已满足一键进服（`site` #28），因此**网关不是必需**，P1 暂缓/按需再启；现网继续用 EaglercraftXServer。 |
-| **下一步（下次从这里开始）** | ① **一键进服已可用**（官方深链 + `launch=1`，无头 Edge 实测自动下载/启动；真机首次可能弹一次「保存进度」，点 ×）。② 网关暂缓（目标已满足）；若以后要做「替换 EaglercraftXServer/多服统一入口」，再按 `gateway-design.md` P1（Kotlin + S1 单 Paper）启动。③ 若继续网关：先关 `protocol-spec.md` §9 的 10 项真机确认，再做单服进服。 |
+| **自托管兜底（2026-11-22 已验证）** | 官方站不可用时的备用入口：官方 26.3 HTML 打 patch（`eaglercraftXOpts.joinServer` 读 `?server=`）→ Caddy 托管 → `site` 的 `web_client_fallback_url`（默认空）显示次级链接。无头 Edge 已走通「Edit Profile → Done → Default Username → Continue Anyway → 自动连测试服（白名单踢出）」。**VPS 尚未部署**；客户端 ARR/EULA，私有/不公开/不商业化（`webmc/docs/self-hosted-client.md`）。 |
+| **下一步（下次从这里开始）** | ① 官方主路径已验收（`launch=1` 自动启动；真机首次可能弹一次「保存进度」，点 ×）。② 兜底（可选）：VPS Caddy 托管 patch 版 + 填 `web_client_fallback_url` + 做一次「官方不可用」演练；未部署前保持空。③ 网关暂缓（目标已满足）；若以后要替换 EaglercraftXServer/多服统一入口，再按 `gateway-design.md` P1 启动。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
 
@@ -447,6 +448,14 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-22 — pi（自托管客户端兜底验证 + site 预留入口）
+
+- **资产**：官方 26.3 `eaglercraft-26.3-fe8f1237-815f7813.zip` 58,885,242 B（sha256 `815f7813…aaa96`），解包 HTML 78,124,802 B（`acc1496a…1a8d3`）；官方 HTML 不读 `?server`（`joinServer`/`servers` 均 0 次）。
+- **patch**：在 `window.eaglercraftXOpts = {` 注入 `joinServer: URLSearchParams(...).get('server'/'joinServer')`；本地 HTTP 托管 + 无头 Edge：首次 Edit Profile → Done、Default Username → Continue Anyway，随后**自动连上** `dev.jokerhub.cn:18443`，收到白名单踢出（`You are not on the whitelist`）——链路通。
+- **site #30（squash `3fe5a2b`）**：新增 `web_client_fallback_url`（模板 `{address}`/`{version}`，默认空=隐藏）；非空时在「在浏览器中玩」下方显示「官方入口不可用？使用备用客户端」；Hugo 构建 + gh-pages 部署绿。
+- **webmc #12（`6cfc137`）**：新增 `docs/self-hosted-client.md`（资产/patch/Caddy/首次确认/版本策略/风险/验收）。
+- **边界**：自托管=再分发（客户端 ARR、项目不符合 EULA）；仅私有兜底、不公开镜像、不入库、不商业化；官方下架可能波及副本。VPS 尚未部署。
 
 ### 2026-11-22 — pi（去掉「启动游戏」：官方深链加 launch=1）
 
