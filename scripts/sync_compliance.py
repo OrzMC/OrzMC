@@ -70,6 +70,14 @@ def md_block(c: dict[str, str]) -> str:
 
 def html_block(c: dict[str, str]) -> str:
     contact = c.get("contact_url", f"https://github.com/{c['owner']}")
+    # 站点自有链接（如第三方素材许可页）：有配置才多出一枚，保持与合规链接同款样式
+    asset = c.get("asset_license_url")
+    asset_link = (
+        f'    <a href="{asset}">素材许可</a>\n'
+        '    <span class="site-footer__sep" aria-hidden="true">·</span>\n'
+        if asset
+        else ""
+    )
     return (
         f"<!-- {BEGIN} ({GENERATED_NOTE}) -->\n"
         '<div class="site-footer__compliance">\n'
@@ -78,6 +86,7 @@ def html_block(c: dict[str, str]) -> str:
         '  <p class="site-footer__links">\n'
         f'    <a href="{c["privacy_url"]}">隐私政策</a>\n'
         '    <span class="site-footer__sep" aria-hidden="true">·</span>\n'
+        f"{asset_link}"
         f'    <a href="{contact}" target="_blank" rel="noopener noreferrer">GitHub 组织</a>\n'
         '  </p>\n'
         '</div>\n'
