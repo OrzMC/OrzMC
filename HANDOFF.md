@@ -149,9 +149,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **硬约束** | 整链 `online-mode=false`；客户端 All Rights Reserved 且不符合 Mojang EULA → 本仓**不分发客户端本体**；只连配置上游（禁开放代理）。 |
 | **目标收窄（2026-11-22）** | 维护者明确：目标只是「浏览器能进服」，**不是替换 EaglercraftXServer**。官方站 `?joinServer=<wss>&version=<ver>` 深链已满足一键进服（`site` #28），因此**网关不是必需**，P1 暂缓/按需再启；现网继续用 EaglercraftXServer。 |
 | **自托管兜底（2026-11-22 已验证）** | 官方站不可用时的备用入口：官方 26.3 HTML 打 patch（`eaglercraftXOpts.joinServer` 读 `?server=`）→ Caddy 托管 → `site` 的 `web_client_fallback_url`（默认空）显示次级链接。无头 Edge 已走通「Edit Profile → Done → Default Username → Continue Anyway → 自动连测试服（白名单踢出）」。**VPS 尚未部署**；客户端 ARR/EULA，私有/不公开/不商业化（`webmc/docs/self-hosted-client.md`）。 |
-| **Web 客户端托管服务（2026-11-22，已合并）** | `webmc` #13（`b4258f8`）：Kotlin/Ktor 服务 + Dockerfile/compose，**不含客户端本体**。版本目录、`/play` 注入 `joinServer`、`/embed` + `WebMC`、`/api/versions|health`、`/client`（防穿越/token）。`./gradlew clean test` 通过；真实 26.3 HTML 78 MB 经服务 `/play` 注入并自动连测试服（白名单踢出）；Docker 运行镜像（temurin 25 本地）健康/API/play 正常；多阶段 Dockerfile 因本机 Docker Hub 超时未跑。 |
+| **Web 客户端托管服务（2026-11-22，已合并 + 本地验收通过）** | `webmc` #13/#14（`b4258f8`/`9fc0899`）：Kotlin/Ktor 服务 + Dockerfile/compose，**不含客户端本体**。版本目录、`/play` 注入 `joinServer`、`/embed` + `WebMC`、`/api/versions|health`、`/client`（防穿越/token）。本地验收：真实 26.3 HTML 78,124,802 B → `/play` 200 / 78,124,960 B；token 401/200、embed、穿越 404；无头 Edge 首次档案/用户名确认后自动连测试服（白名单踢出）；Docker 运行镜像健康/API/play 约 6s。多阶段 Dockerfile 因本机 Docker Hub 超时未跑（标签已核对）。 |
 | **环境故障（已恢复）** | 2026-11-22 WSL 在最后一次 Gradle 测试时卡死；`wsl --shutdown` 后恢复，最终测试/运行验证已完成。 |
-| **下一步（下次从这里开始）** | ① `OrzMCDeploy` 集成：compose 增加 `webmc` 服务 + Caddy `webclient.` + `./webmc-data:/data`（客户端由运维放置）；② `site` 已有 `web_client_fallback_url`（`{address}`/`{version}`），可指向服务；③ 生产启用前在 VPS 做一次多阶段 Docker 构建 + 健康/深链/外嵌/首次档案演练。 |
+| **下一步（下次从这里开始）** | ① `OrzMCDeploy` 集成：compose 增加 `webmc` 服务 + Caddy `webclient.` + `./webmc-data:/data`（客户端由运维放置）；② `site` 已有 `web_client_fallback_url`（`{address}`/`{version}`），可指向服务；③ 生产启用前：发布镜像到 registry，并在 VPS 跑一次多阶段 Docker 构建 + 健康/深链/外嵌/首次档案演练。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
 
@@ -450,6 +450,15 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-22 — pi（webmc 托管服务本地验收完成）
+
+- **结果**：`./gradlew clean test` 通过；真实官方 26.3 HTML（78,124,802 B）经服务 `/play` 返回 78,124,960 B 注入版（joinServer 正常、无双逗号）。
+- **接口**：`/api/health`、`/api/versions`、`/`、`/client`（静态 + 穿越 404）、`/embed`（iframe/CSP）、token（无 token 401 / 带 token 200）。
+- **浏览器**：无头 Edge 首次 Edit Profile → Done、Default Username → Continue Anyway 后自动连接 `dev.jokerhub.cn:18443`，收到白名单踢出。
+- **Docker**：本地运行镜像（temurin 25）健康/API/play 正常（78,124,960 B，约 6s）；多阶段 Dockerfile 因本机 Docker Hub 超时未跑，`gradle:9.9-jdk21` 标签已核对存在。
+- **文档**：`webmc` #14 把验收结果写入 `docs/client-hosting-service.md`；父仓库 bump 指针。
+- **下一步**：`OrzMCDeploy` compose/Caddy 集成；发布镜像到 registry；VPS 演练。
 
 ### 2026-11-22 — pi（Web 客户端托管服务落地：webmc #13）
 
