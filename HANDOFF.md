@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-22 by pi（**一键进服落地**：官方站支持 `/play?joinServer=<wss>&version=<ver>` 深链；`site` #28 已把「在浏览器中玩」改为直接进服；`webmc` 文档修正旧结论；因目标只是「浏览器能进服」而非替换 EaglercraftXServer，**网关暂缓**）。<br>上一轮 2026-11-22 by pi（**`webmc` 网关调研落库**：OrzWebMC #1/#2 → 父仓库 bump 指针；拆出 Eaglercraft 两代客户端、WS 帧/压缩、握手 v3/v5、MC 登录时序与「自研 Kotlin 2.x 网关 + Velocity」方案（**D1 已定 Kotlin 2.4.x**），见 §1.4。<br>上一轮 2026-11-15 by pi（**子模块第二轮同步**：`backup` `233e504`→`fa399ea`，20 个子模块现已**全部等于远端 `main`/`master` 最新**；`plugin` 仍钉 `main` `a3128f9`，工作树检出 `develop` 属预期。<br>上一轮 2026-11-15 by pi（**官网服务器卡片三端化 + 多服 Tab**：`site` #14 / 父仓库 #65 已发布；Eaglercraft 26.3 内嵌可行性已调研，结论见 §1.3。<br>上一轮 2026-11-15 by pi（**全量同步子模块指针到远端最新**：`backup`→`7ba22be`、`deploy`→`04c3538`、`swift/app`→`33e0ee6`，其余 17 个已是最新；顺带修 `boot-check.sh` 两处显示缺陷。<br>上一轮 2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；内容 SEO 护栏与周检（site #13）；PR #158/#159/#160/#161/#162）
+> **最后更新**：2026-11-22 by pi（**一键进服落地**：官方站支持 `/play?joinServer=<wss>&version=<ver>&launch=1` 深链（`launch=1` 自动启动、免点「启动游戏」）；`site` #28/#29 已把「在浏览器中玩」改为直接进服；`webmc` 文档修正旧结论；因目标只是「浏览器能进服」而非替换 EaglercraftXServer，**网关暂缓**）。<br>上一轮 2026-11-22 by pi（**`webmc` 网关调研落库**：OrzWebMC #1/#2 → 父仓库 bump 指针；拆出 Eaglercraft 两代客户端、WS 帧/压缩、握手 v3/v5、MC 登录时序与「自研 Kotlin 2.x 网关 + Velocity」方案（**D1 已定 Kotlin 2.4.x**），见 §1.4。<br>上一轮 2026-11-15 by pi（**子模块第二轮同步**：`backup` `233e504`→`fa399ea`，20 个子模块现已**全部等于远端 `main`/`master` 最新**；`plugin` 仍钉 `main` `a3128f9`，工作树检出 `develop` 属预期。<br>上一轮 2026-11-15 by pi（**官网服务器卡片三端化 + 多服 Tab**：`site` #14 / 父仓库 #65 已发布；Eaglercraft 26.3 内嵌可行性已调研，结论见 §1.3。<br>上一轮 2026-11-15 by pi（**全量同步子模块指针到远端最新**：`backup`→`7ba22be`、`deploy`→`04c3538`、`swift/app`→`33e0ee6`，其余 17 个已是最新；顺带修 `boot-check.sh` 两处显示缺陷。<br>上一轮 2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；内容 SEO 护栏与周检（site #13）；PR #158/#159/#160/#161/#162）
 
 ---
 
@@ -133,7 +133,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **已完成（OrzMCSite #14，父仓库 #65）** | ① 服务器卡片支持**三端地址**：Java / 基岩 / **Web（Eaglercraft）**——新增 per-server `web_port`/`web_host`，渲染 `wss://<主机>:<端口>/`（缺省 443，不可用走 18443；`web_host` 缺省沿用 Java 主机，可指独立子域），只有配置了才展示，主机仍走替换表加密（产物无明文）。② **多服 Tab**：shortcode `tabs`（或 `[server_status] tabs`），服务器数 > 1 时同一区域 Tab 切换，Tab 带在线状态色点、键盘可切换、刷新后选中态不丢；首页 = 国内服 + 开发测试服。③ **卡片紧凑化**：桌面卡高 406.9→302.2px（双地址），卡内间距统一 8px / 次级组 7px，地址胶囊单行化（76.8→44px），MOTD 与地址胶囊统一 `--ss-row-h` 44px 等高背景块（去掉「服务器标语」标签与左侧强调条）。 |
 | **现状事实** | 首页 Tab：国内服 / 开发测试服；海外服只在别处出现。测试服 `show_address=false` 仍隐藏地址（含 `web_port=18443`）。国内服/海外服的 `web_host`、`web_port` 仍是注释示例，等真实 WSS 入口确定后填。 |
 | **Eaglercraft 26.3 内嵌调研结论（2026-11-15）** | ① 客户端是**单文件 HTML**（`eaglercraft-26.3-fe8f1237.html`，78,124,802 B），官方分发 `https://cdn.eaglercraft.net/objects/dl/26.3/eaglercraft-26.3-fe8f1237-815f7813.zip`（58.9 MB，`application/zip`）。② 官方站 `https://eaglercraft.com/play?version=26.3` 是 Next.js 壳，**返回 `X-Frame-Options: DENY`** → **不能 iframe 官方页**；`/play` 支持 `joinServer=<wss>&version=<ver>` 深链（2026-11-22 修正；首页服务器目录即此格式），可直接点开进服。③ 客户端 HTML 自带写死的 `eaglercraftXOpts`（`container:"game_frame"`、内联 `assetsURI`、`allowBootMenu:false`…），**未预置 servers**；能静态搜到的 URL 参数只有 `?singlethread` / `?nomesh` / `?perfdebug` / `?chunkunload`。④ 结论（2026-11-22 修正）：**「点开即进服」用官方深链即可，无需自托管客户端**（`/play?joinServer=<wss>&version=<ver>`；`site` #28 已实现）；自托管只在需要离线单文件/预置多服时再评估（75 MB 体积 + ARR/EULA 风险）。 |
-| **一键进服（2026-11-22 已完成）** | `site` #28（squash `07894b0`）：「在浏览器中玩」按钮改为官方深链 `https://eaglercraft.com/play?version=<ver>&joinServer=<wss>`；点击直接进服，同时复制地址兜底；逐服可用 `web_version` 覆盖版本。**不再需要自托管客户端**。 |
+| **一键进服（2026-11-22 已完成）** | `site` #28/#29（`07894b0`/`20f4086`）：「在浏览器中玩」改为官方深链 `https://eaglercraft.com/play?version=<ver>&joinServer=<wss>&launch=1`；`launch=1` **自动启动**（无头 Edge 实测：不加则停在「启动游戏」），同时复制地址兜底；逐服可用 `web_version` 覆盖版本。**不再需要自托管客户端**。未登录首次可能弹一次「登录以保存进度」，点 × 关闭；按钮复用同一标签页，后续不弹。 |
 | **iframe 可行性已核实（2026-11-15）** | ① 本站在 GitHub Pages 上**不发** `X-Frame-Options` / CSP（实测响应头只有 `cache-control: max-age=600`）→ 我们的页可以 iframe 同源或第三方页（只受对方头约束），站点本身也可被嵌。② Pages **不支持自定义响应头**（无 `_headers`），但**不影响**：26.3 客户端无 `SharedArrayBuffer`/`crossOriginIsolated`/`Atomics`（默认单线程）→ 不需要 COOP/COEP 隔离头。③ 被明确拒绝的是官方站：`eaglercraft.com`、`/zh/play`、`/mc/26.3` 全部 `X-Frame-Options: DENY`。④ **真障碍是体积与带宽**：单文件 75 MiB（Git 50 MiB 警告 / 100 MiB 硬限，Pages 不服务 LFS；站点 1 GB、软带宽 100 GB/月、HTML 缓存 600 s → 粗算约 1300 次首访/月即触顶）；且本机 VPS 是**家宽上行**，多人拉 75 MB 不现实。⑤ 结论：若做嵌入，应「点击才加载 iframe」（`loading=lazy` + `allow="fullscreen; gamepad; pointer-lock; clipboard-write"`）、客户端放自有 VPS 并配 `frame-ancestors` 白名单 + 长缓存；否则优先「离线单文件 + 我们的 wss 地址」或直接链官方页。 |
 | **方案 B 已落地（2026-11-15，site #16）** | 维护者选定「不自托管客户端」（避免 Pages 仓库/带宽与家宽上行被打爆）。① Web 地址统一为 `wss://<主机>:<端口>`（去掉结尾斜杠，与 Java/基岩对齐）。② 新增配置 `web_client_url`（缺省 `https://eaglercraft.com/play?version=26.3`，置空不显示）→ 卡片操作区**第一行**渲染整行主按钮「在浏览器中玩」（44px、Web 端色填充）：新标签打开官方客户端 + 顺手复制本服 `wss://` 地址；**门控只看是否配了 Web 地址**（= 支持 Eaglercraft），不看 `show_address`。③ 卡片取消在线/离线整圈描边，改中性 1px 边框（site #17）。③ 玩家手册新增「不想装客户端？用浏览器直接玩」小节。**现状（2026-11-15）**：**只有开发测试服适配了 Eaglercraft**（国内服/海外服尚未适配，`web_host`/`web_port` 保持注释）；测试服 `show_address=true`，首页切到该 Tab 即可看到 Web 地址与主按钮。国内服/海外服适配后填端口即可自动出现。 |
 | **内容按用户视角收敛（2026-11-15，site #25）** | `posts/1.client/11.webmc.md` 从 240 行技术长文压到 59 行，分「玩家：三步进服 + 卡顿掉线排查」与「服主：接入四件事（选形态 / 整链离线 / wss 入口 / 身份措施）」，实现细节统一指向 `deploy` 文档；`content/client.md` 启动器表格首行加「不想安装，浏览器直接玩 → Eaglercraft Web 客户端」，用户可一键点进。 |
@@ -148,7 +148,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **推荐方案** | 自研 **Kotlin 2.4.x 服务**（JVM 21+ + Netty + 协程）`orzmc-web-gateway`（详见 `webmc/docs/gateway-design.md`），与 EaglerXServer **并存灰度**；协议翻译交 ViaVersion；皮肤/语音/MOTD 为 P2+。 |
 | **硬约束** | 整链 `online-mode=false`；客户端 All Rights Reserved 且不符合 Mojang EULA → 本仓**不分发客户端本体**；只连配置上游（禁开放代理）。 |
 | **目标收窄（2026-11-22）** | 维护者明确：目标只是「浏览器能进服」，**不是替换 EaglercraftXServer**。官方站 `?joinServer=<wss>&version=<ver>` 深链已满足一键进服（`site` #28），因此**网关不是必需**，P1 暂缓/按需再启；现网继续用 EaglercraftXServer。 |
-| **下一步（下次从这里开始）** | ① **先真机验收一键进服**：点首页测试服「在浏览器中玩」，确认官方页带地址直接进服；不行则回退到「复制地址 + 直连粘贴」。② 网关暂缓（目标已满足）；若以后要做「替换 EaglercraftXServer/多服统一入口」，再按 `gateway-design.md` P1（Kotlin + S1 单 Paper）启动。③ 若继续网关：先关 `protocol-spec.md` §9 的 10 项真机确认，再做单服进服。 |
+| **下一步（下次从这里开始）** | ① **一键进服已可用**（官方深链 + `launch=1`，无头 Edge 实测自动下载/启动；真机首次可能弹一次「保存进度」，点 ×）。② 网关暂缓（目标已满足）；若以后要做「替换 EaglercraftXServer/多服统一入口」，再按 `gateway-design.md` P1（Kotlin + S1 单 Paper）启动。③ 若继续网关：先关 `protocol-spec.md` §9 的 10 项真机确认，再做单服进服。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
 
@@ -447,6 +447,14 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-22 — pi（去掉「启动游戏」：官方深链加 launch=1）
+
+- **问题**：`?joinServer=&version=` 只能预置地址，官方页仍停在「启动游戏」按钮，用户还要再点一次。
+- **实测**：无头 Edge（Playwright + 本机 msedge）对比同一 URL：不加 `launch=1` → 停在「启动游戏」；加 `launch=1` → 直接进入「正在更新/下载文件」并自动启动，随后进入游戏。`launch=1` 是官方页的自动启动开关（`play-launch-handoff` 会把它转成 sessionStorage 的启动意图）。
+- **site #29（squash `20f4086`）**：`buildWebClientLink` 追加 `launch=1`；按钮用固定窗口名复用同一标签页；标题/手册提示「未登录首次可能弹一次『登录以保存进度』，点 × 关闭即可」。
+- **webmc #11**：internals/deployment/README/D3 同步 `launch=1` 与首次弹窗说明。
+- **残余限制**：官方站在未登录首次启动时会弹「登录以保存你的进度」（`sessionStorage.eagler_save_prompt_shown` 只保证同一标签页后续不再弹）；**彻底零弹窗**只能自托管/改客户端（ARR/EULA + 带宽），不在当前方案内。
 
 ### 2026-11-22 — pi（一键进服落地：官方 joinServer 深链 + site #28）
 
