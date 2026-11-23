@@ -156,20 +156,20 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **播放壳 UI（2026-11-23，0.1.2）** | `/play` 改为播放壳：默认**窗口模式**（最大 1180×820），工具栏「全屏/小窗」切换、刷新、返回；首次加载显示 spinner/进度条/已用时间，iframe 加载后隐藏。`/play/raw` 返回原始客户端 HTML，`/embed` 改用它并补加载层。入口 `/` 重做为简洁深色表单 + 版本卡片（不再重复 name/id）。生产已切 `orzmc-webmc:0.1.2`，`/play` shell 6,820 B、`/play/raw` 78,394,945 B，CSP raw 追加 `'self'` 允许同源 iframe；无头 Edge 打开生产页面已显示 profile 界面，工具栏与全屏切换可用。 |
 | **下一步（下次从这里开始）** | ① `site` 兜底已指向 webmc（#31）并发布；可选把 `web_client_fallback_url` 的默认版本按服调整。② 生产已用 0.1.2 本地镜像（registry digest `ef0fb1d7…`），后续可切 registry 镜像。③ 可选：把 `LAN_WEBMC_PORT` 18092 从公网/防火墙收掉，只留 Caddy。④ 1.8.8/1.12.2 需真人点一次首次确认（内容警告/用户名）；若要做全自动，再评估预置档案。⑤ 0.1.2 的 `loading` 只在 iframe load 时隐藏，之后客户端自身启动画面接管；若要更细的真实字节进度，再评估 fetch/blob。 |
 
-### 1.5 RealTime 独立现实时间插件（2026-11-23）——**PR1–PR9 已合并，PR10 进行中（PR10a 完成）**
+### 1.5 RealTime 独立现实时间插件（2026-11-24）——**PR1–PR9、PR10a、PR10b 已合并，PR10c 进行中**
 
 | 项 | 内容 |
 |---|---|
-| **独立仓库** | `OrzMC/RealTime`；PR #1–#9 已合并。PR #9 代码提交 `31369b0421e979353b09fac60e47eafb10f90bcb`；PR10a store foundation PR #15 合并提交 `b9880c5fbf3e7eaf6a3f5326a23518f4c281a3b3`；文档同步 PR #16 合并提交 `7a12272133173cd68697957f8b3ff43159c28b7f`。 |
+| **独立仓库** | `OrzMC/RealTime`；PR #1–#9 已合并。PR #9 代码提交 `31369b0421e979353b09fac60e47eafb10f90bcb`；PR10a store foundation PR #15 合并提交 `b9880c5fbf3e7eaf6a3f5326a23518f4c281a3b3`；PR10a 文档 PR #16 合并提交 `7a12272133173cd68697957f8b3ff43159c28b7f`；PR10b PR #17 合并提交 `ea4b3fbe2cc9da3b431a7c111f10c266fe0f1b7d`。 |
 | **项目基线** | Kotlin / JDK 25 / Gradle 9.2.1；Paper API 26.3；Paper + Folia；命令 `/rtime`；默认时区 `Asia/Shanghai`。独立构建、测试与发布，不依赖父仓库运行时。 |
 | **PR1–PR4** | Agent Native 工程骨架、Clock-backed Core、命令与独立配置、Paper/Folia Global/Region/Entity Scheduler 适配。 |
 | **PR5–PR7** | HHmm BCD 与设备模型、版本化 YAML 持久化、RegionScheduler 红石输出、可选 PlaceholderAPI、受保护的 tag 驱动发布自动化。 |
 | **PR8–PR9** | 设备 list/info/enable/disable 管理；只读 `/rtime device status`；线程安全聚合诊断计数。Paper/Folia 线程归属和不强制加载区块约束保留。 |
 | **PR9 验收** | Gradle CI #79、Agent Validation #68、Paper/Folia + PlaceholderAPI 四组合 smoke #50 全部通过；Shadow JAR inspection 通过。PR [#13](https://github.com/OrzMC/RealTime/pull/13) 已合并。 |
 | **PR10a（完成）** | PR [#15](https://github.com/OrzMC/RealTime/pull/15)：新增 cleanup job/store model，`data/devices.yml` 升级 schema v2，device list + cleanup jobs 同文件原子替换；schema v1 自动迁移；防止 active output 与 cleanup-reserved coordinates 重叠。CI #89、Agent Validation #76、Paper/Folia + PlaceholderAPI smoke #58 全通过，含 shaded JAR inspection。 |
-| **PR10b（进行中）** | crash-safe retirement service + region-owned deferred cleanup/retry processor；region callback 只做世界/区块/方块检查和变更，结果回传 global/state-owner 路径持久化；支持 chunk/world load retry、restart recovery、幂等清理。 |
-| **PR10c（后续）** | Paper/Folia restart/chunk-load runtime coverage、队列诊断与 operator observability。**未完成 PR10b/PR10c 验收前，不提供游戏内 remove 命令。** |
-| **父仓库集成** | `tools/RealTime` 已在 `.gitmodules` 登记；本次父仓库 PR 将 gitlink 从 PR9/docs `e774d15f4210521a12c745650ce0c1b775c61a2a` 更新到 PR10a + docs `7a12272133173cd68697957f8b3ff43159c28b7f`。只改该子模块指针和本 HANDOFF。 |
+| **PR10b（完成）** | PR [#17](https://github.com/OrzMC/RealTime/pull/17) 已 squash 合并（`ea4b3fbe`）：新增只允许 disabled device 的 crash-safe retirement service；同一 schema-v2 快照先持久化 active device 移除 + 16 个 cleanup outputs，再发布 runtime state；新增 Paper/Folia region-owned cleanup processor，world/chunk load + 周期扫描重试，不 force-load chunk，只把 REDSTONE_WIRE power 置 0，非红石目标记为 `NEEDS_ATTENTION` 并保留坐标；region callback 结果回 global scheduler 原子持久化。CI #101（Verify、Agent bootstrap validation、shaded JAR inspection）与 Paper/Folia + PlaceholderAPI smoke #68 四组合全部通过。**设备清理的真实服重启/区块恢复场景尚未由 runtime smoke 覆盖，留给 PR10c。** |
+| **PR10c（进行中）** | 补齐设备级 Paper/Folia runtime 验证：重启恢复、world/chunk load retry、未加载区块不触发读取/加载、非红石目标人工处理、清理与持久化失败后的幂等重试；增加 cleanup queue/operator diagnostics 与保留策略。完成全部验收前，不开放游戏内 remove 命令。 |
+| **父仓库集成** | `tools/RealTime` 已在 `.gitmodules` 登记；当前父仓库待提交 PR 将 gitlink 从 PR10a/docs `7a12272133173cd68697957f8b3ff43159c28b7f` 更新到 PR10b `ea4b3fbe2cc9da3b431a7c111f10c266fe0f1b7d`，并同步本 HANDOFF。 |
 | **发布边界** | PR7 的 release automation 已合并，但尚未创建正式 tag / GitHub Release；Hangar/Modrinth 项目 ID、environment secrets 与 required reviewers 未配置，正式发布仍需维护者明确启用并审批。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
@@ -469,6 +469,15 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-11-24 — AI（RealTime PR10b 合并，进入 PR10c）
+
+- RealTime PR #17 已 squash 合并：`ea4b3fbe2cc9da3b431a7c111f10c266fe0f1b7d`。实现 crash-safe retirement service 与 Paper/Folia deferred cleanup processor；设备必须 disabled 才能退休，active devices + cleanup jobs 在同一 schema-v2 快照中原子持久化。
+- 验收：Gradle CI #101 全绿（Verify、Agent bootstrap validation、shaded JAR inspection）；Paper/Folia + PlaceholderAPI smoke #68 四组合全绿。CI 期间修复多轮 Spotless 格式差异后通过。
+- 代码边界：不开放 `/rtime device remove`；unloaded chunk 不读取方块；仅清除 REDSTONE_WIRE power；其他方块标记 `NEEDS_ATTENTION` 并继续保留 cleanup reservation。
+- 验证边界：现有 smoke 工作流主要验证命令和 PlaceholderAPI，不等同于设备清理的 Paper/Folia 真实服重启/区块恢复验收；此项明确留在 PR10c。
+- 下一步：增加设备级 runtime smoke（restart recovery、world/chunk load retry、幂等清理、非红石人工处理、持久化失败恢复）与 cleanup queue/operator diagnostics；通过后再单独评估 remove 命令。
+- 父仓库仅 bump `tools/RealTime` gitlink 到 `ea4b3fbe`，同步 §1.5 与本会话日志，不改动其他子模块。
+
 ### 2026-11-23 深夜 — AI（`dev.440`：按实测修正「同址静默」口径；诊断面板连跑三轮验证）
 
 - **dev.439 实跑抓到的形态**（同一远端 `111.161.67.196:443`，22:48 与 22:50 两次）：
