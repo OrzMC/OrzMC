@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-23 by AI（RealTime 独立仓库 PR #1 已合并，Paper/Folia 26.3 冒烟通过；RealTime PR1–PR4 已合并，父仓库正在把 `tools/RealTime` 指针更新到 PR4）<br>上一轮 2026-11-22 by pi（**`plugin` milestone → beta `1.0.31-dev.436` 已发布 + 四组合实机验收**：#610 IM 静默看门狗（#612）、builtin 下 easybot 配置体检降噪（#613）、dependabot 自动合并修复（#611）随 milestone #615 合入 main；本机测试服 Paper/Folia × builtin/easybot 四组合验收通过（入站经飞书 API 回读确认）；发现的「长连接入站断流」立 [plugin#616](https://github.com/OrzMC/OrzMCPlugin/issues/616) 跟踪。见 §1.1 与 §5。<br>上一轮 2026-11-22 by pi（**一键进服落地**：官方站支持 `/play?joinServer=<wss>&version=<ver>&launch=1` 深链（`launch=1` 自动启动、免点「启动游戏」）；`site` #28/#29 已把「在浏览器中玩」改为直接进服；自托管兜底已验证（site #30 预留入口 / webmc #12 文档）；`webmc` 文档修正旧结论；因目标只是「浏览器能进服」而非替换 EaglercraftXServer，**网关暂缓**）。<br>上一轮 2026-11-22 by pi（**`webmc` 网关调研落库**：OrzWebMC #1/#2 → 父仓库 bump 指针；拆出 Eaglercraft 两代客户端、WS 帧/压缩、握手 v3/v5、MC 登录时序与「自研 Kotlin 2.x 网关 + Velocity」方案（**D1 已定 Kotlin 2.4.x**），见 §1.4。<br>上一轮 2026-11-15 by pi（**子模块第二轮同步**：`backup` `233e504`→`fa399ea`，20 个子模块现已**全部等于远端 `main`/`master` 最新**；`plugin` 仍钉 `main` `a3128f9`，工作树检出 `develop` 属预期。<br>上一轮 2026-11-15 by pi（**官网服务器卡片三端化 + 多服 Tab**：`site` #14 / 父仓库 #65 已发布；Eaglercraft 26.3 内嵌可行性已调研，结论见 §1.3。<br>上一轮 2026-11-15 by pi（**全量同步子模块指针到远端最新**：`backup`→`7ba22be`、`deploy`→`04c3538`、`swift/app`→`33e0ee6`，其余 17 个已是最新；顺带修 `boot-check.sh` 两处显示缺陷。<br>上一轮 2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；内容 SEO 护栏与周检（site #13）；PR #158/#159/#160/#161/#162）
+> **最后更新**：2026-11-23 by AI（**`plugin` 里程碑 #622 → beta `1.0.31-dev.437`**：#617 建连看门狗（issue #616 的「永远停在 CONNECTING」）+ #619 `actions/setup-java` 6.3.0；父仓库指针已 bump 至 `main` `3153ae5`。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（RealTime 独立仓库 PR #1 已合并，Paper/Folia 26.3 冒烟通过；RealTime PR1–PR4 已合并，父仓库正在把 `tools/RealTime` 指针更新到 PR4）<br>上一轮 2026-11-22 by pi（**`plugin` milestone → beta `1.0.31-dev.436` 已发布 + 四组合实机验收**：#610 IM 静默看门狗（#612）、builtin 下 easybot 配置体检降噪（#613）、dependabot 自动合并修复（#611）随 milestone #615 合入 main；本机测试服 Paper/Folia × builtin/easybot 四组合验收通过（入站经飞书 API 回读确认）；发现的「长连接入站断流」立 [plugin#616](https://github.com/OrzMC/OrzMCPlugin/issues/616) 跟踪。见 §1.1 与 §5。<br>上一轮 2026-11-22 by pi（**一键进服落地**：官方站支持 `/play?joinServer=<wss>&version=<ver>&launch=1` 深链（`launch=1` 自动启动、免点「启动游戏」）；`site` #28/#29 已把「在浏览器中玩」改为直接进服；自托管兜底已验证（site #30 预留入口 / webmc #12 文档）；`webmc` 文档修正旧结论；因目标只是「浏览器能进服」而非替换 EaglercraftXServer，**网关暂缓**）。<br>上一轮 2026-11-22 by pi（**`webmc` 网关调研落库**：OrzWebMC #1/#2 → 父仓库 bump 指针；拆出 Eaglercraft 两代客户端、WS 帧/压缩、握手 v3/v5、MC 登录时序与「自研 Kotlin 2.x 网关 + Velocity」方案（**D1 已定 Kotlin 2.4.x**），见 §1.4。<br>上一轮 2026-11-15 by pi（**子模块第二轮同步**：`backup` `233e504`→`fa399ea`，20 个子模块现已**全部等于远端 `main`/`master` 最新**；`plugin` 仍钉 `main` `a3128f9`，工作树检出 `develop` 属预期。<br>上一轮 2026-11-15 by pi（**官网服务器卡片三端化 + 多服 Tab**：`site` #14 / 父仓库 #65 已发布；Eaglercraft 26.3 内嵌可行性已调研，结论见 §1.3。<br>上一轮 2026-11-15 by pi（**全量同步子模块指针到远端最新**：`backup`→`7ba22be`、`deploy`→`04c3538`、`swift/app`→`33e0ee6`，其余 17 个已是最新；顺带修 `boot-check.sh` 两处显示缺陷。<br>上一轮 2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；内容 SEO 护栏与周检（site #13）；PR #158/#159/#160/#161/#162）
 
 ---
 
@@ -178,10 +178,10 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | 项 | 内容 |
 |---|---|
 | **触发** | 线上 `$b` 备份成功但**群里零通知**（25 分钟的任务 → QQ 被动回复窗口 5 分钟早已过期） |
-| **状态** | ✅ **1.0.30 正式版已发布**（Hangar Release / Modrinth release / GitHub Release `OrzMC-1.0.30.jar`）；版本自增到 **1.0.31**（PR #559 自动合）；✅ **beta `1.0.31-dev.436` 已发布**（milestone #615 → main `7522802`，Hangar/Modrinth beta，sha256 `2756cd49…d36bd`），父仓库指针已 bump |
+| **状态** | ✅ **1.0.30 正式版已发布**（Hangar Release / Modrinth release / GitHub Release `OrzMC-1.0.30.jar`）；版本自增到 **1.0.31**（PR #559 自动合）；✅ **beta `1.0.31-dev.436` 已发布**（milestone #615 → main `7522802`）；✅ **beta `1.0.31-dev.437` 已发布**（milestone #622 → main `3153ae5`，run 45119032875 绿；父仓库 PR #142 已 bump 指针）。两轮均无配置变更、无数据迁移 |
 | **已做（8 个 PR）** | `#539` 被动回复窗口预判 + `40034005` 兜底；`#540` 长任务完成通知改主动群通知 + 静默无回执兜底 + 分页上限；`#541` i18n 占位符漏填（`{total}` 原样进群）+ 调用点护栏 + `InboundDedup` 加固；`#542` CHANGELOG 去重；`#543/#544` GeoIP 多源兜底（默认 `countryis → geojs`）+ 失败短缓存 + 决策窗预算；`#545/#546/#547` 文档索引 / 决策记录 / 网络受限机房手册；`#611` dependabot 自动合并改 REST 取作者（GraphQL 把 bot login 呈现成 `app/dependabot`，自动合并静默停摆两周）；`#612` IM 静默看门狗判活改为「任何入站活性」（含 WS 控制帧）+ `platforms.<id>.heartbeat_timeout_seconds` + 日志口径；`#613` `backend: builtin` 不再报 easybot 明文传输等「不参与运行」建议 |
 | **盘点结论** | 全量 `develop→main` review（187 commits / 392 文件）：无 Folia 线程红线回归、无资源泄漏、无凭据、i18n 472 key 双语一致、缓存有界；修掉 1 个真 bug + 3 处加固 |
-| **下一步** | ① **plugin#616**（长连接入站断流：`累计入站 0 帧`+读线程卡 TLS read+出站 HTTP 正常；easybot 自身也每 30~40min 重启 transport）——待做三个实验定性（`im.yml platforms.<id>.proxy` / 实例 `network: host` / 同网 python 参考客户端对照）；② 观察线上：飞书发 `$b` 应只有飞书群收到完成/坏块提示；③ **质量闭环已落地**（见 §5 2026-11-14 条目）：PR 必选 `build/folia-smoke/e2e-paper/approval-gate` + nightly 01:30 + 趋势看板 issue #572；④ 下次功能迭代照常走 develop |
+| **下一步** | ① **plugin#616**（长连接入站断流）——**建连侧已修**（#617 看门狗：握手黑洞不再永久 CONNECTING，已随 `dev.437` 发 beta）；**仍需定性「已建连后入站断流」**：`累计入站 0 帧`+读线程卡 TLS read+出站 HTTP 正常，easybot 自身也每 30~40min 重启 transport——待做三个实验（`im.yml platforms.<id>.proxy` / 实例 `network: host` / 同网 python 参考客户端对照）；② `CHANGELOG.md` 的 `[Unreleased]` **尚未收录 #617**，release 前「CHANGELOG 归拢」时补；③ dependabot **#620**（gradle-minor-patch 组）**CI 全红**：`WorldMaintenanceService.java:296` `no suitable constructor found for FilterOptions(long,boolean,boolean)`——Paper API minor 升级改了该构造，需代码迁移，属人工处置（非自动合并）；④ 质量闭环见 §5 2026-11-14 条目；⑤ 下次功能迭代照常走 develop |
 | **已决策** | **不做离线 GeoIP**（体积 +73%~+127%，且月度刷新/CC BY 署名/口径复核的长期成本不可控）——见 `plugin/docs/features.md` §5.1、issue #538 |
 | **安全策略（明确）** | 地区限制**保持 fail-close**：`geoip.fail_open` 只是调试/应急开关，**不用于换可用性**；网络受限走自建 `country.is`（`plugin/docs/manuals/geoip-restricted-network.md`） |
 
@@ -470,6 +470,14 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-11-23 — AI（`plugin` 里程碑 → beta `1.0.31-dev.437`）
+
+- **里程碑合并**：develop → main。head=develop 的 PR #621 被 GitHub 判 `CONFLICTING/DIRTY`（历史 squash 拓扑：两侧相对旧 merge-base「各自新增」同一批行），按 AGENTS「拓扑冲突改用解决分支」改走 `milestone-content` = `origin/main` + `merge origin/develop -X theirs`，本地核验 `git diff origin/develop --name-only` 为空 → PR **#622** 门禁全绿（build / folia-smoke / e2e-paper / e2e-lp / e2e-im / e2e-player / codecov-patch）→ 自动 squash 合并 `3153ae5`；#621 已关闭并注明原因。
+- **内容（相对上一里程碑仅 5 个文件）**：#617 建连看门狗（`connect()` 非阻塞、库 timeout 只管 `socket.connect()`，TLS/WS 握手被黑洞时永远停在 `CONNECTING` → 新增看门狗 + 4 参构造显式非零 connect timeout + 异常路径 `closeQuietly` + 日志口径）、`actions/setup-java` 6.2.0 → 6.3.0（#619）。
+- **发布**：`publish` run 45119032875 绿 → Hangar/Modrinth **beta `1.0.31-dev.437`**；无破坏性变更、`config-version` 16 不变。
+- **父仓库**：PR **#142** 已 squash 合并（`ec05164`），`plugin` gitlink `7522802 → 3153ae5`；`.agents/skills/orzmc` / `tools/EzShops` 的本地未提交改动为历史遗留，未纳入。
+- **遗留**：① `[Unreleased]` 未收录 #617（release 前归拢时补）；② dependabot #620 CI 全红（Paper API `FilterOptions` 构造变更，需人工迁移）。
+
 ### 2026-11-23 — AI（RealTime PR5–PR7 完成，父仓库指针待同步）
 
 - **PR5**：设备模型、16 位 HHmm BCD 编码、版本化 YAML 持久化、区块安全红石输出已合并（`e4eac6a5`）；Paper/Folia smoke 与完整 CI 通过。
