@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-23 by AI（**`plugin` issue 清理**：#616 插件侧改进已落（PR #624 `a3bc448`：远端地址进诊断、同址零入站累计+抬高退避、稳定≠健康、`/config im status` 诊断段、`docs/dev/im-inbound-stall.md` + 参考探针；**剩宿主三个联网实验**）；#618 nightly 重跑已绿并自动关闭；OrzPythonMC #107 已复核关闭。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
+> **最后更新**：2026-11-23 by AI（**org issue 决策收口**：`.github#3` 合规声明 / `OrzMCApp#31` 中国区限制均**不做**，`OrzMCApp#4` 按 two-cli 策略**关闭**；三条均已 comment 留档。见 §1.1 与 §5）<br>上一轮 by AI（**`plugin` issue 清理**2026-11-23 by AI（**`plugin` issue 清理**：#616 插件侧改进已落（PR #624 `a3bc448`：远端地址进诊断、同址零入站累计+抬高退避、稳定≠健康、`/config im status` 诊断段、`docs/dev/im-inbound-stall.md` + 参考探针；**剩宿主三个联网实验**）；#618 nightly 重跑已绿并自动关闭；OrzPythonMC #107 已复核关闭。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
 
 ---
 
@@ -180,7 +180,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **状态** | ✅ **1.0.30 正式版已发布**（Hangar Release / Modrinth release / GitHub Release `OrzMC-1.0.30.jar`）；版本自增到 **1.0.31**（PR #559 自动合）；✅ **beta `1.0.31-dev.436` 已发布**（milestone #615 → main `7522802`）；✅ **beta `1.0.31-dev.437` 已发布**（milestone #622 → main `3153ae5`，run 45119032875 绿；父仓库 PR #142 已 bump 指针）。两轮均无配置变更、无数据迁移 |
 | **已做（8 个 PR）** | `#539` 被动回复窗口预判 + `40034005` 兜底；`#540` 长任务完成通知改主动群通知 + 静默无回执兜底 + 分页上限；`#541` i18n 占位符漏填（`{total}` 原样进群）+ 调用点护栏 + `InboundDedup` 加固；`#542` CHANGELOG 去重；`#543/#544` GeoIP 多源兜底（默认 `countryis → geojs`）+ 失败短缓存 + 决策窗预算；`#545/#546/#547` 文档索引 / 决策记录 / 网络受限机房手册；`#611` dependabot 自动合并改 REST 取作者（GraphQL 把 bot login 呈现成 `app/dependabot`，自动合并静默停摆两周）；`#612` IM 静默看门狗判活改为「任何入站活性」（含 WS 控制帧）+ `platforms.<id>.heartbeat_timeout_seconds` + 日志口径；`#613` `backend: builtin` 不再报 easybot 明文传输等「不参与运行」建议 |
 | **盘点结论** | 全量 `develop→main` review（187 commits / 392 文件）：无 Folia 线程红线回归、无资源泄漏、无凭据、i18n 472 key 双语一致、缓存有界；修掉 1 个真 bug + 3 处加固 |
-| **下一步** | ① **plugin#616**（长连接入站断流）——**插件侧已落 PR #624**（`a3bc448`）：远端地址进诊断、同址零入站累计 3 次给提示并抬高退避、稳定但零入站不再清零计数、`/config im status` 增诊断段、手册 `docs/dev/im-inbound-stall.md` + 探针 `scripts/dev/im-longlink-probe.py`；`SO_KEEPALIVE` **有意未做**（Java-WebSocket 1.6.0 自定 socket factory 会让 wss 跳过 TLS 包装）。**只剩宿主三个联网实验**（proxy / `network: host` / 同容器探针）才能给 #616 定性收口；② 下次里程碑（develop → main）会把 #616 + `backup-core` 0.3.2 带上 main；③ 其余 org issue 待决策：`.github#3`（16 仓合规声明，机械活）、`OrzMCApp#31`（中国区限制下载）、`OrzMCApp#4`（建议按 two-cli 策略关闭）；④ 质量闭环见 §5 2026-11-14 条目 |
+| **下一步** | ① **plugin#616**（长连接入站断流）——**插件侧已落 PR #624**（`a3bc448`）：远端地址进诊断、同址零入站累计 3 次给提示并抬高退避、稳定但零入站不再清零计数、`/config im status` 增诊断段、手册 `docs/dev/im-inbound-stall.md` + 探针 `scripts/dev/im-longlink-probe.py`；`SO_KEEPALIVE` **有意未做**（Java-WebSocket 1.6.0 自定 socket factory 会让 wss 跳过 TLS 包装）。**只剩宿主三个联网实验**（proxy / `network: host` / 同容器探针）才能给 #616 定性收口；② 下次里程碑（develop → main）会把 #616 + `backup-core` 0.3.2 带上 main；③ **其余 org issue 已决策（维护者 2026-11-23，均已 comment+close/not planned）**：`.github#3` 16 仓合规声明 **不做**（现有对外发布面已有声明，判断风险可接受）；`OrzMCApp#31` 中国区下载限制 **不做**（影响海外/离线用户，开关语义与验收成本高）；`OrzMCApp#4` homebrew 分发 Swift CLI **按 two-cli 策略关闭**（Swift 不对外分发）；④ 质量闭环见 §5 2026-11-14 条目 |
 | **已决策** | **不做离线 GeoIP**（体积 +73%~+127%，且月度刷新/CC BY 署名/口径复核的长期成本不可控）——见 `plugin/docs/features.md` §5.1、issue #538 |
 | **安全策略（明确）** | 地区限制**保持 fail-close**：`geoip.fail_open` 只是调试/应急开关，**不用于换可用性**；网络受限走自建 `country.is`（`plugin/docs/manuals/geoip-restricted-network.md`） |
 
@@ -469,6 +469,13 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-11-23 — AI（org issue 决策收口：三条均不做/关闭）
+
+- **`.github#3`（16 仓 MC IP 声明）→ 不做，close as not planned**：现有口径已覆盖对外发布面（`OrzMC` / `OrzMCApp` / `OrzPythonMC` / `MojangAPI` / `OrzMCKit` 有声明；插件走 Hangar/Modrinth 元数据），维护者判断风险可接受，不为机械活投入 21 个仓逐一改 README。留档：若重启，现状核查表仍有效，且 `OrzMCApp#32`（生成器缺失）已关闭 → 可直接改 README。
+- **`OrzMCApp#31`（中国区限制下载/Java 运行时）→ 不做，close as not planned**：影响海外/离线用户，开关语义与文案验收成本不低；实现路径（机器侧 + `ipwho.is` 网络侧 + fail-closed + 仅禁下载入口）已留档。
+- **`OrzMCApp#4`（Swift CLI 上 homebrew）→ close，按 [`docs/two-cli-strategy.md`](docs/two-cli-strategy.md) §6**：Python 是唯一对外分发渠道，Swift 发布一律 pre-release 且「不对外分发」；brew formula 属对外分发路径，与该口径冲突。
+- **剩余 open issue**：`OrzMCPlugin#616`（只剩宿主联网实验）、`#572`/`#481`/`#490`（看板 + 视频系列，按要求不动）、`OrzMCApp#6/#7/#10/#14/#15`（老 feature request，未决策，保留）。
+
 ### 2026-11-23 — AI（`plugin` issue 清理：#616 插件侧改进 / #618 重跑 / #107 归档）
 
 - **#616（P1，入站断流）插件侧落地 → PR #624（`a3bc448`）**：① 连接记录对端 `host:port`，静默告警与 `/config im status` 一起给出；
