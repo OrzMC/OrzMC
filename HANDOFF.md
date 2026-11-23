@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-23 by AI（RealTime 独立仓库 PR #1 已合并，Paper/Folia 26.3 冒烟通过；父仓库子模块集成 PR #134 已提交，父仓库 CI 通过，待合并）<br>上一轮 2026-11-22 by pi（**`plugin` milestone → beta `1.0.31-dev.436` 已发布 + 四组合实机验收**：#610 IM 静默看门狗（#612）、builtin 下 easybot 配置体检降噪（#613）、dependabot 自动合并修复（#611）随 milestone #615 合入 main；本机测试服 Paper/Folia × builtin/easybot 四组合验收通过（入站经飞书 API 回读确认）；发现的「长连接入站断流」立 [plugin#616](https://github.com/OrzMC/OrzMCPlugin/issues/616) 跟踪。见 §1.1 与 §5。<br>上一轮 2026-11-22 by pi（**一键进服落地**：官方站支持 `/play?joinServer=<wss>&version=<ver>&launch=1` 深链（`launch=1` 自动启动、免点「启动游戏」）；`site` #28/#29 已把「在浏览器中玩」改为直接进服；自托管兜底已验证（site #30 预留入口 / webmc #12 文档）；`webmc` 文档修正旧结论；因目标只是「浏览器能进服」而非替换 EaglercraftXServer，**网关暂缓**）。<br>上一轮 2026-11-22 by pi（**`webmc` 网关调研落库**：OrzWebMC #1/#2 → 父仓库 bump 指针；拆出 Eaglercraft 两代客户端、WS 帧/压缩、握手 v3/v5、MC 登录时序与「自研 Kotlin 2.x 网关 + Velocity」方案（**D1 已定 Kotlin 2.4.x**），见 §1.4。<br>上一轮 2026-11-15 by pi（**子模块第二轮同步**：`backup` `233e504`→`fa399ea`，20 个子模块现已**全部等于远端 `main`/`master` 最新**；`plugin` 仍钉 `main` `a3128f9`，工作树检出 `develop` 属预期。<br>上一轮 2026-11-15 by pi（**官网服务器卡片三端化 + 多服 Tab**：`site` #14 / 父仓库 #65 已发布；Eaglercraft 26.3 内嵌可行性已调研，结论见 §1.3。<br>上一轮 2026-11-15 by pi（**全量同步子模块指针到远端最新**：`backup`→`7ba22be`、`deploy`→`04c3538`、`swift/app`→`33e0ee6`，其余 17 个已是最新；顺带修 `boot-check.sh` 两处显示缺陷。<br>上一轮 2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；内容 SEO 护栏与周检（site #13）；PR #158/#159/#160/#161/#162）
+> **最后更新**：2026-11-23 by AI（RealTime 独立仓库 PR #1 已合并，Paper/Folia 26.3 冒烟通过；父仓库子模块集成 PR #134 已合并，main 固定 `tools/RealTime` 指向 `a9c10c9`）<br>上一轮 2026-11-22 by pi（**`plugin` milestone → beta `1.0.31-dev.436` 已发布 + 四组合实机验收**：#610 IM 静默看门狗（#612）、builtin 下 easybot 配置体检降噪（#613）、dependabot 自动合并修复（#611）随 milestone #615 合入 main；本机测试服 Paper/Folia × builtin/easybot 四组合验收通过（入站经飞书 API 回读确认）；发现的「长连接入站断流」立 [plugin#616](https://github.com/OrzMC/OrzMCPlugin/issues/616) 跟踪。见 §1.1 与 §5。<br>上一轮 2026-11-22 by pi（**一键进服落地**：官方站支持 `/play?joinServer=<wss>&version=<ver>&launch=1` 深链（`launch=1` 自动启动、免点「启动游戏」）；`site` #28/#29 已把「在浏览器中玩」改为直接进服；自托管兜底已验证（site #30 预留入口 / webmc #12 文档）；`webmc` 文档修正旧结论；因目标只是「浏览器能进服」而非替换 EaglercraftXServer，**网关暂缓**）。<br>上一轮 2026-11-22 by pi（**`webmc` 网关调研落库**：OrzWebMC #1/#2 → 父仓库 bump 指针；拆出 Eaglercraft 两代客户端、WS 帧/压缩、握手 v3/v5、MC 登录时序与「自研 Kotlin 2.x 网关 + Velocity」方案（**D1 已定 Kotlin 2.4.x**），见 §1.4。<br>上一轮 2026-11-15 by pi（**子模块第二轮同步**：`backup` `233e504`→`fa399ea`，20 个子模块现已**全部等于远端 `main`/`master` 最新**；`plugin` 仍钉 `main` `a3128f9`，工作树检出 `develop` 属预期。<br>上一轮 2026-11-15 by pi（**官网服务器卡片三端化 + 多服 Tab**：`site` #14 / 父仓库 #65 已发布；Eaglercraft 26.3 内嵌可行性已调研，结论见 §1.3。<br>上一轮 2026-11-15 by pi（**全量同步子模块指针到远端最新**：`backup`→`7ba22be`、`deploy`→`04c3538`、`swift/app`→`33e0ee6`，其余 17 个已是最新；顺带修 `boot-check.sh` 两处显示缺陷。<br>上一轮 2026-11-09 by pi（**0.1.7 (59) 已发布**；项目清理 + 文档发布根路径直达（站点已上线）；官网页面面向用户收敛并发布（site #9）；官网 GEO/SEO 优化（site #10）；搜索引擎提交自动化（site #11）；分类/标签页 SEO 修复（site #12）；内容 SEO 护栏与周检（site #13）；PR #158/#159/#160/#161/#162）
 
 ---
 
@@ -163,9 +163,9 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **独立仓库** | `OrzMC/RealTime`；PR [#1](https://github.com/OrzMC/RealTime/pull/1) 已 squash 合并，主分支提交 `a9c10c9`。 |
 | **项目基线** | Kotlin / JDK 25 / Gradle 9.2.1；Paper API 26.3；Paper + Folia；命令 `/rtime`；默认时区 `Asia/Shanghai`。独立构建与发布，父仓库只记录 gitlink。 |
 | **PR1 验收** | CI：Gradle build/check/Spotless + shaded JAR 检查通过；Paper 26.3 与 Folia 26.3 稳定构建均完成服务端启动、RealTime 启用及 RCON `/rtime` 实测。证据：CI run [45097381821](https://github.com/OrzMC/RealTime/actions/runs/45097381821)、runtime smoke [45097381910](https://github.com/OrzMC/RealTime/actions/runs/45097381910)。 |
-| **父仓库集成** | PR [#134](https://github.com/OrzMC/OrzMC/pull/134) 已提交；分支 `feature/integrate-realtime-submodule` 已更新 `.gitmodules`、`AGENTS.md` 子模块登记表、根 `README.md` 目录树、`docs/README.md` 工具插件索引，并添加 `tools/RealTime` gitlink，固定到 `a9c10c9`。 |
-| **CI** | 父仓库 PR #134 的 CI run [45097732255](https://github.com/OrzMC/OrzMC/actions/runs/45097732255) 通过：登记表与 `.gitmodules` 一致（22 个子模块）、参考一致性套件 79/79 PASS、manifest / parity / compliance / platform / App 依赖锁检查全部通过。 |
-| **下一步** | ① 合并父仓库 PR #134（CI 已通过）；② 合并后从 RealTime `main` 开始 PR2：实现基于 `java.time.Clock` 的 Core 时间服务及确定性单测。 |
+| **父仓库集成** | PR [#134](https://github.com/OrzMC/OrzMC/pull/134) 已 squash 合并（父仓库 main 提交 `90696df`）；`.gitmodules`、`AGENTS.md` 子模块登记表、根 `README.md`、`docs/README.md` 已同步，`tools/RealTime` gitlink 固定到 `a9c10c9`。 |
+| **CI** | PR #134 的 CI run [45097814398](https://github.com/OrzMC/OrzMC/actions/runs/45097814398) 通过：登记表与 `.gitmodules` 一致（22 个子模块）、参考一致性套件 79/79 PASS、manifest / parity / compliance / platform / App 依赖锁检查全部通过。合并后 main CI run [45097858798](https://github.com/OrzMC/OrzMC/actions/runs/45097858798) 已排队。 |
+| **下一步** | 从 RealTime `main` 开始 PR2：实现基于 `java.time.Clock` 的 Core 时间服务、时区解析与确定性单测；保持 Core 不依赖 Bukkit/Paper/Folia。 |
 | **边界** | 当前只验证插件 bootstrap 与 `/rtime` 状态命令；Clock 服务、独立模块配置、PlaceholderAPI、红石时钟及 Folia region/entity 调度仍是后续任务，不能宣称已实现。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
@@ -470,8 +470,8 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 
 - **独立仓库**：`OrzMC/RealTime` PR #1 squash 合并（`a9c10c9`）；Kotlin/JDK25/Gradle9.2.1 工程骨架、Agent Native 工作流、文档与本地脚本落地。
 - **验证**：Gradle CI + JAR 检查通过；Paper 26.3 / Folia 26.3 均实际启动成功，RealTime 插件启用，RCON 执行 `/rtime` 成功。
-- **父仓库**：在 `feature/integrate-realtime-submodule` 增加 `tools/RealTime`，固定到 `a9c10c9`；同步 `.gitmodules`、`AGENTS.md`、`README.md`、`docs/README.md`；父仓库 PR [#134](https://github.com/OrzMC/OrzMC/pull/134) 已开，CI run 45097732255 全绿。
-- **下一步**：合并父仓库 PR #134；随后进入 RealTime PR2（Clock-backed Core）。
+- **父仓库**：PR [#134](https://github.com/OrzMC/OrzMC/pull/134) 已 squash 合并（`90696df`）；main 的 `tools/RealTime` gitlink 固定到 `a9c10c9`，登记表 / `.gitmodules` / README / 文档索引已同步；PR CI run 45097814398 全绿。
+- **下一步**：开始 RealTime PR2（Clock-backed Core）。
 
 ### 2026-11-23 — pi（webmc 0.1.2：播放壳 / 大小屏 / 加载反馈）
 
