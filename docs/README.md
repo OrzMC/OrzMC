@@ -82,6 +82,7 @@
 | [`tools/GetMeHome`](../tools/GetMeHome) | 家的传送（派生） | [README](../tools/GetMeHome/README.md) |
 | [`tools/LoginSecurity`](../tools/LoginSecurity) | 登录认证（派生） | [README](../tools/LoginSecurity/README.md) |
 | [`tools/DeathChest`](../tools/DeathChest) | 死亡掉落箱子（派生） | [目录](../tools/DeathChest) |
+| [`tools/RealTime`](../tools/RealTime) | 现实时间服务插件（Paper/Folia，自研） | [README](../tools/RealTime/README.md) · [AGENTS](../tools/RealTime/AGENTS.md) |
 
 ### 站点与组织
 | 子模块 | 一句话职责 | 文档入口 |
