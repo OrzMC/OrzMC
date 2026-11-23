@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-23 by AI（**`OrzMCApp` 老 issue 收口**：#6/#7/#14/#15 已完成关闭、#10 HarmonyOS 不做；org open issue 现仅剩 plugin 的 4 条。见 §5）<br>上一轮 by AI（**org issue 决策收口**2026-11-23 by AI（**org issue 决策收口**：`.github#3` 合规声明 / `OrzMCApp#31` 中国区限制均**不做**，`OrzMCApp#4` 按 two-cli 策略**关闭**；三条均已 comment 留档。见 §1.1 与 §5）<br>上一轮 by AI（**`plugin` issue 清理**2026-11-23 by AI（**`plugin` issue 清理**：#616 插件侧改进已落（PR #624 `a3bc448`：远端地址进诊断、同址零入站累计+抬高退避、稳定≠健康、`/config im status` 诊断段、`docs/dev/im-inbound-stall.md` + 参考探针；**剩宿主三个联网实验**）；#618 nightly 重跑已绿并自动关闭；OrzPythonMC #107 已复核关闭。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
+> **最后更新**：2026-11-23 by AI（**#616 定性**：插件与 EasyBot（另一套凭据）飞书长连接同几分钟一起失活 → 宿主出网路径；插件侧改进已发 beta **`1.0.31-dev.438`**（里程碑 #626，父仓库 #151 已 bump），只剩 A/B 宿主实验；测试服仍跑 dev.436，**换版待同意**。见 §1.1 与 §5）<br>上一轮 by AI（**`OrzMCApp` 老 issue 收口**2026-11-23 by AI（**`OrzMCApp` 老 issue 收口**：#6/#7/#14/#15 已完成关闭、#10 HarmonyOS 不做；org open issue 现仅剩 plugin 的 4 条。见 §5）<br>上一轮 by AI（**org issue 决策收口**2026-11-23 by AI（**org issue 决策收口**：`.github#3` 合规声明 / `OrzMCApp#31` 中国区限制均**不做**，`OrzMCApp#4` 按 two-cli 策略**关闭**；三条均已 comment 留档。见 §1.1 与 §5）<br>上一轮 by AI（**`plugin` issue 清理**2026-11-23 by AI（**`plugin` issue 清理**：#616 插件侧改进已落（PR #624 `a3bc448`：远端地址进诊断、同址零入站累计+抬高退避、稳定≠健康、`/config im status` 诊断段、`docs/dev/im-inbound-stall.md` + 参考探针；**剩宿主三个联网实验**）；#618 nightly 重跑已绿并自动关闭；OrzPythonMC #107 已复核关闭。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
 
 ---
 
@@ -180,7 +180,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **状态** | ✅ **1.0.30 正式版已发布**（Hangar Release / Modrinth release / GitHub Release `OrzMC-1.0.30.jar`）；版本自增到 **1.0.31**（PR #559 自动合）；✅ **beta `1.0.31-dev.436` 已发布**（milestone #615 → main `7522802`）；✅ **beta `1.0.31-dev.437` 已发布**（milestone #622 → main `3153ae5`，run 45119032875 绿；父仓库 PR #142 已 bump 指针）。两轮均无配置变更、无数据迁移 |
 | **已做（8 个 PR）** | `#539` 被动回复窗口预判 + `40034005` 兜底；`#540` 长任务完成通知改主动群通知 + 静默无回执兜底 + 分页上限；`#541` i18n 占位符漏填（`{total}` 原样进群）+ 调用点护栏 + `InboundDedup` 加固；`#542` CHANGELOG 去重；`#543/#544` GeoIP 多源兜底（默认 `countryis → geojs`）+ 失败短缓存 + 决策窗预算；`#545/#546/#547` 文档索引 / 决策记录 / 网络受限机房手册；`#611` dependabot 自动合并改 REST 取作者（GraphQL 把 bot login 呈现成 `app/dependabot`，自动合并静默停摆两周）；`#612` IM 静默看门狗判活改为「任何入站活性」（含 WS 控制帧）+ `platforms.<id>.heartbeat_timeout_seconds` + 日志口径；`#613` `backend: builtin` 不再报 easybot 明文传输等「不参与运行」建议 |
 | **盘点结论** | 全量 `develop→main` review（187 commits / 392 文件）：无 Folia 线程红线回归、无资源泄漏、无凭据、i18n 472 key 双语一致、缓存有界；修掉 1 个真 bug + 3 处加固 |
-| **下一步** | ① **plugin#616**（长连接入站断流）——**插件侧已落 PR #624**（`a3bc448`）：远端地址进诊断、同址零入站累计 3 次给提示并抬高退避、稳定但零入站不再清零计数、`/config im status` 增诊断段、手册 `docs/dev/im-inbound-stall.md` + 探针 `scripts/dev/im-longlink-probe.py`；`SO_KEEPALIVE` **有意未做**（Java-WebSocket 1.6.0 自定 socket factory 会让 wss 跳过 TLS 包装）。**只剩宿主三个联网实验**（proxy / `network: host` / 同容器探针）才能给 #616 定性收口；② 下次里程碑（develop → main）会把 #616 + `backup-core` 0.3.2 带上 main；③ **其余 org issue 已决策（维护者 2026-11-23，均已 comment+close/not planned）**：`.github#3` 16 仓合规声明 **不做**（现有对外发布面已有声明，判断风险可接受）；`OrzMCApp#31` 中国区下载限制 **不做**（影响海外/离线用户，开关语义与验收成本高）；`OrzMCApp#4` homebrew 分发 Swift CLI **按 two-cli 策略关闭**（Swift 不对外分发）；④ 质量闭环见 §5 2026-11-14 条目 |
+| **下一步** | ① **plugin#616 已定性为宿主出网路径（本机实测证据，见 §5）**：插件（Java/builtin）与 EasyBot（Rust、**另一套飞书应用凭据**）的飞书长连接在同几分钟内一起失活（09:36/09:37、10:40/10:39、10:55/10:53、11:19/11:14 UTC），插件侧形态 = 「已发心跳 11 帧、入站冻结在 23 帧」→ 跨实现同时失效，非插件逻辑。插件侧改进已随 #624 发 beta **`1.0.31-dev.438`**（sha256 `5e4d4920…85f6a`，本机已下载校验）；**只剩 A（`platforms.<id>.proxy`）/ B（`network: host`）两个宿主实验**定性收口；② 测试服两实例仍跑 `dev.436`，换 `dev.438` 后即可用 `/config im status` 诊断段现场取证（**待维护者同意重启实例**）；③ 下次里程碑会带上 #627（探针工具，docs-only）；④ 质量闭环见 §5 2026-11-14 条目 |
 | **已决策** | **不做离线 GeoIP**（体积 +73%~+127%，且月度刷新/CC BY 署名/口径复核的长期成本不可控）——见 `plugin/docs/features.md` §5.1、issue #538 |
 | **安全策略（明确）** | 地区限制**保持 fail-close**：`geoip.fail_open` 只是调试/应急开关，**不用于换可用性**；网络受限走自建 `country.is`（`plugin/docs/manuals/geoip-restricted-network.md`） |
 
@@ -469,6 +469,22 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-11-23 — AI（#616 定性：跨实现同时失活 → 宿主出网路径；里程碑 #626 → beta `1.0.31-dev.438`）
+
+- **#616 关键证据（本机测试服 + EasyBot 容器，只读观测）**：同一条出网路径上跑着两个完全独立的飞书长连接实现
+  （插件 Java/builtin `cli_aa11b7bc…`、EasyBot Rust `cli_aaa50b23…`，凭据不同），两边失活时刻对得上：
+  `09:36/09:37`、`10:40/10:39`、`10:55/10:53`、`11:19/11:14`（UTC，easybot `transport retry` vs 插件静默超时，差 1–5 分钟）；
+  QQ 侧同样（插件 1006 11:10/11:11 vs easybot `QQ reconnect requested` 11:05）。
+  插件侧形态：`已发心跳 11 帧、入站冻结在 23 帧`、随后 code=1006 无 close 帧 → 出站通、入站被丢，指向宿主路径（Clash TUN / 代理 / NAT）。
+  24h 分布为持续抖动（飞书 1–5 次/小时，QQ 最多 18 次/小时），唯一安静段是 20:11 本地之后 ~55 分钟。
+- **参考客户端对照（实验 C 的边界）**：JDK `java.net.http.WebSocket` 探针在同一 docker 网络内短窗口完全正常（每次 ping 都收到 pong）；
+  但飞书端点**不接受裸握手**、QQ 无 identify 2 分钟后 `4009 Session timed out` → 参考客户端只能证明「短窗口路径可用」，
+  **不能**替代 A/B 实验。三种运行时探针（Python/Node/JDK）已随 **PR #627** 入仓。
+- **里程碑 #626 → beta `1.0.31-dev.438`**：`GatewayDiagnostics` 快照 + 远端地址诊断 + 同址零入站提示/抬高退避 + 「稳定 ≠ 健康」+
+  `backup-core 0.3.2`（损坏 region 原样保留）随里程碑合入 main；publish run 45181583326 绿；
+  父仓库指针 PR **#151** 已合（`b2dacd4`，plugin gitlink `1e188b3`）。Hangar 产物 sha256 已本机校验。
+- **待维护者决定**：是否把两个测试实例从 `dev.436` 换到 `dev.438` 并重启（会短暂断服），换完即可用 `/config im status` 现场取证。
+
 ### 2026-11-23 — AI（`OrzMCApp` 老 issue 收口：#6/#7/#14/#15 已完成、#10 不做）
 
 - **#6 iOS 端发送命令卡顿 → completed**：0.1.6「实例行直接进控制台 + 底部输入框发命令」+ 面板请求超时收紧到 20s；0.1.7 MCSManager 控制台改推入页面、刷新只重拉历史日志。
