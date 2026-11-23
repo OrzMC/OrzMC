@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-23 by AI（**测试服已装 beta `1.0.31-dev.438`**：Paper 实例跑新版并验证 IM 建连；Folia 待下次重启生效；记下运维坑「别 `docker restart` MCSM 实例容器，要重启 daemon」）。见 §5）<br>上一轮 by AI（**#616 定性**2026-11-23 by AI（**#616 定性**：插件与 EasyBot（另一套凭据）飞书长连接同几分钟一起失活 → 宿主出网路径；插件侧改进已发 beta **`1.0.31-dev.438`**（里程碑 #626，父仓库 #151 已 bump），只剩 A/B 宿主实验；测试服仍跑 dev.436，**换版待同意**。见 §1.1 与 §5）<br>上一轮 by AI（**`OrzMCApp` 老 issue 收口**2026-11-23 by AI（**`OrzMCApp` 老 issue 收口**：#6/#7/#14/#15 已完成关闭、#10 HarmonyOS 不做；org open issue 现仅剩 plugin 的 4 条。见 §5）<br>上一轮 by AI（**org issue 决策收口**2026-11-23 by AI（**org issue 决策收口**：`.github#3` 合规声明 / `OrzMCApp#31` 中国区限制均**不做**，`OrzMCApp#4` 按 two-cli 策略**关闭**；三条均已 comment 留档。见 §1.1 与 §5）<br>上一轮 by AI（**`plugin` issue 清理**2026-11-23 by AI（**`plugin` issue 清理**：#616 插件侧改进已落（PR #624 `a3bc448`：远端地址进诊断、同址零入站累计+抬高退避、稳定≠健康、`/config im status` 诊断段、`docs/dev/im-inbound-stall.md` + 参考探针；**剩宿主三个联网实验**）；#618 nightly 重跑已绿并自动关闭；OrzPythonMC #107 已复核关闭。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
+> **最后更新**：2026-11-23 by AI（**beta `dev.439` 上车 + RCON 打通**：修复 Paper 26.x `RemoteConsoleCommandSender` 只继承 `CommandSender` 导致的 D10 误拒；`/config im status` 诊断段生产实测闭环；#616 证据补全为「容器 NAT 与宿主路径同时失活」+ 宿主侧 Clash Verge TUN 嫌疑，**A/B 仍需一个开关**）。见 §5）<br>上一轮 by AI（**测试服已装 beta `1.0.31-dev.438`**2026-11-23 by AI（**测试服已装 beta `1.0.31-dev.438`**：Paper 实例跑新版并验证 IM 建连；Folia 待下次重启生效；记下运维坑「别 `docker restart` MCSM 实例容器，要重启 daemon」）。见 §5）<br>上一轮 by AI（**#616 定性**2026-11-23 by AI（**#616 定性**：插件与 EasyBot（另一套凭据）飞书长连接同几分钟一起失活 → 宿主出网路径；插件侧改进已发 beta **`1.0.31-dev.438`**（里程碑 #626，父仓库 #151 已 bump），只剩 A/B 宿主实验；测试服仍跑 dev.436，**换版待同意**。见 §1.1 与 §5）<br>上一轮 by AI（**`OrzMCApp` 老 issue 收口**2026-11-23 by AI（**`OrzMCApp` 老 issue 收口**：#6/#7/#14/#15 已完成关闭、#10 HarmonyOS 不做；org open issue 现仅剩 plugin 的 4 条。见 §5）<br>上一轮 by AI（**org issue 决策收口**2026-11-23 by AI（**org issue 决策收口**：`.github#3` 合规声明 / `OrzMCApp#31` 中国区限制均**不做**，`OrzMCApp#4` 按 two-cli 策略**关闭**；三条均已 comment 留档。见 §1.1 与 §5）<br>上一轮 by AI（**`plugin` issue 清理**2026-11-23 by AI（**`plugin` issue 清理**：#616 插件侧改进已落（PR #624 `a3bc448`：远端地址进诊断、同址零入站累计+抬高退避、稳定≠健康、`/config im status` 诊断段、`docs/dev/im-inbound-stall.md` + 参考探针；**剩宿主三个联网实验**）；#618 nightly 重跑已绿并自动关闭；OrzPythonMC #107 已复核关闭。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
 
 ---
 
@@ -469,6 +469,24 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-11-23 — AI（beta `dev.439` 上车 + RCON 打通：诊断面板实测闭环；#616 定性证据补全）
+
+- **发版两次**：里程碑 #626 → `dev.438`（#616 诊断）；里程碑 #629 → **`dev.439`**（RCON 控制台守卫修复 #628 + 探针工具 #627）。
+  父仓库指针两次 bump 已合（#151 → `1e188b3`、#154 → `d5ee5e1`）。Hangar 产物 sha256 均本机校验。
+- **真 bug（RCON 被 D10 挡住）**：临时开 RCON 取面板时 `/config im status` 被回「仅控制台/游戏内 op 可执行」。
+  根因：**Paper 26.x 的 `RemoteConsoleCommandSender` 只继承 `CommandSender`**（`javap` 在 `paper-api-26.3.build.258` 验证），
+  守卫只判 `instanceof ConsoleCommandSender`。已修（`isConsoleLike`）+ 单测 + `scripts/dev/rcon.js`（鉴权按 `id != -1` 判定——
+  Paper 成功回包是 `type=2` 而非协议里的 3）。RCON 已**临时开在 Paper 实例**（`enable-rcon=true`，`server.properties` 备份在 `/tmp`），
+  自动化取证走 `docker exec orzmc-mcsmanager-web node /tmp/rcon.js <容器IP> 25575 <pw> "<cmd>"`。
+- **面板实测闭环**（dev.439，Paper 实例）：`/config im status` 返回诊断段，连续 5 次采样（22:27→22:46）计数单调上升、
+  `silent` 稳定 30s 内、异常计数 0；而 21:58 的失活日志为「已发心跳 18 / 入站 17、远端 `111.161.67.196:443`」。
+- **#616 证据链补全（仍差 A/B）**：21:57–22:00 三分钟内 **容器 NAT 探针 + WSL 宿主探针一起 `Connection reset`**，
+  同窗口插件 QQ 静默 + 飞书 1006 → 排除「容器 NAT 特有」。宿主侧查到 **Clash Verge（`verge-mihomo`，mixed-port 7897，
+  `allow-lan: false`，含 `tun:`）** —— TUN 模式下所有流量穿过它，与症状吻合。
+  - **A 阻塞**：Clash 只绑 `127.0.0.1:7897`，容器实测不通 → 需维护者打开「局域网连接」+ 防火墙放行；
+  - **B 阻塞**：`velocity.toml` 的 `lobby = "MCSM-716c2f:25565"` 按容器名寻址，改 host 网络会断整链；
+  - **更省事的等价实验**：临时关 TUN（或让两个域名走 DIRECT）观察 30–60 分钟。
+
 ### 2026-11-23 — AI（测试服装上 beta `1.0.31-dev.438`；运维坑：别 `docker restart` MCSM 实例容器）
 
 - **安装**：两个测试实例（`PaperMC` = `716c2fb7…`、`FoliaMC` = `8A932DD4…`）的插件 jar 已从 `dev.436` 换成 **`dev.438`**，
