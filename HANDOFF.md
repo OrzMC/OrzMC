@@ -156,19 +156,22 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **播放壳 UI（2026-11-23，0.1.2）** | `/play` 改为播放壳：默认**窗口模式**（最大 1180×820），工具栏「全屏/小窗」切换、刷新、返回；首次加载显示 spinner/进度条/已用时间，iframe 加载后隐藏。`/play/raw` 返回原始客户端 HTML，`/embed` 改用它并补加载层。入口 `/` 重做为简洁深色表单 + 版本卡片（不再重复 name/id）。生产已切 `orzmc-webmc:0.1.2`，`/play` shell 6,820 B、`/play/raw` 78,394,945 B，CSP raw 追加 `'self'` 允许同源 iframe；无头 Edge 打开生产页面已显示 profile 界面，工具栏与全屏切换可用。 |
 | **下一步（下次从这里开始）** | ① `site` 兜底已指向 webmc（#31）并发布；可选把 `web_client_fallback_url` 的默认版本按服调整。② 生产已用 0.1.2 本地镜像（registry digest `ef0fb1d7…`），后续可切 registry 镜像。③ 可选：把 `LAN_WEBMC_PORT` 18092 从公网/防火墙收掉，只留 Caddy。④ 1.8.8/1.12.2 需真人点一次首次确认（内容警告/用户名）；若要做全自动，再评估预置档案。⑤ 0.1.2 的 `loading` 只在 iframe load 时隐藏，之后客户端自身启动画面接管；若要更细的真实字节进度，再评估 fetch/blob。 |
 
-### 1.5 RealTime 独立现实时间插件（2026-11-23）——**PR1–PR4 已合并，父仓库指针更新进行中**
+### 1.5 RealTime 独立现实时间插件（2026-11-23）——**PR1–PR7 已合并，父仓库指针同步中**
 
 | 项 | 内容 |
 |---|---|
-| **独立仓库** | `OrzMC/RealTime`；PR [#1](https://github.com/OrzMC/RealTime/pull/1) 至 [#4](https://github.com/OrzMC/RealTime/pull/4) 均已 squash 合并；最新 main 提交 `27803543`。 |
-| **PR1** | Agent Native 工程骨架、Gradle CI、JAR 检查；Paper/Folia 26.3 启动及 RCON `/rtime` 冒烟通过。 |
-| **PR2** | `RealTimeService`、`ClockRealTimeService`、`RealTimeSnapshot`；固定 Clock、时区、DST、locale、格式化测试通过。 |
-| **PR3** | `/rtime now/info/reload`、权限、`config.yml`、`messages.yml`、`modules/command.yml`、无版本配置迁移备份、校验和安全重载。 |
-| **PR4** | Paper/Folia GlobalRegionScheduler、RegionScheduler、EntityScheduler 适配；任务登记、entity retirement、插件关闭取消；Paper/Folia runtime smoke 验证 global scheduler 和三个命令。 |
-| **PR4 验收证据** | CI [45100213186](https://github.com/OrzMC/RealTime/actions/runs/45100213186)、Paper/Folia smoke [45100213134](https://github.com/OrzMC/RealTime/actions/runs/45100213134)、Agent validation [45100213150](https://github.com/OrzMC/RealTime/actions/runs/45100213150) 均通过。 |
-| **父仓库集成** | PR [#134](https://github.com/OrzMC/OrzMC/pull/134) 已合并并建立 `tools/RealTime`；当前父仓库 gitlink 指向 PR3 提交 `5affd145`，本轮更新到 `27803543`。 |
-| **下一步** | 合并父仓库指针更新 PR；然后进入 PR5：设备模型、持久化和 BCD 红石时间输出。 |
-| **边界** | Core、基础命令/配置、Paper/Folia scheduler facade 已实现；实际世界方块/实体设备操作、设备持久化、PlaceholderAPI、BCD 红石输出仍未实现。 |
+| **独立仓库** | `OrzMC/RealTime`；PR [#1](https://github.com/OrzMC/RealTime/pull/1) 至 [#7](https://github.com/OrzMC/RealTime/pull/7) 均已 squash 合并；当前 main 提交 `6fcbbbb0`。 |
+| **项目基线** | Kotlin / JDK 25 / Gradle 9.2.1；Paper API 26.3；Paper + Folia；`/rtime`；默认时区 `Asia/Shanghai`。独立构建、测试与发布，不依赖父仓库运行时。 |
+| **PR1–PR4** | 工程骨架、Clock-backed Core、命令与模块化配置、Paper/Folia Global/Region/Entity Scheduler 适配、任务生命周期与运行时冒烟。 |
+| **PR5** | 16 位 HHmm BCD 编码、设备模型校验、版本化 YAML 持久化/备份、RegionScheduler 红石输出、未加载区块跳过及 ChunkLoadEvent 刷新。 |
+| **PR5 验收证据** | Agent validation [45102008572](https://github.com/OrzMC/RealTime/actions/runs/45102008572)、Gradle CI [45102008562](https://github.com/OrzMC/RealTime/actions/runs/45102008562)、Paper/Folia smoke [45102008573](https://github.com/OrzMC/RealTime/actions/runs/45102008573) 均通过。 |
+| **PR6** | 可选 PlaceholderAPI `realtime` expansion；支持日期/时间、时区、epoch、BCD 与设备状态占位符；未安装 PlaceholderAPI 时仍可启动。 |
+| **PR6 验收证据** | Agent validation [45113918688](https://github.com/OrzMC/RealTime/actions/runs/45113918688)、Gradle CI [45113918644](https://github.com/OrzMC/RealTime/actions/runs/45113918644)、Paper/Folia × 有无 PlaceholderAPI 四组 smoke [45113918714](https://github.com/OrzMC/RealTime/actions/runs/45113918714) 均通过。 |
+| **PR7** | Tag 驱动的 SemVer release automation：强制 Changelog、可复现 shaded JAR、SHA-256、GitHub Release；Hangar/Modrinth 条件发布仅在受保护 release job 中执行。 |
+| **PR7 验收证据** | Agent validation [45114703302](https://github.com/OrzMC/RealTime/actions/runs/45114703302)、Gradle CI [45114703306](https://github.com/OrzMC/RealTime/actions/runs/45114703306)、Paper/Folia × 有无 PlaceholderAPI 四组 smoke [45114703330](https://github.com/OrzMC/RealTime/actions/runs/45114703330) 均通过。 |
+| **父仓库集成** | PR [#134](https://github.com/OrzMC/OrzMC/pull/134) 已建立 `tools/RealTime`，`.gitmodules`、登记表、README 与文档索引均已登记；当前 gitlink 仍指向 PR4 提交 `27803543`，本轮父仓库 PR 将 bump 到 `6fcbbbb0`。 |
+| **下一步** | 合并父仓库 gitlink bump；随后按 RealTime 仓库 `tasks/roadmap.md` 选择下一项已就绪任务，继续设备管理/诊断与时间能力扩展。 |
+| **发布边界** | PR7 的发布自动化已合并，但没有创建真实 tag / GitHub Release；Hangar/Modrinth 项目 ID、环境 secrets 与 required reviewers 尚未配置，正式发布仍需维护者明确启用并审批。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
 
@@ -467,6 +470,15 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-11-23 — AI（RealTime PR5–PR7 完成，父仓库指针待同步）
+
+- **PR5**：设备模型、16 位 HHmm BCD 编码、版本化 YAML 持久化、区块安全红石输出已合并（`e4eac6a5`）；Paper/Folia smoke 与完整 CI 通过。
+- **PR6**：可选 PlaceholderAPI expansion 已合并（`ba3d52a2`）；Paper/Folia 在有无 PlaceholderAPI 四组 smoke 全通过。
+- **PR7**：SemVer/Changelog 校验、可复现归档、版本化 shaded JAR、SHA-256、受保护 GitHub Release、可选 Hangar/Modrinth 上传已合并（`6fcbbbb0`）；release 脚本测试、Gradle CI、Paper/Folia smoke 全通过。
+- **发布边界**：未创建真实 tag / Release；未配置 Hangar/Modrinth project ID、环境 token 或 release 环境审批，因此没有触发实际发布。
+- **父仓库**：`tools/RealTime` 当前指针仍在 PR4（`27803543`）；本轮父仓库 PR 将更新到 PR7（`6fcbbbb0`）。
+- **下一步**：合并父仓库指针 bump；之后按 RealTime `tasks/roadmap.md` 的 ready/backlog 任务继续推进。
+
 ### 2026-11-23 — AI（RealTime PR4 Paper/Folia scheduler 完成）
 
 - **RealTime PR4**：PR [#4](https://github.com/OrzMC/RealTime/pull/4) 已合并（`27803543`）；新增 GlobalRegionScheduler / RegionScheduler / EntityScheduler 适配、TaskRegistry、entity retirement 清理、插件关闭时取消任务。
