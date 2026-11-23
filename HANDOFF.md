@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-23 by AI（**beta `dev.439` 上车 + RCON 打通**：修复 Paper 26.x `RemoteConsoleCommandSender` 只继承 `CommandSender` 导致的 D10 误拒；`/config im status` 诊断段生产实测闭环；#616 证据补全为「容器 NAT 与宿主路径同时失活」+ 宿主侧 Clash Verge TUN 嫌疑，**A/B 仍需一个开关**）。见 §5）<br>上一轮 by AI（**测试服已装 beta `1.0.31-dev.438`**2026-11-23 by AI（**测试服已装 beta `1.0.31-dev.438`**：Paper 实例跑新版并验证 IM 建连；Folia 待下次重启生效；记下运维坑「别 `docker restart` MCSM 实例容器，要重启 daemon」）。见 §5）<br>上一轮 by AI（**#616 定性**2026-11-23 by AI（**#616 定性**：插件与 EasyBot（另一套凭据）飞书长连接同几分钟一起失活 → 宿主出网路径；插件侧改进已发 beta **`1.0.31-dev.438`**（里程碑 #626，父仓库 #151 已 bump），只剩 A/B 宿主实验；测试服仍跑 dev.436，**换版待同意**。见 §1.1 与 §5）<br>上一轮 by AI（**`OrzMCApp` 老 issue 收口**2026-11-23 by AI（**`OrzMCApp` 老 issue 收口**：#6/#7/#14/#15 已完成关闭、#10 HarmonyOS 不做；org open issue 现仅剩 plugin 的 4 条。见 §5）<br>上一轮 by AI（**org issue 决策收口**2026-11-23 by AI（**org issue 决策收口**：`.github#3` 合规声明 / `OrzMCApp#31` 中国区限制均**不做**，`OrzMCApp#4` 按 two-cli 策略**关闭**；三条均已 comment 留档。见 §1.1 与 §5）<br>上一轮 by AI（**`plugin` issue 清理**2026-11-23 by AI（**`plugin` issue 清理**：#616 插件侧改进已落（PR #624 `a3bc448`：远端地址进诊断、同址零入站累计+抬高退避、稳定≠健康、`/config im status` 诊断段、`docs/dev/im-inbound-stall.md` + 参考探针；**剩宿主三个联网实验**）；#618 nightly 重跑已绿并自动关闭；OrzPythonMC #107 已复核关闭。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
+> **最后更新**：2026-11-23 by AI（**beta `dev.440`**：按实测把「同址零入站」改为「同址静默」（收到帧后冻结也算），更新测试服并实测面板；一晚内远端 IP 漂移实测记录；**A/B 仍等一个开关**——Clash 开 allow-lan 或临时关 TUN）。见 §5）<br>上一轮 by AI（**beta `dev.439` 上车 + RCON 打通**2026-11-23 by AI（**beta `dev.439` 上车 + RCON 打通**：修复 Paper 26.x `RemoteConsoleCommandSender` 只继承 `CommandSender` 导致的 D10 误拒；`/config im status` 诊断段生产实测闭环；#616 证据补全为「容器 NAT 与宿主路径同时失活」+ 宿主侧 Clash Verge TUN 嫌疑，**A/B 仍需一个开关**）。见 §5）<br>上一轮 by AI（**测试服已装 beta `1.0.31-dev.438`**2026-11-23 by AI（**测试服已装 beta `1.0.31-dev.438`**：Paper 实例跑新版并验证 IM 建连；Folia 待下次重启生效；记下运维坑「别 `docker restart` MCSM 实例容器，要重启 daemon」）。见 §5）<br>上一轮 by AI（**#616 定性**2026-11-23 by AI（**#616 定性**：插件与 EasyBot（另一套凭据）飞书长连接同几分钟一起失活 → 宿主出网路径；插件侧改进已发 beta **`1.0.31-dev.438`**（里程碑 #626，父仓库 #151 已 bump），只剩 A/B 宿主实验；测试服仍跑 dev.436，**换版待同意**。见 §1.1 与 §5）<br>上一轮 by AI（**`OrzMCApp` 老 issue 收口**2026-11-23 by AI（**`OrzMCApp` 老 issue 收口**：#6/#7/#14/#15 已完成关闭、#10 HarmonyOS 不做；org open issue 现仅剩 plugin 的 4 条。见 §5）<br>上一轮 by AI（**org issue 决策收口**2026-11-23 by AI（**org issue 决策收口**：`.github#3` 合规声明 / `OrzMCApp#31` 中国区限制均**不做**，`OrzMCApp#4` 按 two-cli 策略**关闭**；三条均已 comment 留档。见 §1.1 与 §5）<br>上一轮 by AI（**`plugin` issue 清理**2026-11-23 by AI（**`plugin` issue 清理**：#616 插件侧改进已落（PR #624 `a3bc448`：远端地址进诊断、同址零入站累计+抬高退避、稳定≠健康、`/config im status` 诊断段、`docs/dev/im-inbound-stall.md` + 参考探针；**剩宿主三个联网实验**）；#618 nightly 重跑已绿并自动关闭；OrzPythonMC #107 已复核关闭。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
 
 ---
 
@@ -469,6 +469,21 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-11-23 深夜 — AI（`dev.440`：按实测修正「同址静默」口径；诊断面板连跑三轮验证）
+
+- **dev.439 实跑抓到的形态**（同一远端 `111.161.67.196:443`，22:48 与 22:50 两次）：
+  `已发 48 / 入站 46` 与 `已发 5 / 入站 3` —— **收到过帧之后照样冻结**；而 v1 只在「本轮零入站」时累加同址计数
+  ⇒ 最典型形态既不计数、也不会触发「连续 3 次」提示与退避抬高。
+- **修正（PR #630 → 里程碑 #631 → beta `dev.440`）**：同址静默按**对端地址**归并（与帧数无关）；
+  文案「同址零入站」→「同址静默」（zh/en + 手册 + 诊断快照 javadoc）；新增回归测试
+  `sameAddressSilence_countsEvenWhenFramesWereReceived`。测试服 Paper 实例已装 dev.440，面板实测
+  `same-address silence` 字段生效、双平台 OPEN。父仓库指针 PR #156 已合（`b5dd2cc`）。
+- **远端地址会漂**：一晚内 `111.161.67.196 → 111.161.97.177`、`101.72.192.157 → 61.240.142.8`
+  （DNS 多 A 记录）——issue 里「换 IP」建议的现实依据，也让「同址静默」成为判断「这条路径/这个 IP 有问题」的关键信号。
+- **RCON 现状**：Paper 实例仍**临时开启**（`enable-rcon=true`，`server.properties` 备份在 `/tmp/server.properties.bak-*`）；
+  自动化命令：`docker exec orzmc-mcsmanager-web node /tmp/rcon.js <容器IP> 25575 <pw> "/config im status"`
+  （`/tmp/rcon.js` 与 `/tmp/rcon_pw.txt` 是本机临时文件，仓库内版本见 `scripts/dev/rcon.js`）。
+
 ### 2026-11-23 — AI（beta `dev.439` 上车 + RCON 打通：诊断面板实测闭环；#616 定性证据补全）
 
 - **发版两次**：里程碑 #626 → `dev.438`（#616 诊断）；里程碑 #629 → **`dev.439`**（RCON 控制台守卫修复 #628 + 探针工具 #627）。
