@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-23 by AI（**#616 定性**：插件与 EasyBot（另一套凭据）飞书长连接同几分钟一起失活 → 宿主出网路径；插件侧改进已发 beta **`1.0.31-dev.438`**（里程碑 #626，父仓库 #151 已 bump），只剩 A/B 宿主实验；测试服仍跑 dev.436，**换版待同意**。见 §1.1 与 §5）<br>上一轮 by AI（**`OrzMCApp` 老 issue 收口**2026-11-23 by AI（**`OrzMCApp` 老 issue 收口**：#6/#7/#14/#15 已完成关闭、#10 HarmonyOS 不做；org open issue 现仅剩 plugin 的 4 条。见 §5）<br>上一轮 by AI（**org issue 决策收口**2026-11-23 by AI（**org issue 决策收口**：`.github#3` 合规声明 / `OrzMCApp#31` 中国区限制均**不做**，`OrzMCApp#4` 按 two-cli 策略**关闭**；三条均已 comment 留档。见 §1.1 与 §5）<br>上一轮 by AI（**`plugin` issue 清理**2026-11-23 by AI（**`plugin` issue 清理**：#616 插件侧改进已落（PR #624 `a3bc448`：远端地址进诊断、同址零入站累计+抬高退避、稳定≠健康、`/config im status` 诊断段、`docs/dev/im-inbound-stall.md` + 参考探针；**剩宿主三个联网实验**）；#618 nightly 重跑已绿并自动关闭；OrzPythonMC #107 已复核关闭。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
+> **最后更新**：2026-11-23 by AI（**测试服已装 beta `1.0.31-dev.438`**：Paper 实例跑新版并验证 IM 建连；Folia 待下次重启生效；记下运维坑「别 `docker restart` MCSM 实例容器，要重启 daemon」）。见 §5）<br>上一轮 by AI（**#616 定性**2026-11-23 by AI（**#616 定性**：插件与 EasyBot（另一套凭据）飞书长连接同几分钟一起失活 → 宿主出网路径；插件侧改进已发 beta **`1.0.31-dev.438`**（里程碑 #626，父仓库 #151 已 bump），只剩 A/B 宿主实验；测试服仍跑 dev.436，**换版待同意**。见 §1.1 与 §5）<br>上一轮 by AI（**`OrzMCApp` 老 issue 收口**2026-11-23 by AI（**`OrzMCApp` 老 issue 收口**：#6/#7/#14/#15 已完成关闭、#10 HarmonyOS 不做；org open issue 现仅剩 plugin 的 4 条。见 §5）<br>上一轮 by AI（**org issue 决策收口**2026-11-23 by AI（**org issue 决策收口**：`.github#3` 合规声明 / `OrzMCApp#31` 中国区限制均**不做**，`OrzMCApp#4` 按 two-cli 策略**关闭**；三条均已 comment 留档。见 §1.1 与 §5）<br>上一轮 by AI（**`plugin` issue 清理**2026-11-23 by AI（**`plugin` issue 清理**：#616 插件侧改进已落（PR #624 `a3bc448`：远端地址进诊断、同址零入站累计+抬高退避、稳定≠健康、`/config im status` 诊断段、`docs/dev/im-inbound-stall.md` + 参考探针；**剩宿主三个联网实验**）；#618 nightly 重跑已绿并自动关闭；OrzPythonMC #107 已复核关闭。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
 
 ---
 
@@ -469,6 +469,19 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-11-23 — AI（测试服装上 beta `1.0.31-dev.438`；运维坑：别 `docker restart` MCSM 实例容器）
+
+- **安装**：两个测试实例（`PaperMC` = `716c2fb7…`、`FoliaMC` = `8A932DD4…`）的插件 jar 已从 `dev.436` 换成 **`dev.438`**，
+  旧 jar 留作回滚：`plugins/OrzMC-1.0.31-dev.436.jar.bak`；新 jar sha256 与 Hangar 一致（`5e4d4920…85f6a`）。
+  - `PaperMC`：容器已重建并重启 → `Enabling OrzMC v1.0.31`、`[feishu] 长连接已建立`、`[qq] 网关 READY`，**已跑上 dev.438**；
+  - `FoliaMC`：容器未被重建（daemon 认为仍在运行）→ 进程仍跑旧 jar，**下次重启自动加载 dev.438**（它是 easybot 后端，本轮观测用不到 builtin 诊断）。
+- **运维坑（实测踩到，记下来别再踩）**：`docker restart MCSM-<实例前 6 位>` 之后 MCSM daemon 会把该实例视为「已停止」并**清掉容器**
+  （`docker ps -a` 里直接消失，daemon 日志报 `no such container`）。**正确做法：`docker restart orzmc-mcsmanager-daemon`** ——
+  daemon 会 SIGTERM 优雅关闭所有实例再按 `eventTask.autoStart: true` 拉起（两个实例都会重建容器并加载新 jar）。
+- **观测现状**：本地 20:11 之后进入安静期（至今 ~1.5h 无静默事件），装版后 10 分钟同样无事件；
+  下次静默即可在日志里看到新的 `远端 host:port` 与「同址零入站第 N 次」，也可用 `/config im status` 的「网关诊断」段取证
+  （本机无 RCON、MCSM API 路由未通，面板命令需维护者在控制台/游戏内 op 执行）。
+
 ### 2026-11-23 — AI（#616 定性：跨实现同时失活 → 宿主出网路径；里程碑 #626 → beta `1.0.31-dev.438`）
 
 - **#616 关键证据（本机测试服 + EasyBot 容器，只读观测）**：同一条出网路径上跑着两个完全独立的飞书长连接实现
