@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 Ready**；PR9 诊断与 Paper/Folia + PlaceholderAPI 验证通过；本次更新 `tools/RealTime` 指针至 `e774d15f`。见 §1.5 与 §5）
+> **最后更新**：2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
 
 ---
 
@@ -156,19 +156,20 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **播放壳 UI（2026-11-23，0.1.2）** | `/play` 改为播放壳：默认**窗口模式**（最大 1180×820），工具栏「全屏/小窗」切换、刷新、返回；首次加载显示 spinner/进度条/已用时间，iframe 加载后隐藏。`/play/raw` 返回原始客户端 HTML，`/embed` 改用它并补加载层。入口 `/` 重做为简洁深色表单 + 版本卡片（不再重复 name/id）。生产已切 `orzmc-webmc:0.1.2`，`/play` shell 6,820 B、`/play/raw` 78,394,945 B，CSP raw 追加 `'self'` 允许同源 iframe；无头 Edge 打开生产页面已显示 profile 界面，工具栏与全屏切换可用。 |
 | **下一步（下次从这里开始）** | ① `site` 兜底已指向 webmc（#31）并发布；可选把 `web_client_fallback_url` 的默认版本按服调整。② 生产已用 0.1.2 本地镜像（registry digest `ef0fb1d7…`），后续可切 registry 镜像。③ 可选：把 `LAN_WEBMC_PORT` 18092 从公网/防火墙收掉，只留 Caddy。④ 1.8.8/1.12.2 需真人点一次首次确认（内容警告/用户名）；若要做全自动，再评估预置档案。⑤ 0.1.2 的 `loading` 只在 iframe load 时隐藏，之后客户端自身启动画面接管；若要更细的真实字节进度，再评估 fetch/blob。 |
 
-### 1.5 RealTime 独立现实时间插件（2026-11-23）——**PR1–PR9 已合并，PR10 Ready**
+### 1.5 RealTime 独立现实时间插件（2026-11-23）——**PR1–PR9 已合并，PR10 进行中（PR10a 完成）**
 
 | 项 | 内容 |
 |---|---|
-| **独立仓库** | `OrzMC/RealTime`；PR #1–#9 均已合并。PR #9 代码合并提交 `31369b0421e979353b09fac60e47eafb10f90bcb`；PR #14 文档收尾合并提交 `e774d15f4210521a12c745650ce0c1b775c61a2a`。 |
+| **独立仓库** | `OrzMC/RealTime`；PR #1–#9 已合并。PR #9 代码提交 `31369b0421e979353b09fac60e47eafb10f90bcb`；PR10a store foundation PR #15 合并提交 `b9880c5fbf3e7eaf6a3f5326a23518f4c281a3b3`；文档同步 PR #16 合并提交 `7a12272133173cd68697957f8b3ff43159c28b7f`。 |
 | **项目基线** | Kotlin / JDK 25 / Gradle 9.2.1；Paper API 26.3；Paper + Folia；命令 `/rtime`；默认时区 `Asia/Shanghai`。独立构建、测试与发布，不依赖父仓库运行时。 |
 | **PR1–PR4** | Agent Native 工程骨架、Clock-backed Core、命令与独立配置、Paper/Folia Global/Region/Entity Scheduler 适配。 |
 | **PR5–PR7** | HHmm BCD 与设备模型、版本化 YAML 持久化、RegionScheduler 红石输出、可选 PlaceholderAPI、受保护的 tag 驱动发布自动化。 |
-| **PR8** | 设备 list/info/enable/disable 管理命令；变更与 reload 串行化；持久化成功后才发布运行态；禁用设备通过 region-safe 刷新和 chunk-load 清理输出。 |
-| **PR9** | 只读 `/rtime device status`；线程安全聚合诊断计数（输出检查、未加载区块跳过、过期任务、无效输出块、功率变化、无变化、写入失败）。不在命令线程访问世界/区块/方块。 |
-| **PR9 验收** | Gradle CI #79、Agent Validation #68、Paper/Folia + PlaceholderAPI 四组合 smoke #50 全部通过；CI shaded JAR inspection 通过。PR [#13](https://github.com/OrzMC/RealTime/pull/13) 已合并。 |
-| **PR10（Ready）** | [持久化延迟清理队列](https://github.com/OrzMC/RealTime/blob/main/tasks/ready/PR10-deferred-device-cleanup.md)：为设备退役提供崩溃安全清理。关键决策：设备列表与 cleanup intent 必须在同一份 `data/devices.yml` schema v2 中通过一次原子替换持久化，禁止两个独立文件伪造跨文件事务；Paper/Folia region callback 只做方块检查/清理并回传 detached result，状态持久化走 global/state-owner 路径。未完成前不提供游戏内 remove 命令。 |
-| **父仓库集成** | `tools/RealTime` 已在 `.gitmodules` 登记；本次父仓库 PR 将 gitlink 从 PR8 `c4888a7857711f7d84e9c1cb2695e7c4931ce0f1` 更新到 PR9+文档收尾 `e774d15f4210521a12c745650ce0c1b775c61a2a`。只改该子模块指针和本 HANDOFF，不改其他子模块。 |
+| **PR8–PR9** | 设备 list/info/enable/disable 管理；只读 `/rtime device status`；线程安全聚合诊断计数。Paper/Folia 线程归属和不强制加载区块约束保留。 |
+| **PR9 验收** | Gradle CI #79、Agent Validation #68、Paper/Folia + PlaceholderAPI 四组合 smoke #50 全部通过；Shadow JAR inspection 通过。PR [#13](https://github.com/OrzMC/RealTime/pull/13) 已合并。 |
+| **PR10a（完成）** | PR [#15](https://github.com/OrzMC/RealTime/pull/15)：新增 cleanup job/store model，`data/devices.yml` 升级 schema v2，device list + cleanup jobs 同文件原子替换；schema v1 自动迁移；防止 active output 与 cleanup-reserved coordinates 重叠。CI #89、Agent Validation #76、Paper/Folia + PlaceholderAPI smoke #58 全通过，含 shaded JAR inspection。 |
+| **PR10b（进行中）** | crash-safe retirement service + region-owned deferred cleanup/retry processor；region callback 只做世界/区块/方块检查和变更，结果回传 global/state-owner 路径持久化；支持 chunk/world load retry、restart recovery、幂等清理。 |
+| **PR10c（后续）** | Paper/Folia restart/chunk-load runtime coverage、队列诊断与 operator observability。**未完成 PR10b/PR10c 验收前，不提供游戏内 remove 命令。** |
+| **父仓库集成** | `tools/RealTime` 已在 `.gitmodules` 登记；本次父仓库 PR 将 gitlink 从 PR9/docs `e774d15f4210521a12c745650ce0c1b775c61a2a` 更新到 PR10a + docs `7a12272133173cd68697957f8b3ff43159c28b7f`。只改该子模块指针和本 HANDOFF。 |
 | **发布边界** | PR7 的 release automation 已合并，但尚未创建正式 tag / GitHub Release；Hangar/Modrinth 项目 ID、environment secrets 与 required reviewers 未配置，正式发布仍需维护者明确启用并审批。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
@@ -468,6 +469,16 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-23 — AI（RealTime PR10a schema v2 完成、PR10b 开始、父仓库指针同步）
+
+- RealTime PR #15 合并：`b9880c5f`。新增 immutable cleanup job/output/store models；`data/devices.yml` schema v2 同文件保存 devices + cleanup-jobs；schema v1 自动迁移；active output 与 cleanup reservation 防重叠。
+- PR #15 验收：CI #89（含 shaded JAR inspection）、Agent Validation #76、Paper/Folia + PlaceholderAPI smoke #58 全部通过。
+- RealTime PR #16 合并：`7a122721`。PR10a 标记完成，PR10b 标记进行中；更新 schema v2 和 cleanup job 文档。
+- 父仓库 PR 将 `tools/RealTime` gitlink 从 `e774d15f` 更新到 `7a122721`；保留原子模块登记和目录布局。
+- 下一步：实施 PR10b crash-safe retirement service 与 Paper/Folia region-owned cleanup processor；确保 region callback 不做文件 I/O，持久化通过 global/state-owner 路径，chunk/world load 与 restart 可恢复；PR10c 完成运行时矩阵和 operator observability。不得提前暴露 remove 命令。
+
+
 
 ### 2026-11-23 — AI（RealTime PR9 完成、PR10 Ready、父仓库指针同步）
 
