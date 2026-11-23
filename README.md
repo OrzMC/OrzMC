@@ -27,7 +27,8 @@
 │   ├── DeathChest              # 死亡掉落箱子插件
 │   ├── EzShops                 # 商店插件
 │   ├── GetMeHome               # 家的传送插件
-│   └── LoginSecurity           # 登录认证插件
+│   ├── LoginSecurity           # 登录认证插件
+│   └── RealTime                # 现实时间服务插件（Paper/Folia）
 └── webmc                       # Git子模块：主要探索使用Web浏览器连接服务器玩耍的可能性
 ```
 
