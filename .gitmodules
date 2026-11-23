@@ -76,3 +76,7 @@
 [submodule ".agents/skills/orzmc"]
 	path = .agents/skills/orzmc
 	url = https://github.com/OrzMC/OrzMCAdmin.git
+[submodule "tools/RealTime"]
+	path = tools/RealTime
+	url = https://github.com/OrzMC/RealTime.git
+	branch = main
