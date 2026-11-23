@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
+> **最后更新**：2026-11-23 by AI（**`plugin` issue 清理**：#616 插件侧改进已落（PR #624 `a3bc448`：远端地址进诊断、同址零入站累计+抬高退避、稳定≠健康、`/config im status` 诊断段、`docs/dev/im-inbound-stall.md` + 参考探针；**剩宿主三个联网实验**）；#618 nightly 重跑已绿并自动关闭；OrzPythonMC #107 已复核关闭。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
 
 ---
 
@@ -180,7 +180,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **状态** | ✅ **1.0.30 正式版已发布**（Hangar Release / Modrinth release / GitHub Release `OrzMC-1.0.30.jar`）；版本自增到 **1.0.31**（PR #559 自动合）；✅ **beta `1.0.31-dev.436` 已发布**（milestone #615 → main `7522802`）；✅ **beta `1.0.31-dev.437` 已发布**（milestone #622 → main `3153ae5`，run 45119032875 绿；父仓库 PR #142 已 bump 指针）。两轮均无配置变更、无数据迁移 |
 | **已做（8 个 PR）** | `#539` 被动回复窗口预判 + `40034005` 兜底；`#540` 长任务完成通知改主动群通知 + 静默无回执兜底 + 分页上限；`#541` i18n 占位符漏填（`{total}` 原样进群）+ 调用点护栏 + `InboundDedup` 加固；`#542` CHANGELOG 去重；`#543/#544` GeoIP 多源兜底（默认 `countryis → geojs`）+ 失败短缓存 + 决策窗预算；`#545/#546/#547` 文档索引 / 决策记录 / 网络受限机房手册；`#611` dependabot 自动合并改 REST 取作者（GraphQL 把 bot login 呈现成 `app/dependabot`，自动合并静默停摆两周）；`#612` IM 静默看门狗判活改为「任何入站活性」（含 WS 控制帧）+ `platforms.<id>.heartbeat_timeout_seconds` + 日志口径；`#613` `backend: builtin` 不再报 easybot 明文传输等「不参与运行」建议 |
 | **盘点结论** | 全量 `develop→main` review（187 commits / 392 文件）：无 Folia 线程红线回归、无资源泄漏、无凭据、i18n 472 key 双语一致、缓存有界；修掉 1 个真 bug + 3 处加固 |
-| **下一步** | ① **plugin#616**（长连接入站断流）——**建连侧已修**（#617 看门狗：握手黑洞不再永久 CONNECTING，已随 `dev.437` 发 beta）；**仍需定性「已建连后入站断流」**：`累计入站 0 帧`+读线程卡 TLS read+出站 HTTP 正常，easybot 自身也每 30~40min 重启 transport——待做三个实验（`im.yml platforms.<id>.proxy` / 实例 `network: host` / 同网 python 参考客户端对照）；② ~~`CHANGELOG.md` 未收录 #617~~ / ~~dependabot #620 CI 全红~~ **两条遗留已处理**（#623 补齐 CHANGELOG、#620 已适配 `backup-core` 0.3.2 并自动合并）；③ 质量闭环见 §5 2026-11-14 条目；④ 下次功能迭代照常走 develop；⑤ 下次里程碑（develop → main）会把 `backup-core` 0.3.2 带上 main（损坏 region 不再静默消失） |
+| **下一步** | ① **plugin#616**（长连接入站断流）——**插件侧已落 PR #624**（`a3bc448`）：远端地址进诊断、同址零入站累计 3 次给提示并抬高退避、稳定但零入站不再清零计数、`/config im status` 增诊断段、手册 `docs/dev/im-inbound-stall.md` + 探针 `scripts/dev/im-longlink-probe.py`；`SO_KEEPALIVE` **有意未做**（Java-WebSocket 1.6.0 自定 socket factory 会让 wss 跳过 TLS 包装）。**只剩宿主三个联网实验**（proxy / `network: host` / 同容器探针）才能给 #616 定性收口；② 下次里程碑（develop → main）会把 #616 + `backup-core` 0.3.2 带上 main；③ 其余 org issue 待决策：`.github#3`（16 仓合规声明，机械活）、`OrzMCApp#31`（中国区限制下载）、`OrzMCApp#4`（建议按 two-cli 策略关闭）；④ 质量闭环见 §5 2026-11-14 条目 |
 | **已决策** | **不做离线 GeoIP**（体积 +73%~+127%，且月度刷新/CC BY 署名/口径复核的长期成本不可控）——见 `plugin/docs/features.md` §5.1、issue #538 |
 | **安全策略（明确）** | 地区限制**保持 fail-close**：`geoip.fail_open` 只是调试/应急开关，**不用于换可用性**；网络受限走自建 `country.is`（`plugin/docs/manuals/geoip-restricted-network.md`） |
 
@@ -469,6 +469,22 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-11-23 — AI（`plugin` issue 清理：#616 插件侧改进 / #618 重跑 / #107 归档）
+
+- **#616（P1，入站断流）插件侧落地 → PR #624（`a3bc448`）**：① 连接记录对端 `host:port`，静默告警与 `/config im status` 一起给出；
+  ② 仅当本轮「一帧未收」时按地址累计同址零入站，连续 3 次额外 WARN + 抬高重连退避（不再 5s 一轮重鉴权）；
+  ③ `stableResetMs` 到点原先一律清零静默计数 → 改为「本轮确实收到过入站帧」才清零（稳定 ≠ 健康）；
+  ④ 新增 `GatewayDiagnostics` 快照贯通 `BuiltinPlatform → BuiltinImDriver → /config im status`（zh/en 双语）；
+  ⑤ 手册 `docs/dev/im-inbound-stall.md`（判读表 + 三条宿主实验 runbook）+ 零依赖探针 `scripts/dev/im-longlink-probe.py`。
+  **SO_KEEPALIVE 未做**并写明原因：Java-WebSocket 1.6.0 的 `setSocketFactory()` 会让 `prepareSocket()` 不再升级 TLS（wss 跳过 TLS 包装），
+  `setSocket()` 同理且需自管 SNI —— 属高风险改动，留给维护者决定。CHANGELOG 已补（PR #625 `75cea71e`）。
+- **#618（nightly 失败）**：根因是 `gson:2.10.1` 解析时 Maven Central 返回 **429 Too Many Requests**（冷缓存），非代码缺陷；
+  手动 dispatch nightly（run 45167584235）绿 → issue 已于 11-23T11:49 自动关闭。
+- **OrzPythonMC #107（真实验收失败）**：最近 4 次 Acceptance 全 success（11-19→11-22），已评论并 close。
+- **教训**：① 写测试替身时被继承的类不能 `final`（`FakePlatform` 曾 final → `compileTestJava` 失败）；
+  ② 新增 mock 路径优先补 `codecov/patch`（本轮首次 51.6% < 70% 被拦，补 3 个用例后通过）；
+  ③ 本机 Gradle wrapper 下载超时（网络），编译/格式化只能依赖 CI —— 首次尝试务必先本地 `spotlessApply` 的心态需改成「CI 反馈优先」。
+
 
 ### 2026-11-23 — AI（RealTime PR10a schema v2 完成、PR10b 开始、父仓库指针同步）
 
