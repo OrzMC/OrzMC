@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-23 by AI（**org issue 决策收口**：`.github#3` 合规声明 / `OrzMCApp#31` 中国区限制均**不做**，`OrzMCApp#4` 按 two-cli 策略**关闭**；三条均已 comment 留档。见 §1.1 与 §5）<br>上一轮 by AI（**`plugin` issue 清理**2026-11-23 by AI（**`plugin` issue 清理**：#616 插件侧改进已落（PR #624 `a3bc448`：远端地址进诊断、同址零入站累计+抬高退避、稳定≠健康、`/config im status` 诊断段、`docs/dev/im-inbound-stall.md` + 参考探针；**剩宿主三个联网实验**）；#618 nightly 重跑已绿并自动关闭；OrzPythonMC #107 已复核关闭。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
+> **最后更新**：2026-11-23 by AI（**`OrzMCApp` 老 issue 收口**：#6/#7/#14/#15 已完成关闭、#10 HarmonyOS 不做；org open issue 现仅剩 plugin 的 4 条。见 §5）<br>上一轮 by AI（**org issue 决策收口**2026-11-23 by AI（**org issue 决策收口**：`.github#3` 合规声明 / `OrzMCApp#31` 中国区限制均**不做**，`OrzMCApp#4` 按 two-cli 策略**关闭**；三条均已 comment 留档。见 §1.1 与 §5）<br>上一轮 by AI（**`plugin` issue 清理**2026-11-23 by AI（**`plugin` issue 清理**：#616 插件侧改进已落（PR #624 `a3bc448`：远端地址进诊断、同址零入站累计+抬高退避、稳定≠健康、`/config im status` 诊断段、`docs/dev/im-inbound-stall.md` + 参考探针；**剩宿主三个联网实验**）；#618 nightly 重跑已绿并自动关闭；OrzPythonMC #107 已复核关闭。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
 
 ---
 
@@ -469,6 +469,15 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-11-23 — AI（`OrzMCApp` 老 issue 收口：#6/#7/#14/#15 已完成、#10 不做）
+
+- **#6 iOS 端发送命令卡顿 → completed**：0.1.6「实例行直接进控制台 + 底部输入框发命令」+ 面板请求超时收紧到 20s；0.1.7 MCSManager 控制台改推入页面、刷新只重拉历史日志。
+- **#7 游戏文件下载速度提升 → completed**：链路在 `OrzMCKit`（`Client+Download*` / `InstallManifest` 校验），启动器只做调用与进度；**明确写明没有引入镜像源**（无 BMCLAPI 类逻辑），要「分片/镜像/续传」需另开 issue。
+- **#14 优化启动器界面交互 → completed**：0.1.3 设置页 6 页 + Esc 关闭辅助窗口；0.1.4–0.1.6 控制台空态/内存行/菜单对齐；0.1.7 服务器管理合并列表 + 卡片交互与视觉收口；前后对比图存 `docs/ui-*/`。
+- **#15 模组支持 → completed**：0.1.7 起 Fabric/Forge 服务端有「模组」入口（`ModsManagerModel/View`）；边界写明是**本地清单管理**，在线检索/依赖解析/自动下载需另立项。
+- **#10 HarmonyOS 启动器 → not planned**：缺可验证技术前提（无 JVM 运行时与可行图形栈）；若将来出现可行方案再开。
+- **剩余 open issue 仅 4 条**：`OrzMCPlugin#616`（只差宿主联网实验）、`#481`/`#490`（视频系列，按要求不动）、`#572`（质量趋势看板，机器每日维护）。
+
 ### 2026-11-23 — AI（org issue 决策收口：三条均不做/关闭）
 
 - **`.github#3`（16 仓 MC IP 声明）→ 不做，close as not planned**：现有口径已覆盖对外发布面（`OrzMC` / `OrzMCApp` / `OrzPythonMC` / `MojangAPI` / `OrzMCKit` 有声明；插件走 Hangar/Modrinth 元数据），维护者判断风险可接受，不为机械活投入 21 个仓逐一改 README。留档：若重启，现状核查表仍有效，且 `OrzMCApp#32`（生成器缺失）已关闭 → 可直接改 README。
