@@ -159,7 +159,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **0.1.3 已上线生产（2026-11-24）** | 镜像 `ghcr.io/orzmc/orzmc-webmc:0.1.3` digest `sha256:4db81dd6…`（image run `45396449302`）；`webmc` #25 补 digest 文档；`deploy` #40（`68f2686`）默认镜像升 0.1.3（compose/templates/env/docs/CHANGELOG，门禁全绿）。生产 `E:/orzmc` 的 `.env` + `.env.wsl` 的 `WEBMC_IMAGE` 已**钉该 digest**，只重建 `orzmc-webmc`（其它服务未动；备份 `.env.bak-20261124-2051` / `.env.wsl.bak-20261124-2051`）。验收：`/api/health` 返回 4 版本、`/play` 含 `focusGame` + `keyboard-map`、`/play/raw` 含 shim 与 `joinServer`；无头 Edge 在生产页用 `keyCode 229/key Process` 输入 `abc` → 地址框正确显示（本地单人世界同法打出 `/login`）。 |
 | **暴露面收敛：18092 只绑本机（2026-11-24，`deploy` #41 → v0.7.3）** | webmc 原为 `0.0.0.0:18092`，局域网（路由器放行时含公网）可绕过反代直连。`deploy` #41（`51b6cb2`，tag `v0.7.3`）把宿主端口改为 `${WEBMC_BIND_ADDR:-127.0.0.1}:${LAN_WEBMC_PORT}:8300`：对外入口只有 Caddy（走 compose 内网 `orzmc-webmc:8300`，不依赖宿主端口），`templates/env` 增 `WEBMC_BIND_ADDR=127.0.0.1`，`status` 按绑定地址打印，文档新增 §5.1 暴露面 + CHANGELOG 0.7.3。生产已设 `WEBMC_BIND_ADDR=127.0.0.1`（`.env`/`.env.wsl`）并重建 webmc → `docker port` = `127.0.0.1:18092`，WSL 监听也只 `127.0.0.1`；`https://webmc.jokerhub.cn` 正常（health/`/play` 200）。注：WSL mirrored 下宿主连 `127.0.0.1:<publish>` 对所有容器都不通（23333/18091 同），属既有环境特性。 |
 | **deploy 生产包升级到 0.7.3 并重新部署（2026-11-24）** | 用 `install.sh -d /mnt/e/deploy/orzmc -v 0.7.3` 覆盖升级（备份 `E:/orzmc/backups/deploy-pkg-0.7.2-20261124-2159.tar.gz`），包内 compose 默认镜像已 0.1.3、webmc 绑定改 loopback；随后 `./orzmc.sh -d E:/orzmc up` **只重建了 `orzmc-webmc`**（caddy/web/daemon/easybot/velocity 均 Running 未动）。副作用：`up` 重写了 velocity 实例的 `Geyser-Velocity/config.yml`（端口 19132 / webrtc 0 / nethernet / 离线认证，与环境一致），脚本提示需在面板重启 velocity 实例才生效——未自动重启（会踢在线玩家）。命令行入口：Windows 侧 Git Bash（`C:\Users\WangA\AppData\Local\hermes\git\bin\bash.exe`）跑 `./orzmc.sh -d E:/orzmc ...`。 |
-| **下一步（下次从这里开始）** | ① `site` 的 `web_client_fallback_url` 可选按服调整默认版本（webmc 侧已就绪）。② velocity 实例已于 2026-11-24 22:34 在面板重启（见 §5），`Geyser-Velocity/config.yml` 生效：Geyser 起在 `19132`（nethernet / webrtc-port 0），eagler 探针 `SERVER_VERSION` OK。③ 1.8.8/1.12.2 首次确认仍需真人点一次（内容警告/用户名）；要全自动再评估预置档案。④ 0.1.3 的 `loading` 仍只在 iframe load 时隐藏；要真实字节进度再评估 fetch/blob。⑤ 可选：`18092` 现在只绑 `127.0.0.1`，若还想留一条本机排障通道，注意 WSL mirrored 模式下宿主连 `127.0.0.1:<publish>` 本来就不通（对所有容器都如此），排障请用 `docker exec`。 |
+| **下一步（下次从这里开始）** | ⓪ **生产包升级到 `deploy` v0.7.4**（daemon 10.22.1 + easybot 0.0.46；`gitlink` 已 bump `225f0d6`，但 `E:/orzmc` 仍跑旧镜像）：`install.sh -v 0.7.4` 覆盖包 → `./orzmc.sh -d E:/orzmc stop && up`（会重建核心服务；easybot 时区从此生效，见 §5 2026-11-25）。① `site` 的 `web_client_fallback_url` 可选按服调整默认版本（webmc 侧已就绪）。② velocity 实例已于 2026-11-24 22:34 在面板重启（见 §5），`Geyser-Velocity/config.yml` 生效：Geyser 起在 `19132`（nethernet / webrtc-port 0），eagler 探针 `SERVER_VERSION` OK。③ 1.8.8/1.12.2 首次确认仍需真人点一次（内容警告/用户名）；要全自动再评估预置档案。④ 0.1.3 的 `loading` 仍只在 iframe load 时隐藏；要真实字节进度再评估 fetch/blob。⑤ 可选：`18092` 现在只绑 `127.0.0.1`，若还想留一条本机排障通道，注意 WSL mirrored 模式下宿主连 `127.0.0.1:<publish>` 本来就不通（对所有容器都如此），排障请用 `docker exec`。 |
 
 ### 1.5 RealTime 独立现实时间插件（2026-11-24）——**PR1–PR11 全部完成**
 
@@ -482,6 +482,20 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-11-25 — AI（`deploy` 依赖升级 → v0.7.4，父仓库 bump 指针）
+
+- 维护者指令：「更新依赖版本」→ 合并发版 → 父仓库 bump 指针。范围限定在 `deploy` 的锁定镜像，未动其他子模块。
+- **`deploy` PR #42**（squash `225f0d6`，tag `v0.7.4`，Release tarball `orzmc-0.7.4.tar.gz` 已产出）：
+  - `mcsmanager-daemon` digest `f6fd2fac…`(10.22.0) → `936023ca…`(**10.22.1**)：修模组管理器 BUG + 应用市场通用控制台选项；面板 web 本就是 10.22.1，两侧对齐；**默认 CMD 未变**（`node app.js --max-old-space-size=8192`），`DAEMON_NODE_HEAP_MB` 降堆覆盖继续有效。
+  - `easybot` tag `0.0.44` → **`0.0.46`**（digest `6703ff6d…`）：0.0.45 镜像补 `tzdata` → **`TZ` 从此真正生效**（此前容器内只有 UTC，生产 `.env` 的 `TZ=Asia/Shanghai` 一直无效）；文件日志改按大小轮转（缺省 50 MB × 6）；高频轮询端点日志降 debug；0.0.46 媒体下载统一（SSRF + 流式 25 MB + 60 s）、适配器缓存改 `BoundedCache`、`plugin enable` 立即生效。
+  - `mcsmanager-web`（`ab1bb06…`）与 `webmc` 镜像（`0.1.3`）均已是最新，未动。
+  - 顺带修 `update-image-digests.sh` 真实缺陷：它直接调 `dkr`（只在 `lib/common.sh` 定义），未 source 时 `pull` 阶段报 `dkr: command not found` → 补「无 `dkr` 则用 `docker`」回退；默认 `EASYBOT_TAG` 同步 `0.0.46`。
+  - 门禁：`bash -n` / `shellcheck` / `windows_ci.sh`(112 项) / `docs_check.sh` / `init+validate` 全绿；easybot 0.0.46 容器冒烟 → `TZ=Asia/Shanghai` 时间戳变 `+08:00`、SQLite 迁移 v1–v4 正常。
+- **坑（记下来）**：本机（WSL）`docker pull` **Docker Hub 超时** —— dockerd 不走 shell 的 `http_proxy`，DNS 还把 `registry-1.docker.io` 解析到污染 IP；GHCR 正常。做法：digest 直接取 registry 官方 `docker-content-digest` 响应头，并拉 manifest config 核对 `org.opencontainers.image.version=v10.22.1` 与默认 `CMD` 未变。
+- **发布口径**：Release notes 是 `generate_release_notes` 的 commit 列表，已按父仓库规则**手工前置「升级须知」**（`gh release edit v0.7.4 --notes-file`）：必须 `stop && up` 重建；日志时间戳从 `…Z` 变本地偏移（要旧行为设 `EASYBOT_LOG_TIMEZONE=utc`）；自建内网媒体服务器需 `EASYBOT_ALLOW_PRIVATE_MEDIA_URLS=1`。
+- **父仓库 PR #177**（squash `fae245d`）：只 `git add deploy`（`plugin` 在 `develop` 的 `M`、`tools/RealTime` 的 `M` 均按规矩**未提交**），`verify` job pass，gitlink = `225f0d6`。
+- **待办（生产未升级）**：`E:/orzmc` 生产仍是旧镜像。升级方式二选一：① `install.sh -d /mnt/e/deploy/orzmc -v 0.7.4` 覆盖包（先备份 `E:/orzmc/backups/deploy-pkg-0.7.3-<时间戳>.tar.gz`）→ `./orzmc.sh -d E:/orzmc stop && up`；② 只换镜像时不换包亦可，但 `stop && up` 会重建 web/daemon(+easybot) 三个核心服务（会短暂停面板与游戏实例控制）。⚠️ `easybot` 升级后管理后台时间与日志时区会变，注意面板 `TZ` 一致性；`up` 仍可能重写 velocity 实例 `Geyser-Velocity/config.yml`（上次的既有副作用，需在面板重启实例才生效）。
+
 ### 2026-11-24 — AI（RealTime 0.1.0 正式发布：GitHub Release `v0.1.0`）
 
 - 维护者确认「目前验收通过」，决定**先只发 GitHub Release**，Hangar/Modrinth 等线上稳定后再接入。
