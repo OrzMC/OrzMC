@@ -170,7 +170,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **PR10c（完成）** | PR [#18](https://github.com/OrzMC/RealTime/pull/18)：新增 `/rtime device cleanup list` 与 admin-only `/rtime device cleanup retry <job-uuid>`；Paper/Folia 设备级 runtime smoke 覆盖重启恢复、未加载区块延迟处理、chunk-load retry、非红石保护、人工修复后重试。CI #123、Agent Validation #98、Paper/Folia cleanup smoke #89 全通过。 |
 | **PR11（完成）** | PR [#23](https://github.com/OrzMC/RealTime/pull/23)：新增 admin-only `/rtime device remove <uuid>`；只允许 disabled device；复用 `DeviceRetirementService`，原子持久化 active device 移除与 cleanup job；命令线程不访问 World/Chunk/Block，world UUID 由 global cleanup manager 延迟绑定；响应包含 job UUID。Gradle CI #136、Agent Project Validation #103、Paper/Folia + PlaceholderAPI smoke 与 Paper/Folia cleanup/retirement runtime matrix #94 全通过。 |
 | **当前设备运维命令** | `/rtime device list/info/status`；`/rtime device enable/disable <uuid>`；`/rtime device remove <uuid>`（admin，必须先 disable）；`/rtime device cleanup list`；`/rtime device cleanup retry <job-uuid>`（admin，仅重试 `NEEDS_ATTENTION`）。 |
-| **父仓库集成** | `tools/RealTime` 已登记为子模块；当前父仓库 PR 将 gitlink 从 PR10c `0bab2812515d1c9e58445067a6e6ed712d89f764` 更新到 PR11 + 文档最新提交 `d75dbd997144f46a924e7ed54014a8b9a793c493`，并同步本 HANDOFF。 |
+| **父仓库集成** | `tools/RealTime` 已登记为子模块；父仓库 `main` 已同步 gitlink 到 PR11 + 文档最新提交 `d75dbd997144f46a924e7ed54014a8b9a793c493`（当前父仓库提交 `45508287`）；本 HANDOFF 已记录 PR10/PR11 验收与运维边界。 |
 | **发布边界** | PR7 的 release automation 已合并，但尚未创建正式 tag / GitHub Release；Hangar/Modrinth 项目 ID、environment secrets 与 required reviewers 未配置，正式发布仍需维护者明确启用并审批。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
@@ -477,7 +477,7 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 - 成功响应包含 cleanup job UUID；操作员继续通过 `device cleanup list` 查看进度，修复非红石目标后用 `device cleanup retry` 重试。
 - 验证：Gradle CI #136、Agent Project Validation #103、Paper/Folia + PlaceholderAPI generic smoke、Paper/Folia cleanup/retirement runtime matrix #94 全通过；runtime matrix 实际执行 remove 命令并验证 active device 移除与 16 路输出归零。
 - PR10/PR11 设备安全退休和 deferred cleanup 主链路已完成。下一步转入发布准备与实服灰度：配置 Hangar/Modrinth 项目身份、release secrets/reviewers，创建版本 tag 前先在 OrzMC 测试服验证配置迁移、命令权限、重启恢复与运维流程。
-- 父仓库待 bump `tools/RealTime` gitlink 到 `d75dbd99` 并同步本 HANDOFF；不改动其他子模块。
+- 父仓库 `main` 已将 `tools/RealTime` gitlink 同步到 `d75dbd99`；未改动其他子模块。
 
 ### 2026-11-24 — AI（RealTime PR10c 完成，父仓库集成已合并）
 
