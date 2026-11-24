@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-24 by AI（**#616 接近收口**：有线接入后 73 分钟零静默/零断连（基线 ≈6 次/小时），Wi-Fi 射频质量为嫌疑；已发 `dev.441`（零入站提前判决）并装测试服；RCON 加固并留作自动化。见 §5）<br>上一轮 by AI（**beta `dev.440`**2026-11-23 by AI（**beta `dev.440`**：按实测把「同址零入站」改为「同址静默」（收到帧后冻结也算），更新测试服并实测面板；一晚内远端 IP 漂移实测记录；**A/B 仍等一个开关**——Clash 开 allow-lan 或临时关 TUN）。见 §5）<br>上一轮 by AI（**beta `dev.439` 上车 + RCON 打通**2026-11-23 by AI（**beta `dev.439` 上车 + RCON 打通**：修复 Paper 26.x `RemoteConsoleCommandSender` 只继承 `CommandSender` 导致的 D10 误拒；`/config im status` 诊断段生产实测闭环；#616 证据补全为「容器 NAT 与宿主路径同时失活」+ 宿主侧 Clash Verge TUN 嫌疑，**A/B 仍需一个开关**）。见 §5）<br>上一轮 by AI（**测试服已装 beta `1.0.31-dev.438`**2026-11-23 by AI（**测试服已装 beta `1.0.31-dev.438`**：Paper 实例跑新版并验证 IM 建连；Folia 待下次重启生效；记下运维坑「别 `docker restart` MCSM 实例容器，要重启 daemon」）。见 §5）<br>上一轮 by AI（**#616 定性**2026-11-23 by AI（**#616 定性**：插件与 EasyBot（另一套凭据）飞书长连接同几分钟一起失活 → 宿主出网路径；插件侧改进已发 beta **`1.0.31-dev.438`**（里程碑 #626，父仓库 #151 已 bump），只剩 A/B 宿主实验；测试服仍跑 dev.436，**换版待同意**。见 §1.1 与 §5）<br>上一轮 by AI（**`OrzMCApp` 老 issue 收口**2026-11-23 by AI（**`OrzMCApp` 老 issue 收口**：#6/#7/#14/#15 已完成关闭、#10 HarmonyOS 不做；org open issue 现仅剩 plugin 的 4 条。见 §5）<br>上一轮 by AI（**org issue 决策收口**2026-11-23 by AI（**org issue 决策收口**：`.github#3` 合规声明 / `OrzMCApp#31` 中国区限制均**不做**，`OrzMCApp#4` 按 two-cli 策略**关闭**；三条均已 comment 留档。见 §1.1 与 §5）<br>上一轮 by AI（**`plugin` issue 清理**2026-11-23 by AI（**`plugin` issue 清理**：#616 插件侧改进已落（PR #624 `a3bc448`：远端地址进诊断、同址零入站累计+抬高退避、稳定≠健康、`/config im status` 诊断段、`docs/dev/im-inbound-stall.md` + 参考探针；**剩宿主三个联网实验**）；#618 nightly 重跑已绿并自动关闭；OrzPythonMC #107 已复核关闭。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
+> **最后更新**：2026-11-24 by AI（**RealTime 0.1.0 发布准备与真机验收交接均已合并；父仓库子模块指针已同步**。见 §1.5 与 §5）<br>上一轮更新：2026-11-24 by AI（**#616 接近收口**：有线接入后 73 分钟零静默/零断连（基线 ≈6 次/小时），Wi-Fi 射频质量为嫌疑；已发 `dev.441`（零入站提前判决）并装测试服；RCON 加固并留作自动化。见 §5）<br>上一轮 by AI（**beta `dev.440`**2026-11-23 by AI（**beta `dev.440`**：按实测把「同址零入站」改为「同址静默」（收到帧后冻结也算），更新测试服并实测面板；一晚内远端 IP 漂移实测记录；**A/B 仍等一个开关**——Clash 开 allow-lan 或临时关 TUN）。见 §5）<br>上一轮 by AI（**beta `dev.439` 上车 + RCON 打通**2026-11-23 by AI（**beta `dev.439` 上车 + RCON 打通**：修复 Paper 26.x `RemoteConsoleCommandSender` 只继承 `CommandSender` 导致的 D10 误拒；`/config im status` 诊断段生产实测闭环；#616 证据补全为「容器 NAT 与宿主路径同时失活」+ 宿主侧 Clash Verge TUN 嫌疑，**A/B 仍需一个开关**）。见 §5）<br>上一轮 by AI（**测试服已装 beta `1.0.31-dev.438`**2026-11-23 by AI（**测试服已装 beta `1.0.31-dev.438`**：Paper 实例跑新版并验证 IM 建连；Folia 待下次重启生效；记下运维坑「别 `docker restart` MCSM 实例容器，要重启 daemon」）。见 §5）<br>上一轮 by AI（**#616 定性**2026-11-23 by AI（**#616 定性**：插件与 EasyBot（另一套凭据）飞书长连接同几分钟一起失活 → 宿主出网路径；插件侧改进已发 beta **`1.0.31-dev.438`**（里程碑 #626，父仓库 #151 已 bump），只剩 A/B 宿主实验；测试服仍跑 dev.436，**换版待同意**。见 §1.1 与 §5）<br>上一轮 by AI（**`OrzMCApp` 老 issue 收口**2026-11-23 by AI（**`OrzMCApp` 老 issue 收口**：#6/#7/#14/#15 已完成关闭、#10 HarmonyOS 不做；org open issue 现仅剩 plugin 的 4 条。见 §5）<br>上一轮 by AI（**org issue 决策收口**2026-11-23 by AI（**org issue 决策收口**：`.github#3` 合规声明 / `OrzMCApp#31` 中国区限制均**不做**，`OrzMCApp#4` 按 two-cli 策略**关闭**；三条均已 comment 留档。见 §1.1 与 §5）<br>上一轮 by AI（**`plugin` issue 清理**2026-11-23 by AI（**`plugin` issue 清理**：#616 插件侧改进已落（PR #624 `a3bc448`：远端地址进诊断、同址零入站累计+抬高退避、稳定≠健康、`/config im status` 诊断段、`docs/dev/im-inbound-stall.md` + 参考探针；**剩宿主三个联网实验**）；#618 nightly 重跑已绿并自动关闭；OrzPythonMC #107 已复核关闭。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
 
 ---
 
@@ -160,7 +160,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 | 项 | 内容 |
 |---|---|
-| **独立仓库** | `OrzMC/RealTime`；PR #1–#9 已合并。PR10a store foundation PR #15 合并提交 `b9880c5fbf3e7eaf6a3f5326a23518f4c281a3b3`；PR10a 文档 PR #16 合并提交 `7a12272133173cd68697957f8b3ff43159c28b7f`；PR10b PR #17 合并提交 `ea4b3fbe2cc9da3b431a7c111f10c266fe0f1b7d`；PR10c PR #18 合并提交 `0bab2812515d1c9e58445067a6e6ed712d89f764`；PR11 PR #23 合并提交 `6f87d712b6f1451aa525ea55da0e6c58196b305b`。 |
+| **独立仓库** | `OrzMC/RealTime`；PR #1–#9 已合并。PR10a store foundation #15 `b9880c5f`；PR10a 文档 #16 `7a122721`；PR10b #17 `ea4b3fbe`；PR10c #18 `0bab2812`；PR11 #23 `6f87d712`；发布准备 PR #24 已合并，main commit `3c36b269656f4f54d309d04641f5ede82695c920`。 |
 | **项目基线** | Kotlin / JDK 25 / Gradle 9.2.1；Paper API 26.3；Paper + Folia；命令 `/rtime`；默认时区 `Asia/Shanghai`。独立构建、测试与发布，不依赖父仓库运行时。 |
 | **PR1–PR4** | Agent Native 工程骨架、Clock-backed Core、命令与独立配置、Paper/Folia Global/Region/Entity Scheduler 适配。 |
 | **PR5–PR7** | HHmm BCD 与设备模型、版本化 YAML 持久化、RegionScheduler 红石输出、可选 PlaceholderAPI、受保护的 tag 驱动发布自动化。 |
@@ -170,8 +170,8 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **PR10c（完成）** | PR [#18](https://github.com/OrzMC/RealTime/pull/18)：新增 `/rtime device cleanup list` 与 admin-only `/rtime device cleanup retry <job-uuid>`；Paper/Folia 设备级 runtime smoke 覆盖重启恢复、未加载区块延迟处理、chunk-load retry、非红石保护、人工修复后重试。CI #123、Agent Validation #98、Paper/Folia cleanup smoke #89 全通过。 |
 | **PR11（完成）** | PR [#23](https://github.com/OrzMC/RealTime/pull/23)：新增 admin-only `/rtime device remove <uuid>`；只允许 disabled device；复用 `DeviceRetirementService`，原子持久化 active device 移除与 cleanup job；命令线程不访问 World/Chunk/Block，world UUID 由 global cleanup manager 延迟绑定；响应包含 job UUID。Gradle CI #136、Agent Project Validation #103、Paper/Folia + PlaceholderAPI smoke 与 Paper/Folia cleanup/retirement runtime matrix #94 全通过。 |
 | **当前设备运维命令** | `/rtime device list/info/status`；`/rtime device enable/disable <uuid>`；`/rtime device remove <uuid>`（admin，必须先 disable）；`/rtime device cleanup list`；`/rtime device cleanup retry <job-uuid>`（admin，仅重试 `NEEDS_ATTENTION`）。 |
-| **父仓库集成** | `tools/RealTime` 已登记为子模块；父仓库 `main` 已同步 gitlink 到 PR11 + 文档最新提交 `d75dbd997144f46a924e7ed54014a8b9a793c493`（当前父仓库提交 `45508287`）；本 HANDOFF 已记录 PR10/PR11 验收与运维边界。 |
-| **发布边界** | PR7 的 release automation 已合并，但尚未创建正式 tag / GitHub Release；Hangar/Modrinth 项目 ID、environment secrets 与 required reviewers 未配置，正式发布仍需维护者明确启用并审批。 |
+| **父仓库集成** | `tools/RealTime` 已登记为子模块；本 PR 将父仓库 gitlink 从 `d75dbd997144f46a924e7ed54014a8b9a793c493` 更新到 RealTime PR #25 合并提交 `d37fa74b2cf45abb9c76e5abb3fee673edb96712`；只改 `tools/RealTime` 与本 HANDOFF，不碰其他子模块。 |
+| **发布准备 / 真机验收** | PR #24 已合并，补齐 `CHANGELOG.md` 0.1.0、发布安全门禁与校验脚本；PR #25 已合并，交接文档为 [`docs/operations/production-acceptance-0.1.0.md`](https://github.com/OrzMC/RealTime/blob/main/docs/operations/production-acceptance-0.1.0.md)，覆盖安装、时区、BCD、设备退休、cleanup、迁移、重启和停止条件。**真机验收尚未执行，正式 tag / GitHub Release 尚未创建**。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
 
@@ -470,6 +470,14 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-11-24 — AI（RealTime 0.1.0 发布准备合并，真机验收交接进行中）
+
+- RealTime PR #24 已 squash 合并：`3c36b269656f4f54d309d04641f5ede82695c920`。补齐 0.1.0 changelog、受保护 release environment / token / reviewer 检查清单，并把 tag/changelog 验证纳入 `scripts/verify.sh`。
+- PR #24 的 CI、Agent Project Validation、Paper/Folia Runtime Smoke Test 均通过。没有创建 `v0.1.0` tag、GitHub Release 或 Hangar/Modrinth 发布。
+- RealTime PR #25 已 squash 合并：`d37fa74b2cf45abb9c76e5abb3fee673edb96712`。新增 `docs/operations/production-acceptance-0.1.0.md`，供用户在真实服务器上交由本地 AI Agent 执行；覆盖 Paper API 26.3 / Java 25 兼容性门禁、备份、首次启动、时区、BCD、禁用/退休、卸载区块延迟清理、`NEEDS_ATTENTION`、retry、重启恢复、schema v1 迁移与验收报告。同步修正设备文档中“remove 命令尚未开放”的过期描述。PR #25 的 CI、Agent Validation、Paper/Folia + PlaceholderAPI / cleanup smoke 全部通过。
+- 特别风险：父仓库历史记录的真实服基线为 Paper 26.2，而 RealTime 当前声明 `api-version: 26.3`、构建 Paper API 26.3。交接要求先核对真实版本；若仍是 26.2，禁止直接安装，先用 26.3 staging 或单独完成兼容性工作。
+- 父仓库本 PR 单独更新 `tools/RealTime` gitlink 到 `d37fa74b`，并同步本 HANDOFF；不改其他子模块。用户将在真实服务器上执行验收，由本地 AI Agent提交证据报告。验收完成前不创建正式 tag / 发布。
+
 ### 2026-11-24 早 — AI（#616 收口推进：**有线接入后 73 分钟零故障**；RCON 加固；零入站提前判决发版）
 
 - **环境实测**：宿主原为 **Wi-Fi（Killer AC 1550i，对方 AP 信号 40–66%）**；接入有线后 `Ethernet` metric 25 < `Wi-Fi` 40
