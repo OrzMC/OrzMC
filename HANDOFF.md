@@ -230,6 +230,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | `swift/lib/MCSManagerAPI` | `7428340` | MCSManager 面板 API 客户端（OpenAPI 生成）；tag **0.3.1**（`/api/auth` 外壳 + 去字符串时间戳 + `text/plain` 错误体 + 动作/控制台端点 + `MCSMResponseEnvelope`）；20 条测试 |
 | `backup` | `fa399ea` | 2026-11-15 同步；`fa399ea` 是 CRLF→LF 归一提交（`233e504` 是 #100 产品页 Tab 收口） |
 | `deploy` | `04c3538` | 2026-11-15 同步（Eagler/拓扑/多后端/三端验收，0.2.0 定版） |
+| `tools/RealTime` | `d37fa74` | 2026-11-24 同步；PR1–PR11 完成，PR #24 发布准备与 PR #25 真机验收交接已合并；等待真实服务器验收，尚未创建 `v0.1.0` tag。 |
 | `site`/`proxy`/`webmc`/`profile`/`tools/*` | 见 [`RELEASES.md`](RELEASES.md) | 均钉 `main`（`LoginSecurity`/`tools/thanos` 为 `master`） |
 
 | `swift/lib/OrzSwiftKit` | `f35e4dc` | `OrzGeeker/OrzSwiftKit`；**0.0.20**：`ManagedProcess` 的 `send`/`terminate`/`forceKill`/`waitForExit(timeout:)`、`run(inheritStandardInput:)`；**`#1`**：`Package.resolved` 里 swift-nio 2.73→**2.104**、swift-system 1.3.2→1.8.1（都是 console-kit 的传递依赖）→ ⚠️ **构建工具链下限抬到 Swift 6.1**（见 §2.5） |
