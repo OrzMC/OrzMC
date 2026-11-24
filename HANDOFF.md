@@ -154,7 +154,10 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **生产已上线（2026-11-22）** | `https://webmc.jokerhub.cn`：TLS（Let's Encrypt）正常；`/api/health` 200；`/play` 注入版可用。生产客户端在 `E:/orzmc/webmc/versions/<id>/client.html`；Caddy 路由 `webmc.jokerhub.cn=orzmc-webmc:8300` 已由 `site apply` 生成（证书 89 天）。无头 Edge 真实连接 `wss://dev.jokerhub.cn:443/`，收到白名单踢出（预期）。 |
 | **生产多版本（2026-11-23）** | 已放 4 个官方版本并重启 webmc：`1.8.8`（47/js）、`1.12.2`（340/js）、`26.2`（776/wasm-gc）、`26.3`（777/wasm-gc，更新到 2026-11-20 `590e4bd1` 构建）。`/api/versions` 返回 4 条；`/` 启动页列出 4 个。`1.8.8/1.12.2` 的 `meta.json` 必须 `"inject": "joinServer"`（官方代码有选项名但不读 URL，`auto` 会误判）；`1.5.2` 需 EaglerXRewind，未放。握手探针：1.8.8/v3=47、1.12.2/v3/v4=340、26.2/v5=776 均 `SERVER_VERSION` 成功；26.2 与 26.3 无头 Edge 自动连服，26.3 仍白名单踢出。 |
 | **播放壳 UI（2026-11-23，0.1.2）** | `/play` 改为播放壳：默认**窗口模式**（最大 1180×820），工具栏「全屏/小窗」切换、刷新、返回；首次加载显示 spinner/进度条/已用时间，iframe 加载后隐藏。`/play/raw` 返回原始客户端 HTML，`/embed` 改用它并补加载层。入口 `/` 重做为简洁深色表单 + 版本卡片（不再重复 name/id）。生产已切 `orzmc-webmc:0.1.2`，`/play` shell 6,820 B、`/play/raw` 78,394,945 B，CSP raw 追加 `'self'` 允许同源 iframe；无头 Edge 打开生产页面已显示 profile 界面，工具栏与全屏切换可用。 |
-| **下一步（下次从这里开始）** | ① `site` 兜底已指向 webmc（#31）并发布；可选把 `web_client_fallback_url` 的默认版本按服调整。② 生产已用 0.1.2 本地镜像（registry digest `ef0fb1d7…`），后续可切 registry 镜像。③ 可选：把 `LAN_WEBMC_PORT` 18092 从公网/防火墙收掉，只留 Caddy。④ 1.8.8/1.12.2 需真人点一次首次确认（内容警告/用户名）；若要做全自动，再评估预置档案。⑤ 0.1.2 的 `loading` 只在 iframe load 时隐藏，之后客户端自身启动画面接管；若要更细的真实字节进度，再评估 fetch/blob。 |
+| **输入法（IME）打不出字修复（2026-11-24，`webmc` #24/#25 → 镜像 0.1.3）** | 症状：连上服后**开着中文输入法就完全打不出字**（`/` 开不了聊天框或开了字符全丢 → `/login` 输不进去）。根因（读 1.8.8 客户端产物 + 无头 Edge 实测）：客户端不用 DOM 文本框，自己在 `window` 上收 `keydown`，**字符只认单字符 `event.key`**、键码走 `event.code`→`navigator.keyboard.getLayoutMap()` 再退 `which/keyCode`；输入法激活时浏览器发 `keyCode=229 / key="Process"`（`code` 仍正确）→ 字符全丢，`/` 能否开框取决于布局表（实测能开框、字母全丢）。**第二个坑**：`keydown` 只发给有焦点的文档，点过播放壳「全屏/刷新」后焦点留在外层工具条 → 客户端一个键都收不到。修法：`KeyboardShim`（注入 `<head>` 的 ES5：捕获阶段把 IME 事件按**物理键位**改写 `key/keyCode/which` 再派发，原事件吞掉；`activeElement` 是 INPUT/TEXTAREA 时让路）+ `Patcher` 多处按字节插入（缓存名带 `PATCH_REV`，仍不 `readString`）+ `meta.json` `keyboardShim`（默认开）+ 播放壳/外嵌 iframe 补 `keyboard-map; keyboard-lock` 并在切全屏/刷新后归还焦点。版本 0.1.3。 |
+| **26.3 原生支持中英文输入（2026-11-24 实测）** | `26.2`/`26.3` 的文本输入是**真实 DOM `<input type=text>`**（自动聚焦，吃 `beforeinput`/`compositionstart|update|end`）：实测 26.3 的 Direct Connection 地址框可提交「你好」，CJK 字形正常显示 → **26.x 不需要视觉兜底**（shim 在其上只在无文本框聚焦时生效，实测不重复上屏）。`1.8.8`/`1.12.2` 只支持英文语义（中文无论如何进不去：只认单字符 `key` + 1.8.x 字体无 CJK 字形）。 |
+| **0.1.3 已上线生产（2026-11-24）** | 镜像 `ghcr.io/orzmc/orzmc-webmc:0.1.3` digest `sha256:4db81dd6…`（image run `45396449302`）；`webmc` #25 补 digest 文档；`deploy` #40（`68f2686`）默认镜像升 0.1.3（compose/templates/env/docs/CHANGELOG，门禁全绿）。生产 `E:/orzmc` 的 `.env` + `.env.wsl` 的 `WEBMC_IMAGE` 已**钉该 digest**，只重建 `orzmc-webmc`（其它服务未动；备份 `.env.bak-20261124-2051` / `.env.wsl.bak-20261124-2051`）。验收：`/api/health` 返回 4 版本、`/play` 含 `focusGame` + `keyboard-map`、`/play/raw` 含 shim 与 `joinServer`；无头 Edge 在生产页用 `keyCode 229/key Process` 输入 `abc` → 地址框正确显示（本地单人世界同法打出 `/login`）。 |
+| **下一步（下次从这里开始）** | ① 可选：`1.12.2` 也跑一次 IME 验收（`C:\Users\WangA\eagler-test\verify.js` 换 version，`WSLENV=WEBMC_BASE WEBMC_BASE=https://webmc.jokerhub.cn` 打生产）。② 26.3 **游戏内聊天框**仍未实测（无头里单人世界「创建世界」点击不稳）；要锤实需真浏览器手动进一次单人世界。③ `site` 兜底已指向 webmc（#31）并发布；可选把 `web_client_fallback_url` 的默认版本按服调整。④ 生产包 `/mnt/e/deploy/orzmc` 仍是 **v0.7.2**（包内 compose 默认镜像还是 0.1.2）—— 现靠 `.env` 钉 digest 生效；下次 deploy 发版（含 #40）会把默认值带进包。⑤ 可选：把 `LAN_WEBMC_PORT` 18092 从公网/防火墙收掉，只留 Caddy。⑥ 1.8.8/1.12.2 首次确认仍需真人点一次（内容警告/用户名）；若要全自动再评估预置档案。⑦ 0.1.3 的 `loading` 仍只在 iframe load 时隐藏；要真实字节进度再评估 fetch/blob。 |
 
 ### 1.5 RealTime 独立现实时间插件（2026-11-24）——**PR1–PR11 全部完成**
 
@@ -476,6 +479,16 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-11-24 — pi（webmc 0.1.3：修「开输入法就打不出字」+ 26.3 中英文实测）
+
+- 维护者报：自托管页连上 `wss://dev.jokerhub.cn` 后开中文输入法打不出字，`/login` 输不进去。
+- **定位**：读 1.8.8 客户端产物 + 无头 Edge 实测 → 客户端不用 DOM 文本框，`keydown` 取字符只认单字符 `event.key`、键码走 `event.code`→布局表再退 `which/keyCode`；IME 激活时浏览器发 `keyCode=229 / key="Process"`（`code` 仍正确）→ 字符全丢（`/` 有时能开框，字母必丢）。另发现 `keydown` 只发给有焦点文档：点过播放壳「全屏/刷新」后焦点在外层，客户端收不到任何键。
+- **交付**：`webmc` #24（`fb7704e`）：`KeyboardShim.kt`（捕获阶段按物理键位改写 IME 事件再派发；客户端聚焦隐藏 input 时让路）、`Patcher` 多处按字节插入 + `PATCH_REV`、`meta.json` `keyboardShim`（默认开）、播放壳/外嵌 iframe `keyboard-map; keyboard-lock` + 焦点归还、文档、版本 0.1.3；#25（`6116551`）补镜像 digest。`deploy` #40（`68f2686`）默认镜像 0.1.3。
+- **验收**：本地 1.8.8 单人世界 + CDP 派发 `keyCode 229/key Process` → 有 shim 打出 `/login`，`keyboardShim:false` 只打出 `/`；26.3 打 shim 后正常启动到 Edit Profile、无 JS 错误（78 MB 补丁 ~0.4 s）；生产 `https://webmc.jokerhub.cn/play?version=1.8.8` 同法把 `abc` 打进地址框。
+- **26.3 结论**：文本输入走真实 DOM `<input>` + `beforeinput/composition*`，**中英文都支持**（实测提交「你好」上屏、CJK 字形正常）。
+- **生产**：`0.1.3` digest `4db81dd6…` 已上线；`.env`/`.env.wsl` 钉 digest，只重建 `orzmc-webmc`（备份见 §1.4）。
+- **未覆盖**：1.12.2 的 IME 验收、26.3 游戏内聊天框、deploy 生产包仍是 v0.7.2（靠 `.env` 覆盖）。
+
 ### 2026-11-24 — AI（RealTime PR14：1 tick 检测 + 只写变化位 + 按区块批量）
 
 - 维护者问「秒级显示在 tick 驱动的译码器上会不会有延迟」「1 tick 会不会卡、上百台设备怎么办」。
