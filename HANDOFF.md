@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-23 by AI（**beta `dev.440`**：按实测把「同址零入站」改为「同址静默」（收到帧后冻结也算），更新测试服并实测面板；一晚内远端 IP 漂移实测记录；**A/B 仍等一个开关**——Clash 开 allow-lan 或临时关 TUN）。见 §5）<br>上一轮 by AI（**beta `dev.439` 上车 + RCON 打通**2026-11-23 by AI（**beta `dev.439` 上车 + RCON 打通**：修复 Paper 26.x `RemoteConsoleCommandSender` 只继承 `CommandSender` 导致的 D10 误拒；`/config im status` 诊断段生产实测闭环；#616 证据补全为「容器 NAT 与宿主路径同时失活」+ 宿主侧 Clash Verge TUN 嫌疑，**A/B 仍需一个开关**）。见 §5）<br>上一轮 by AI（**测试服已装 beta `1.0.31-dev.438`**2026-11-23 by AI（**测试服已装 beta `1.0.31-dev.438`**：Paper 实例跑新版并验证 IM 建连；Folia 待下次重启生效；记下运维坑「别 `docker restart` MCSM 实例容器，要重启 daemon」）。见 §5）<br>上一轮 by AI（**#616 定性**2026-11-23 by AI（**#616 定性**：插件与 EasyBot（另一套凭据）飞书长连接同几分钟一起失活 → 宿主出网路径；插件侧改进已发 beta **`1.0.31-dev.438`**（里程碑 #626，父仓库 #151 已 bump），只剩 A/B 宿主实验；测试服仍跑 dev.436，**换版待同意**。见 §1.1 与 §5）<br>上一轮 by AI（**`OrzMCApp` 老 issue 收口**2026-11-23 by AI（**`OrzMCApp` 老 issue 收口**：#6/#7/#14/#15 已完成关闭、#10 HarmonyOS 不做；org open issue 现仅剩 plugin 的 4 条。见 §5）<br>上一轮 by AI（**org issue 决策收口**2026-11-23 by AI（**org issue 决策收口**：`.github#3` 合规声明 / `OrzMCApp#31` 中国区限制均**不做**，`OrzMCApp#4` 按 two-cli 策略**关闭**；三条均已 comment 留档。见 §1.1 与 §5）<br>上一轮 by AI（**`plugin` issue 清理**2026-11-23 by AI（**`plugin` issue 清理**：#616 插件侧改进已落（PR #624 `a3bc448`：远端地址进诊断、同址零入站累计+抬高退避、稳定≠健康、`/config im status` 诊断段、`docs/dev/im-inbound-stall.md` + 参考探针；**剩宿主三个联网实验**）；#618 nightly 重跑已绿并自动关闭；OrzPythonMC #107 已复核关闭。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
+> **最后更新**：2026-11-24 by AI（**#616 接近收口**：有线接入后 73 分钟零静默/零断连（基线 ≈6 次/小时），Wi-Fi 射频质量为嫌疑；已发 `dev.441`（零入站提前判决）并装测试服；RCON 加固并留作自动化。见 §5）<br>上一轮 by AI（**beta `dev.440`**2026-11-23 by AI（**beta `dev.440`**：按实测把「同址零入站」改为「同址静默」（收到帧后冻结也算），更新测试服并实测面板；一晚内远端 IP 漂移实测记录；**A/B 仍等一个开关**——Clash 开 allow-lan 或临时关 TUN）。见 §5）<br>上一轮 by AI（**beta `dev.439` 上车 + RCON 打通**2026-11-23 by AI（**beta `dev.439` 上车 + RCON 打通**：修复 Paper 26.x `RemoteConsoleCommandSender` 只继承 `CommandSender` 导致的 D10 误拒；`/config im status` 诊断段生产实测闭环；#616 证据补全为「容器 NAT 与宿主路径同时失活」+ 宿主侧 Clash Verge TUN 嫌疑，**A/B 仍需一个开关**）。见 §5）<br>上一轮 by AI（**测试服已装 beta `1.0.31-dev.438`**2026-11-23 by AI（**测试服已装 beta `1.0.31-dev.438`**：Paper 实例跑新版并验证 IM 建连；Folia 待下次重启生效；记下运维坑「别 `docker restart` MCSM 实例容器，要重启 daemon」）。见 §5）<br>上一轮 by AI（**#616 定性**2026-11-23 by AI（**#616 定性**：插件与 EasyBot（另一套凭据）飞书长连接同几分钟一起失活 → 宿主出网路径；插件侧改进已发 beta **`1.0.31-dev.438`**（里程碑 #626，父仓库 #151 已 bump），只剩 A/B 宿主实验；测试服仍跑 dev.436，**换版待同意**。见 §1.1 与 §5）<br>上一轮 by AI（**`OrzMCApp` 老 issue 收口**2026-11-23 by AI（**`OrzMCApp` 老 issue 收口**：#6/#7/#14/#15 已完成关闭、#10 HarmonyOS 不做；org open issue 现仅剩 plugin 的 4 条。见 §5）<br>上一轮 by AI（**org issue 决策收口**2026-11-23 by AI（**org issue 决策收口**：`.github#3` 合规声明 / `OrzMCApp#31` 中国区限制均**不做**，`OrzMCApp#4` 按 two-cli 策略**关闭**；三条均已 comment 留档。见 §1.1 与 §5）<br>上一轮 by AI（**`plugin` issue 清理**2026-11-23 by AI（**`plugin` issue 清理**：#616 插件侧改进已落（PR #624 `a3bc448`：远端地址进诊断、同址零入站累计+抬高退避、稳定≠健康、`/config im status` 诊断段、`docs/dev/im-inbound-stall.md` + 参考探针；**剩宿主三个联网实验**）；#618 nightly 重跑已绿并自动关闭；OrzPythonMC #107 已复核关闭。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
 
 ---
 
@@ -470,6 +470,23 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-11-24 早 — AI（#616 收口推进：**有线接入后 73 分钟零故障**；RCON 加固；零入站提前判决发版）
+
+- **环境实测**：宿主原为 **Wi-Fi（Killer AC 1550i，对方 AP 信号 40–66%）**；接入有线后 `Ethernet` metric 25 < `Wi-Fi` 40
+  → Windows 与 WSL（mirrored，`eth1=192.168.0.24`）均走有线。**Wi-Fi 关闭 12 分钟纯有线窗口内，容器照常下载 138 MB**
+  → 容器没有绑死在 Wi-Fi 上（Docker Desktop 的 HNS 路径无法按网卡计数，只能用「关 Wi-Fi 仍可用」来证明）。
+- **A/B 结果（关键）**：07:51 重启后至 09:04 **73 分钟零静默零断连**（基线：通宵 9h 内 55 次飞书静默 ≈6 次/小时、QQ 断连 10–21 次/小时）。
+  同期 Wi-Fi 重新关联到信号 **85%** 的另一 AP（此前 40–66%）。→ 指向**宿主上行链路（Wi-Fi 射频质量）**，不是插件逻辑、也不是 Clash
+  （系统代理不作用于容器/WSL，已在 #616 更正）。
+- **通宵数据的分类（写入 #616）**：55 次飞书静默里 **30 次「累计入站 0 帧」**（握手成功但应用层零数据）、25 次「收 1–23 帧后冻结」；
+  命中 **43 个不同边缘 IP** → 「换 IP / 避开坏 edge」是有实测支撑的。
+- **发版 `dev.441`**（PR #632 → 里程碑 #633）：**零入站提前判决**——连续 2 次心跳仍零入站（飞书 180s / QQ 60s / Discord ≈82s）即判失败重连，
+  不再白等 270s；**仅在使用默认窗口时生效**（显式配 `heartbeat_timeout_seconds` 的环境按配置走）。父仓库 PR #164 已 bump。
+  排障脚本入库：`flow_monitor.py`（新连接 vs 已建立流对照）、`wifi-ab.ps1`（临时禁 Wi-Fi 做 A/B）。
+- **RCON 加固**：仅 docker 网络可达（未发布端口、Windows 无 25575 监听、caddy 未涉及）；密码轮换为 32 字节随机、本机 600 文件；
+  `broadcast-rcon-to-ops=false`。残留风险：`server.properties` 在 Windows 挂载下是 777、同网络内其它容器可连该端口。
+- **里程碑工程教训**：`merge -X theirs` 在 `ReconnectingGateway` 上留下重复代码块 → **合并后必须逐文件核对 `git diff origin/develop`**（本次已当场修正）。
+
 ### 2026-11-24 — AI（RealTime PR11 安全设备退休命令完成）
 
 - RealTime PR #23 已 squash 合并：`6f87d712b6f1451aa525ea55da0e6c58196b305b`。新增 admin-only `/rtime device remove <uuid>`，只允许 disabled device，复用 `DeviceRetirementService`。
