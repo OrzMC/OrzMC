@@ -12,7 +12,7 @@
 > 3. 本文件是**状态**，不是**规则**（规则在 `AGENTS.md`）也不是**方案**（方案在 `docs/`）。
 >    只放"现在到哪了、下一步做什么"，不复制规则与方案正文。
 >
-> **最后更新**：2026-11-24 by AI（**#616 已关闭**：有线后 304 分钟零静默/零断连，根因＝宿主 Wi-Fi 上行链路（旧 AP 40–66%）；插件侧诊断面板 + 零入站提前判决保留为可观测性/兜底；「坏 edge 规避」按要求暂不做）。见 §5）<br>上一轮 by AI（**#616 接近收口**2026-11-24 by AI（**RealTime 秒级输出（PR12）已合并，父仓库指针 bump 到 `b2fb5dd`；0.1.0 其余准备就绪，剩真机验收与发版**。见 §1.5 与 §5）<br>上一轮更新：2026-11-24 by AI（**#616 接近收口**：有线接入后 73 分钟零静默/零断连（基线 ≈6 次/小时），Wi-Fi 射频质量为嫌疑；已发 `dev.441`（零入站提前判决）并装测试服；RCON 加固并留作自动化。见 §5）<br>上一轮 by AI（**beta `dev.440`**2026-11-23 by AI（**beta `dev.440`**：按实测把「同址零入站」改为「同址静默」（收到帧后冻结也算），更新测试服并实测面板；一晚内远端 IP 漂移实测记录；**A/B 仍等一个开关**——Clash 开 allow-lan 或临时关 TUN）。见 §5）<br>上一轮 by AI（**beta `dev.439` 上车 + RCON 打通**2026-11-23 by AI（**beta `dev.439` 上车 + RCON 打通**：修复 Paper 26.x `RemoteConsoleCommandSender` 只继承 `CommandSender` 导致的 D10 误拒；`/config im status` 诊断段生产实测闭环；#616 证据补全为「容器 NAT 与宿主路径同时失活」+ 宿主侧 Clash Verge TUN 嫌疑，**A/B 仍需一个开关**）。见 §5）<br>上一轮 by AI（**测试服已装 beta `1.0.31-dev.438`**2026-11-23 by AI（**测试服已装 beta `1.0.31-dev.438`**：Paper 实例跑新版并验证 IM 建连；Folia 待下次重启生效；记下运维坑「别 `docker restart` MCSM 实例容器，要重启 daemon」）。见 §5）<br>上一轮 by AI（**#616 定性**2026-11-23 by AI（**#616 定性**：插件与 EasyBot（另一套凭据）飞书长连接同几分钟一起失活 → 宿主出网路径；插件侧改进已发 beta **`1.0.31-dev.438`**（里程碑 #626，父仓库 #151 已 bump），只剩 A/B 宿主实验；测试服仍跑 dev.436，**换版待同意**。见 §1.1 与 §5）<br>上一轮 by AI（**`OrzMCApp` 老 issue 收口**2026-11-23 by AI（**`OrzMCApp` 老 issue 收口**：#6/#7/#14/#15 已完成关闭、#10 HarmonyOS 不做；org open issue 现仅剩 plugin 的 4 条。见 §5）<br>上一轮 by AI（**org issue 决策收口**2026-11-23 by AI（**org issue 决策收口**：`.github#3` 合规声明 / `OrzMCApp#31` 中国区限制均**不做**，`OrzMCApp#4` 按 two-cli 策略**关闭**；三条均已 comment 留档。见 §1.1 与 §5）<br>上一轮 by AI（**`plugin` issue 清理**2026-11-23 by AI（**`plugin` issue 清理**：#616 插件侧改进已落（PR #624 `a3bc448`：远端地址进诊断、同址零入站累计+抬高退避、稳定≠健康、`/config im status` 诊断段、`docs/dev/im-inbound-stall.md` + 参考探针；**剩宿主三个联网实验**）；#618 nightly 重跑已绿并自动关闭；OrzPythonMC #107 已复核关闭。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
+> **最后更新**：2026-11-24 by AI（**修复 MCSM 面板启动冲突**：实例容器与面板状态脱钩，RCON 优雅停机 + daemon 重启已恢复；把可复用修复步骤与「勿 docker restart 实例容器」写进 §5。另：拔网线回到 Wi-Fi 后 5 分钟内复现 3 次静默/5 次断连，坐实根因）。<br>上一轮 by AI（**#616 已关闭**2026-11-24 by AI（**#616 已关闭**：有线后 304 分钟零静默/零断连，根因＝宿主 Wi-Fi 上行链路（旧 AP 40–66%）；插件侧诊断面板 + 零入站提前判决保留为可观测性/兜底；「坏 edge 规避」按要求暂不做）。见 §5）<br>上一轮 by AI（**#616 接近收口**2026-11-24 by AI（**RealTime 秒级输出（PR12）已合并，父仓库指针 bump 到 `b2fb5dd`；0.1.0 其余准备就绪，剩真机验收与发版**。见 §1.5 与 §5）<br>上一轮更新：2026-11-24 by AI（**#616 接近收口**：有线接入后 73 分钟零静默/零断连（基线 ≈6 次/小时），Wi-Fi 射频质量为嫌疑；已发 `dev.441`（零入站提前判决）并装测试服；RCON 加固并留作自动化。见 §5）<br>上一轮 by AI（**beta `dev.440`**2026-11-23 by AI（**beta `dev.440`**：按实测把「同址零入站」改为「同址静默」（收到帧后冻结也算），更新测试服并实测面板；一晚内远端 IP 漂移实测记录；**A/B 仍等一个开关**——Clash 开 allow-lan 或临时关 TUN）。见 §5）<br>上一轮 by AI（**beta `dev.439` 上车 + RCON 打通**2026-11-23 by AI（**beta `dev.439` 上车 + RCON 打通**：修复 Paper 26.x `RemoteConsoleCommandSender` 只继承 `CommandSender` 导致的 D10 误拒；`/config im status` 诊断段生产实测闭环；#616 证据补全为「容器 NAT 与宿主路径同时失活」+ 宿主侧 Clash Verge TUN 嫌疑，**A/B 仍需一个开关**）。见 §5）<br>上一轮 by AI（**测试服已装 beta `1.0.31-dev.438`**2026-11-23 by AI（**测试服已装 beta `1.0.31-dev.438`**：Paper 实例跑新版并验证 IM 建连；Folia 待下次重启生效；记下运维坑「别 `docker restart` MCSM 实例容器，要重启 daemon」）。见 §5）<br>上一轮 by AI（**#616 定性**2026-11-23 by AI（**#616 定性**：插件与 EasyBot（另一套凭据）飞书长连接同几分钟一起失活 → 宿主出网路径；插件侧改进已发 beta **`1.0.31-dev.438`**（里程碑 #626，父仓库 #151 已 bump），只剩 A/B 宿主实验；测试服仍跑 dev.436，**换版待同意**。见 §1.1 与 §5）<br>上一轮 by AI（**`OrzMCApp` 老 issue 收口**2026-11-23 by AI（**`OrzMCApp` 老 issue 收口**：#6/#7/#14/#15 已完成关闭、#10 HarmonyOS 不做；org open issue 现仅剩 plugin 的 4 条。见 §5）<br>上一轮 by AI（**org issue 决策收口**2026-11-23 by AI（**org issue 决策收口**：`.github#3` 合规声明 / `OrzMCApp#31` 中国区限制均**不做**，`OrzMCApp#4` 按 two-cli 策略**关闭**；三条均已 comment 留档。见 §1.1 与 §5）<br>上一轮 by AI（**`plugin` issue 清理**2026-11-23 by AI（**`plugin` issue 清理**：#616 插件侧改进已落（PR #624 `a3bc448`：远端地址进诊断、同址零入站累计+抬高退避、稳定≠健康、`/config im status` 诊断段、`docs/dev/im-inbound-stall.md` + 参考探针；**剩宿主三个联网实验**）；#618 nightly 重跑已绿并自动关闭；OrzPythonMC #107 已复核关闭。见 §1.1 与 §5）<br>上一轮 2026-11-23 by AI（**RealTime PR1–PR9 已合并，PR10 进行中（PR10a 完成、PR10b 开始）**；schema v2 与 v1 迁移已合并，父仓库正在将 `tools/RealTime` 指针更新到 `7a122721`。见 §1.5 与 §5）
 
 ---
 
@@ -472,6 +472,21 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-11-24 13:40 — AI（修好「MCSM 面板无法启动 Paper 实例」：容器与面板状态脱钩）
+
+- **症状**：面板点启动报 409；daemon 日志 `Conflict. The container name "/MCSM-716c2f" is already in use by container "f179568f…"`
+  —— 实例容器还在跑，但面板认为它是「已停止」，于是尝试**新建**同名容器 → 冲突。
+- **根因**：之前为换 beta 用了 `docker restart MCSM-716c2f` 这类**绕过面板**的操作（本会话已知坑），
+  容器被 daemon 移除又重建后，面板侧状态与容器失去同步。
+- **修复步骤（可复用，已验证）**：
+  1. 用 RCON 优雅停机存档：`docker exec … node /tmp/rcon.js <容器IP> 25575 <pw> "stop"`（容器随之退出并被 MCSM 移除）；
+  2. 若容器仍在：`docker rm MCSM-<前6位>`；
+  3. 面板点「启动」；若不方便，`docker restart orzmc-mcsmanager-daemon`（daemon 会优雅停所有实例，再按
+     `eventTask.autoStart` 重建拉起——本次用这条，Paper/Folia/Velocity 各重启一次）。
+  4. 验证：`docker ps` 有实例容器 + 日志出现 `Enabling OrzMC` / `RCON running` / IM 建连成功。
+- **以后避免**：**不要 `docker restart MCSM-<实例id>`**；换插件 jar 属于文件操作（可以直接替换），
+  需要重启就在**面板里 stop/start**，或重启 daemon。
+
 ### 2026-11-24 13:00 — AI（**#616 关闭**：有线后 304 分钟零故障，根因＝宿主 Wi-Fi 上行链路）
 
 - **最终数据**：仅 Wi-Fi 时（旧 AP 信号 40–66%、发速 45–260 Mbps 抖动）飞书静默 55 次/9h、QQ `1006` 断连 10–21 次/小时；
