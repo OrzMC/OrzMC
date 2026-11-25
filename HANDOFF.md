@@ -188,9 +188,10 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **PR40（完成）** | 命令/权限审计：`device set` 原来允许对**启用中**的设备操作，旧槽位不会被清（BCD 留一个永久通电的红石块、analog 留一个讲台）→ 现在要求先 disable（补全也只推荐已禁用设备）；analog **disable 改为整体清空槽位**（先清书再拆讲台，与 BCD 归 air 一致）。文档新增「创建/修改/删除」矩阵 + 每步权限；编码/分辨率不支持原地改（要先 remove 再 create）。同时把 PR11–PR17 任务归档到 `tasks/completed/`，并加固 `cleanup-smoke`（Folia 的 `execute if block` 应答会空、区块未加载会报错 → 改为按持久化清理队列判定，块探针只作告警）。 |
 | **PR41（完成）** | **教学示例命令** `/rtime device demo <bcd\|analog> <世界> <x> <y> <z> <轴>`：一条命令就地生成完整可读时钟并**立即启用** —— analog 每位 = 讲台 + 垂直轴方向的「比较器→红石线→灯」一行（含石头支撑，比较器 facing 指向讲台）；BCD 每个槽位正上方一盏灯（红石块给正上方供能，不需要红石线）。展示方块记进设备（schema **v5**：设备 `demo:`、清理任务 `display:`），`disable` 拆、`enable` 重搭、`remove` 连展示一起清，只拆类型仍匹配的方块。 |
 | **真机验收（2026-11-25，demo）** | 在测试服现有 BCD 目视设备旁生成两个示例：`demo analog`（6 槽 + 30 展示方块）与 `demo bcd`（24 槽 + 24 灯，新分组布局）。读数：analog `page = 0,9,2,9,4,9` / 强度 `1,10,3,10,5,*`（= page+1，六盏灯全亮）；BCD 槽位落在 `i*2 + i/4` 分组偏移、通电位对应灯亮；`disable` 拆掉展示与槽位、`enable` 重建。**注意**：地形未平整时槽位/展示位被占会报非法方块（命令只填空位）。三个设备（`visual-acceptance-clock` + 两个 demo）现在并存、均启用，可直接进服看。详见 RealTime `tasks/completed/PR18-demo-teaching-builds.md`。 |
+| **文档对齐（PR43）** | RealTime 全部文档按当前实现重写/校正：README（PR1–PR18、两种编码、`device demo`、schema v5）、架构页（去掉过时 PR 叙事）、需求（命令/权限矩阵 + analog 进正文）、redstone 文档（schema v5 `demo:`/`display:`、v1–v4 迁移、默认布局示例）、0.1.0 验收文档加「历史」横幅、路线图 PR12–PR18 标 completed、testing strategy 按真实测试层次重写、CHANGELOG Unreleased 分组；顺带修掉 3 个坏相对链接（全仓库链接扫描 0 broken）。 |
 | **0.1.0 发布（完成）** | 2026-11-24 打 `v0.1.0`（tag 源 `195fb69`）→ Release workflow：build 绿 → `release` environment（required reviewer + `v*` tag policy，`RELEASE_PUBLISH_ENABLED=true`）审批通过 → **GitHub Release 已创建**。资产 `RealTime-0.1.0.jar` 2,053,327 B / sha256 `d0c352cabb5165bd1e0b92bbe0158e72517a999db01d9b851058c33e15d4456f`（与本地验收构建完全一致，可复现）+ `.sha256`。Release notes 由 `CHANGELOG` 的 `## [0.1.0]` 段生成（已补「安装与升级须知」：Java 25 / Paper·Folia 26.3+、首启生成文件、redstone 默认关闭、槽位必须 air/redstone_block、schema v3 迁移与 `output-power` 退役）。**Hangar / Modrinth 按维护者决定暂不接**（未设 `HANGAR_PROJECT_ID`/`MODRINTH_PROJECT_ID`，workflow 自动 skip），等线上稳定后再接入 Release/Beta。记录见 `docs/operations/acceptance-report-0.1.0.md` §10 与 `docs/release/process.md`。 |
 | **当前设备运维命令** | `/rtime device create <名称> <minute\|second> <世界> <x> <y> <z> <轴> [间距] [bcd\|analog]`；`/rtime device set <uuid> <槽位> <x> <y> <z>`；`/rtime device list/info/status`；`/rtime device enable/disable <uuid>`；`/rtime device remove <uuid>`（admin，必须先 disable）；`/rtime device cleanup list`；`/rtime device cleanup retry <job-uuid>`（admin，仅重试 `NEEDS_ATTENTION`）。 |
-| **父仓库集成** | `tools/RealTime` 已登记为子模块；gitlink 指向 RealTime main `f2d2f7d8e9082419941e44aee4c71ecd266a7ce4`（PR15–PR18 + 验收修复 + 冒烟加固合并后）；只改 `tools/RealTime` 与本 HANDOFF，不碰其他子模块。 |
+| **父仓库集成** | `tools/RealTime` 已登记为子模块；gitlink 指向 RealTime main `f7b87b14b4e89821575044b713e034af7edef511`（PR15–PR18 + 验收 + 冒烟加固 + 文档对齐合并后）；只改 `tools/RealTime` 与本 HANDOFF，不碰其他子模块。 |
 | **发布准备 / 真机验收** | PR #24 已合并，补齐 `CHANGELOG.md` 0.1.0、发布安全门禁与校验脚本；PR #25 已合并，交接文档为 [`docs/operations/production-acceptance-0.1.0.md`](https://github.com/OrzMC/RealTime/blob/main/docs/operations/production-acceptance-0.1.0.md)，覆盖安装、时区、BCD、设备退休、cleanup、迁移、重启和停止条件（已按 PR12 的 `minute`/`second` 两种分辨率更新）。**0.1.0 真机验收已通过（STAGING ACCEPTED）并已发 GitHub Release**；PR15–PR17 目前只有单测 + CI（`verify`、Paper/Folia `smoke`、`cleanup-smoke`、PAPI 全 8 项）背书，**analog 编码与分组布局的真机验收待做**（需要操作者在线：讲台所在区块要 entity-ticking 比较器才有读数）。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
@@ -491,6 +492,12 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-11-25 — AI（RealTime 文档全面对齐实现）
+
+- 需求：让文档不过时。RealTime 文档此前停在 0.1.0 口径（「PR1–PR12 complete」「16/24 outputs」、schema v3/v4、analog 被列为 future、路线图只到 PR15）。
+- 做法：逐篇对照代码核对 —— README、架构总览、产品需求、redstone 设备文档、testing strategy、roadmap、tasks/README、AGENTS、CHANGELOG；0.1.0 的两份验收文档**不改写历史**，只加「历史文档」横幅并指向当前行为。
+- 结果：`docs: align every document with the current implementation`（PR #43，squash `f7b87b1`），CI 8/8；`./scripts/verify.sh` 全绿；全仓库 markdown 相对链接扫描 0 broken。父仓库本次 bump 到 `f7b87b14b4e89821575044b713e034af7edef511`。
+
 ### 2026-11-25 — AI（RealTime 可选后续：命令/权限审计 + `device demo` 教学示例 + 冒烟加固）
 
 - **审计结论**：两种编码都能在游戏里创建（`device create`）、修改（`device set`）、销毁（`device remove`，需先 disable）。权限四档（view=true / toggle / edit / retire=op，admin 为父节点）与风险匹配：`edit` 是唯一"按坐标写方块"的一档，配 `allowed-areas` 可安全下放。
