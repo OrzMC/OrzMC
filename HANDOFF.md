@@ -189,6 +189,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **PR41（完成）** | **教学示例命令** `/rtime device demo <bcd\|analog> <世界> <x> <y> <z> <轴>`：一条命令就地生成完整可读时钟并**立即启用** —— analog 每位 = 讲台 + 垂直轴方向的「比较器→红石线→灯」一行（含石头支撑，比较器 facing 指向讲台）；BCD 每个槽位正上方一盏灯（红石块给正上方供能，不需要红石线）。展示方块记进设备（schema **v5**：设备 `demo:`、清理任务 `display:`），`disable` 拆、`enable` 重搭、`remove` 连展示一起清，只拆类型仍匹配的方块。 |
 | **真机验收（2026-11-25，demo）** | 在测试服现有 BCD 目视设备旁生成两个示例：`demo analog`（6 槽 + 30 展示方块）与 `demo bcd`（24 槽 + 24 灯，新分组布局）。读数：analog `page = 0,9,2,9,4,9` / 强度 `1,10,3,10,5,*`（= page+1，六盏灯全亮）；BCD 槽位落在 `i*2 + i/4` 分组偏移、通电位对应灯亮；`disable` 拆掉展示与槽位、`enable` 重建。**注意**：地形未平整时槽位/展示位被占会报非法方块（命令只填空位）。三个设备（`visual-acceptance-clock` + 两个 demo）现在并存、均启用，可直接进服看。详见 RealTime `tasks/completed/PR18-demo-teaching-builds.md`。 |
 | **cleanup dismiss + 使用指南（PR52）** | 新增 `/rtime device cleanup dismiss <job-uuid>`（`retire` 权限）：丢弃只剩 `需人工处理` 的任务、方块保持原样（之前只能手改 YAML，而文档禁止）；仍有 `待处理` 项会拒绝。`device demo` 成功提示补「建示例前先清场」。文档去重：新增面向用户的 **`docs/usage.md`**（安装/命令与权限/两种编码接线/教学示例/清理队列/诊断/占位符/FAQ），README 与需求文档改为引用它，`redstone-devices.md` 收敛为 Implementation Notes（配置/schema/编码公式/布局/运行时安全/诊断）。 |
+| **demo 提示独立成键（PR53）** | 「建示例前先清场」原本追加在 `command.device.demo.success` 里，但**已安装服有自己的 `messages.yml`，改过的键不会更新**（只有缺失键才走内置默认）→ 老服看不到。改为独立键 `command.device.demo.hint`：老服缺键 → 自动用内置文案，真机已确认输出。**这条对以后所有"改文案"都适用：想让人看到新文案，就得用新键或让用户删键。** |
 | **0.3.0 发布（完成，2026-11-25）** | 打 `v0.3.0`（tag 源 `9093b76`）→ Release workflow：build ✓ → `release` environment 审批 → **GitHub Release 已创建**。资产 `RealTime-0.3.0.jar` 2,133,550 B / sha256 `bf8c713b82c33aaef20c42209e76647335dd3b24936676547647fc0da65727ce`（**与本地可复现构建一致**，下载复核）+ `.sha256`；Release notes 含**安装与升级须知**（受影响面只限 0.2.0 上用 `device demo` 的服、症状、升级后处理；本版无配置/数据结构变更，schema 仍 v5）。发布后：`CHANGELOG` 新开 `## [Unreleased]`、版本推进 `0.4.0-SNAPSHOT`（Gradle 默认 + runtime-smoke env + 两个 smoke 脚本）、`docs/release/process.md` 发布历史表补 v0.3.0（PR #51）。 |
 | **0.3.0 升级须知（PR49）** | `CHANGELOG` 的 `## [Unreleased]` 增加「升级须知（0.3.0，未发布）」：只有**在 0.2.0 上用 `device demo` 建过示例**的服会踩这两个 cleanup 缺陷（普通设备无 `display:` 列表），写明症状与升级后处理（换 jar + 重启即可；剩余的 `需人工处理` 是被地形占位，清掉再 `cleanup retry`）。`docs/release/process.md` 新增硬性要求：需要运维手动做事的发版，`CHANGELOG` 段落必须有升级须知小节（Release notes 由该段落生成）。 |
 | **cleanup 展示方块索引修复（PR48）** | 上一修复上线后队列变成「待处理：1」永远不动（那格其实早是空气）。根因：按世界扫描时对 `job.display` 先 `filter{PENDING}` 再 `forEachIndexed`，下标与存储列表错位 → 前面几条 `CLEARED` 后，剩下那条被当成 index 0，查到的是已 `CLEARED` 的记录直接返回。已改为整表 `forEachIndexed` + 循环内判断，并加回归单测（前面 CLEARED、最后 PENDING）。真机复验：重启后队列自动清空、24 槽位全为空气、无掉落物、存储里 `cleanup-jobs: []`。 |
@@ -198,7 +199,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **0.2.0 发布（完成，2026-11-25）** | 打 `v0.2.0`（tag 源 `e0632f5`）→ Release workflow：build 绿 → `release` environment（required reviewer + `v*` 策略）审批 → **GitHub Release 已创建**。资产 `RealTime-0.2.0.jar` 2,132,970 B / sha256 `f818b9a713e68f154c23366534d87837d05a7a61381f5586e7121ed49c96dc1e`（**与本地可复现构建逐字节一致**，已下载复核）+ `.sha256`；Release notes 由 `CHANGELOG` 的 `## [0.2.0]` 段生成，含**安装与升级须知**（schema v3→v5 迁移与备份、已有设备坐标不变、`device set` 需先禁用 / analog `disable` 清槽 / 新默认布局三处行为变化、权限变化、新命令、analog 已知限制）。**Hangar / Modrinth 仍未接**（未配 project id/token，workflow 自动 skip）。发布后：`CHANGELOG` 新开 `## [Unreleased]`，版本推进到 `0.3.0-SNAPSHOT`（Gradle 默认 + runtime-smoke env + 两个 smoke 脚本），`docs/release/process.md` 加发布历史表。 |
 | **0.1.0 发布（完成）** | 2026-11-24 打 `v0.1.0`（tag 源 `195fb69`）→ Release workflow：build 绿 → `release` environment（required reviewer + `v*` tag policy，`RELEASE_PUBLISH_ENABLED=true`）审批通过 → **GitHub Release 已创建**。资产 `RealTime-0.1.0.jar` 2,053,327 B / sha256 `d0c352cabb5165bd1e0b92bbe0158e72517a999db01d9b851058c33e15d4456f`（与本地验收构建完全一致，可复现）+ `.sha256`。Release notes 由 `CHANGELOG` 的 `## [0.1.0]` 段生成（已补「安装与升级须知」：Java 25 / Paper·Folia 26.3+、首启生成文件、redstone 默认关闭、槽位必须 air/redstone_block、schema v3 迁移与 `output-power` 退役）。**Hangar / Modrinth 按维护者决定暂不接**（未设 `HANGAR_PROJECT_ID`/`MODRINTH_PROJECT_ID`，workflow 自动 skip），等线上稳定后再接入 Release/Beta。记录见 `docs/operations/acceptance-report-0.1.0.md` §10 与 `docs/release/process.md`。 |
 | **当前设备运维命令** | `/rtime device create <名称> <minute\|second> <世界> <x> <y> <z> <轴> [间距] [bcd\|analog]`；`/rtime device set <uuid> <槽位> <x> <y> <z>`；`/rtime device list/info/status`；`/rtime device enable/disable <uuid>`；`/rtime device remove <uuid>`（admin，必须先 disable）；`/rtime device cleanup list`；`/rtime device cleanup retry <job-uuid>`（admin，仅重试 `NEEDS_ATTENTION`）。 |
-| **父仓库集成** | `tools/RealTime` 已登记为子模块；gitlink 指向 RealTime main `0283d69f71ff289cf861094955e0b5ddcfe3032d`（v0.3.0 已发布 + `cleanup dismiss` + 使用指南后）；只改 `tools/RealTime` 与本 HANDOFF，不碰其他子模块。 |
+| **父仓库集成** | `tools/RealTime` 已登记为子模块；gitlink 指向 RealTime main `258a05fcd3995b418dc324a32b53e5c6f1442485`（v0.3.0 已发布 + `cleanup dismiss` + 使用指南 + demo 提示独立键后）；只改 `tools/RealTime` 与本 HANDOFF，不碰其他子模块。 |
 | **发布准备 / 真机验收** | PR #24 已合并，补齐 `CHANGELOG.md` 0.1.0、发布安全门禁与校验脚本；PR #25 已合并，交接文档为 [`docs/operations/production-acceptance-0.1.0.md`](https://github.com/OrzMC/RealTime/blob/main/docs/operations/production-acceptance-0.1.0.md)，覆盖安装、时区、BCD、设备退休、cleanup、迁移、重启和停止条件（已按 PR12 的 `minute`/`second` 两种分辨率更新）。**0.1.0 真机验收已通过（STAGING ACCEPTED）并已发 GitHub Release**；PR15–PR17 目前只有单测 + CI（`verify`、Paper/Folia `smoke`、`cleanup-smoke`、PAPI 全 8 项）背书，**analog 编码与分组布局的真机验收待做**（需要操作者在线：讲台所在区块要 entity-ticking 比较器才有读数）。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
@@ -499,6 +500,13 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+### 2026-11-25 — AI（RealTime demo 提示改为独立消息键）
+
+- 发现：上一轮把「建示例前先清场」追加进了 `command.device.demo.success`，但测试服有自己的 `messages.yml`，**改动过的键不会覆盖**（加载只补缺失键）→ 老服永远看不到。
+- 修复（PR #53，squash `258a05f`）：新增 `command.device.demo.hint`（独立键），加载时走内置默认 → 所有服可见；不想看的服删掉该键即可。
+- 真机验证：`device demo analog` 输出顺序为先提示再成功信息 ✓；临时设备 disable→remove→队列清空 ✓；场地清理干净。
+- 测试服现跑 `0.4.0-SNAPSHOT`（含 dismiss + hint）。父仓库本次 bump 到 `258a05fcd3995b418dc324a32b53e5c6f1442485`。
+
 ### 2026-11-25 — AI（RealTime `cleanup dismiss` + 文档合并去重）
 
 - 起因：维护者自测 `device demo` 建在草地上（支撑位是原始 `GRASS_BLOCK`），退役后 11 个展示方块条目永远 `需人工处理`；插件"不覆盖非自己方块"的规则没错，但**没有取消任务的命令** → 只能手改 `data/devices.yml`（文档禁止）。
