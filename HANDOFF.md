@@ -43,6 +43,16 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 > **当前状态（2026-10-25；0.1.5 已发布，P2-7 第 1–2 步已合入）**
 > - **先跑 `./scripts/dev/boot-check.sh`**（只读自检；换设备或隔了几天用 `--fetch`）——
 >   它检查父仓库是否落后、子模块是否初始化、指针在不在本地、组合校验是否通过，并直接给出要跑的命令。
+> - **嵌套子模块要单独初始化**（2026-11-25 实测）：`backup/upstream/thanos`（`aternosorg/thanos`，上游只读）
+>   与 `tools/LoginSecurity/src/main/resources/lang`（`lenis0012/Translations`）是**子模块里的子模块**，
+>   父仓库直接 `git submodule update --init <那个路径>` 会报 `pathspec '...' did not match any file(s) known to git`
+>   （外层仓库不认识嵌套路径）。要进子模块里跑：
+>   ```bash
+>   git -C backup submodule update --init upstream/thanos
+>   git -C tools/LoginSecurity submodule update --init src/main/resources/lang
+>   ```
+>   也**别**图省事跑 `git submodule update --init --recursive`：它会把常驻 `develop` 的 `plugin` 切到父仓库记录的
+>   `main` 指针，还可能撞上别人的未提交改动。自检报「2 个子模块未初始化 + 记录指针本地不存在」就是这条。
 > - 工作目录 `/Users/joker/Documents/OrzMC`（Air 本机正式仓库）；**不要用 `ssh air` / 旧 `scripts/air/run.sh`**（已删）。
 > - 父仓库 `main` 与 `swift/app` `main` 均已推送干净（app = `218ff8e6`，含 0.1.5 发版、P2-7 计划与第 1–2 步）。
 >   **不要 `git reset --hard`**（父仓库常有未提交文档），用 `git merge --ff-only`。
