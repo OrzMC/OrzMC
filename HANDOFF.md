@@ -502,6 +502,8 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 - 产物核验：`gh release download` 后 `sha256sum` = `f818b9a7…96dc1e`，与本地构建完全一致；资产含 `.sha256`。
 - 发版后收尾（PR #46，squash `1cb36db`）：`## [Unreleased]` 重开、README 状态改「v0.2.0 已发布 / main 在 0.3.0-SNAPSHOT」、版本推进 `0.3.0-SNAPSHOT`、`docs/release/process.md` 加发布历史表、架构总览与路线图指向已发布版本。CI 8/8。
 - 父仓库本次 bump 到 `1cb36dbfecc987e1dfb430241d8af776d5169e97`。
+- **发布产物真机自检**：把 Release 下载的 `RealTime-0.2.0.jar`（sha256 与本地构建一致）装到 Paper 测试实例 → 启动正常、`rtime info` 报 `0.2.0`；用 `device demo analog` 建临时示例（6 讲台 + 30 展示方块）逐位读数 `level = page + 1`（1→2, 1→2, 2→3, 5→6, 0→1, 8→10）、六盏灯全亮；`disable → remove` 后清理队列为空。验完删掉临时设备、清空方块、撤销 forceload。
+- **注意**：测试服现在只剩 `demo-bcd` 且为**禁用**状态 —— 这是维护者 10:06–10:09 自己用命令做的（`device remove 7777…` 删掉了旧的 BCD 验收时钟、`device disable` 了 demo-analog），不是插件丢数据；`data/devices.yml` 与 `backups/devices.yml.bak` 都在 10:09 正常轮转。
 
 ### 2026-11-25 — AI（RealTime 文档对齐后的连带修复：messages 模板键错位）
 
