@@ -211,7 +211,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **0.2.0 发布（完成，2026-11-25）** | 打 `v0.2.0`（tag 源 `e0632f5`）→ Release workflow：build 绿 → `release` environment（required reviewer + `v*` 策略）审批 → **GitHub Release 已创建**。资产 `RealTime-0.2.0.jar` 2,132,970 B / sha256 `f818b9a713e68f154c23366534d87837d05a7a61381f5586e7121ed49c96dc1e`（**与本地可复现构建逐字节一致**，已下载复核）+ `.sha256`；Release notes 由 `CHANGELOG` 的 `## [0.2.0]` 段生成，含**安装与升级须知**（schema v3→v5 迁移与备份、已有设备坐标不变、`device set` 需先禁用 / analog `disable` 清槽 / 新默认布局三处行为变化、权限变化、新命令、analog 已知限制）。**Hangar / Modrinth 仍未接**（未配 project id/token，workflow 自动 skip）。发布后：`CHANGELOG` 新开 `## [Unreleased]`，版本推进到 `0.3.0-SNAPSHOT`（Gradle 默认 + runtime-smoke env + 两个 smoke 脚本），`docs/release/process.md` 加发布历史表。 |
 | **0.1.0 发布（完成）** | 2026-11-24 打 `v0.1.0`（tag 源 `195fb69`）→ Release workflow：build 绿 → `release` environment（required reviewer + `v*` tag policy，`RELEASE_PUBLISH_ENABLED=true`）审批通过 → **GitHub Release 已创建**。资产 `RealTime-0.1.0.jar` 2,053,327 B / sha256 `d0c352cabb5165bd1e0b92bbe0158e72517a999db01d9b851058c33e15d4456f`（与本地验收构建完全一致，可复现）+ `.sha256`。Release notes 由 `CHANGELOG` 的 `## [0.1.0]` 段生成（已补「安装与升级须知」：Java 25 / Paper·Folia 26.3+、首启生成文件、redstone 默认关闭、槽位必须 air/redstone_block、schema v3 迁移与 `output-power` 退役）。**Hangar / Modrinth 按维护者决定暂不接**（未设 `HANGAR_PROJECT_ID`/`MODRINTH_PROJECT_ID`，workflow 自动 skip），等线上稳定后再接入 Release/Beta。记录见 `docs/operations/acceptance-report-0.1.0.md` §10 与 `docs/release/process.md`。 |
 | **当前设备运维命令** | `/rtime device create <名称> <minute\|second> <世界> <x> <y> <z> <轴> [间距] [bcd\|analog]`；`/rtime device set <uuid> <槽位> <x> <y> <z>`；`/rtime device list/info/status`；`/rtime device enable/disable <uuid>`；`/rtime device remove <uuid>`（admin，必须先 disable）；`/rtime device cleanup list`；`/rtime device cleanup retry <job-uuid>`（admin，仅重试 `NEEDS_ATTENTION`）。 |
-| **父仓库集成** | `tools/RealTime` 已登记为子模块；gitlink 指向 RealTime main `8bb951ced930c322e88f8708f882502867aadd67`（v0.4.0 已发布 + 流程规范 + 平台接线；Modrinth Under Review；**新增红石模块未启用时的提示/info 行**）；只改 `tools/RealTime` 与本 HANDOFF，不碰其他子模块。 |
+| **父仓库集成** | `tools/RealTime` 已登记为子模块；gitlink 指向 RealTime main `1ee32e651b3a455473c05ac8ba0e5f857a3dea5a`（v0.4.0 已发布 + 流程规范 + 平台接线；**命令面简化完成**（create 一键建钟/manual+place 逐位/nodisplay/设备名寻址/Tab 补全/help），红石模块默认开启）；只改 `tools/RealTime` 与本 HANDOFF，不碰其他子模块。 |
 | **发布准备 / 真机验收** | PR #24 已合并，补齐 `CHANGELOG.md` 0.1.0、发布安全门禁与校验脚本；PR #25 已合并，交接文档为 [`docs/operations/production-acceptance-0.1.0.md`](https://github.com/OrzMC/RealTime/blob/main/docs/operations/production-acceptance-0.1.0.md)，覆盖安装、时区、BCD、设备退休、cleanup、迁移、重启和停止条件（已按 PR12 的 `minute`/`second` 两种分辨率更新）。**0.1.0 真机验收已通过（STAGING ACCEPTED）并已发 GitHub Release**；PR15–PR17 目前只有单测 + CI（`verify`、Paper/Folia `smoke`、`cleanup-smoke`、PAPI 全 8 项）背书，**analog 编码与分组布局的真机验收待做**（需要操作者在线：讲台所在区块要 entity-ticking 比较器才有读数）。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
@@ -512,6 +512,19 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-26 — AI（RealTime：红石默认开启 + 命令面简化）
+
+- **红石模块默认开启**（PR #69，`bf1558a`）：`modules/redstone.yml` → `enabled: true`（老服文件不覆盖）；`allowed-areas` 为空=允许全图，仅 `info` 提示；启动与 reload 各打一行模块/区域状态。
+- **命令面简化**（`1ee32e6`，**误直接提交到 main**，见下）：
+  - `device create <名字> <bcd|analog> [second|minute] [nodisplay|manual]`：以玩家准星/脚下为原点、朝向为轴，自动排源 + 放展示方块 + 立即启用（与 demo 同构）
+  - `device demo` 成为别名（名字 `demo-<编码>`，默认按秒）
+  - `device place <设备> <槽位> [x y z]`：逐位精确定位（不给坐标用准星位置，控制台给出明确提示）；`manual` 建未启用空钟后逐位摆；`set` 保留别名
+  - 设备名寻址全覆盖（`info/enable/disable/remove/place`），同名冲突提示改用 ID
+  - Tab 补全：子命令/设备名/编码/分辨率/modifier/槽位号/轴；`/rtime help [create|place|cleanup]`
+  - 显式坐标形式也接受编码前置（`create clock bcd second world …`），并默认放展示方块（`nodisplay` 关闭）
+- **流程事故**：该提交本应走分支+PR，实际在 `main` 上提交并 push（`1ee32e6`）。CI 的 push 只跑 `verify`；完整 matrix（smoke/cleanup-smoke/PAPI）会在下一个 PR 上覆盖。教训：切换任务前先 `git switch -c`，别在 main 上改文件。
+- 真机验收（测试服）：create 放下 24 槽 + 24 灯并驱动 bit0；名字查询/开关/退役正常；`place` 把槽 0 移到 x=660 后新位 16/16 通电、原位 0/16；把槽位移到同设备另一槽位被正确拒绝；控制台执行无坐标形式时提示需要玩家。
 
 ### 2026-11-25 — AI（RealTime：红石模块关闭导致"方块不出现"）
 
