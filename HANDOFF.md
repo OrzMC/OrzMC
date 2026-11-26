@@ -211,7 +211,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **0.2.0 发布（完成，2026-11-25）** | 打 `v0.2.0`（tag 源 `e0632f5`）→ Release workflow：build 绿 → `release` environment（required reviewer + `v*` 策略）审批 → **GitHub Release 已创建**。资产 `RealTime-0.2.0.jar` 2,132,970 B / sha256 `f818b9a713e68f154c23366534d87837d05a7a61381f5586e7121ed49c96dc1e`（**与本地可复现构建逐字节一致**，已下载复核）+ `.sha256`；Release notes 由 `CHANGELOG` 的 `## [0.2.0]` 段生成，含**安装与升级须知**（schema v3→v5 迁移与备份、已有设备坐标不变、`device set` 需先禁用 / analog `disable` 清槽 / 新默认布局三处行为变化、权限变化、新命令、analog 已知限制）。**Hangar / Modrinth 仍未接**（未配 project id/token，workflow 自动 skip）。发布后：`CHANGELOG` 新开 `## [Unreleased]`，版本推进到 `0.3.0-SNAPSHOT`（Gradle 默认 + runtime-smoke env + 两个 smoke 脚本），`docs/release/process.md` 加发布历史表。 |
 | **0.1.0 发布（完成）** | 2026-11-24 打 `v0.1.0`（tag 源 `195fb69`）→ Release workflow：build 绿 → `release` environment（required reviewer + `v*` tag policy，`RELEASE_PUBLISH_ENABLED=true`）审批通过 → **GitHub Release 已创建**。资产 `RealTime-0.1.0.jar` 2,053,327 B / sha256 `d0c352cabb5165bd1e0b92bbe0158e72517a999db01d9b851058c33e15d4456f`（与本地验收构建完全一致，可复现）+ `.sha256`。Release notes 由 `CHANGELOG` 的 `## [0.1.0]` 段生成（已补「安装与升级须知」：Java 25 / Paper·Folia 26.3+、首启生成文件、redstone 默认关闭、槽位必须 air/redstone_block、schema v3 迁移与 `output-power` 退役）。**Hangar / Modrinth 按维护者决定暂不接**（未设 `HANGAR_PROJECT_ID`/`MODRINTH_PROJECT_ID`，workflow 自动 skip），等线上稳定后再接入 Release/Beta。记录见 `docs/operations/acceptance-report-0.1.0.md` §10 与 `docs/release/process.md`。 |
 | **当前设备运维命令** | `/rtime device create <名称> <minute\|second> <世界> <x> <y> <z> <轴> [间距] [bcd\|analog]`；`/rtime device set <uuid> <槽位> <x> <y> <z>`；`/rtime device list/info/status`；`/rtime device enable/disable <uuid>`；`/rtime device remove <uuid>`（admin，必须先 disable）；`/rtime device cleanup list`；`/rtime device cleanup retry <job-uuid>`（admin，仅重试 `NEEDS_ATTENTION`）。 |
-| **父仓库集成** | `tools/RealTime` 已登记为子模块；gitlink 指向 RealTime main `7d5fe1962cf2c9024161f2ea871bb2997d31840a`（**v0.5.0 已发布**：GitHub + Hangar 自动发布 + Modrinth 手工补传；main 在 0.6.0-SNAPSHOT）**），红石模块默认开启）；只改 `tools/RealTime` 与本 HANDOFF，不碰其他子模块。 |
+| **父仓库集成** | `tools/RealTime` 已登记为子模块；gitlink 指向 RealTime main `e2e2769249956dc9928168215c605a1f35d7d01e`（0.6.0 开发中：**只有讲台**、默认按秒、`place` 立刻立讲台、5+4 扁平命令面、schema v7）**），红石模块默认开启）；只改 `tools/RealTime` 与本 HANDOFF，不碰其他子模块。 |
 | **发布准备 / 真机验收** | PR #24 已合并，补齐 `CHANGELOG.md` 0.1.0、发布安全门禁与校验脚本；PR #25 已合并，交接文档为 [`docs/operations/production-acceptance-0.1.0.md`](https://github.com/OrzMC/RealTime/blob/main/docs/operations/production-acceptance-0.1.0.md)，覆盖安装、时区、BCD、设备退休、cleanup、迁移、重启和停止条件（已按 PR12 的 `minute`/`second` 两种分辨率更新）。**0.1.0 真机验收已通过（STAGING ACCEPTED）并已发 GitHub Release**；PR15–PR17 目前只有单测 + CI（`verify`、Paper/Folia `smoke`、`cleanup-smoke`、PAPI 全 8 项）背书，**analog 编码与分组布局的真机验收待做**（需要操作者在线：讲台所在区块要 entity-ticking 比较器才有读数）。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
@@ -512,6 +512,19 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-26 — AI（RealTime 去 BCD + 命令面重写，PR #76）
+
+- **BCD 编码移除**（真机验收结论：四位并联的译码器延时不可控，显示对不上时间）：`OutputEncoding`、BCD 位帧/编码器、
+  4 位分组布局、`bcd`/`binary` 参数、`%realtime_bcd%` / `%realtime_bcd_bits%` 全部删除；持久化 schema **v7**
+  （旧文件里 `encoding: bcd` / 无该字段的钟跳过 + 日志 + `/rtime status` 计数）。**默认精度改 second**。
+- **`place` 立刻立讲台**：新增 `DevicePlacement.placeSlotNow`（单槽即时写入、讲台朝玩家、写当前数字、清理旧位置），
+  同时把"关机"语义改成**取走书、保留讲台**（读数归 0），`remove` 才拆。
+- **命令面重写**：`CommandSyntax` 纯解析层 + 薄分发器 + 新 `CommandCompletion`；读 `/rtime` 与 `/rtime <钟名>`，
+  写 `create`/`on`/`off`/`place`/`remove`，运维 `status`/`cleanup`/`help`/`reload`；选项改关键字（`at`/`facing`/`manual`/`nodisplay`），
+  钟名唯一且不许与动词重名（因此删掉 UUID 寻址与 `device <子命令>` 兼容层）。旧动词回一行"已移除，改用 …"。
+- **验证**：118 单测 + `verify.sh`；两个 smoke 脚本重写（讲台 + 名字寻址），CI 8/8（paper/folia 的 smoke、cleanup-smoke、
+  placeholderapi-smoke）；Paper 真机验收 16 项见 `docs/operations/acceptance-report-0.6.0.md`。
 
 ### 2026-11-26 — AI（RealTime v0.5.0 发版 + 分支清理）
 
