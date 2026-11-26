@@ -211,7 +211,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **0.2.0 发布（完成，2026-11-25）** | 打 `v0.2.0`（tag 源 `e0632f5`）→ Release workflow：build 绿 → `release` environment（required reviewer + `v*` 策略）审批 → **GitHub Release 已创建**。资产 `RealTime-0.2.0.jar` 2,132,970 B / sha256 `f818b9a713e68f154c23366534d87837d05a7a61381f5586e7121ed49c96dc1e`（**与本地可复现构建逐字节一致**，已下载复核）+ `.sha256`；Release notes 由 `CHANGELOG` 的 `## [0.2.0]` 段生成，含**安装与升级须知**（schema v3→v5 迁移与备份、已有设备坐标不变、`device set` 需先禁用 / analog `disable` 清槽 / 新默认布局三处行为变化、权限变化、新命令、analog 已知限制）。**Hangar / Modrinth 仍未接**（未配 project id/token，workflow 自动 skip）。发布后：`CHANGELOG` 新开 `## [Unreleased]`，版本推进到 `0.3.0-SNAPSHOT`（Gradle 默认 + runtime-smoke env + 两个 smoke 脚本），`docs/release/process.md` 加发布历史表。 |
 | **0.1.0 发布（完成）** | 2026-11-24 打 `v0.1.0`（tag 源 `195fb69`）→ Release workflow：build 绿 → `release` environment（required reviewer + `v*` tag policy，`RELEASE_PUBLISH_ENABLED=true`）审批通过 → **GitHub Release 已创建**。资产 `RealTime-0.1.0.jar` 2,053,327 B / sha256 `d0c352cabb5165bd1e0b92bbe0158e72517a999db01d9b851058c33e15d4456f`（与本地验收构建完全一致，可复现）+ `.sha256`。Release notes 由 `CHANGELOG` 的 `## [0.1.0]` 段生成（已补「安装与升级须知」：Java 25 / Paper·Folia 26.3+、首启生成文件、redstone 默认关闭、槽位必须 air/redstone_block、schema v3 迁移与 `output-power` 退役）。**Hangar / Modrinth 按维护者决定暂不接**（未设 `HANGAR_PROJECT_ID`/`MODRINTH_PROJECT_ID`，workflow 自动 skip），等线上稳定后再接入 Release/Beta。记录见 `docs/operations/acceptance-report-0.1.0.md` §10 与 `docs/release/process.md`。 |
 | **当前设备运维命令** | `/rtime device create <名称> <minute\|second> <世界> <x> <y> <z> <轴> [间距] [bcd\|analog]`；`/rtime device set <uuid> <槽位> <x> <y> <z>`；`/rtime device list/info/status`；`/rtime device enable/disable <uuid>`；`/rtime device remove <uuid>`（admin，必须先 disable）；`/rtime device cleanup list`；`/rtime device cleanup retry <job-uuid>`（admin，仅重试 `NEEDS_ATTENTION`）。 |
-| **父仓库集成** | `tools/RealTime` 已登记为子模块；gitlink 指向 RealTime main `024c8c17cdeb9468b21b822b70fa81675a210b88`（v0.4.0 已发布 + 流程规范 + 平台接线；Modrinth Under Review、信息全绿；Hangar 主页已由脚本写入，只剩分类待网页改）；只改 `tools/RealTime` 与本 HANDOFF，不碰其他子模块。 |
+| **父仓库集成** | `tools/RealTime` 已登记为子模块；gitlink 指向 RealTime main `8bb951ced930c322e88f8708f882502867aadd67`（v0.4.0 已发布 + 流程规范 + 平台接线；Modrinth Under Review；**新增红石模块未启用时的提示/info 行**）；只改 `tools/RealTime` 与本 HANDOFF，不碰其他子模块。 |
 | **发布准备 / 真机验收** | PR #24 已合并，补齐 `CHANGELOG.md` 0.1.0、发布安全门禁与校验脚本；PR #25 已合并，交接文档为 [`docs/operations/production-acceptance-0.1.0.md`](https://github.com/OrzMC/RealTime/blob/main/docs/operations/production-acceptance-0.1.0.md)，覆盖安装、时区、BCD、设备退休、cleanup、迁移、重启和停止条件（已按 PR12 的 `minute`/`second` 两种分辨率更新）。**0.1.0 真机验收已通过（STAGING ACCEPTED）并已发 GitHub Release**；PR15–PR17 目前只有单测 + CI（`verify`、Paper/Folia `smoke`、`cleanup-smoke`、PAPI 全 8 项）背书，**analog 编码与分组布局的真机验收待做**（需要操作者在线：讲台所在区块要 entity-ticking 比较器才有读数）。 |
 
 ### 1.1 并行的第二条线：`plugin`（2026-11-04，pi）
@@ -512,6 +512,17 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-25 — AI（RealTime：红石模块关闭导致"方块不出现"）
+
+- 维护者反馈：另一台服务器上 `device demo` / 建设备后**世界里没有方块**，本机测试服正常。
+- 根因（**非逻辑差异**）：新装 `modules/redstone.yml` 默认 `enabled: false`；此时命令照常成功、设备进列表，但插件从不写方块
+  （`isDemoPresent` 要求 `redstone.enabled`，模块关闭时 demo 展示方块被视为"应不存在"）。本机早就开了模块，所以那边正常。
+- 真机复现：模块 `false` → demo 建好等 40 s，`200,79,-40` 无红石块、`200,80,-40` 无灯；改 `true` + reload 后 12 s 两者出现。
+- 修复（PR #68，squash `8bb951c`）：`/rtime info` 增加 `红石输出模块：true/false`；`device demo/create/set/enable` 在模块关闭时
+  额外提示（说明改哪个文件、怎么 reload）；`docs/usage.md` 安装小节加 ⚠️ 自查三条 + 诊断表 + FAQ；CHANGELOG「修复」。
+  191 个单测（新增 3 个）、`verify.sh` 全绿。
+- 测试服当前跑 `0.5.0-SNAPSHOT`（含此修复），`modules/redstone.yml` 已恢复 `enabled: true`，设备/队列为空。
 ### 2026-11-25 — AI（RealTime 迭代流程规范 + Hangar/Modrinth 发布准备）
 
 - **流程标准化**（PR #56）：`docs/development/workflow.md` 成为迭代唯一路径（选任务优先级、任务契约、分支前缀、
