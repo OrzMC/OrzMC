@@ -1,6 +1,6 @@
 # OrzMC PluginTemplate 方案
 
-> 状态：P0/P1、P2.0–P2.4 已完成；P3 Paper smoke 自动化已实现，首轮真实运行待 EULA 一次性授权
+> 状态：P0/P1、P2.0–P2.4 已完成；P3 Paper smoke 自动化与 CLI 探测已实现，首轮真实运行待 EULA 一次性授权
 > 最后更新：2026-11-27
 > 目标仓库：`OrzMC/PluginTemplate`（已创建）
 > 本文档归属：`OrzMC/OrzMC` 父仓库的伞级方案；模板代码最终进入独立仓库，不进入父仓库子模块目录。
@@ -69,7 +69,7 @@
 ## 7. 状态与治理
 
 - P0 已完成主要源文件路径、构建配置、插件元数据、调度器、生命周期、测试策略和许可证审计。
-- P0 的 Java preset、传统 plugin.yml、生命周期、命令与 Folia 声明边界已在 P1 实现中落地；配置模型和构建约定仍需最终评审。\n- P1 已通过 GitHub Actions 构建/JAR 检查及 Paper 26.3 build 263 隔离服务器验收。\n- P2.0 架构设计已合并；P2.1 ResourceScope/lifecycle 已合并；P2.2 Typed config、校验、v0→v1 schema migration、Paper YAML adapter 与事务式 reload 已合并（子仓库 PR #6，CI Run #45 全绿）。\n- 下一步：P2.3 Listener ownership + command/permission helpers；P2.4 Paper Scheduler adapter；Paper smoke workflow 仍待实现。
+- P0 的 Java preset、传统 plugin.yml、生命周期、命令与 Folia 声明边界已在 P1 实现中落地；配置模型和构建约定仍需最终评审。\n- P1 已通过 GitHub Actions 构建/JAR 检查及 Paper 26.3 build 263 隔离服务器验收。\n- P2.0 架构设计已合并；P2.1 ResourceScope/lifecycle 已合并；P2.2 Typed config、校验、v0→v1 schema migration、Paper YAML adapter 与事务式 reload 已合并（子仓库 PR #6，CI Run #45 全绿）。\n- P3.0 Paper smoke runner 与 EULA 授权门禁已实现（子仓库 PR #10）；P3.1 Paper `--help` 有界探测及验收报告增强已合并（子仓库 PR #11，CI Run #58 success）。真实 Paper smoke 仍待维护者一次性接受 EULA 并设置授权变量。
 - 本方案保存在父仓库 `docs/plugin-template/`；模板工程代码进入独立 `OrzMC/PluginTemplate`。
 - 当前推进不修改 RealTime 或 OrzMCPlugin。任何源项目改造先提交详细评估，未经明确批准不执行。
 - 未来若建设 PluginBuildLogic 或 PluginSDK，必须由至少两个独立插件的真实重复需求驱动。
