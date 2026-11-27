@@ -31,7 +31,7 @@
 | [cli-comparison.md](cli-comparison.md) | 生效中 | **两套 CLI 实测对比**：启动/CPU/内存、独立可运行性、依赖数、迭代效率、发布难易、结论与并行期分工；可复跑脚本 `scripts/bench/cli.py` | docs/ |
 | [platform-support.md](platform-support.md) | 现行 | **平台支持矩阵**：macOS 版本 × 芯片架构分层（Intel 已支持 / 逻辑层 CLI 钉 macOS 13 / GUI 要求 14）、证据与复跑命令、Intel 冒烟清单、「要不要把 GUI 降到 13」的代价清单 | docs/ |
 | [windows-port.md](windows-port.md) | 进行中 | **Windows 移植（Phase 6.5）**：8 轮探针的失败点与处理、冒烟结果、剩余 W1–W6、CI 前提（windows-2022 + Swift 6.2） | docs/ |
-| [plugin-template/README.md](plugin-template/README.md) | P0 审计完成；P1 实现中 | **OrzMC PluginTemplate**：架构、能力抽取、源文件映射、授权边界、P0 决策和 P1–P5 验收路线 | docs/plugin-template/ |
+| [plugin-template/README.md](plugin-template/README.md) | P0 审计完成；P1 已验收；P2.0 设计中 | **OrzMC PluginTemplate**：架构、能力抽取、源文件映射、P0 决策、P1–P5 路线及 [GitHub Actions Paper smoke 设计](plugin-template/github-actions-smoke.md) | docs/plugin-template/ |
 | [github-iteration-workflow.md](github-iteration-workflow.md) | 现行（建议） | **GitHub 迭代流程**：短分支 + Draft PR + 子模块独立合并 + 父仓库显式锁定组合；合并前门禁、合并后清理分支与 bump 指针的规范动作 | 维护者 / AI |
 | [iteration-efficiency.md](iteration-efficiency.md) | 生效中 | **迭代效率**：跨平台推进的实测耗时、根因（反馈回路太长）、已落地措施（秒级可移植性检查 / CI 缓存 / 本地容器脚本 / 发布后自动验收）与建议 | docs/ |
 | [spec/README.md](spec/README.md) | 草案 | **语言无关规范**（`orzmc-spec` 雏形）：定位、原则、实现映射、已知差异 | docs/spec/ |
