@@ -254,7 +254,10 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **真机验收** | 2026-11-27 使用 Temurin JDK 25.0.5.1+2、Paper 26.3 build 263，在仓库外隔离测试服（端口 25599）通过构建、JAR 检查、插件启用、`/template` 命令和正常关闭；进程退出码 0。临时测试目录已清理。详见子仓库 `docs/real-server-acceptance.md`。该验收不代表 Folia 兼容。 |
 | **红线** | `tools/RealTime` 与 `plugin`（OrzMCPlugin）保持只读，不因模板化工作而自动改造。 |
 | **PR** | 子仓库 [#1](https://github.com/OrzMC/PluginTemplate/pull/1) 与父仓库 [#228](https://github.com/OrzMC/OrzMC/pull/228) 均已于 2026-11-27 squash 合并。 |
-| **P2.0 下一步** | 先完成配置、事件/资源、命令和调度器的模块边界设计；GitHub-hosted runner 可以启动临时 Paper 进程，stdin 驱动命令，无需 RCON 或访问家庭服务器。Paper smoke 需在维护者接受 EULA 并设置仓库变量 `MINECRAFT_EULA_ACCEPTED=true` 后启用；详见 `docs/plugin-template/github-actions-smoke.md`。
+| **P2.0 设计** | 已通过父仓库 PR #230 合并 GitHub Actions Paper smoke 设计；PluginTemplate PR #3 合并 P2 runtime architecture，明确 ResourceScope、类型化配置、命令/事件边界和 global/region/entity/async 调度语义。 |
+| **P2.1 实现** | PluginTemplate PR #4 已合并（commit `456bdff`）；新增 ResourceScope/ResourceHandle/ModuleContext，ModuleManager 在正常关闭和启动回滚时清理资源，清理失败不阻断其他模块。CI Run #41 全部通过（Gradle Verify、JAR inspection、Artifact upload）。Roadmap 已通过 PR #5 同步。 |
+| **自动化服务器测试** | 方案已确定：GitHub-hosted runner 临时启动 Paper，标准输入驱动控制台，无需 RCON/家庭服务器；PR 固定 build、nightly latest STABLE；仍待实现 smoke workflow。只有维护者接受 EULA 并设置 `MINECRAFT_EULA_ACCEPTED=true` 后才能启用。 |
+| **下一步** | P2.2 类型化配置与 schema migration；之后 P2.3 Listener ownership + command/permission helpers，P2.4 Paper Scheduler，最后在证据充分时评估 Folia。 |
 
 ## 2. 状态快照（Repo State，历史记录）
 
@@ -531,6 +534,16 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 - 本轮只修改父仓库子模块登记与文档；未改 `tools/RealTime`、`plugin`（OrzMCPlugin）或模板业务代码。父仓库 PR 保持 Draft，不自动合并。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-27 — AI（PluginTemplate P2.1 资源生命周期）
+
+- 合并 PluginTemplate PR #3：P2 runtime architecture 设计基线。
+- 实现并合并 PluginTemplate PR #4（squash `456bdff`）：`ResourceScope` / `ResourceHandle` / `ModuleContext`；模块 stop 后统一清理资源，启动失败回滚也清理部分初始化资源；单个 stop/close 异常不会跳过其他清理。
+- CI Run #41 成功：Gradle Verify、JAR inspection、Artifact upload 全部通过。
+- 合并 PluginTemplate PR #5，同步 P2.1 Roadmap 完成状态。
+- 父仓库 PR #230 已合并，包含 GitHub-hosted runner Paper smoke 设计；尚未实现 smoke workflow，EULA 仍需维护者显式接受。
+- 下一步：P2.2 类型化配置、校验与 schema migration；RealTime / OrzMCPlugin 继续只读。
+
 
 ### 2026-11-27 — AI（PluginTemplate 父子仓库全部合入）
 
