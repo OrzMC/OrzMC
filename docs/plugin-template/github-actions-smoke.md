@@ -95,7 +95,15 @@ Minecraft Java/Paper 服务端没有标准的 `--accept-eula` 启动参数；实
 - MockBukkit 用于快速验证插件装配/命令/事件；不能替代真实 Paper/Folia 进程验收。
 - 若某个新插件需要真实玩家登录、区块交互或多客户端协作，再按需添加 Mineflayer E2E；模板默认不引入。
 
-## 8. 当前落地状态
+## 8. Paper CLI 探测与验收报告
+
+- 启动临时 Paper 前先执行 `java -jar paper.jar --help`，最多等待 20 秒，避免不支持该参数时无限挂起。
+- 探测结果作为诊断证据写入 JSON 报告：命令、超时阈值、退出码、帮助文本识别结果及截断后的输出。
+- 探测失败或未识别帮助文本只记录诊断，不单独阻断后续 smoke；Paper 实际启动与插件行为仍由独立验收步骤判定。
+- 报告记录 Java 版本、实际 Paper 启动命令、loopback 绑定、`online-mode=false`、RCON/Query 关闭及 EULA 门禁后生成文件的状态。
+- 该探测在生成 `eula.txt` 之前运行；即使帮助参数行为异常，也不会越过 EULA 门禁启动服务端。
+
+## 9. 当前落地状态
 
 - [x] P1 本地 Paper 26.3 build 263 验收通过。
 - [x] 现有 GitHub Actions 执行 JDK 25 构建、JUnit 与 JAR inspection。
@@ -103,5 +111,6 @@ Minecraft Java/Paper 服务端没有标准的 `--accept-eula` 启动参数；实
 - [x] P2.2 typed config、schema migration、Paper YAML adapter 与 Core tests 合并。
 - [x] 实现可复用的 `scripts/smoke-paper.py`（子仓库 PR #10）。
 - [x] 增加受 `MINECRAFT_EULA_ACCEPTED=true` 门禁控制的 Paper smoke workflow job（子仓库 PR #10）。
+- [x] 增加 Paper CLI `--help` 有界探测及运行环境/启动参数报告（子仓库 PR #11，CI Run #58 success）。
 - [ ] 增加 nightly latest-stable 兼容性 job。
-- [ ] 维护者一次性设置 EULA 授权变量后，观察至少 3 次成功运行和 1 次可控失败，确认日志、超时、清理与 artifact 行为。
+- [ ] 维护者一次性设置 EULA 授权变量后，观察至少 3 次成功运行和 1 次可控失败，确认 CLI 探测、日志、超时、清理与 artifact 行为。

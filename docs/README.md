@@ -25,7 +25,7 @@
 | 文档 | 状态 | 内容 | 位置 |
 |:--|:--|:--|:--|
 | [product-architecture.md](product-architecture.md) | 现行 | **产品架构**：仓库角色地图、分层模型（L0 规范 / L1 引擎 / L2 前端 / L3 产品伞）、引擎六阶段、**允许依赖方向与禁止事项**、治理与已知差异 | docs/ |
-| [plugin-template/README.md](plugin-template/README.md) | P0/P1、P2.0–P2.4 已完成；Paper smoke 自动化已实现，首轮真实运行待 EULA 授权 | **OrzMC PluginTemplate**：架构、能力抽取、源文件映射、P0 决策、P1–P5 路线及 [当前推进状态](plugin-template/status.md)、[GitHub Actions Paper smoke 设计](plugin-template/github-actions-smoke.md) | docs/plugin-template/ |
+| [plugin-template/README.md](plugin-template/README.md) | P0/P1、P2.0–P2.4 已完成；Paper smoke 自动化与 CLI 探测已实现，首轮真实运行待 EULA 授权 | **OrzMC PluginTemplate**：架构、能力抽取、源文件映射、P0 决策、P1–P5 路线及 [当前推进状态](plugin-template/status.md)、[GitHub Actions Paper smoke 设计](plugin-template/github-actions-smoke.md) | docs/plugin-template/ |
 | [engineering-review-2026-11-02.md](engineering-review-2026-11-02.md) | 核心整改已合入 | 核心链路工程审查、整改证据与未验证边界 | docs/ |
 | [product-unification-plan.md](product-unification-plan.md) | 历史计划 | 客户端/服务端工具统一化的历史方案与决策；当前 CLI 分工以 `two-cli-strategy.md` 为准 | docs/ |
 | [two-cli-strategy.md](two-cli-strategy.md) | 生效中 | **两套 CLI 并行策略**：四种模型对比、并行期规则 R1–R5、`lead` 分工表、台账机制、中期路线 M1–M3（Python 作发行通道） | docs/ |
