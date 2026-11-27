@@ -227,3 +227,32 @@ AGENTS.md 是入口和单一事实源；细则拆分为可按任务读取的文�
 - 命令 API：是否首版只封装 LifecycleEvents / Brigadier 的最小能力。
 - 测试服务端版本：固定版本 vs 最新版本矩阵。
 - Gradle Convention Plugin：首版留在根构建脚本，还是直接采用 included build。
+
+
+## 12. P0 实施门槛（源码审计后补充）
+
+### 12.1 语言与构建
+
+- 首版只生成 Java 业务代码；Gradle 使用 Kotlin DSL，JDK toolchain 默认 25。
+- Kotlin preset 延后，不在首版混合 Java/Kotlin 源码。
+- 首版只保留 `plugin-core` 与 `plugin-paper` 两个必要模块；测试 fixture 优先留在测试 source set，除非后续证明需要跨项目共享。
+
+### 12.2 Paper 与 Folia 支持声明
+
+- P1 先实现并验证 Paper 最小可运行插件。
+- 在 Folia 调度适配、任务取消/所有权、线程访问审查和真实 Folia smoke 全部通过前，元数据不得声明 `folia-supported: true`。
+- P2 再实现 global / region / entity / async 的显式调度接口；async 只执行不触碰 Bukkit/Paper 世界对象的工作。
+- RealTime 的调度器可作为 global/region/entity 设计参考，但其当前类没有通用 async 入口。
+- OrzMCPlugin 的 `SafeScheduler` 主要负责异常包装；其通用 sync/async/later 抽象不能替代 Folia 区域线程模型。
+
+### 12.3 生命周期失败语义
+
+组合根必须记录每个模块的启动状态。启动失败时，仅逆序停止已成功启动的模块；停止阶段逐模块捕获并汇总异常，确保一个模块清理失败不阻断其余模块。入口的 disable 回调必须能处理“尚未完成组装”的状态。
+
+### 12.4 代码来源与许可证
+
+RealTime 为 MIT，OrzMCPlugin 为 GPL-3.0。P1 默认独立实现并参考架构，不直接复制 OrzMCPlugin GPL 源码。若后续要复制或改写其实现，必须先确定模板和衍生项目的许可证/分发策略，并登记来源与声明要求。详见 [P0 决策记录](decisions.md) 与 [源文件映射](source-mapping.md)。
+
+### 12.5 命令与插件元数据
+
+OrzMCPlugin 当前采用 `paper-plugin.yml` 和 `LifecycleEvents.COMMANDS` + Brigadier；RealTime 当前使用传统 `plugin.yml`。模板首版建议采用 Paper plugin loader 路径，但必须针对目标 Paper API 版本编译和真实启动验证，不把两个项目的元数据格式混为一谈。
