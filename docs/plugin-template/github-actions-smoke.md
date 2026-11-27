@@ -123,3 +123,7 @@ Minecraft Java/Paper 服务端没有标准的 `--accept-eula` 启动参数；实
 - [x] 增加 startup timeout、command response timeout、stop→terminate→kill 进程清理回归测试并纳入 CI（子仓库 PR #15）。
 - [x] 增加 nightly workflow 运维说明（子仓库 PR #16，docs/nightly-paper.md）。
 - [ ] 等待首次 nightly 定时运行成功，验证最新 STABLE build 自动发现和运行。
+- [x] 增加 Paper 26.3 MockBukkit listener 生命周期集成测试，确认模块关闭时 Listener 自动注销；test runtime API build 与 MockBukkit manifest 对齐；skipped tests fail CI；JUnit XML/HTML 报告上传（子仓库 PR #17/#18）。
+- [x] 增加 Dependabot weekly Gradle/GitHub Actions updates、SECURITY.md 和 dependency graph submission workflow（子仓库 PR #19）。
+- [ ] GitHub Dependency graph 当前未启用：首次 Dependency Submission Run #45964427676 已生成图谱但提交失败；需管理员在 Settings → Security & analysis 启用 Dependency graph 后重新运行。
+- [ ] 核对 Dependabot alerts/security updates、Secret scanning alerts 与 repository push protection 设置。
