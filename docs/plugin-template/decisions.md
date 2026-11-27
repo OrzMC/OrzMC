@@ -42,17 +42,15 @@
 
 ## ADR-004：命令采用 Paper LifecycleEvents + Brigadier
 
-**建议：** 新模板使用 Paper plugin loader 元数据（`paper-plugin.yml`）和 LifecycleEvents 命令注册适配器，命令定义与业务用例分离。
+**建议：** 首版采用传统 `plugin.yml` + 主类 Lifecycle API + Brigadier。Paper 官方将 Paper plugin loader 标记为 Experimental，且当前项目搭建指南暂不推荐新项目默认使用；普通 `JavaPlugin` 主类同样可注册 LifecycleEvents 命令。未来可把 `paper-plugin.yml` 作为独立 preset，在真实兼容性验证后再加入。
 
 **约束：** P1 先只提供一个可运行的示例根命令；不复制 OrzMC 的命令注册器、命令树和权限定义。Paper API 版本升级时必须跑编译和真实服务端 smoke。
 
-## ADR-005：许可证先决于代码来源
+## ADR-005：优先独立实现，必要时请求复用授权
 
-**已核实：**
-- RealTime 根许可证：MIT。
-- OrzMCPlugin 根许可证：GPL-3.0。
+**维护者授权说明：** RealTime 与 OrzMCPlugin 均由维护者拥有，维护者可以授权代码复用；许可证不作为架构抽取的先决阻碍。
 
-**建议：** P1 优先独立实现，只借鉴架构和行为，不直接复制 OrzMCPlugin 的 GPL 源码。模板自身许可证在确认实际代码来源和分发意图后确定。若直接复用 GPL-3.0 代码，必须先决定模板及衍生项目采用 GPL-3.0 兼容的分发方式。
+**实现策略：** 默认独立设计和实现，不为追求速度直接复制现有代码。若确实存在值得复用的实现，先列明源文件、复用范围、必要性、替代方案及目标许可证/声明影响，再向维护者请求明确授权。未获得授权前不复制。模板仓库自身 LICENSE 仍由维护者决定。
 
 ## ADR-006：第一版不拆 SDK / Build Logic 仓库
 
