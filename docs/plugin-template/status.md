@@ -3,7 +3,7 @@
 > 更新时间：2026-11-27
 > 代码仓库：[OrzMC/PluginTemplate](https://github.com/OrzMC/PluginTemplate)
 > 父仓库集成路径：`tools/PluginTemplate`
-> 当前子仓库 main：`bd9f4a2`
+> 当前子仓库 main：`6552f12`
 
 ## 已完成
 
@@ -17,7 +17,7 @@
 | P2.3 | Paper listener ownership、权限节点、`/template reload` | [子仓库 PR #8](https://github.com/OrzMC/PluginTemplate/pull/8)，CI Run #49，merge `43dffe3` |
 | P2.4 | Paper 主线程/异步 one-shot scheduler、TaskHandle 状态机、ResourceScope 自动取消 | [子仓库 PR #9](https://github.com/OrzMC/PluginTemplate/pull/9)，CI Run #53，merge `9c593fe` |
 | P3.0 | 固定 Paper smoke runner、EULA 门禁和 CI job | [子仓库 PR #10](https://github.com/OrzMC/PluginTemplate/pull/10)，CI Run #56 build/JUnit/JAR/script syntax 全部通过；Paper smoke 因授权变量未设置而 skipped |
-| P3.1 | Paper `--help` 有界探测、Java/启动参数/网络隔离配置写入验收报告 | [子仓库 PR #11](https://github.com/OrzMC/PluginTemplate/pull/11)，CI Run #58 success；Paper smoke 仍因 EULA 授权变量未设置而 skipped |
+| P3.1 | Paper `--help` 有界探测、Java/启动参数/网络隔离配置写入验收报告 | [子仓库 PR #11](https://github.com/OrzMC/PluginTemplate/pull/11)，CI Run #58 success |\n| P3.2 | Paper smoke EULA 双重 fail-closed 门禁：workflow job 与 Python runner 独立校验；报告准确标记 help probe 是否返回 | [子仓库 PR #12](https://github.com/OrzMC/PluginTemplate/pull/12)，CI Run #60 success，merge `6552f12` |
 
 ## 当前配置约定
 
@@ -37,11 +37,11 @@
 
 ## EULA 自动化
 
-Minecraft Java/Paper 没有标准 `--accept-eula` 启动参数。维护者一次性阅读并接受 EULA 后，在 GitHub 仓库 Variables 设置 `MINECRAFT_EULA_ACCEPTED=true`。之后每次 CI 启动临时 Paper 前都会自动生成 `eula.txt`（`eula=true`），无需逐次人工处理。变量缺失或不是 `true` 时 Paper smoke 必须 skipped，普通构建和单元测试照常执行。
+Minecraft Java/Paper 没有标准 `--accept-eula` 启动参数。维护者已确认阅读并接受 EULA，并已在 OrzMC 组织级 Variables 设置 `MINECRAFT_EULA_ACCEPTED=true`。需确保该组织变量的 Repository access 覆盖 `OrzMC/PluginTemplate`。workflow job 与 `scripts/smoke-paper.py` 在写入 `eula.txt` 前分别执行严格 `true` 校验；任一校验失败都不得启动 Paper。组织变量启用后的首轮真实 Paper smoke 由合并提交 `6552f12` 触发的 CI Run #61 验证。
 
 ## 下一步
 
-1. 维护者完成一次 EULA 阅读/接受并设置 `MINECRAFT_EULA_ACCEPTED=true`，触发首轮真实 Paper smoke；检查报告和日志。
+1. 检查合并后 CI Run #61 是否读取到组织级变量并执行真实 Paper smoke；核对 JSON 报告、日志与 artifact。
 2. 完成至少 3 次成功运行和 1 次可控失败，确认 Paper `--help` 探测、启动超时、进程清理、失败报告与 artifact 上传。
 3. 增加 nightly latest STABLE Paper 兼容性检查。
 4. 之后再评估 P2.5 Folia adapter；必须有独立的 global/region/entity/async 实现、线程安全审查和真实 Folia smoke。
