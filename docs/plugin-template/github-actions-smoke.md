@@ -126,4 +126,8 @@ Minecraft Java/Paper 服务端没有标准的 `--accept-eula` 启动参数；实
 - [x] 增加 Paper 26.3 MockBukkit listener 生命周期集成测试，确认模块关闭时 Listener 自动注销；test runtime API build 与 MockBukkit manifest 对齐；skipped tests fail CI；JUnit XML/HTML 报告上传（子仓库 PR #17/#18）。
 - [x] 增加 Dependabot weekly Gradle/GitHub Actions updates、SECURITY.md 和 dependency graph submission workflow（子仓库 PR #19）。
 - [ ] GitHub Dependency graph 当前未启用：首次 Dependency Submission Run #45964427676 已生成图谱但提交失败；需管理员在 Settings → Security & analysis 启用 Dependency graph 后重新运行。
-- [ ] 核对 Dependabot alerts/security updates、Secret scanning alerts 与 repository push protection 设置。\n- [x] 增加 CodeQL Java/Kotlin advanced workflow，使用 JDK 25 + Gradle manual build，PR/main/weekly 扫描；PR #24 的 CodeQL 分析与 SARIF 上传成功。\n- [x] 确认合并后 main 分支首次 CodeQL 分析成功并完成 SARIF 上传（Run #45965755620）。\n- [x] Dependabot 首批 4 个升级 PR 均通过 build 和 Paper smoke：#20–#23。\n- [x] 新增 PaperYamlConfigStoreTest：MockBukkit 覆盖 YAML 往返、备份、替换与临时文件清理（子仓库 PR #25，CI #45966575091）。
+- [ ] 核对 Dependabot alerts/security updates、Secret scanning alerts 与 repository push protection 设置。
+- [x] 增加 CodeQL Java/Kotlin advanced workflow，使用 JDK 25 + Gradle manual build，PR/main/weekly 扫描；PR #24 的 CodeQL 分析与 SARIF 上传成功。
+- [x] 确认合并后 main 分支首次 CodeQL 分析成功并完成 SARIF 上传（Run #45965755620）。
+- [x] Dependabot 首批 4 个升级 PR 均通过 build 和 Paper smoke：#20–#23。
+- [x] 新增 PaperYamlConfigStoreTest：MockBukkit 覆盖 YAML 往返、备份、替换与临时文件清理（子仓库 PR #25，CI #45966575091）。
