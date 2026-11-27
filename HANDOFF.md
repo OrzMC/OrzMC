@@ -109,6 +109,17 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 ## 1. 当前焦点（Current Focus）
 
+### 1.6 OrzMC PluginTemplate（2026-11-27）——**P0 方案已形成，待评审**
+
+| 项 | 内容 |
+|---|---|
+| **目标** | 新建独立仓库 `OrzMC/PluginTemplate`，提供 Paper/Folia 插件的可复用工程骨架、运行时基础设施、测试/CI/发布和 Agent Native 工作流。 |
+| **本轮完成** | 在父仓库 `docs/plugin-template/` 新增 P0 方案：`README.md`（决策与边界）、`architecture.md`（模块与运行时架构）、`capability-matrix.md`（能力抽取矩阵）、`source-mapping.md`（两个源仓库的路径映射）、`roadmap.md`（P0–P5 路线与验收）；并更新 `docs/README.md` 索引。 |
+| **核心决策建议** | 单独模板仓库；Gradle Kotlin DSL + JDK 25；首个可运行 preset 先以 Java 为默认，Kotlin preset 后续独立验证；Core/Paper 多模块；显式组合根；Paper/Folia 调度语义明确；不先建 Plugin SDK / PluginBuildLogic。 |
+| **当前分支** | 父仓库分支 `docs/plugin-template-p0`；待创建 Draft PR 并评审。 |
+| **下一步** | ① 复核 source-mapping 中每个候选类的精确路径、commit SHA、依赖与许可证；② 决定 Java/Kotlin preset、Folia 声明门槛、配置与命令 API；③ P0 评审通过后创建独立 `OrzMC/PluginTemplate` 仓库，再开始 P1。 |
+| **限制** | 当前 GitHub 连接器未提供创建新仓库的操作，因此本轮没有擅自把模板代码塞进父仓库，也没有创建一个伪装成模板仓库的目录；独立仓库创建需要通过 GitHub UI/CLI 完成或补充仓库创建权限。 |
+
 ### 1.0 世界优化单仓改造（2026-11-14，pi）——**进行中，下次从这里继续**
 
 | 项 | 内容 |
@@ -512,6 +523,13 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-27 — AI（PluginTemplate P0 方案）
+
+- 对照当前 `OrzMC/RealTime` main 与 `OrzMC/OrzMCPlugin` develop，整理工程结构、配置、生命周期、Paper/Folia 调度、测试、CI、发布、安全和 Agent Native 实践。
+- 在父仓库分支 `docs/plugin-template-p0` 新增 `docs/plugin-template/{README,architecture,capability-matrix,source-mapping,roadmap}.md`，并更新 `docs/README.md`。
+- P0 方案明确模板独立仓库定位、抽取边界和 P0–P5 验收；未创建 SDK/BuildLogic 仓库，未迁移业务代码。
+- 下一步：精确复核源文件与 commit SHA，完成关键架构决策评审；P0 通过后创建独立模板仓库。
 
 ### 2026-11-27 — AI（RealTime v0.9.0 + 两台测试服部署）
 
