@@ -31,6 +31,7 @@
 | P3.12 | 合并 Dependabot 首批 4 个更新：Actions download-artifact、JUnit、MockBukkit、Gradle Wrapper 9.9.2 | 子仓库 PR #20–#23，四个 PR 的 build 和真实 Paper smoke 均通过 |
 | P3.13 | MockBukkit Paper YAML adapter 测试：标量/嵌套 Map/List 往返、时间戳备份、原子替换和临时文件清理；同步 MockBukkit 4.124.0 文档 | [子仓库 PR #25](https://github.com/OrzMC/PluginTemplate/pull/25)，CI #45966575091 build、Paper smoke、CodeQL 均 success；main CI #45966818241、CodeQL #45966817803 success |
 | P3.14 | 修复 CodeQL 在 Gradle FROM-CACHE 场景下无法捕获 Java 编译的问题；CodeQL 专用构建关闭 build cache 并 rerun tasks | [子仓库 PR #26](https://github.com/OrzMC/PluginTemplate/pull/26)，PR CI #45967584648、CodeQL #45967584670 success；main CI #45967828428、CodeQL #45967828374 success，main SARIF 上传成功，merge `577b264` |
+| P3.15 | Fork PR 也执行 CodeQL 查询；仅关闭 fork PR 的 SARIF 上传，可信任 PR/main/schedule 正常上传 | [子仓库 PR #27](https://github.com/OrzMC/PluginTemplate/pull/27)，PR CI #45968419043、CodeQL #45968419045、main CI #45968683011、CodeQL #45968682975 均 success，merge `384f3b5` |
 
 ## 当前配置约定
 
