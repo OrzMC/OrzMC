@@ -3,7 +3,7 @@
 > 更新时间：2026-11-27
 > 代码仓库：[OrzMC/PluginTemplate](https://github.com/OrzMC/PluginTemplate)
 > 父仓库集成路径：`tools/PluginTemplate`
-> 当前子仓库 main：`d7b8e71`
+> 当前子仓库 main：`3911980`
 
 ## 已完成
 
@@ -26,9 +26,7 @@
 | P3.7 | 更新质量路线、nightly 运维说明和 README；明确首次定时 nightly 运行仍待验证 | [子仓库 PR #16](https://github.com/OrzMC/PluginTemplate/pull/16)，CI Run #45962758422 success，merge `61dba0e` |
 | P3.8 | Paper 26.3 MockBukkit listener lifecycle 集成测试；test-only API 版本对齐；skipped tests fail CI；JUnit 报告上传 | [子仓库 PR #17](https://github.com/OrzMC/PluginTemplate/pull/17)，CI #45963729927、main #45963913893 success，merge `3b07b7c` |
 | P3.9 | MockBukkit 测试范围、Paper API build 对齐策略及真实 Paper 验收边界文档 | [子仓库 PR #18](https://github.com/OrzMC/PluginTemplate/pull/18)，CI #45963974109 success，merge `6d9a917` |
-| P3.10 | Dependabot Gradle/Actions weekly updates、Gradle dependency graph submission workflow、SECURITY.md 和 security 操作指南 | [子仓库 PR #19](https://github.com/OrzMC/PluginTemplate/pull/19)，PR CI #45964267995、main CI #45964427338 success，merge `3911980`；Dependency Submission 因 GitHub Dependency Graph 未启用而失败 |
-| P3.11 | CodeQL Java/Kotlin 高级配置：JDK 25 + Gradle manual build，PR/main/weekly 扫描，fork PR 分析与 SARIF 上传权限隔离 | [子仓库 PR #24](https://github.com/OrzMC/PluginTemplate/pull/24)，PR CI #45965508559、CodeQL #45965508460 success，merge `d7b8e71`；main CI/CodeQL 首次运行待完成 |
-| P3.12 | 合并 Dependabot 首批 4 个更新：Actions download-artifact、JUnit、MockBukkit、Gradle Wrapper 9.9.2 | [子仓库 PR #20–#23](https://github.com/OrzMC/PluginTemplate/pulls?q=is%3Apr+is%3Aclosed)，四个 PR 的 build 和真实 Paper smoke 均通过 |
+| P3.10 | Dependabot Gradle/Actions weekly updates、Gradle dependency graph submission workflow、SECURITY.md 和 security 操作指南 | [子仓库 PR #19](https://github.com/OrzMC/PluginTemplate/pull/19)，PR CI #45964267995、main CI #45964427338 success，merge `3911980`；dependency submission #45964427676 因 GitHub Dependency Graph 未启用而失败，等待管理员启用设置 |
 
 ## 当前配置约定
 
@@ -48,14 +46,13 @@
 
 ## EULA 自动化
 
-Minecraft Java/Paper 没有标准 `--accept-eula` 启动参数。维护者已确认阅读并接受 EULA，并已在 OrzMC 组织级 Variables 设置 `MINECRAFT_EULA_ACCEPTED=true`。需确保该组织变量的 Repository access 覆盖 `OrzMC/PluginTemplate`。workflow job 与 `scripts/smoke-paper.py` 在写入 `eula.txt` 前分别执行严格 `true` 校验；任一校验失败都不得启动 Paper。真实 Paper smoke 已连续通过至少 19 次（CI Runs #61–#65、#45962506274、#45962677819、#45962758422、#45963729927、#45963913893、#45964267995、#45964427338）：Paper 26.3 build 263、Java 25、插件启用、`/template`、`/template reload`、干净关闭均通过，Paper 进程退出码为 0。
+Minecraft Java/Paper 没有标准 `--accept-eula` 启动参数。维护者已确认阅读并接受 EULA，并已在 OrzMC 组织级 Variables 设置 `MINECRAFT_EULA_ACCEPTED=true`。需确保该组织变量的 Repository access 覆盖 `OrzMC/PluginTemplate`。workflow job 与 `scripts/smoke-paper.py` 在写入 `eula.txt` 前分别执行严格 `true` 校验；任一校验失败都不得启动 Paper。真实 Paper smoke 已连续通过至少 13 次（CI Runs #61–#65、#45962506274、#45962677819、#45962758422、#45963729927、#45963913893、#45964267995、#45964427338）：Paper 26.3 build 263、Java 25、插件启用、`/template`、`/template reload`、干净关闭均通过，Paper 进程退出码为 0。
 
 ## 下一步
 
 1. 管理员需在 GitHub Settings → Security & analysis 启用 Dependency graph、Dependabot alerts/security updates，并核对 Secret scanning/push protection；随后重新运行 Dependency Submission workflow。
 2. 等待首次 nightly 定时运行（每日北京时间 10:23），验证最新 STABLE build 的解析、校验和真实 smoke 全链路。
-3. CodeQL 已合并，首次 PR 扫描成功；确认 main 分支首次 CodeQL 扫描成功及 SARIF 上传。
-4. 继续扩展 MockBukkit 配置/命令测试；之后再评估 P2.5 Folia adapter，必须有独立 global/region/entity/async 实现、线程安全审查和真实 Folia smoke。
+3. 继续评估 CodeQL、MockBukkit 对配置/命令的可测边界；之后再评估 P2.5 Folia adapter，必须有独立 global/region/entity/async 实现、线程安全审查和真实 Folia smoke。
 
 ## 不变约束
 
