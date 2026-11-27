@@ -1,6 +1,6 @@
 # GitHub Actions 真实 Paper 服务器冒烟测试设计
 
-> 状态：Paper smoke runner 与 EULA 门禁 workflow 已实现；首轮真实运行待一次性授权
+> 状态：Paper smoke runner 与双重 EULA 门禁已实现；维护者已接受 EULA 并配置组织级变量，首轮真实运行待 CI Run #61 验证
 > 最后更新：2026-11-27
 > 范围：仅验证由当前 PR 构建的插件；不连接 OrzMC 家庭服务器或任何生产实例。
 
@@ -68,10 +68,10 @@ Minecraft Java/Paper 服务端没有标准的 `--accept-eula` 启动参数；实
 采用一次性授权、后续全自动运行的方式：
 
 - 维护者先阅读并接受 [Minecraft EULA](https://www.minecraft.net/eula)。
-- 维护者只需在 GitHub 仓库 Variables 中设置 `MINECRAFT_EULA_ACCEPTED=true` 一次。
-- Paper smoke workflow 检查该变量必须严格等于 `true`；否则 job 显示为 skipped，Build & unit 仍正常运行。
+- 维护者已确认阅读并接受 EULA，并在 OrzMC 组织级 Variables 中设置 `MINECRAFT_EULA_ACCEPTED=true`；需确保 Repository access 包含 `OrzMC/PluginTemplate`。
+- Paper smoke workflow job 检查该变量必须严格等于 `true`；否则 job 显示为 skipped，Build & unit 仍正常运行。
 - 门禁通过后，workflow 在临时 runner 目录自动写入 `eula.txt`（`eula=true`），无需每次运行人工处理或交互确认。
-- workflow 日志明确记录授权门禁结果；不得把 skipped 描述为 smoke passed。
+- `scripts/smoke-paper.py` 在写入 `eula.txt` 前再次独立检查 `MINECRAFT_EULA_ACCEPTED=true`；脚本被直接调用时也 fail closed。\n- workflow 日志明确记录授权门禁结果；不得把 skipped 描述为 smoke passed。
 - 对 fork PR 不使用 `pull_request_target`，不向不可信代码提供任何 secrets。
 
 **授权开关是一次性维护者动作，不是每次 CI 的人工步骤。** 如果维护者未接受 EULA，不得通过默认变量、代码常量或 workflow 参数绕过门禁。
@@ -111,6 +111,6 @@ Minecraft Java/Paper 服务端没有标准的 `--accept-eula` 启动参数；实
 - [x] P2.2 typed config、schema migration、Paper YAML adapter 与 Core tests 合并。
 - [x] 实现可复用的 `scripts/smoke-paper.py`（子仓库 PR #10）。
 - [x] 增加受 `MINECRAFT_EULA_ACCEPTED=true` 门禁控制的 Paper smoke workflow job（子仓库 PR #10）。
-- [x] 增加 Paper CLI `--help` 有界探测及运行环境/启动参数报告（子仓库 PR #11，CI Run #58 success）。
+- [x] 增加 Paper CLI `--help` 有界探测及运行环境/启动参数报告（子仓库 PR #11，CI Run #58 success）。\n- [x] 增加脚本级 EULA fail-closed 二次校验，避免绕过 workflow 直接生成 `eula=true`（子仓库 PR #12，CI Run #60 success，merge `6552f12`）。
 - [ ] 增加 nightly latest-stable 兼容性 job。
-- [ ] 维护者一次性设置 EULA 授权变量后，观察至少 3 次成功运行和 1 次可控失败，确认 CLI 探测、日志、超时、清理与 artifact 行为。
+- [ ] 验证组织级变量已授权 `OrzMC/PluginTemplate`，并检查合并后 CI Run #61 的首次真实 Paper smoke。\n- [ ] 观察至少 3 次成功运行和 1 次可控失败，确认 CLI 探测、日志、超时、清理与 artifact 行为。
