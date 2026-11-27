@@ -28,7 +28,8 @@
 | P3.9 | MockBukkit 测试范围、Paper API build 对齐策略及真实 Paper 验收边界文档 | [子仓库 PR #18](https://github.com/OrzMC/PluginTemplate/pull/18)，CI #45963974109 success，merge `6d9a917` |
 | P3.10 | Dependabot Gradle/Actions weekly updates、Gradle dependency graph submission workflow、SECURITY.md 和 security 操作指南 | [子仓库 PR #19](https://github.com/OrzMC/PluginTemplate/pull/19)，PR CI #45964267995、main CI #45964427338 success，merge `3911980`；Dependency Submission 因 GitHub Dependency Graph 未启用而失败 |
 | P3.11 | CodeQL Java/Kotlin 高级配置：JDK 25 + Gradle manual build，PR/main/weekly 扫描，fork PR 分析与 SARIF 上传权限隔离 | [子仓库 PR #24](https://github.com/OrzMC/PluginTemplate/pull/24)，PR CI #45965508559、CodeQL #45965508460、main CI #45965755540、main CodeQL #45965755620 均 success，merge `d7b8e71`；main SARIF 上传成功 |
-| P3.12 | 合并 Dependabot 首批 4 个更新：Actions download-artifact、JUnit、MockBukkit、Gradle Wrapper 9.9.2 | 子仓库 PR #20–#23，四个 PR 的 build 和真实 Paper smoke 均通过 |\n| P3.13 | MockBukkit Paper YAML adapter 测试：标量/嵌套 Map/List 往返、时间戳备份、原子替换和临时文件清理；同步 MockBukkit 4.124.0 文档 | [子仓库 PR #25](https://github.com/OrzMC/PluginTemplate/pull/25)，CI #45966575091 build、Paper smoke、CodeQL 均 success；main CI/CodeQL 待最终确认 |
+| P3.12 | 合并 Dependabot 首批 4 个更新：Actions download-artifact、JUnit、MockBukkit、Gradle Wrapper 9.9.2 | 子仓库 PR #20–#23，四个 PR 的 build 和真实 Paper smoke 均通过 |
+| P3.13 | MockBukkit Paper YAML adapter 测试：标量/嵌套 Map/List 往返、时间戳备份、原子替换和临时文件清理；同步 MockBukkit 4.124.0 文档 | [子仓库 PR #25](https://github.com/OrzMC/PluginTemplate/pull/25)，CI #45966575091 build、Paper smoke、CodeQL 均 success；main CI #45966818241、CodeQL #45966817803 success |
 
 ## 当前配置约定
 
@@ -54,7 +55,8 @@ Minecraft Java/Paper 没有标准 `--accept-eula` 启动参数。维护者已确
 
 1. 管理员需在 GitHub Settings → Security & analysis 启用 Dependency graph、Dependabot alerts/security updates，并核对 Secret scanning/push protection；随后重新运行 Dependency Submission workflow。
 2. 等待首次 nightly 定时运行（每日北京时间 10:23），验证最新 STABLE build 的解析、校验和真实 smoke 全链路。
-3. CodeQL 已合并，PR 和 main 首次扫描均成功，main SARIF 已上传。\n4. Paper YAML adapter 已有 MockBukkit 覆盖；继续评估 Paper Lifecycle API/Brigadier 命令可测边界；之后再评估 P2.5 Folia adapter，必须有独立 global/region/entity/async 实现、线程安全审查和真实 Folia smoke。
+3. CodeQL 已合并，PR 和 main 首次扫描均成功，main SARIF 已上传。
+4. Paper YAML adapter 已有 MockBukkit 覆盖；继续评估 Paper Lifecycle API/Brigadier 命令可测边界；之后再评估 P2.5 Folia adapter，必须有独立 global/region/entity/async 实现、线程安全审查和真实 Folia smoke。
 
 ## 不变约束
 
