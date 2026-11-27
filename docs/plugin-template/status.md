@@ -3,7 +3,7 @@
 > 更新时间：2026-11-27
 > 代码仓库：[OrzMC/PluginTemplate](https://github.com/OrzMC/PluginTemplate)
 > 父仓库集成路径：`tools/PluginTemplate`
-> 当前子仓库 main：`577b264`
+> 当前子仓库 main：`384f3b5`
 
 ## 已完成
 
@@ -50,7 +50,7 @@
 
 ## EULA 自动化
 
-Minecraft Java/Paper 没有标准 `--accept-eula` 启动参数。维护者已确认阅读并接受 EULA，并已在 OrzMC 组织级 Variables 设置 `MINECRAFT_EULA_ACCEPTED=true`。需确保该组织变量的 Repository access 覆盖 `OrzMC/PluginTemplate`。workflow job 与 `scripts/smoke-paper.py` 在写入 `eula.txt` 前分别执行严格 `true` 校验；任一校验失败都不得启动 Paper。真实 Paper smoke 已连续通过至少 21 次（CI Runs #61–#65、#45962506274、#45962677819、#45962758422、#45963729927、#45963913893、#45964267995、#45964427338）：Paper 26.3 build 263、Java 25、插件启用、`/template`、`/template reload`、干净关闭均通过，Paper 进程退出码为 0。
+Minecraft Java/Paper 没有标准 `--accept-eula` 启动参数。维护者已确认阅读并接受 EULA，并已在 OrzMC 组织级 Variables 设置 `MINECRAFT_EULA_ACCEPTED=true`。需确保该组织变量的 Repository access 覆盖 `OrzMC/PluginTemplate`。workflow job 与 `scripts/smoke-paper.py` 在写入 `eula.txt` 前分别执行严格 `true` 校验；任一校验失败都不得启动 Paper。真实 Paper smoke 已连续通过至少 22 次（CI Runs #61–#65、#45962506274、#45962677819、#45962758422、#45963729927、#45963913893、#45964267995、#45964427338）：Paper 26.3 build 263、Java 25、插件启用、`/template`、`/template reload`、干净关闭均通过，Paper 进程退出码为 0。
 
 ## 下一步
 

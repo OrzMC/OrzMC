@@ -1,6 +1,6 @@
 # OrzMC PluginTemplate 方案
 
-> 状态：P0/P1、P2.0–P2.4 已完成；P3 Paper smoke、MockBukkit、Dependabot、CodeQL 自动化已实现；真实 Paper smoke 已至少通过 21 次
+> 状态：P0/P1、P2.0–P2.4 已完成；P3 Paper smoke、MockBukkit、Dependabot、CodeQL 自动化已实现；真实 Paper smoke 已至少通过 22 次
 > 最后更新：2026-11-27
 > 目标仓库：`OrzMC/PluginTemplate`（已创建）
 > 本文档归属：`OrzMC/OrzMC` 父仓库的伞级方案；模板代码最终进入独立仓库，不进入父仓库子模块目录。
@@ -75,7 +75,7 @@
 - P0 的 Java preset、传统 plugin.yml、生命周期、命令与 Folia 声明边界已在 P1 实现中落地；配置模型和构建约定仍需最终评审。
 - P1 已通过 GitHub Actions 构建/JAR 检查及 Paper 26.3 build 263 隔离服务器验收。
 - P2.0 架构设计已合并；P2.1 ResourceScope/lifecycle 已合并；P2.2 Typed config、校验、v0→v1 schema migration、Paper YAML adapter 与事务式 reload 已合并（子仓库 PR #6，CI Run #45 全绿）。
-P3.0–P3.7 已完成 Paper smoke runner、双重 EULA 门禁、精简 evidence artifact、负向回归测试、daily latest-STABLE nightly workflow 和运维文档。P3.8/P3.9 增加 MockBukkit listener 生命周期集成测试、skipped-test fail-closed、JUnit reports 和测试范围说明（子仓库 PR #17/#18）。P3.10 增加 Dependabot weekly updates、SECURITY.md 和 Gradle dependency graph submission workflow（子仓库 PR #19，merge `3911980`）。P3.11 增加 CodeQL Java/Kotlin advanced analysis workflow（子仓库 PR #24，PR CI #45965508559、CodeQL #45965508460 success，merge `d7b8e71`）。P3.12 合并首批 4 个 Dependabot 更新 PR #20–#23，均通过构建和真实 Paper smoke。P3.13 增加 MockBukkit Paper YAML adapter 测试，PR #25 的构建、真实 Paper smoke 和 CodeQL 均通过。P3.14 修复 CodeQL Gradle build cache 导致的 Java 源码提取失败，PR 与 main 的 CodeQL 上传均成功。真实 Paper smoke 已累计至少 21 次通过；首次定时 nightly 执行仍待验证。Dependency Submission 仍因 GitHub Dependency Graph 设置关闭而失败，管理员需在 Settings → Security & analysis 启用后重跑。
+P3.0–P3.7 已完成 Paper smoke runner、双重 EULA 门禁、精简 evidence artifact、负向回归测试、daily latest-STABLE nightly workflow 和运维文档。P3.8/P3.9 增加 MockBukkit listener 生命周期集成测试、skipped-test fail-closed、JUnit reports 和测试范围说明（子仓库 PR #17/#18）。P3.10 增加 Dependabot weekly updates、SECURITY.md 和 Gradle dependency graph submission workflow（子仓库 PR #19，merge `3911980`）。P3.11 增加 CodeQL Java/Kotlin advanced analysis workflow（子仓库 PR #24，PR CI #45965508559、CodeQL #45965508460 success，merge `d7b8e71`）。P3.12 合并首批 4 个 Dependabot 更新 PR #20–#23，均通过构建和真实 Paper smoke。P3.13 增加 MockBukkit Paper YAML adapter 测试，PR #25 的构建、真实 Paper smoke 和 CodeQL 均通过。P3.14 修复 CodeQL Gradle build cache 导致的 Java 源码提取失败，PR 与 main 的 CodeQL 上传均成功。P3.15 Fork PR 也执行 CodeQL 查询，仅跳过 SARIF 上传。真实 Paper smoke 已累计至少 22 次通过；首次定时 nightly 执行仍待验证。Dependency Submission 仍因 GitHub Dependency Graph 设置关闭而失败，管理员需在 Settings → Security & analysis 启用后重跑。
 - 本方案保存在父仓库 `docs/plugin-template/`；模板工程代码进入独立 `OrzMC/PluginTemplate`。
 - 当前推进不修改 RealTime 或 OrzMCPlugin。任何源项目改造先提交详细评估，未经明确批准不执行。
 - 未来若建设 PluginBuildLogic 或 PluginSDK，必须由至少两个独立插件的真实重复需求驱动。
