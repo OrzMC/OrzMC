@@ -1,6 +1,6 @@
 # GitHub Actions 真实 Paper 服务器冒烟测试设计
 
-> 状态：首轮真实 Paper smoke 已通过（CI Run #61）；EULA 双重门禁与精简 evidence artifact 已落地
+> 状态：真实 Paper smoke 已连续通过至少 4 次；EULA 双重门禁、负向回归测试与精简 evidence artifact 已落地
 > 最后更新：2026-11-27
 > 范围：仅验证由当前 PR 构建的插件；不连接 OrzMC 家庭服务器或任何生产实例。
 
