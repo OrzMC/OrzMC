@@ -44,10 +44,9 @@ Minecraft Java/Paper 没有标准 `--accept-eula` 启动参数。维护者已确
 
 ## 下一步
 
-1. 已完成首轮真实 Paper smoke（CI Run #61）；继续观察后续运行，确认稳定性。
-2. 完成至少 3 次成功运行和 1 次可控失败，确认 Paper `--help` 探测、启动超时、进程清理、失败报告与精简 artifact 上传。
-3. 增加 nightly latest STABLE Paper 兼容性检查。
-4. 之后再评估 P2.5 Folia adapter；必须有独立的 global/region/entity/async 实现、线程安全审查和真实 Folia smoke。
+1. 已完成至少 3 次真实 Paper smoke 成功运行，并完成 EULA 未授权负向回归测试（CI Runs #61–#65）。
+2. 增加 nightly latest STABLE Paper 兼容性检查。
+3. 之后再评估 P2.5 Folia adapter；必须有独立的 global/region/entity/async 实现、线程安全审查和真实 Folia smoke。
 
 ## 不变约束
 
