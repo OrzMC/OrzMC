@@ -3,6 +3,7 @@
 > 更新时间：2026-11-27
 > 代码仓库：[OrzMC/PluginTemplate](https://github.com/OrzMC/PluginTemplate)
 > 父仓库集成路径：`tools/PluginTemplate`
+> 当前子仓库 main：`d8c6ec9`
 
 ## 已完成
 
@@ -12,7 +13,10 @@
 | P1 | Java 25、Gradle 多模块、Paper plugin.yml、命令、基础生命周期 | 子仓库 real-server-acceptance：Paper 26.3 build 263 |
 | P2.0 | Runtime 架构设计 | 子仓库 PR #3 |
 | P2.1 | ResourceScope、模块资源逆序清理、启动失败回滚 | 子仓库 PR #4、CI Run #41 |
-| P2.2 | Typed config、校验、schema v0→v1 migration、Paper YAML adapter、事务式加载/reload | [子仓库 PR #6](https://github.com/OrzMC/PluginTemplate/pull/6)，CI Run #45 success，merge commit `a21fe30` |
+| P2.2 | Typed config、校验、schema v0→v1 migration、Paper YAML adapter、事务式加载/reload | [子仓库 PR #6](https://github.com/OrzMC/PluginTemplate/pull/6)，CI Run #45，merge `a21fe30` |
+| P2.3 | Paper listener ownership、权限节点、`/template reload` | [子仓库 PR #8](https://github.com/OrzMC/PluginTemplate/pull/8)，CI Run #49，merge `43dffe3` |
+| P2.4 | Paper 主线程/异步 one-shot scheduler、TaskHandle 状态机、ResourceScope 自动取消 | [子仓库 PR #9](https://github.com/OrzMC/PluginTemplate/pull/9)，CI Run #53，merge `9c593fe` |
+| P3（部分） | 固定 Paper smoke runner、EULA 门禁和 CI job | [子仓库 PR #10](https://github.com/OrzMC/PluginTemplate/pull/10)，CI Run #56 build/JUnit/JAR/script syntax 全部通过；Paper smoke 因授权变量未设置而 skipped |
 
 ## 当前配置约定
 
@@ -21,18 +25,25 @@
 - schema 当前为 v1：`enabled`、`message`。
 - reload 校验或持久化失败时不发布候选配置，active settings 保持不变。
 - 未知 key 输出 warning；未来 schema version 拒绝加载。
-- 目前提供 ConfigService API；尚未添加玩家/管理员 reload 命令，也不做文件监听。
+- `ConfigService` 提供显式 reload API，并由 `/template reload` 使用；不做文件监听。
 
-## EULA 自动化约定
+## Scheduler 边界
 
-Minecraft Java/Paper 不提供标准 `--accept-eula` 参数。维护者一次性阅读并接受 EULA 后设置仓库变量 `MINECRAFT_EULA_ACCEPTED=true`；workflow 在每次临时服务器启动前自动生成 `eula.txt`，不再要求每次人工处理。未授权时 smoke job 必须 skipped，普通构建和单元测试继续执行。
+- Paper adapter 只提供主线程和 async one-shot 调度。
+- 异步任务不得访问 Bukkit/Paper 世界、实体、背包或其他服务端状态。
+- 待执行任务注册到所属模块 ResourceScope，模块停止时取消。
+- 不模拟 region/entity scheduler，不声明 Folia 支持。
+
+## EULA 自动化
+
+Minecraft Java/Paper 没有标准 `--accept-eula` 启动参数。维护者一次性阅读并接受 EULA 后，在 GitHub 仓库 Variables 设置 `MINECRAFT_EULA_ACCEPTED=true`。之后每次 CI 启动临时 Paper 前都会自动生成 `eula.txt`（`eula=true`），无需逐次人工处理。变量缺失或不是 `true` 时 Paper smoke 必须 skipped，普通构建和单元测试照常执行。
 
 ## 下一步
 
-1. P2.3：Listener ownership + command/permission helpers，确保监听器注册绑定 ResourceScope。
-2. P2.4：Paper scheduler adapter；明确 global/region/entity/async 语义，任务句柄归属 ResourceScope。
-3. GitHub Actions：实现 Python 驱动的 Paper smoke runner、EULA 门禁 workflow、固定 build PR smoke 和 nightly latest STABLE。
-4. Paper smoke 稳定后再考虑 MockBukkit 扩展；Folia 需独立 adapter 和真实服务器证据，未完成前不声明支持。
+1. 维护者完成一次 EULA 阅读/接受并设置 `MINECRAFT_EULA_ACCEPTED=true`，触发首轮真实 Paper smoke；检查报告和日志。
+2. 完成至少 3 次成功运行和 1 次可控失败，确认超时、清理、artifact 上传。
+3. 增加 nightly latest STABLE Paper 兼容性检查。
+4. 之后再评估 P2.5 Folia adapter；必须有独立的 global/region/entity/async 实现、线程安全审查和真实 Folia smoke。
 
 ## 不变约束
 
