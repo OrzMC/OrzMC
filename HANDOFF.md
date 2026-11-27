@@ -109,16 +109,18 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 
 ## 1. 当前焦点（Current Focus）
 
-### 1.6 OrzMC PluginTemplate（2026-11-27）——**P0 方案已形成，待评审**
+### 1.6 OrzMC PluginTemplate（2026-11-27）——**P1 已验收，P2.0 设计中**
 
 | 项 | 内容 |
 |---|---|
-| **目标** | 新建独立仓库 `OrzMC/PluginTemplate`，提供 Paper/Folia 插件的可复用工程骨架、运行时基础设施、测试/CI/发布和 Agent Native 工作流。 |
-| **本轮完成** | 在父仓库 `docs/plugin-template/` 新增 P0 方案：`README.md`（决策与边界）、`architecture.md`（模块与运行时架构）、`capability-matrix.md`（能力抽取矩阵）、`source-mapping.md`（两个源仓库的路径映射）、`roadmap.md`（P0–P5 路线与验收）；并更新 `docs/README.md` 索引。 |
-| **核心决策建议** | 单独模板仓库；Gradle Kotlin DSL + JDK 25；首个可运行 preset 先以 Java 为默认，Kotlin preset 后续独立验证；Core/Paper 多模块；显式组合根；Paper/Folia 调度语义明确；不先建 Plugin SDK / PluginBuildLogic。 |
-| **当前分支** | 父仓库分支 `docs/plugin-template-p0`；待创建 Draft PR 并评审。 |
-| **下一步** | ① 复核 source-mapping 中每个候选类的精确路径、commit SHA、依赖与许可证；② 决定 Java/Kotlin preset、Folia 声明门槛、配置与命令 API；③ P0 评审通过后创建独立 `OrzMC/PluginTemplate` 仓库，再开始 P1。 |
-| **限制** | 当前 GitHub 连接器未提供创建新仓库的操作，因此本轮没有擅自把模板代码塞进父仓库，也没有创建一个伪装成模板仓库的目录；独立仓库创建需要通过 GitHub UI/CLI 完成或补充仓库创建权限。 |
+| **目标** | 建设独立、可复用、Agent-friendly 的 Paper 插件模板；默认 Java 25 + Gradle Kotlin DSL，Core/Paper 分层。 |
+| **仓库状态** | 子仓库 `OrzMC/PluginTemplate` main 已合入 P1 实现与 MIT License；父仓库已通过 PR #228 登记 `tools/PluginTemplate` 子模块，指针指向子仓库 main；PR #229 已更新本交接文档。 |
+| **P1 验收** | GitHub Actions CI Run #35 通过；Temurin 25.0.5.1+2、Paper 26.3 build 263 隔离服务器验收通过；插件启用、`/template` 返回预期、正常 stop、模块停止日志出现、进程退出码 0；JAR inspection 通过。 |
+| **当前边界** | 仅声明 Paper 支持；Folia 未实现调度适配、未验收、不得声明支持。RealTime 与 OrzMCPlugin 仍为只读参考，未修改、未复制业务代码。 |
+| **P0 文档** | `docs/plugin-template/` 保留架构、能力矩阵、源文件映射、决策记录和路线图；当前 Draft PR #227 正在补齐 P1 完成状态及 GitHub Actions Paper smoke 设计。 |
+| **本轮推进** | 新增 `docs/plugin-template/github-actions-smoke.md`：推荐 GitHub-hosted Ubuntu runner 启动临时 Paper 进程，通过 stdin 驱动命令，无需 RCON/公网端口/家庭服务器；PR 固定 Paper build，nightly 跟踪最新 STABLE build；EULA 通过维护者显式设置仓库变量门禁。 |
+| **下一步** | 完成 PR #227 文档评审合并；在 PluginTemplate 仓库开独立 PR 修正 P1 Roadmap 状态；随后进入 P2.0 配置、事件、命令、Scheduler 接口设计评审，再按 P2.1–P2.4 顺序实现。 |
+| **限制** | 未启用自动 Paper smoke workflow；必须由维护者阅读并接受 Minecraft EULA 后，显式设置 `MINECRAFT_EULA_ACCEPTED=true` 才能启用。 |
 
 ### 1.0 世界优化单仓改造（2026-11-14，pi）——**进行中，下次从这里继续**
 
@@ -523,6 +525,16 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-27 — AI（PluginTemplate P1 收口与 P2.0 自动化测试设计）
+
+- 核对 `OrzMC/PluginTemplate` main：P1 已完成，MIT License 已合入；CI Run #35 通过，Paper 26.3 build 263 真机验收通过，`docs/roadmap.md` 的 LICENSE 勾选仍待子仓库单独修正。
+- 核对父仓库 PR #227：仍为 Draft，内容是 P0 架构方案；保留其有价值的审计文档，更新状态并补充 `docs/plugin-template/github-actions-smoke.md`。
+- GitHub Actions 方案采用 GitHub-hosted runner 临时启动 Paper，stdin 驱动控制台，不开放 RCON/公网端口；PaperMC Fill API v3 下载并校验 SHA-256。
+- EULA 不得由 CI 静默接受；自动 smoke 仅在维护者显式设置 `MINECRAFT_EULA_ACCEPTED=true` 后启用。
+- 未修改 RealTime、OrzMCPlugin 或生产服务器；未启用自动 smoke workflow。
+- 下一步：完成 PR #227 文档合并；修正 PluginTemplate Roadmap；P2.0 接口设计评审。
+
 
 ### 2026-11-27 — AI（PluginTemplate P0 方案）
 
