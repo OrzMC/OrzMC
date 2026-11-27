@@ -243,6 +243,17 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **本轮的硬口径（别回退）** | ① 分组顺序 **自建 → exaroton → MCSM**，一个页面、页顶只有一个「添加服务器」（左）与「全部折叠/展开」（右）；实例卡动作顺序 **插件/模组 → 控制台**（插件/模组共用一个 `InstanceAddonSheet`）；② **不要再做"卡中卡"**：账号卡内部的行是 `.plain`（`ServerCard(surface:)`），Liquid Glass 只留一层；③ 状态徽章唯一实现 `OrzMCStatusBadge`；④ 图标动作统一走 `OrzMCActionButton`（可用 0.85 / 禁用 0.35 / 命中区 22/32）；刷新统一走 `OrzMCRefreshButton`（刷新中同槽位转圈）；⑤ 控制台是**导航页**不是 sheet；⑥ 整卡可点（透明垫层 + `contentShape`），`tapIdentifier` 留在内容里的主按钮上 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
+### 1.6 Paper 插件模板仓库（2026-11-27）——**已纳入工具子模块，P1 真机验收待本地 Agent 执行**
+
+| 项 | 内容 |
+|---|---|
+| **独立仓库** | [OrzMC/PluginTemplate](https://github.com/OrzMC/PluginTemplate)，父仓库挂载路径 `tools/PluginTemplate`。 |
+| **当前指针** | `60dc7598edc0b4576634ce1a97ec5417a976ac5b`（暂指向子仓库 `feat/p1-minimal-template` 的 Draft PR #1；PR 合并后应将父仓库指针更新到 `main` 的合并提交）。 |
+| **P1 基线** | Java 25 / Gradle Kotlin DSL / `plugin-core` + `plugin-paper`；传统 `plugin.yml`、Paper Lifecycle API + Brigadier；Folia 未声明。 |
+| **验收** | 本地 Agent 按 `tools/PluginTemplate/docs/real-server-acceptance.md` 自动准备隔离 Paper 26.3 测试服、构建、安装、验证 `/template` 与正常关闭，并把证据回填子仓库文档。禁止使用生产服务器；EULA 需维护者确认。 |
+| **红线** | `tools/RealTime` 与 `plugin`（OrzMCPlugin）保持只读，不因模板化工作而自动改造。 |
+| **PR** | 子仓库 Draft PR [#1](https://github.com/OrzMC/PluginTemplate/pull/1)；父仓库本次子模块登记 PR 待审。两个 PR 均不自动合并。 |
+
 ## 2. 状态快照（Repo State，历史记录）
 
 > 最新接力分支：`feat/ui-refresh-handoff`；本轮仅 bump `swift/app` 到 `b13b422`（远端 app 分支 `feat/ui-refresh`）。以下历史表格不作为当前 Git 指针依据，实际以 `git ls-tree HEAD` 为准。
@@ -510,6 +521,12 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 
 > 历史（本会话已完成）：Phase 0/1/2/3 全部、Phase 5 治理（`RELEASES.md`+`check.py`+父仓库 CI）、Phase 4 起步（`launchClient`）、
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
+
+### 2026-11-27 — AI：纳入 PluginTemplate 子模块
+
+- 在父仓库新增 `tools/PluginTemplate` gitlink，登记 `.gitmodules`、`AGENTS.md` 子模块表、根 README 目录树与 `docs/README.md` 运维工具入口。
+- 子模块暂钉 `60dc7598`（`feat/p1-minimal-template` Draft PR #1）。待子仓库 PR 合并到 main 后，再单独 bump 父仓库指针，避免引用仅存在于临时分支的提交。
+- 本轮只修改父仓库子模块登记与文档；未改 `tools/RealTime`、`plugin`（OrzMCPlugin）或模板业务代码。父仓库 PR 保持 Draft，不自动合并。
 
 ## 5. 会话日志（Session Log，只追加，最新在最上）
 

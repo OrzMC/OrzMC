@@ -80,3 +80,8 @@
 	path = tools/RealTime
 	url = https://github.com/OrzMC/RealTime.git
 	branch = main
+
+[submodule "tools/PluginTemplate"]
+	path = tools/PluginTemplate
+	url = https://github.com/OrzMC/PluginTemplate.git
+	branch = main
