@@ -3,7 +3,7 @@
 > 更新时间：2026-11-27
 > 代码仓库：[OrzMC/PluginTemplate](https://github.com/OrzMC/PluginTemplate)
 > 父仓库集成路径：`tools/PluginTemplate`
-> 当前子仓库 main：`d8c6ec9`
+> 当前子仓库 main：`bd9f4a2`
 
 ## 已完成
 
@@ -16,7 +16,8 @@
 | P2.2 | Typed config、校验、schema v0→v1 migration、Paper YAML adapter、事务式加载/reload | [子仓库 PR #6](https://github.com/OrzMC/PluginTemplate/pull/6)，CI Run #45，merge `a21fe30` |
 | P2.3 | Paper listener ownership、权限节点、`/template reload` | [子仓库 PR #8](https://github.com/OrzMC/PluginTemplate/pull/8)，CI Run #49，merge `43dffe3` |
 | P2.4 | Paper 主线程/异步 one-shot scheduler、TaskHandle 状态机、ResourceScope 自动取消 | [子仓库 PR #9](https://github.com/OrzMC/PluginTemplate/pull/9)，CI Run #53，merge `9c593fe` |
-| P3（部分） | 固定 Paper smoke runner、EULA 门禁和 CI job | [子仓库 PR #10](https://github.com/OrzMC/PluginTemplate/pull/10)，CI Run #56 build/JUnit/JAR/script syntax 全部通过；Paper smoke 因授权变量未设置而 skipped |
+| P3.0 | 固定 Paper smoke runner、EULA 门禁和 CI job | [子仓库 PR #10](https://github.com/OrzMC/PluginTemplate/pull/10)，CI Run #56 build/JUnit/JAR/script syntax 全部通过；Paper smoke 因授权变量未设置而 skipped |
+| P3.1 | Paper `--help` 有界探测、Java/启动参数/网络隔离配置写入验收报告 | [子仓库 PR #11](https://github.com/OrzMC/PluginTemplate/pull/11)，CI Run #58 success；Paper smoke 仍因 EULA 授权变量未设置而 skipped |
 
 ## 当前配置约定
 
@@ -41,7 +42,7 @@ Minecraft Java/Paper 没有标准 `--accept-eula` 启动参数。维护者一次
 ## 下一步
 
 1. 维护者完成一次 EULA 阅读/接受并设置 `MINECRAFT_EULA_ACCEPTED=true`，触发首轮真实 Paper smoke；检查报告和日志。
-2. 完成至少 3 次成功运行和 1 次可控失败，确认超时、清理、artifact 上传。
+2. 完成至少 3 次成功运行和 1 次可控失败，确认 Paper `--help` 探测、启动超时、进程清理、失败报告与 artifact 上传。
 3. 增加 nightly latest STABLE Paper 兼容性检查。
 4. 之后再评估 P2.5 Folia adapter；必须有独立的 global/region/entity/async 实现、线程安全审查和真实 Folia smoke。
 
