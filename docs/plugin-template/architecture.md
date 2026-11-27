@@ -247,12 +247,12 @@ AGENTS.md 是入口和单一事实源；细则拆分为可按任务读取的文�
 
 ### 12.3 生命周期失败语义
 
-组合根必须记录每个模块的启动状态。启动失败时，仅逆序停止已成功启动的模块；停止阶段逐模块捕获并汇总异常，确保一个模块清理失败不阻断其余模块。入口的 disable 回调必须能处理“尚未完成组装”的状态。
+组合根必须记录每个模块的启动状态。启动失败时，按逆序清理已启动模块，并包含启动过程中抛错的模块，以允许其释放部分初始化资源；停止阶段逐模块捕获并汇总异常，确保一个模块清理失败不阻断其余模块。入口的 disable 回调必须能处理“尚未完成组装”的状态。
 
 ### 12.4 代码来源与许可证
 
-RealTime 为 MIT，OrzMCPlugin 为 GPL-3.0。P1 默认独立实现并参考架构，不直接复制 OrzMCPlugin GPL 源码。若后续要复制或改写其实现，必须先确定模板和衍生项目的许可证/分发策略，并登记来源与声明要求。详见 [P0 决策记录](decisions.md) 与 [源文件映射](source-mapping.md)。
+RealTime 与 OrzMCPlugin 均由维护者拥有，维护者可以授权复用。模板默认独立实现；如确需复制或改写某个实现，先提交源文件、复用范围、理由、替代方案和许可证/声明影响，向维护者请求明确授权。详见 [P0 决策记录](decisions.md) 与 [源文件映射](source-mapping.md)。
 
 ### 12.5 命令与插件元数据
 
-OrzMCPlugin 当前采用 `paper-plugin.yml` 和 `LifecycleEvents.COMMANDS` + Brigadier；RealTime 当前使用传统 `plugin.yml`。模板首版建议采用 Paper plugin loader 路径，但必须针对目标 Paper API 版本编译和真实启动验证，不把两个项目的元数据格式混为一谈。
+OrzMCPlugin 当前采用 `paper-plugin.yml`，RealTime 使用传统 `plugin.yml`。Paper 官方文档将 Paper plugin loader 标记为 Experimental，项目搭建指南暂不推荐默认使用；传统 `plugin.yml` 的 `JavaPlugin` 主类也支持 LifecycleEvents + Brigadier 注册。因此模板首版采用传统 `plugin.yml`，降低加载器实验性风险。
