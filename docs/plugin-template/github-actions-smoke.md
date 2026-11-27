@@ -114,8 +114,12 @@ Minecraft Java/Paper 服务端没有标准的 `--accept-eula` 启动参数；实
 - [x] 增加受 `MINECRAFT_EULA_ACCEPTED=true` 门禁控制的 Paper smoke workflow job（子仓库 PR #10）。
 - [x] 增加 Paper CLI `--help` 有界探测及运行环境/启动参数报告（子仓库 PR #11，CI Run #58 success）。
 - [x] 增加脚本级 EULA fail-closed 二次校验，避免绕过 workflow 直接生成 `eula=true`（子仓库 PR #12，CI Run #60 success，merge `6552f12`）。
-- [ ] 增加 nightly latest-stable 兼容性 job。
+- [x] 增加 daily Paper 26.3 latest-STABLE nightly workflow（子仓库 PR #15；每日北京时间 10:23；支持 workflow_dispatch 指定版本；首次定时执行待验证）。
+- [x] nightly 查询 PaperMC v3 API，选择最新 STABLE build，传递 build ID 和官方 SHA-256；smoke runner 再次核对渠道、版本、下载域名和文件 SHA-256。
 - [x] 验证组织级变量已授权 `OrzMC/PluginTemplate`，首轮真实 Paper smoke 通过（CI Run #61；Paper 26.3 build 263；Java 25；命令、reload、clean shutdown 全部通过）。
 - [x] 将 evidence artifact 限定为 JSON 报告、server log、server.properties、eula.txt（子仓库 PR #13，CI Run #62 success）；首次 artifact 217 MB，精简后 5.1 KB。
 - [x] 增加 EULA 未授权负向回归测试：变量不是 `true` 时 runner 抛错，不写入 EULA/服务器配置，不启动 Paper；纳入 CI（子仓库 PR #14，CI Runs #64/#65 success）。
-- [x] 完成至少 3 次真实 Paper smoke 成功运行（CI Runs #61–#64）。
+- [x] 完成至少 8 次真实 Paper smoke 成功运行（CI Runs #61–#65、#45962506274、#45962677819、#45962758422）。
+- [x] 增加 startup timeout、command response timeout、stop→terminate→kill 进程清理回归测试并纳入 CI（子仓库 PR #15）。
+- [x] 增加 nightly workflow 运维说明（子仓库 PR #16，docs/nightly-paper.md）。
+- [ ] 等待首次 nightly 定时运行成功，验证最新 STABLE build 自动发现和运行。
