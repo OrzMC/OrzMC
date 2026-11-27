@@ -66,6 +66,8 @@
 - [P0 决策记录](decisions.md)
 - [实施路线与验收标准](roadmap.md)
 - [GitHub Actions 真实 Paper 服务器冒烟测试设计](github-actions-smoke.md)
+- [MockBukkit 测试边界](../PluginTemplate/docs/mockbukkit.md)
+- [依赖与密钥安全设置](../PluginTemplate/docs/security.md)
 
 ## 7. 状态与治理
 
