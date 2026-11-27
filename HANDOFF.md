@@ -243,6 +243,18 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **本轮的硬口径（别回退）** | ① 分组顺序 **自建 → exaroton → MCSM**，一个页面、页顶只有一个「添加服务器」（左）与「全部折叠/展开」（右）；实例卡动作顺序 **插件/模组 → 控制台**（插件/模组共用一个 `InstanceAddonSheet`）；② **不要再做"卡中卡"**：账号卡内部的行是 `.plain`（`ServerCard(surface:)`），Liquid Glass 只留一层；③ 状态徽章唯一实现 `OrzMCStatusBadge`；④ 图标动作统一走 `OrzMCActionButton`（可用 0.85 / 禁用 0.35 / 命中区 22/32）；刷新统一走 `OrzMCRefreshButton`（刷新中同槽位转圈）；⑤ 控制台是**导航页**不是 sheet；⑥ 整卡可点（透明垫层 + `contentShape`），`tapIdentifier` 留在内容里的主按钮上 |
 | **开放决策** | 已拍板：多供应商 UI **按供应商分组**；MCSM 走独立 OpenAPI 依赖；抽象层在 API 之上；能下沉就下沉到 `Sources/*` |
 
+### 1.6 Paper 插件模板仓库（2026-11-27）——**P1 已验收并合入，父仓库 PR 收尾中**
+
+| 项 | 内容 |
+|---|---|
+| **独立仓库** | [OrzMC/PluginTemplate](https://github.com/OrzMC/PluginTemplate)，父仓库挂载路径 `tools/PluginTemplate`。 |
+| **当前指针** | 子仓库 `main` 合并提交 `d2e127774e00f31c4711d1ffec03d856a22cff90`；父 PR #228 分支已将 `tools/PluginTemplate` gitlink 更新到该提交。 |
+| **P1 基线** | Java 25 / Gradle Kotlin DSL / `plugin-core` + `plugin-paper`；传统 `plugin.yml`、Paper Lifecycle API + Brigadier；Folia 未声明。 |
+| **自动化 CI** | 子仓库实现基线 CI Run #33 与 MIT/README 跟进提交 CI Run #35 均成功；后者验证 Gradle 构建、JAR 检查和 Artifact 上传。 |
+| **真机验收** | 2026-11-27 使用 Temurin JDK 25.0.5.1+2、Paper 26.3 build 263，在仓库外隔离测试服（端口 25599）通过构建、JAR 检查、插件启用、`/template` 命令和正常关闭；进程退出码 0。临时测试目录已清理。详见子仓库 `docs/real-server-acceptance.md`。该验收不代表 Folia 兼容。 |
+| **红线** | `tools/RealTime` 与 `plugin`（OrzMCPlugin）保持只读，不因模板化工作而自动改造。 |
+| **PR** | 子仓库 [#1](https://github.com/OrzMC/PluginTemplate/pull/1) 已于 2026-11-27 合并（MIT）；父仓库 [#228](https://github.com/OrzMC/OrzMC/pull/228) 正在完成最终检查。 |
+
 ## 2. 状态快照（Repo State，历史记录）
 
 > 最新接力分支：`feat/ui-refresh-handoff`；本轮仅 bump `swift/app` 到 `b13b422`（远端 app 分支 `feat/ui-refresh`）。以下历史表格不作为当前 Git 指针依据，实际以 `git ls-tree HEAD` 为准。
@@ -511,7 +523,31 @@ Swift 侧少掉的只是「整包编译/单测」，静态与语法检查照旧�
 > 历史（本会话已完成）：Phase 0/1/2/3 全部、Phase 5 治理（`RELEASES.md`+`check.py`+父仓库 CI）、Phase 4 起步（`launchClient`）、
 > 一致性套件 26→31 例、`GameDir` 退役、Java 托管、`TransferKit`（含续传/进度/离线测试）、B7 生命周期、B9 非 TTY、B11 错误语义。
 
+### 2026-11-27 — AI：纳入 PluginTemplate 子模块
+
+- 在父仓库新增 `tools/PluginTemplate` gitlink，登记 `.gitmodules`、`AGENTS.md` 子模块表、根 README 目录树与 `docs/README.md` 运维工具入口。
+- 子模块暂钉 `60dc7598`（`feat/p1-minimal-template` Draft PR #1）。待子仓库 PR 合并到 main 后，再单独 bump 父仓库指针，避免引用仅存在于临时分支的提交。
+- 本轮只修改父仓库子模块登记与文档；未改 `tools/RealTime`、`plugin`（OrzMCPlugin）或模板业务代码。父仓库 PR 保持 Draft，不自动合并。
+
 ## 5. 会话日志（Session Log，只追加，最新在最上）
+
+### 2026-11-27 — AI（PluginTemplate P1 合并与父仓库子模块指针收口）
+
+- 维护者选择 MIT；子仓库新增标准 MIT LICENSE，README 增加许可证入口。
+- 子仓库 PR #1 从 Draft 转为 Ready 后 squash 合并；main 合并提交：`d2e127774e00f31c4711d1ffec03d856a22cff90`。许可证跟进提交 CI Run #35 成功（Verify、JAR inspection、Artifact upload）。
+- 父仓库分支 `chore/add-plugin-template-submodule` 的 `tools/PluginTemplate` gitlink 已更新至上述 main 合并提交；更新提交：`7a1dd6d3a72a3d395fcf9c79d61c422a6a5764ed`。
+- P1 Paper 26.3 build 263 真机验收通过；Folia 兼容性仍未声明或验证。
+- 未修改 `tools/RealTime` 或 `plugin`（OrzMCPlugin）。
+
+
+### 2026-11-27 — AI（PluginTemplate P1 真机验收与 CI 收口）
+
+- 核验子仓库 `OrzMC/PluginTemplate` 真机验收记录：Temurin JDK 25.0.5.1+2、Paper 26.3 build 263、隔离测试服端口 25599；构建、JAR 检查、插件启用、`/template` 与正常关闭均通过，临时目录已清理。
+- 核验子仓库 PR #1 最新 head `8020e4e` 的 CI Run #33 全部成功（Verify、JAR inspection、Artifact upload）。
+- 父 PR #228 的子模块指针仍为 `60dc7598`，待子 PR 合并到 main 后更新至真实 main 合并提交；未修改 RealTime / OrzMCPlugin。
+- 子仓库 LICENSE 选择仍未确认，因此两个 PR 暂不合并；后续先由维护者确定许可证，再完成 PR 审核、合并与父指针更新。
+
+
 
 ### 2026-11-27 — AI（RealTime v0.9.0 + 两台测试服部署）
 
