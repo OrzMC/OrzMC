@@ -116,4 +116,5 @@ Minecraft Java/Paper 服务端没有标准的 `--accept-eula` 启动参数；实
 - [x] 增加脚本级 EULA fail-closed 二次校验，避免绕过 workflow 直接生成 `eula=true`（子仓库 PR #12，CI Run #60 success，merge `6552f12`）。
 - [ ] 增加 nightly latest-stable 兼容性 job。
 - [x] 验证组织级变量已授权 `OrzMC/PluginTemplate`，首轮真实 Paper smoke 通过（CI Run #61；Paper 26.3 build 263；Java 25；命令、reload、clean shutdown 全部通过）。
-- [x] 将 evidence artifact 限定为 JSON 报告、server log、server.properties、eula.txt（子仓库 PR #13，CI Run #62 success）；首次 artifact 217 MB，精简后 5.1 KB。\n- [ ] 观察至少 3 次成功运行和 1 次可控失败，确认 CLI 探测、日志、超时、清理与 artifact 行为。
+- [x] 将 evidence artifact 限定为 JSON 报告、server log、server.properties、eula.txt（子仓库 PR #13，CI Run #62 success）；首次 artifact 217 MB，精简后 5.1 KB。
+- [ ] 观察至少 3 次成功运行和 1 次可控失败，确认 CLI 探测、日志、超时、清理与 artifact 行为。
