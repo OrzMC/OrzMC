@@ -1,6 +1,6 @@
 # OrzMC PluginTemplate 方案
 
-> 状态：P0 源码级审计已完成；P1 最小模板已验收；P2.0 设计推进中
+> 状态：P0/P1 已完成；P2.0 设计已合并；P2.1 资源生命周期与 P2.2 类型化配置已实现
 > 最后更新：2026-11-27
 > 目标仓库：`OrzMC/PluginTemplate`（已创建）
 > 本文档归属：`OrzMC/OrzMC` 父仓库的伞级方案；模板代码最终进入独立仓库，不进入父仓库子模块目录。
@@ -69,7 +69,7 @@
 ## 7. 状态与治理
 
 - P0 已完成主要源文件路径、构建配置、插件元数据、调度器、生命周期、测试策略和许可证审计。
-- P0 的 Java preset、传统 plugin.yml、生命周期、命令与 Folia 声明边界已在 P1 实现中落地；配置模型和构建约定仍需最终评审。\n- P1 已通过 GitHub Actions 构建/JAR 检查及 Paper 26.3 build 263 隔离服务器验收。\n- P2.0 正在设计配置/事件/命令/调度器的模块边界，并评估 GitHub-hosted runner 自动启动 Paper 的方案。
+- P0 的 Java preset、传统 plugin.yml、生命周期、命令与 Folia 声明边界已在 P1 实现中落地；配置模型和构建约定仍需最终评审。\n- P1 已通过 GitHub Actions 构建/JAR 检查及 Paper 26.3 build 263 隔离服务器验收。\n- P2.0 架构设计已合并；P2.1 ResourceScope/lifecycle 已合并；P2.2 Typed config、校验、v0→v1 schema migration、Paper YAML adapter 与事务式 reload 已合并（子仓库 PR #6，CI Run #45 全绿）。\n- 下一步：P2.3 Listener ownership + command/permission helpers；P2.4 Paper Scheduler adapter；Paper smoke workflow 仍待实现。
 - 本方案保存在父仓库 `docs/plugin-template/`；模板工程代码进入独立 `OrzMC/PluginTemplate`。
 - 当前推进不修改 RealTime 或 OrzMCPlugin。任何源项目改造先提交详细评估，未经明确批准不执行。
 - 未来若建设 PluginBuildLogic 或 PluginSDK，必须由至少两个独立插件的真实重复需求驱动。
