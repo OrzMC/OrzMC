@@ -16,7 +16,7 @@
 | Gradle 多模块 | `settings.gradle.kts`、`build.gradle.kts`、`realtime-core/build.gradle.kts`、`realtime-paper/build.gradle.kts` | 重建最小模块骨架 | Kotlin JVM 插件、Shadow、Hangar、Spotless 等按模板实际需求选择；不要复制产品版本策略 |
 | Core 领域边界 | `realtime-core/src/main/kotlin/cn/orzmc/realtime/core/` | 参考纯 JVM 包组织和依赖边界 | 当前实现是 Kotlin；Java preset 应独立实现，不把 Kotlin runtime 无意引入 Java 模板 |
 | Paper 入口与适配 | `realtime-paper/src/main/kotlin/cn/orzmc/realtime/paper/` | 参考平台入口、适配器和服务组织 | 不抽取时间/设备业务 |
-| 插件元数据 | `realtime-paper/src/main/resources/plugin.yml` | 只参考字段和资源处理 | **已纠正：不是 paper-plugin.yml**。RealTime 当前用传统 `plugin.yml`；模板若选 Paper 26 的 Paper plugin loader，应单独采用并验证 `paper-plugin.yml` |
+| 插件元数据 | `realtime-paper/src/main/resources/plugin.yml` | 只参考字段和资源处理 | **已纠正：不是 paper-plugin.yml**。RealTime 当前用传统 `plugin.yml`；模板首版采用传统 `plugin.yml`，Paper plugin loader 作为后续可选 preset，需考虑其 Experimental 状态 |
 | Paper/Folia 调度 | `realtime-paper/src/main/kotlin/cn/orzmc/realtime/paper/scheduler/PaperFoliaScheduler.kt`、`TaskHandle.kt`、`TaskRegistry.kt` | 参考 global/region/entity 调度、任务所有权、取消与释放 | 该调度器不暴露通用 async 调度入口；模板必须明确补充异步执行器，并重新实现/测试，不照搬即宣称 Folia-safe |
 | 命令 | `realtime-paper/src/main/kotlin/cn/orzmc/realtime/paper/command/` | 参考命令解析和执行上下文 | 尚未确认 `CommandTarget` 精确类名；不再把该名称作为已核实事实。P1 前需定位完整调用链 |
 | 测试策略 | `docs/testing/strategy.md` | 复用纯 JVM、平台测试、真实服 smoke 分层思想 | RealTime 特有设备清理、更新器、PlaceholderAPI 测试不作为模板默认要求 |
@@ -47,19 +47,18 @@ RealTime 当前 `build.gradle.kts` 使用 Kotlin 2.4.21、Shadow 9.2.2、Spotles
 
 OrzMCPlugin 当前 `build.gradle.kts` 以 `orzmc-api` 为项目依赖，并使用 Paper API、LuckPerms compileOnly、JUnit、MockBukkit 等依赖。它的 `paper-plugin.yml` 位于 `src/main/resources/paper-plugin.yml`，命令通过 `LifecycleEvents.COMMANDS` + Brigadier 注册。
 
-## 3. 许可证与代码来源约束
+## 3. 代码来源与授权边界
 
-- RealTime 仓库根目录为 MIT License。
-- OrzMCPlugin 仓库根目录为 GNU GPL v3。
-- **本方案和源文件映射不构成复制授权，也不表示模板代码已经抽取。**
-- 若模板直接复制或改写 OrzMCPlugin 的 GPL-3.0 代码，模板及其分发必须按 GPL-3.0 义务处理，不能在未审查前默认采用 MIT。
-- 建议 P1 优先采用“参考架构、独立实现”的方式；在许可证决策明确前，不复制 OrzMCPlugin 的实现代码。若未来确需复用其代码，先由维护者确认目标许可证与分发策略。
-- RealTime 的 MIT 代码可在遵守 MIT 版权和许可声明条件下复用；每个复制文件仍需登记来源和保留声明。
+- RealTime 仓库根目录为 MIT License；OrzMCPlugin 仓库根目录为 GNU GPL v3。
+- 两个项目均由维护者拥有，维护者可对代码复用作出授权；许可证不阻止架构设计和独立实现。
+- **默认不复制代码**：优先基于实际问题独立设计、实现和测试。
+- 如认为某个源文件确有复用价值，先提交具体文件、必要性、复用范围、替代方案和许可证/声明影响，向维护者请求明确授权。获得授权前不得复制或改写该实现。
+- 本方案的源文件映射仅用于定位和审计，不代表已经获得具体代码复用授权。
 
 ## 4. 抽取前必须重新验证
 
 1. 对两个仓库锁定确切 commit SHA；不要把文件 blob SHA 当成 commit SHA。
-2. 检查目标文件当前内容、依赖、许可证、打包方式和运行时提供者。
+2. 检查目标文件当前内容、依赖、许可证、打包方式和运行时提供者；若准备直接复用，先请求维护者授权。
 3. 不把内部类名直接升级为模板公共 API。
 4. Paper/Folia API 必须对照目标版本官方文档并在目标服务端编译/运行验证。
 5. 组织名、作者、包名、命令、权限、URL、平台 ID、版本号必须参数化。
@@ -74,7 +73,7 @@ OrzMCPlugin 当前 `build.gradle.kts` 以 `orzmc-api` 为项目依赖，并使�
 - 目标模板路径；
 - 复制、改写、独立实现还是仅参考；
 - 是否含产品专属逻辑；
-- 许可证及保留声明要求；
+- 授权记录、许可证及保留声明要求；
 - 依赖与打包方式；
 - 对应测试；
 - 复核人和复核日期。
