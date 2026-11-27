@@ -18,7 +18,8 @@
 | P2.4 | Paper 主线程/异步 one-shot scheduler、TaskHandle 状态机、ResourceScope 自动取消 | [子仓库 PR #9](https://github.com/OrzMC/PluginTemplate/pull/9)，CI Run #53，merge `9c593fe` |
 | P3.0 | 固定 Paper smoke runner、EULA 门禁和 CI job | [子仓库 PR #10](https://github.com/OrzMC/PluginTemplate/pull/10)，CI Run #56 build/JUnit/JAR/script syntax 全部通过；Paper smoke 因授权变量未设置而 skipped |
 | P3.1 | Paper `--help` 有界探测、Java/启动参数/网络隔离配置写入验收报告 | [子仓库 PR #11](https://github.com/OrzMC/PluginTemplate/pull/11)，CI Run #58 success |
-| P3.2 | Paper smoke EULA 双重 fail-closed 门禁：workflow job 与 Python runner 独立校验；报告准确标记 help probe 是否返回 | [子仓库 PR #12](https://github.com/OrzMC/PluginTemplate/pull/12)，CI Run #60 success，merge `6552f12` |\n| P3.3 | Paper smoke artifact 仅保留 JSON 报告、server log、server.properties、eula.txt，排除临时世界和缓存 | [子仓库 PR #13](https://github.com/OrzMC/PluginTemplate/pull/13)，CI Run #62 success，artifact 从 217 MB 降至 5.1 KB，merge `60a3fa4` |
+| P3.2 | Paper smoke EULA 双重 fail-closed 门禁：workflow job 与 Python runner 独立校验；报告准确标记 help probe 是否返回 | [子仓库 PR #12](https://github.com/OrzMC/PluginTemplate/pull/12)，CI Run #60 success，merge `6552f12` |
+| P3.3 | Paper smoke artifact 仅保留 JSON 报告、server log、server.properties、eula.txt，排除临时世界和缓存 | [子仓库 PR #13](https://github.com/OrzMC/PluginTemplate/pull/13)，CI Run #62 success，artifact 从 217 MB 降至 5.1 KB，merge `60a3fa4` |
 
 ## 当前配置约定
 
