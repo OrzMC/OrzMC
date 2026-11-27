@@ -1,6 +1,6 @@
 # GitHub Actions 真实 Paper 服务器冒烟测试设计
 
-> 状态：P2.0 设计已合并；P2.2 已完成；Paper smoke workflow 尚未实现
+> 状态：Paper smoke runner 与 EULA 门禁 workflow 已实现；首轮真实运行待一次性授权
 > 最后更新：2026-11-27
 > 范围：仅验证由当前 PR 构建的插件；不连接 OrzMC 家庭服务器或任何生产实例。
 
@@ -101,7 +101,7 @@ Minecraft Java/Paper 服务端没有标准的 `--accept-eula` 启动参数；实
 - [x] 现有 GitHub Actions 执行 JDK 25 构建、JUnit 与 JAR inspection。
 - [x] P2.1 ResourceScope/lifecycle 实现和测试合并。
 - [x] P2.2 typed config、schema migration、Paper YAML adapter 与 Core tests 合并。
-- [ ] 实现可复用的 `scripts/smoke-paper.py`。
-- [ ] 增加受 EULA 门禁控制的 Paper smoke workflow job。
+- [x] 实现可复用的 `scripts/smoke-paper.py`（子仓库 PR #10）。
+- [x] 增加受 `MINECRAFT_EULA_ACCEPTED=true` 门禁控制的 Paper smoke workflow job（子仓库 PR #10）。
 - [ ] 增加 nightly latest-stable 兼容性 job。
-- [ ] 观察至少 3 次成功运行和 1 次可控失败，确认日志、超时、清理与 artifact 行为。
+- [ ] 维护者一次性设置 EULA 授权变量后，观察至少 3 次成功运行和 1 次可控失败，确认日志、超时、清理与 artifact 行为。
