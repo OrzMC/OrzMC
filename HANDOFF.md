@@ -254,6 +254,7 @@ python3 scripts/verify/check.py        # 父仓库组合校验（登记表一致
 | **真机验收** | 2026-11-27 使用 Temurin JDK 25.0.5.1+2、Paper 26.3 build 263，在仓库外隔离测试服（端口 25599）通过构建、JAR 检查、插件启用、`/template` 命令和正常关闭；进程退出码 0。临时测试目录已清理。详见子仓库 `docs/real-server-acceptance.md`。该验收不代表 Folia 兼容。 |
 | **红线** | `tools/RealTime` 与 `plugin`（OrzMCPlugin）保持只读，不因模板化工作而自动改造。 |
 | **PR** | 子仓库 [#1](https://github.com/OrzMC/PluginTemplate/pull/1) 与父仓库 [#228](https://github.com/OrzMC/OrzMC/pull/228) 均已于 2026-11-27 squash 合并。 |
+| **P2.0 下一步** | 先完成配置、事件/资源、命令和调度器的模块边界设计；GitHub-hosted runner 可以启动临时 Paper 进程，stdin 驱动命令，无需 RCON 或访问家庭服务器。Paper smoke 需在维护者接受 EULA 并设置仓库变量 `MINECRAFT_EULA_ACCEPTED=true` 后启用；详见 `docs/plugin-template/github-actions-smoke.md`。
 
 ## 2. 状态快照（Repo State，历史记录）
 
