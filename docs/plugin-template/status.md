@@ -3,7 +3,7 @@
 > 更新时间：2026-11-27
 > 代码仓库：[OrzMC/PluginTemplate](https://github.com/OrzMC/PluginTemplate)
 > 父仓库集成路径：`tools/PluginTemplate`
-> 当前子仓库 main：`cdb5c41`
+> 当前子仓库 main：`61dba0e`
 
 ## 已完成
 
@@ -20,7 +20,10 @@
 | P3.1 | Paper `--help` 有界探测、Java/启动参数/网络隔离配置写入验收报告 | [子仓库 PR #11](https://github.com/OrzMC/PluginTemplate/pull/11)，CI Run #58 success |
 | P3.2 | Paper smoke EULA 双重 fail-closed 门禁：workflow job 与 Python runner 独立校验；报告准确标记 help probe 是否返回 | [子仓库 PR #12](https://github.com/OrzMC/PluginTemplate/pull/12)，CI Run #60 success，merge `6552f12` |
 | P3.3 | Paper smoke artifact 仅保留 JSON 报告、server log、server.properties、eula.txt，排除临时世界和缓存 | [子仓库 PR #13](https://github.com/OrzMC/PluginTemplate/pull/13)，CI Run #62 success，artifact 从 217 MB 降至约 5.1 KB，merge `60a3fa4` |
-| P3.4 | EULA fail-closed 负向回归测试：未授权时必须抛错，且不得写入 eula/server.properties 或启动 Paper 进程；纳入 CI | [子仓库 PR #14](https://github.com/OrzMC/PluginTemplate/pull/14)，CI Run #64/#65 success，merge `cdb5c41`
+| P3.4 | EULA fail-closed 负向回归测试：未授权时必须抛错，且不得写入 eula/server.properties 或启动 Paper 进程；纳入 CI | [子仓库 PR #14](https://github.com/OrzMC/PluginTemplate/pull/14)，CI Run #64/#65 success，merge `cdb5c41` |
+| P3.5 | Daily Paper 26.3 latest-STABLE 兼容性工作流：解析最新 STABLE build、双重校验 SHA-256、EULA 门禁、隔离 smoke 和 evidence artifact | [子仓库 PR #15](https://github.com/OrzMC/PluginTemplate/pull/15)，CI Run #45962506274 success；main CI #45962677819 success，merge `997d68e` |
+| P3.6 | 启动超时、命令响应超时、异常进程清理（stop → terminate → kill）回归测试纳入 CI | [子仓库 PR #15](https://github.com/OrzMC/PluginTemplate/pull/15)，CI Run #45962506274 success，merge `997d68e` |
+| P3.7 | 更新质量路线、nightly 运维说明和 README；明确首次定时 nightly 运行仍待验证 | [子仓库 PR #16](https://github.com/OrzMC/PluginTemplate/pull/16)，CI Run #45962758422 success，merge `61dba0e`
 
 ## 当前配置约定
 
@@ -40,12 +43,12 @@
 
 ## EULA 自动化
 
-Minecraft Java/Paper 没有标准 `--accept-eula` 启动参数。维护者已确认阅读并接受 EULA，并已在 OrzMC 组织级 Variables 设置 `MINECRAFT_EULA_ACCEPTED=true`。需确保该组织变量的 Repository access 覆盖 `OrzMC/PluginTemplate`。workflow job 与 `scripts/smoke-paper.py` 在写入 `eula.txt` 前分别执行严格 `true` 校验；任一校验失败都不得启动 Paper。真实 Paper smoke 已连续通过至少 4 次（CI Runs #61–#64）：Paper 26.3 build 263、Java 25、插件启用、`/template`、`/template reload`、干净关闭均通过，Paper 进程退出码为 0。
+Minecraft Java/Paper 没有标准 `--accept-eula` 启动参数。维护者已确认阅读并接受 EULA，并已在 OrzMC 组织级 Variables 设置 `MINECRAFT_EULA_ACCEPTED=true`。需确保该组织变量的 Repository access 覆盖 `OrzMC/PluginTemplate`。workflow job 与 `scripts/smoke-paper.py` 在写入 `eula.txt` 前分别执行严格 `true` 校验；任一校验失败都不得启动 Paper。真实 Paper smoke 已连续通过至少 8 次（CI Runs #61–#65、#45962506274、#45962677819、#45962758422）：Paper 26.3 build 263、Java 25、插件启用、`/template`、`/template reload`、干净关闭均通过，Paper 进程退出码为 0。
 
 ## 下一步
 
-1. 已完成至少 3 次真实 Paper smoke 成功运行，并完成 EULA 未授权负向回归测试（CI Runs #61–#65）。
-2. 增加 nightly latest STABLE Paper 兼容性检查。
+1. Nightly workflow 已实现；等待首次定时执行（每日北京时间 10:23）验证最新 STABLE build 的解析、校验和真实 smoke 全链路。
+2. 继续补齐 MockBukkit 集成测试、Secret/Dependency scanning。
 3. 之后再评估 P2.5 Folia adapter；必须有独立的 global/region/entity/async 实现、线程安全审查和真实 Folia smoke。
 
 ## 不变约束
