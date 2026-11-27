@@ -1,6 +1,6 @@
 # OrzMC PluginTemplate 方案
 
-> 状态：P0/P1、P2.0–P2.4 已完成；P3 Paper smoke 自动化、CLI 探测与双重 EULA 门禁已实现；维护者已确认接受 EULA 并配置组织级变量，首轮真实运行待 CI 验证
+> 状态：P0/P1、P2.0–P2.4 已完成；P3 Paper smoke 自动化、CLI 探测与双重 EULA 门禁已实现；首轮真实 Paper smoke 已通过（CI Run #61）
 > 最后更新：2026-11-27
 > 目标仓库：`OrzMC/PluginTemplate`（已创建）
 > 本文档归属：`OrzMC/OrzMC` 父仓库的伞级方案；模板代码最终进入独立仓库，不进入父仓库子模块目录。
@@ -64,12 +64,16 @@
 - [能力抽取矩阵](capability-matrix.md)
 - [现有项目源文件映射](source-mapping.md)
 - [P0 决策记录](decisions.md)
-- [实施路线与验收标准](roadmap.md)\n- [GitHub Actions 真实 Paper 服务器冒烟测试设计](github-actions-smoke.md)
+- [实施路线与验收标准](roadmap.md)
+- [GitHub Actions 真实 Paper 服务器冒烟测试设计](github-actions-smoke.md)
 
 ## 7. 状态与治理
 
 - P0 已完成主要源文件路径、构建配置、插件元数据、调度器、生命周期、测试策略和许可证审计。
-- P0 的 Java preset、传统 plugin.yml、生命周期、命令与 Folia 声明边界已在 P1 实现中落地；配置模型和构建约定仍需最终评审。\n- P1 已通过 GitHub Actions 构建/JAR 检查及 Paper 26.3 build 263 隔离服务器验收。\n- P2.0 架构设计已合并；P2.1 ResourceScope/lifecycle 已合并；P2.2 Typed config、校验、v0→v1 schema migration、Paper YAML adapter 与事务式 reload 已合并（子仓库 PR #6，CI Run #45 全绿）。\n- P3.0 Paper smoke runner 与 EULA 授权门禁已实现（子仓库 PR #10）；P3.1 Paper `--help` 有界探测及验收报告增强已合并（子仓库 PR #11，CI Run #58 success）；P3.2 Python runner 增加独立 fail-closed EULA 校验（子仓库 PR #12，CI Run #60 success，merge `6552f12`）。维护者已确认接受 EULA 并配置组织级 `MINECRAFT_EULA_ACCEPTED=true`，首轮真实 Paper smoke 待合并后 CI Run #61 验证。
+- P0 的 Java preset、传统 plugin.yml、生命周期、命令与 Folia 声明边界已在 P1 实现中落地；配置模型和构建约定仍需最终评审。
+- P1 已通过 GitHub Actions 构建/JAR 检查及 Paper 26.3 build 263 隔离服务器验收。
+- P2.0 架构设计已合并；P2.1 ResourceScope/lifecycle 已合并；P2.2 Typed config、校验、v0→v1 schema migration、Paper YAML adapter 与事务式 reload 已合并（子仓库 PR #6，CI Run #45 全绿）。
+- P3.0 Paper smoke runner 与 EULA 授权门禁已实现（子仓库 PR #10）；P3.1 Paper `--help` 有界探测及验收报告增强已合并（子仓库 PR #11，CI Run #58 success）；P3.2 Python runner 增加独立 fail-closed EULA 校验（子仓库 PR #12，CI Run #60 success，merge `6552f12`）；组织级 `MINECRAFT_EULA_ACCEPTED=true` 已生效，首轮真实 Paper smoke 在 CI Run #61 全部通过。P3.3 将 evidence artifact 从 217 MB 精简到 5.1 KB（子仓库 PR #13，CI Run #62 success，merge `60a3fa4`）。
 - 本方案保存在父仓库 `docs/plugin-template/`；模板工程代码进入独立 `OrzMC/PluginTemplate`。
 - 当前推进不修改 RealTime 或 OrzMCPlugin。任何源项目改造先提交详细评估，未经明确批准不执行。
 - 未来若建设 PluginBuildLogic 或 PluginSDK，必须由至少两个独立插件的真实重复需求驱动。
