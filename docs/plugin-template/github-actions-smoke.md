@@ -119,7 +119,7 @@ Minecraft Java/Paper 服务端没有标准的 `--accept-eula` 启动参数；实
 - [x] 验证组织级变量已授权 `OrzMC/PluginTemplate`，首轮真实 Paper smoke 通过（CI Run #61；Paper 26.3 build 263；Java 25；命令、reload、clean shutdown 全部通过）。
 - [x] 将 evidence artifact 限定为 JSON 报告、server log、server.properties、eula.txt（子仓库 PR #13，CI Run #62 success）；首次 artifact 217 MB，精简后 5.1 KB。
 - [x] 增加 EULA 未授权负向回归测试：变量不是 `true` 时 runner 抛错，不写入 EULA/服务器配置，不启动 Paper；纳入 CI（子仓库 PR #14，CI Runs #64/#65 success）。
-- [x] 完成至少 20 次真实 Paper smoke 成功运行（CI Runs #61–#65、#45962506274、#45962677819、#45962758422、#45963729927、#45963913893、#45963974109、#45964267995、#45964427338、#45964512713、#45964524385、#45964531871、#45964577214、#45965365054、#45965508559、#45966575091）。
+- [x] 完成至少 21 次真实 Paper smoke 成功运行（CI Runs #61–#65、#45962506274、#45962677819、#45962758422、#45963729927、#45963913893、#45963974109、#45964267995、#45964427338、#45964512713、#45964524385、#45964531871、#45964577214、#45965365054、#45965508559、#45966575091、#45967828428）。
 - [x] 增加 startup timeout、command response timeout、stop→terminate→kill 进程清理回归测试并纳入 CI（子仓库 PR #15）。
 - [x] 增加 nightly workflow 运维说明（子仓库 PR #16，docs/nightly-paper.md）。
 - [ ] 等待首次 nightly 定时运行成功，验证最新 STABLE build 自动发现和运行。
@@ -129,5 +129,6 @@ Minecraft Java/Paper 服务端没有标准的 `--accept-eula` 启动参数；实
 - [ ] 核对 Dependabot alerts/security updates、Secret scanning alerts 与 repository push protection 设置。
 - [x] 增加 CodeQL Java/Kotlin advanced workflow，使用 JDK 25 + Gradle manual build，PR/main/weekly 扫描；PR #24 的 CodeQL 分析与 SARIF 上传成功。
 - [x] 确认合并后 main 分支首次 CodeQL 分析成功并完成 SARIF 上传（Run #45965755620）。
+- [x] CodeQL 手动 Gradle 构建增加 `--no-build-cache --rerun-tasks`，确保 `javac` 调用可被提取；修复 docs-only PR 的 `no source code seen` 失败（子仓库 PR #26，PR CodeQL #45967584670、main CodeQL #45967828374 均成功）。
 - [x] Dependabot 首批 4 个升级 PR 均通过 build 和 Paper smoke：#20–#23。
 - [x] 新增 PaperYamlConfigStoreTest：MockBukkit 覆盖 YAML 往返、备份、替换与临时文件清理（子仓库 PR #25，CI #45966575091）。
